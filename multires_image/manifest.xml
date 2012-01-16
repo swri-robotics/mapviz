@@ -1,0 +1,22 @@
+<package>
+  <description brief="multires_image">
+
+     multires_image
+
+  </description>
+  <author>Marc Alban</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/multires_image</url>
+
+  <depend package="roscpp"/>
+  <depend package="geospatial_index"/>
+  <depend package="georeference"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lmultires_widget -ltile_cache -Wl,-rpath,${prefix}/lib"/>
+  </export>
+  
+</package>
+
+

@@ -1,0 +1,9 @@
+<launch>
+
+  <env name="ROSCONSOLE_FORMAT" value="[${thread}] [${node}/${function}:${line}]: ${message}"/>
+
+  <node pkg="mapviz" type="mapviz" name="mapviz"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="swri_transform" args="537460 3258123 0 0 0 0 /utm /swri 100"  />
+
+</launch>

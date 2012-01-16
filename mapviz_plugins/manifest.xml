@@ -1,0 +1,28 @@
+<package>
+  <description brief="mapviz_plugins">
+
+     mapviz_plugins
+
+  </description>
+  <author>Marc</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/mapviz_plugins</url>
+
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="std_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="visualization_msgs"/>
+  <depend package="mapviz"/>
+  <depend package="multires_image"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+
+  <export>
+    <mapviz plugin="${prefix}/mapviz_plugins.xml" />
+  </export>
+
+</package>
+
+

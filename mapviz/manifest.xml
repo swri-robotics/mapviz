@@ -1,0 +1,23 @@
+<package>
+  <description brief="mapviz">
+
+     mapviz
+
+  </description>
+  <author>Marc</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/mapviz</url>
+
+  <depend package="roscpp"/>
+  <depend package="pluginlib"/>
+  <depend package="tf"/>
+  <depend package="yaml_cpp"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include"/>
+  </export>
+
+</package>
+
+
