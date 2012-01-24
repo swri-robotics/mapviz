@@ -15,11 +15,25 @@
 
 #include "point.h"
 
-template <class T> class BoundingBox
+#include <ros/ros.h>
+
+template <class T>
+class BoundingBox
 {
   public:
-    BoundingBox() : Width(0), Height(0) {}
-    BoundingBox(PointT<T> _topLeft, PointT<T> _bottomRight);
+    BoundingBox() :
+      Width(0),
+      Height(0)
+    {
+      // default constructor
+    }
+
+    BoundingBox(PointT<T> _topLeft, PointT<T> _bottomRight) :
+      topLeft(_topLeft),
+      bottomRight(_bottomRight)
+    {
+      this->Update();
+    }
 
     PointT<T> topLeft;
     PointT<T> bottomRight;
@@ -34,17 +48,31 @@ template <class T> class BoundingBox
       Center = PointT<T>((bottomRight.X + topLeft.X) / 2, (bottomRight.Y + topLeft.Y) / 2);
     }
 
-    BoundingBox & operator = (const BoundingBox<T> & other)
+    bool operator== (const BoundingBox<T> & rhs) const
+    {
+      return topLeft == rhs.topLeft &&
+        bottomRight == rhs.bottomRight &&
+        Center == rhs.Center &&
+        Width == rhs.Width &&
+        Height == rhs.Height;
+    }
+
+    BoundingBox& operator= (const BoundingBox<T> & other)
     {
       if (this != &other) // protect against invalid self-assignment
       {
-        topLeft = other.topLeft;
+        topLeft     = other.topLeft;
         bottomRight = other.bottomRight;
-        Center = other.Center;
-        Width = other.Width;
-        Height = other.Height;
+        Center      = other.Center;
+        Width       = other.Width;
+        Height      = other.Height;
       }
       return *this;
+    }
+
+    bool operator!= (const BoundingBox<T>& rhs) const
+    {
+      return !(*this == rhs);
     }
 
     bool Contains(T x, T y)
@@ -60,9 +88,6 @@ template <class T> class BoundingBox
 
       return true;
     }
-
-    bool operator == (const BoundingBox<T> & rhs) const;
-    bool operator != (const BoundingBox<T>& rhs) const;
 };
 
 #endif /*BOUNDING_BOX_H*/
