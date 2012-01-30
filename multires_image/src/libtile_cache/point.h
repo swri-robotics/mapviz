@@ -22,7 +22,7 @@ public:
   T X;
   T Y;
 
-  PointT() : Y(0), X(0) {}
+  PointT() : X(0), Y(0) {}
   PointT(T x, T y) : X(x), Y(y) {}
   PointT(const PointT& point) : X(point.X), Y(point.Y) {}
 
