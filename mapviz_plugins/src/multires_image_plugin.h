@@ -4,6 +4,10 @@
 // C++ standard libraries
 #include <string>
 
+// Boost libraries
+#include <boost/filesystem.hpp>
+#define BOOST_FILESYSTEM_VERSION 2
+
 // QT libraries
 #include <QGLWidget>
 #include <QObject>
@@ -38,8 +42,8 @@ namespace mapviz_plugins
 
     void Transform();
     
-    void LoadConfiguration(const YAML::Node& node);
-    void SaveConfiguration(YAML::Emitter& emitter);
+    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
+    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
@@ -65,6 +69,7 @@ namespace mapviz_plugins
 
     void InitializeTiles();
     void GetCenterPoint(double x, double y);
+    boost::filesystem::path MakePathRelative(boost::filesystem::path path, boost::filesystem::path base);
   };
 }
 

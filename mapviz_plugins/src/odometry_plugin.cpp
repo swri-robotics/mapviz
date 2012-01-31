@@ -268,7 +268,7 @@ namespace mapviz_plugins
     current_point_transformed_ = transform_ * current_point_;
   }
     
-  void OdometryPlugin::LoadConfiguration(const YAML::Node& node)
+  void OdometryPlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -302,7 +302,7 @@ namespace mapviz_plugins
     TopicEdited();
   }
   
-  void OdometryPlugin::SaveConfiguration(YAML::Emitter& emitter)
+  void OdometryPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color_.name().toStdString();

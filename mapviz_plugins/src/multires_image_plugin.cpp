@@ -292,18 +292,77 @@ namespace mapviz_plugins
     }
   }
     
-  void MultiresImagePlugin::LoadConfiguration(const YAML::Node& node)
+  boost::filesystem::path MultiresImagePlugin::MakePathRelative(boost::filesystem::path path, boost::filesystem::path base)
+  {
+    // Borrowed from: https://svn.boost.org/trac/boost/ticket/1976#comment:2
+    if (path.has_root_path())
+    {
+      if (path.root_path() != base.root_path())
+      {
+        return path;
+      }
+      else
+      {
+        return MakePathRelative(path.relative_path(), base.relative_path());
+      }
+    }
+    else
+    {
+      if (base.has_root_path())
+      {
+        ROS_ERROR("Cannot uncomplete a path relative path from a rooted base.");
+        return path;
+      }
+      else
+      {
+        typedef boost::filesystem::path::const_iterator path_iterator;
+        path_iterator path_it = path.begin();
+        path_iterator base_it = base.begin();
+        while (path_it != path.end() && base_it != base.end())
+        {
+          if (*path_it != *base_it)
+            break;
+          ++path_it;
+          ++base_it;
+        }
+        boost::filesystem::path result;
+        for (; base_it != base.end(); ++base_it)
+        {
+          result /= "..";
+        }
+        for (; path_it != path.end(); ++path_it)
+        {
+          result /= *path_it;
+        }
+        return result;
+      }
+    }
+  }
+
+  void MultiresImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
   {
     std::string path;
     node["path"] >> path;
+
+    boost::filesystem::path image_path(path);
+    if(image_path.is_complete() == false)
+    {
+      boost::filesystem::path base_path(config_path);
+      path = (config_path / image_path.relative_path()).normalize().string();
+    }
+
     ui_.path->setText(path.c_str());
-    
+
     AcceptConfiguration();
   }
   
-  void MultiresImagePlugin::SaveConfiguration(YAML::Emitter& emitter)
+  void MultiresImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
   {
-    emitter << YAML::Key << "path" << YAML::Value << ui_.path->text().toStdString();
+    boost::filesystem::path absolute_path(ui_.path->text().toStdString());
+    boost::filesystem::path base_path(config_path);
+    boost::filesystem::path relative_path = MakePathRelative(absolute_path, base_path);
+
+    emitter << YAML::Key << "path" << YAML::Value << relative_path.string();
   }
   
 }

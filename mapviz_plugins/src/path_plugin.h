@@ -43,8 +43,8 @@ namespace mapviz_plugins
 
     void Transform();
 
-    void LoadConfiguration(const YAML::Node& node);
-    void SaveConfiguration(YAML::Emitter& emitter);
+    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
+    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 

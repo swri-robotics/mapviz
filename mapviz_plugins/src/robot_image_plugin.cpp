@@ -279,7 +279,7 @@ namespace mapviz_plugins
     }
   }
 
-  void RobotImagePlugin::LoadConfiguration(const YAML::Node& node)
+  void RobotImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
   {
     node["frame"] >> source_frame_;
     ui_.frame->setText(source_frame_.c_str());
@@ -298,7 +298,7 @@ namespace mapviz_plugins
     FrameEdited();
   }
 
-  void RobotImagePlugin::SaveConfiguration(YAML::Emitter& emitter)
+  void RobotImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
   {
     emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->text().toStdString();
     emitter << YAML::Key << "image" << YAML::Value << ui_.image->text().toStdString();

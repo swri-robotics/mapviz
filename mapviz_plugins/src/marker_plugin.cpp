@@ -348,7 +348,7 @@ namespace mapviz_plugins
     }
   }
 
-  void MarkerPlugin::LoadConfiguration(const YAML::Node& node)
+  void MarkerPlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -359,7 +359,7 @@ namespace mapviz_plugins
     TopicEdited();
   }
 
-  void MarkerPlugin::SaveConfiguration(YAML::Emitter& emitter)
+  void MarkerPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;

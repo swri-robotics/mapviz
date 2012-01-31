@@ -32,6 +32,8 @@ set(QT_USE_QTOPENGL TRUE)
 set(QT_USE_QTCORE TRUE)
 set(QT_USE_QTGUI TRUE)
 
+rosbuild_add_boost_directories()
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 file (GLOB UI_FILES src/*.ui)

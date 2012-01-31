@@ -1,6 +1,10 @@
 // C++ standard libraries
 #include <fstream>
 
+// Boost libraries
+#include <boost/filesystem.hpp>
+#define BOOST_FILESYSTEM_VERSION 2
+
 // QT libraries
 #include <QtGui/QApplication>
 #include <QFileDialog>
@@ -117,7 +121,7 @@ void Mapviz::UpdateFrames()
   std::vector<std::string> frames;
   tf_->getFrameStrings(frames);
 
-  if (frames.size() == ui_.fixedframecombo->count())
+  if ((int)frames.size() == ui_.fixedframecombo->count())
   {
     bool changed = false;
     for (unsigned int i = 0; i < frames.size(); i++)
@@ -235,6 +239,9 @@ void Mapviz::Open(const std::string& filename)
 
   try
   {
+    boost::filesystem::path filepath(filename);
+    std::string config_path = filepath.parent_path().string();
+
     ClearDisplays();
   
     YAML::Parser parser(fin);
@@ -332,7 +339,7 @@ void Mapviz::Open(const std::string& filename)
 
 
         mapviz::MapvizPlugin* plugin = CreateNewDisplay(name, type, visible, collapsed);
-        plugin->LoadConfiguration(config);
+        plugin->LoadConfiguration(config, config_path);
       }
     }
   }
@@ -357,6 +364,9 @@ void Mapviz::Save(const std::string& filename)
     ROS_ERROR("Failed to open file: %s", filename.c_str());
     return;
   }
+
+  boost::filesystem::path filepath(filename);
+  std::string config_path = filepath.parent_path().string();
 
   YAML::Emitter out;
 
@@ -388,7 +398,7 @@ void Mapviz::Save(const std::string& filename)
       out << YAML::Key << "visible" << YAML::Value << plugins_[ui_.configlist->item(i)]->Visible();
       out << YAML::Key << "collapsed" << YAML::Value << ((ConfigItem*)ui_.configlist->itemWidget(ui_.configlist->item(i)))->Collapsed();
       
-      plugins_[ui_.configlist->item(i)]->SaveConfiguration(out);
+      plugins_[ui_.configlist->item(i)]->SaveConfiguration(out, config_path);
       
       out << YAML::EndMap;
       out << YAML::EndMap;

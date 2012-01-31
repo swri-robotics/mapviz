@@ -130,8 +130,8 @@ namespace mapviz
 
     virtual void Transform() = 0;
     
-    virtual void LoadConfiguration(const YAML::Node& load) = 0;
-    virtual void SaveConfiguration(YAML::Emitter& emitter) = 0;
+    virtual void LoadConfiguration(const YAML::Node& load, const std::string& config_path) = 0;
+    virtual void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path) = 0;
 
     virtual QWidget* GetConfigWidget(QWidget* parent) { return NULL; }
 
