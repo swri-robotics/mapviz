@@ -141,7 +141,7 @@ void TileSet::GeoreferenceToUtm(double x, double y, double& easting, double& nor
 
 void TileSet::AdjustGeoReference(double latitude, double longitude)
 {	
-	for (int i = 0; i < m_layers.size(); i++)
+	for (uint32_t i = 0; i < m_layers.size(); i++)
 	{
 		m_layers[i]->AdjustGeoReference(latitude, longitude);
 	}

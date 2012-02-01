@@ -276,10 +276,11 @@ void TileCache::CacheThread::run()
 
 			try
 			{
-				for (int i = 0; i < p->m_precacheRequests.size() && tile == NULL; i++)
+				for (uint32_t i = 0; (i < p->m_precacheRequests.size()) && (tile == NULL); i++)
 				{
-					int index = p->m_currentLayer + i;
-					if (index < p->m_precacheRequests.size() && p->m_precacheRequests[index].size() > 0)
+					int32_t index = p->m_currentLayer + i;
+					if ((index < (int64_t)p->m_precacheRequests.size()) &&
+					    (p->m_precacheRequests[index].size() > 0))
 					{
 						tile = p->m_precacheRequests[index].front();
 						p->m_precacheRequests[index].pop();

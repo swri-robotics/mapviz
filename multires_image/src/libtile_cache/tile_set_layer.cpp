@@ -60,9 +60,9 @@ bool TileSetLayer::Load(const std::string extension)
 
 	bool needsTiles = false;
 
-	for (int c = 0; c < m_columns; c++)
+	for (int32_t c = 0; c < m_columns; c++)
 	{
-		for (int r = 0; r < m_rows; r++)
+		for (int32_t r = 0; r < m_rows; r++)
 		{
 			std::string rowString = QString::number(r).toStdString();
 			while(rowString.length() < 5) rowString = '0' + rowString;
@@ -71,13 +71,19 @@ bool TileSetLayer::Load(const std::string extension)
 			while(columnString.length() < 5) columnString = '0' + columnString;
 
       // Get 4 corners of this tile
-      int left = c * m_tileSize * m_scale;
-      int top = r * m_tileSize * m_scale;
+      int left   = c       * m_tileSize * m_scale;
+      int top    = r       * m_tileSize * m_scale;
       int bottom = (r + 1) * m_tileSize * m_scale;
-      int right = (c + 1) * m_tileSize * m_scale;
+      int right  = (c + 1) * m_tileSize * m_scale;
       
-      if (right > m_geo.Width()) right = m_geo.Width();
-      if (bottom > m_geo.Height()) bottom = m_geo.Height();
+      if (right > (int64_t)m_geo.Width())
+      {
+        right = m_geo.Width();
+      }
+      if (bottom > (int64_t)m_geo.Height())
+      {
+        bottom = m_geo.Height();
+      }
 
       PointT<double> top_left, top_right, bottom_left, bottom_right;
       m_geo.GetCoordinate(left, top, top_left.X, top_left.Y);
@@ -137,7 +143,7 @@ void TileSetLayer::GetTileRange(const BoundingBox<double>& area,
 	{
 		startColumn = 0;
 	}
-	if (startColumn >= m_tiles.size())
+	if ((uint32_t)startColumn >= m_tiles.size())
 	{
 		startColumn = m_tiles.size() - 1;
 	}
@@ -145,7 +151,7 @@ void TileSetLayer::GetTileRange(const BoundingBox<double>& area,
 	{
 		startRow = 0;
 	}
-	if (startRow >= m_tiles[0].size())
+	if ((uint32_t)startRow >= m_tiles[0].size())
 	{
 		startRow = m_tiles[0].size() - 1;
 	}
@@ -155,7 +161,7 @@ void TileSetLayer::GetTileRange(const BoundingBox<double>& area,
 	{
 		endColumn = 0;
 	}
-	if (endColumn >= m_tiles.size())
+	if ((uint32_t)endColumn >= m_tiles.size())
 	{
 		endColumn = m_tiles.size() - 1;
 	}
@@ -163,7 +169,7 @@ void TileSetLayer::GetTileRange(const BoundingBox<double>& area,
 	{
 		endRow = 0;
 	}
-	if (endRow >= m_tiles[0].size())
+	if ((uint32_t)endRow >= m_tiles[0].size())
 	{
 		endRow = m_tiles[0].size() - 1;
 	}
