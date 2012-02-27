@@ -11,6 +11,8 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 rosbuild_init()
 
+rosbuild_add_boost_directories()
+
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
@@ -43,3 +45,4 @@ QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 QT4_WRAP_CPP(SRC_FILES src/mapviz.h src/config_item.h src/widgets.h src/map_canvas.h)
 rosbuild_add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
+rosbuild_link_boost(${PROJECT_NAME} system)
