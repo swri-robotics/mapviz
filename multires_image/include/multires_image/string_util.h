@@ -20,6 +20,9 @@
 #include <functional>
 #include <algorithm>
 
+namespace multires_image
+{
+
 class StringUtil
 {
 public:
@@ -60,5 +63,7 @@ public:
 private:
   StringUtil() {}
 };
+
+}
 
 #endif /*STRING_UTIL_H*/

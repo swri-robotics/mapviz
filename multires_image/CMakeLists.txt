@@ -41,27 +41,35 @@ add_definitions(${QT_DEFINITIONS})
 set(QT_USE_QTOPENGL TRUE)
 
 # Build libtile_cache
-file (GLOB TILE_SRC_FILES src/libtile_cache/*.cpp)
-QT4_WRAP_CPP(TILE_SRC_FILES src/libtile_cache/tile_cache.h)
-rosbuild_add_library(tile_cache ${TILE_SRC_FILES})
-target_link_libraries(tile_cache ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
+file (GLOB TILE_SRC_FILES 
+   src/geo_register.cpp
+   src/image_manip.cpp
+   src/math_util.cpp
+   src/point.cpp
+   src/string_util.cpp
+   src/tile.cpp
+   src/tile_cache.cpp
+   src/tile_set.cpp
+   src/tile_set_layer.cpp)
+QT4_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
+rosbuild_add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
 
 # Build libmultires_widget
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libmultires_widget)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libtile_cache)
-include_directories(src/libtile_cache)
-file (GLOB UI_FILES src/libmultires_widget/*.ui)
-file (GLOB WIDGET_SRC_FILES src/libmultires_widget/*.cpp)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(src)
+file (GLOB UI_FILES src/*.ui)
+file (GLOB WIDGET_SRC_FILES src/tile_view.cpp src/QGLMap.cpp)
 QT4_WRAP_UI(WIDGET_SRC_FILES ${UI_FILES})
-QT4_WRAP_CPP(WIDGET_SRC_FILES src/libmultires_widget/QGLMap.h src/libmultires_widget/tile_view.h)
+QT4_WRAP_CPP(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
 rosbuild_add_library(multires_widget ${WIDGET_SRC_FILES})
-target_link_libraries(multires_widget tile_cache ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
+target_link_libraries(multires_widget ${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
 
 # Build nodes
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/nodes)
-include_directories(src/libmultires_widget)
+include_directories(src)
 file (GLOB VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
-QT4_WRAP_CPP(VIEW_NODE_SRC_FILES src/nodes/multires_view_node.h)
+QT4_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
 rosbuild_add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
 target_link_libraries(multires_view_node multires_widget ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})

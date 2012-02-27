@@ -4,10 +4,13 @@
 // QT libraries
 #include <QGLWidget>
 
-#include "tile_set.h"
-#include "tile_cache.h"
-#include "point.h"
-#include "bounding_box.h"
+#include <multires_image/tile_set.h>
+#include <multires_image/tile_cache.h>
+#include <multires_image/point.h>
+#include <multires_image/bounding_box.h>
+
+namespace multires_image
+{
 
 class TileView
 {
@@ -33,5 +36,7 @@ private:
 	int        m_endColumn;
 	double     min_scale_;
 };
+
+}
 
 #endif // TILEVIEW_H

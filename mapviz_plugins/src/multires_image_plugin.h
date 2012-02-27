@@ -61,7 +61,7 @@ namespace mapviz_plugins
     double center_x_;
     double center_y_;
     QGLWidget* canvas_;
-    TileSet* tile_set_;
+    multires_image::TileSet* tile_set_;
     MultiresView* tile_view_;
 
     Ui::multires_config ui_;

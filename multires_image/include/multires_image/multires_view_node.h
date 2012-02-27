@@ -13,8 +13,11 @@
 // ROS libraries
 #include <ros/ros.h>
 
-#include "QGLMap.h"
-#include "tile_set.h"
+#include <multires_image/QGLMap.h>
+#include <multires_image/tile_set.h>
+
+namespace multires_image
+{
 
 class MultiresViewNode : public QMainWindow
 {
@@ -46,3 +49,5 @@ private:
   TileSet* tile_set_;
 
 };
+
+}

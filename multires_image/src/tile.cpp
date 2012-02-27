@@ -7,6 +7,8 @@
 *     Author: Marc Alban
 */
 
+#include <multires_image/tile.h>
+
 // C++ standard libraries
 #include <algorithm>
 #include <exception>
@@ -17,8 +19,10 @@
 #include <QGLWidget>
 #include <QFile>
 
-#include "tile.h"
-#include "math_util.h"
+#include <multires_image/math_util.h>
+
+namespace multires_image
+{
 
 Tile::Tile(const georeference::GeoReference& geo, const geospatial_index::WGS84UTM& utm,
        const std::string& path, int column, int row, int level,  
@@ -301,5 +305,7 @@ void Tile::AdjustGeoReference(double latitude, double longitude)
 	m_bottomLeft.X += longitude;
 
   // TODO also adjust UTM coords
+}
+
 }
 

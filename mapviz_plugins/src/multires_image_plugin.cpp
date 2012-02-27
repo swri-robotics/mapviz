@@ -95,7 +95,7 @@ namespace mapviz_plugins
       loaded_ = false;
       delete tile_set_;
       delete tile_view_;
-      tile_set_ = new TileSet(ui_.path->text().toStdString());
+      tile_set_ = new multires_image::TileSet(ui_.path->text().toStdString());
 
       if (tile_set_->Load())
       {
@@ -132,7 +132,7 @@ namespace mapviz_plugins
     // Initialize all of the tiles.
     for (int i = 0; i < tile_set_->LayerCount(); i++)
     {
-      TileSetLayer* layer = tile_set_->GetLayer(i);
+      multires_image::TileSetLayer* layer = tile_set_->GetLayer(i);
       for (int r = 0; r < layer->RowCount(); r++)
       {
         for (int c = 0; c < layer->ColumnCount(); c++)
@@ -204,12 +204,12 @@ namespace mapviz_plugins
       // Set relative positions of tile points to be in straight UTM
       for (int i = 0; i < tile_set_->LayerCount(); i++)
       {
-        TileSetLayer* layer = tile_set_->GetLayer(i);
+        multires_image::TileSetLayer* layer = tile_set_->GetLayer(i);
         for (int r = 0; r < layer->RowCount(); r++)
         {
           for (int c = 0; c < layer->ColumnCount(); c++)
           {
-            Tile* tile = layer->GetTile(c, r);
+            multires_image::Tile* tile = layer->GetTile(c, r);
 
             if (!tile->HasUtm())
             {
@@ -242,12 +242,12 @@ namespace mapviz_plugins
       // Set relative positions of tile points based on tf transform
       for (int i = 0; i < tile_set_->LayerCount(); i++)
       {
-        TileSetLayer* layer = tile_set_->GetLayer(i);
+        multires_image::TileSetLayer* layer = tile_set_->GetLayer(i);
         for (int r = 0; r < layer->RowCount(); r++)
         {
           for (int c = 0; c < layer->ColumnCount(); c++)
           {
-            Tile* tile = layer->GetTile(c, r);
+            multires_image::Tile* tile = layer->GetTile(c, r);
 
             if (!tile->HasUtm())
             {

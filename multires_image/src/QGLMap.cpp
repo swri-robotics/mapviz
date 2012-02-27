@@ -1,8 +1,12 @@
+#include <multires_image/QGLMap.h>
+
 // C++ standard libraries
 #include <cmath>
 
-#include "QGLMap.h"
-#include "math_util.h"
+#include <multires_image/math_util.h>
+
+namespace multires_image
+{
 
 QGLMap::QGLMap(QWidget *parent) : 
 	QGLWidget(parent),
@@ -261,5 +265,7 @@ void QGLMap::Recenter()
     }
 
 	m_viewBox.Update();
+}
+
 }
 

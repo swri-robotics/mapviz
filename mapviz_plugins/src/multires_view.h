@@ -10,10 +10,10 @@
 class MultiresView
 {
 public:
-	MultiresView(TileSet* tiles, QGLWidget* widget);
+	MultiresView(multires_image::TileSet* tiles, QGLWidget* widget);
 	~MultiresView(void);
 
-	const TileCache* Cache() { return &m_cache; }
+	const multires_image::TileCache* Cache() { return &m_cache; }
 
 	void SetView(double x, double y, double radius, double scale);
 
@@ -22,8 +22,8 @@ public:
 	void Exit() { m_cache.Exit(); }
 
 private:
-	TileSet*   m_tiles;
-	TileCache  m_cache;
+	multires_image::TileSet*   m_tiles;
+	multires_image::TileCache  m_cache;
 	int        m_currentLayer;
 	int        m_startRow;
 	int        m_startColumn;

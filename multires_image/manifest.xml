@@ -14,7 +14,7 @@
   <depend package="georeference"/>
 
   <export>
-    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lmultires_widget -ltile_cache -Wl,-rpath,${prefix}/lib"/>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lmultires_widget -lmultires_image -Wl,-rpath,${prefix}/lib"/>
   </export>
   
 </package>

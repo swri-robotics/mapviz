@@ -7,6 +7,8 @@
 *     Author: Marc Alban
 */
 
+#include <multires_image/image_manip.h>
+
 // C++ standard libraries
 #include <iostream>
 #include <exception>
@@ -16,7 +18,8 @@
 #include <QProcess>
 #include <QByteArray>
 
-#include "image_manip.h"
+namespace multires_image
+{
 
 bool ImageManip::knownPlatform = false;
 bool ImageManip::isWindows = false;
@@ -128,4 +131,6 @@ bool ImageManip::GetDimensionsWindows(QString path, int& width, int& height)
 bool ImageManip::GetDimensionsLinux(QString path, int& width, int& height)
 {
 	return false;
+}
+
 }

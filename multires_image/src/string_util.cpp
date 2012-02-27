@@ -7,10 +7,13 @@
 *     Author: Tucker Brown
 */
 
+#include <multires_image/string_util.h>
+
 // C++ standard libraries
 #include <exception>
 
-#include "string_util.h"
+namespace multires_image
+{
 
 long StringUtil::ToLong(const std::string& string)
 {
@@ -133,4 +136,6 @@ std::vector<std::string> StringUtil::Split(const std::string &s)
   Split(elems5, ' ', elems6);
 
   return elems6;
+}
+
 }

@@ -7,7 +7,10 @@
  *     Author: Tucker Brown
  */
 
-#include "point.h"
+#include <multires_image/point.h>
+
+namespace multires_image
+{
 
 Point::Point() : Latitude(0), Longitude(0)
 {
@@ -87,3 +90,4 @@ long Point::convertStringToLong(std::string number)
   return num;
 }
 
+}

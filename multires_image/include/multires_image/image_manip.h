@@ -13,6 +13,9 @@
 // QT libraries
 #include <QString>
 
+namespace multires_image
+{
+
 class ImageManip
 {
 public:
@@ -33,5 +36,7 @@ private:
 	static bool isWindows;
 	static bool isLinux;
 };
+
+}
 
 #endif // IMAGE_MANIP_H

@@ -13,8 +13,11 @@
 // C++ standard libraries
 #include <string>
 
-#include "point.h"
-#include "bounding_box.h"
+#include <multires_image/point.h>
+#include <multires_image/bounding_box.h>
+
+namespace multires_image
+{
 
 class GeoRegister
 {
@@ -52,5 +55,7 @@ private:
   bool IsValid();
   void CalculateReferencePoints();
 };
+
+}
 
 #endif // GEO_REGISTER_H

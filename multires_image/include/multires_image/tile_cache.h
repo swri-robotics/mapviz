@@ -22,9 +22,12 @@
 #include <QMutex>
 #include <QGLWidget>
 
-#include "point.h"
-#include "tile_set.h"
-#include "tile.h"
+#include <multires_image/point.h>
+#include <multires_image/tile_set.h>
+#include <multires_image/tile.h>
+
+namespace multires_image
+{
 
 class TileCache : public QObject
 {
@@ -100,5 +103,7 @@ private:
 	QMutex      m_precacheRequestSetLock;
 	QMutex      m_textureLoadedLock;
 };
+
+}
 
 #endif // TILECACHE_H

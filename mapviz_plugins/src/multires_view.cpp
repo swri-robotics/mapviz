@@ -7,7 +7,7 @@
 
 #include "multires_view.h"
 
-MultiresView::MultiresView(TileSet* tiles, QGLWidget* widget) :
+MultiresView::MultiresView(multires_image::TileSet* tiles, QGLWidget* widget) :
 m_tiles(tiles),
 m_cache(tiles, widget),
 m_currentLayer(tiles->LayerCount() - 1),
@@ -97,8 +97,8 @@ void MultiresView::Draw()
 
 	// Always draw bottom layers
 
-  TileSetLayer* baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 1);
-		Tile* tile = baseLayer->GetTile(0,0);
+  multires_image::TileSetLayer* baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 1);
+		multires_image::Tile* tile = baseLayer->GetTile(0,0);
 		if (tile->TextureLoaded())
 		{
 			tile->DrawRelative();
@@ -113,7 +113,7 @@ void MultiresView::Draw()
 		{
 			for (int r = 0; r <  baseLayer->RowCount(); r++)
 			{
-				Tile* tile = baseLayer->GetTile(c, r);
+				multires_image::Tile* tile = baseLayer->GetTile(c, r);
 				if (tile->TextureLoaded())
 				{
 					tile->DrawRelative();
@@ -127,7 +127,7 @@ void MultiresView::Draw()
 
   if (m_currentLayer < m_tiles->LayerCount() - 2)
   {
-	TileSetLayer* layer = m_tiles->GetLayer(m_currentLayer);
+	multires_image::TileSetLayer* layer = m_tiles->GetLayer(m_currentLayer);
 	if (m_endColumn < layer->ColumnCount() && m_endRow < layer->RowCount())
 	{
 		  for (int c = m_startColumn; c <= m_endColumn; c++)
@@ -135,7 +135,7 @@ void MultiresView::Draw()
 			  for (int r = m_startRow; r <= m_endRow; r++)
 			  {
 
-				  Tile* tile = layer->GetTile(c, r);
+				  multires_image::Tile* tile = layer->GetTile(c, r);
 				  if (tile->TextureLoaded())
 				  {
 					  tile->DrawRelative();

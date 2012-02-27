@@ -7,15 +7,19 @@
 *     Author: Marc Alban
 */
 
+#include <multires_image/geo_register.h>
+
 // C++ standard libraries
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include <exception>
 
-#include "math_util.h"
-#include "string_util.h"
-#include "geo_register.h"
+#include <multires_image/math_util.h>
+#include <multires_image/string_util.h>
+
+namespace multires_image
+{
 
 GeoRegister::GeoRegister(const std::string& path) :
   m_path(path),
@@ -220,4 +224,6 @@ void GeoRegister::AdjustReferenceCoordinate(long latitude, long longitude)
 {
   m_referenceCoordinate.Y += latitude;
   m_referenceCoordinate.X += longitude;
+}
+
 }

@@ -7,6 +7,8 @@
 *     Author: Marc Alban
 */
 
+#include <multires_image/tile_cache.h>
+
 // C++ standard libraries
 #include <cmath>
 #include <cstdlib>
@@ -18,8 +20,10 @@
 #include <QApplication>
 #include <QEvent>
 
-#include "tile_cache.h"
-#include "tile_set_layer.h"
+#include <multires_image/tile_set_layer.h>
+
+namespace multires_image
+{
 
 TileCache::TileCache(TileSet* tileSet, QGLWidget* widget) : 
 	m_tileSet(tileSet), 
@@ -369,4 +373,6 @@ void TileCache::FreeThread::run()
 
         sleep(2);
     }
+}
+
 }

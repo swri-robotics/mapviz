@@ -9,10 +9,13 @@
 // QT auto-generated headers
 #include "ui_QGLMap.h"
 
-#include "tile.h"
-#include "tile_view.h"
-#include "bounding_box.h"
-#include "point.h"
+#include <multires_image/tile.h>
+#include <multires_image/tile_view.h>
+#include <multires_image/bounding_box.h>
+#include <multires_image/point.h>
+
+namespace multires_image
+{
 
 class QGLMap : public QGLWidget
 {
@@ -69,5 +72,7 @@ private:
 	void Recenter();
 	void MousePan(int x, int y);
 };
+
+}
 
 #endif // QGLMAP_H

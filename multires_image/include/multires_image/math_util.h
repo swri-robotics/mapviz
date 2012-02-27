@@ -10,11 +10,16 @@
 #ifndef MATH_UTIL_H
 #define MATH_UTIL_H
 
+namespace multires_image
+{
+
 class MathUtil
 {
 public:
   static double Round(double value);
   static float Round(float value);
 };
+
+}
 
 #endif // MATH_UTIL_H

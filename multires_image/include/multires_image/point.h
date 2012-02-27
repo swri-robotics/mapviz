@@ -16,6 +16,9 @@
 #include <cstdio>
 #include <cstdlib>
 
+namespace multires_image
+{
+
 template <class T> class PointT
 {
 public:
@@ -67,5 +70,7 @@ class Point
     std::string FormattedLat(const PointT<long> refPoint);
     std::string FormattedLon(const PointT<long> refPoint);
 };
+
+}
 
 #endif /*POINT_H*/

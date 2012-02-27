@@ -7,10 +7,14 @@
 *     Author: Marc Alban
 */
 
+#include <multires_image/math_util.h>
+
 // C++ standard libraries
 #include <cmath>
 
-#include "math_util.h"
+
+namespace multires_image
+{
 
 double MathUtil::Round(double value)
 {
@@ -20,4 +24,6 @@ double MathUtil::Round(double value)
 float MathUtil::Round(float value)
 {
   return (value > 0.0f) ? floor(value + 0.5f) : ceil(value - 0.5f);
+}
+
 }

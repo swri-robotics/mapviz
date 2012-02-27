@@ -7,7 +7,10 @@
 #include <QFileInfo>
 #include <QString>
 
-#include "multires_view_node.h"
+#include <multires_image/multires_view_node.h>
+
+namespace multires_image
+{
 
 MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
   QMainWindow(parent, flags),
@@ -80,14 +83,14 @@ void MultiresViewNode::Initialize()
     initialized_ = true;
   }
 }
-  
+}
 
 int main (int argc, char **argv)
 {
   // Initialize QT
   QApplication app(argc, argv);
 
-  MultiresViewNode node(argc, argv);
+  multires_image::MultiresViewNode node(argc, argv);
   node.show();
 
   return app.exec();

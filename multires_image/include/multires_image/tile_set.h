@@ -17,8 +17,11 @@
 #include <georeference/georeference.h>
 #include <geospatial_index/wgs84_utm.h>
 
-#include "tile_set_layer.h"
-#include "point.h"
+#include <multires_image/tile_set_layer.h>
+#include <multires_image/point.h>
+
+namespace multires_image
+{
 
 class TileSet
 {
@@ -60,5 +63,7 @@ private:
 
 	std::vector<TileSetLayer*> m_layers;
 };
+
+}
 
 #endif // TILESET_H

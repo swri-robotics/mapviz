@@ -7,6 +7,8 @@
 *     Author: Marc Alban
 */
 
+#include <multires_image/tile_set.h>
+
 // C++ standard libraries
 #include <algorithm>
 #include <cmath>
@@ -18,8 +20,10 @@
 #include <QDir>
 #include <QString>
 
-#include "tile_set.h"
-#include "point.h"
+#include <multires_image/point.h>
+
+namespace multires_image
+{
 
 TileSet::TileSet(const std::string& geofile) :
   m_geo(geofile),
@@ -145,4 +149,6 @@ void TileSet::AdjustGeoReference(double latitude, double longitude)
 	{
 		m_layers[i]->AdjustGeoReference(latitude, longitude);
 	}
+}
+
 }

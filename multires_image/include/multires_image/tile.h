@@ -20,11 +20,14 @@
 #include <georeference/georeference.h>
 #include <geospatial_index/wgs84_utm.h>
 
-#include "point.h"
+#include <multires_image/point.h>
 
 #ifndef GL_CLAMP_TO_EDGE  
 #define GL_CLAMP_TO_EDGE 0x812F 
 #endif
+
+namespace multires_image
+{
 
 class Tile
 {
@@ -108,5 +111,7 @@ private:
 	QImage              m_image;
 	QMutex              m_mutex;
 };
+
+}
 
 #endif // TILE_H

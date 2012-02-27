@@ -7,6 +7,8 @@
 *     Author: Marc Alban
 */
 
+#include <multires_image/tile_set_layer.h>
+
 // C++ standard libraries
 #include <cmath>
 #include <cstdio>
@@ -14,7 +16,8 @@
 // QT libraries
 #include <QString>
 
-#include "tile_set_layer.h"
+namespace multires_image
+{
 
 TileSetLayer::TileSetLayer(const georeference::GeoReference& geo, 
                 const geospatial_index::WGS84UTM& utm,
@@ -184,5 +187,7 @@ void TileSetLayer::AdjustGeoReference(double latitude, double longitude)
 			m_tiles[c][r]->AdjustGeoReference(latitude, longitude);
 		}
 	}
+}
+
 }
 

@@ -1,9 +1,11 @@
+#include <multires_image/tile_view.h>
 
 // C++ standard libraries
 #include <cmath>
 #include <iostream>
 
-#include "tile_view.h"
+namespace multires_image
+{
 
 TileView::TileView(TileSet* tiles, QGLWidget* widget) :
 m_tiles(tiles),
@@ -136,5 +138,7 @@ void TileView::Draw()
 	}
 
 	glDisable(GL_TEXTURE_2D);
+}
+
 }
 
