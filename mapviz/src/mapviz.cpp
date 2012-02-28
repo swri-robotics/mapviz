@@ -265,7 +265,7 @@ void Mapviz::Open(const std::string& filename)
 
     if (doc.FindValue("fix_orientation"))
     {
-      bool fix_orientation;
+      bool fix_orientation = false;
       doc["fix_orientation"] >> fix_orientation;
       ui_.actionFix_Orientation->setChecked(fix_orientation);
     }
