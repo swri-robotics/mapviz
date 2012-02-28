@@ -89,7 +89,7 @@ void TileCache::Load(Tile* tile)
 			m_renderRequestSet[tile->TileID()] = tile;
 		}
 	}
-	catch(std::exception e)
+	catch(std::exception& e)
 	{
 		std::cout << "An exception occured queueing a tile to be cached: " << e.what() << std::endl;
 	}
@@ -157,7 +157,7 @@ void TileCache::PrecacheLayer(int layerNum, const PointT<double>& position, int 
 					m_precacheRequestSet[tile->TileID()] = tile;
 				}
 			}
-			catch (std::exception e)
+			catch (std::exception& e)
 			{
 				std::cout << "An exception occured queueing tiles for precaching: " << e.what() << std::endl;
 			}
@@ -186,7 +186,7 @@ void TileCache::LoadTexture(Tile* tile)
 	{
 		m_textureLoaded[tile->TileID()] = tile;
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::cout << "An exception occured loading texture: " << e.what() << std::endl;
 	}
@@ -212,7 +212,7 @@ void TileCache::UnloadTexture(Tile* tile)
 	{
 		m_textureLoaded.erase(tile->TileID());
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::cout << "An exception occured unloading texture: " << e.what() << std::endl;
 	}
@@ -300,7 +300,7 @@ void TileCache::CacheThread::run()
 					}
 				}
 			}
-			catch (std::exception e)
+			catch (std::exception& e)
 			{
 				std::cout << "An exception occured precaching texture: " << e.what() << std::endl;
 			}

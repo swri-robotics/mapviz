@@ -185,7 +185,7 @@ void GeoRegister::SaveGeoRegisterFile(const std::string& filepath)
       outfile << "ZpHeight " << ImageHeight() << std::endl;
     }
   }
-  catch(std::string s)
+  catch(std::string& s)
   {
     std::cout << s << std::endl;
   }

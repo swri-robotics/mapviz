@@ -112,7 +112,7 @@ bool ImageManip::GetDimensionsWindows(QString path, int& width, int& height)
 			}
 		}
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
 		std::cout << "An exception occured reading image dimensions: " << e.what() << std::endl;
 		return false;
