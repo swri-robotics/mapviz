@@ -127,7 +127,7 @@ bool Tile::LoadImageToMemory(bool gl)
 				m_failed = true;
 			}
 		}
-		catch(std::exception e)
+		catch(std::exception& e)
 		{
 			std::cout << "An exception occured loading image: " << e.what() << std::endl;
 			m_failed = true;
@@ -174,7 +174,7 @@ bool Tile::LoadTexture()
 
 			m_textureLoaded = true;
 		}
-		catch(std::exception e)
+		catch(std::exception& e)
 		{
 			std::cout << "An exception occured loading texture: " << e.what() << std::endl;
 			m_failed = true;
