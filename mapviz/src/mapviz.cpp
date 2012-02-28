@@ -272,42 +272,42 @@ void Mapviz::Open(const std::string& filename)
 
     if (doc.FindValue("show_displays"))
     {
-      bool show_displays;
+      bool show_displays = false;
       doc["show_displays"] >> show_displays;
       ui_.actionConfig_Dock->setChecked(show_displays);
     }
 
     if (doc.FindValue("window_width"))
     {
-      int window_width;
+      int window_width = 0;
       doc["window_width"] >> window_width;
       resize(window_width, height());
     }
 
     if (doc.FindValue("window_height"))
     {
-      int window_height;
+      int window_height = 0;
       doc["window_height"] >> window_height;
       resize(width(), window_height);
     }
 
     if (doc.FindValue("view_scale"))
     {
-      float scale;
+      float scale = 0;
       doc["view_scale"] >> scale;
       canvas_->SetViewScale(scale);
     }
 
     if (doc.FindValue("offset_x"))
     {
-      float x;
+      float x = 0;
       doc["offset_x"] >> x;
       canvas_->SetOffsetX(x);
     }
 
     if (doc.FindValue("offset_x"))
     {
-      float y;
+      float y = 0;
       doc["offset_y"] >> y;
       canvas_->SetOffsetY(y);
     }
@@ -331,12 +331,11 @@ void Mapviz::Open(const std::string& filename)
 
         const YAML::Node& config = (*displays)[i]["config"];
 
-        bool visible;
+        bool visible = false;
         config["visible"] >> visible;
 
-        bool collapsed;
+        bool collapsed = false;
         config["collapsed"] >> collapsed;
-
 
         mapviz::MapvizPlugin* plugin = CreateNewDisplay(name, type, visible, collapsed);
         plugin->LoadConfiguration(config, config_path);

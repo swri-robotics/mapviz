@@ -334,7 +334,8 @@ namespace mapviz_plugins
     node["frame"] >> frame;
     ui_.frame->setEditText(frame.c_str());
 
-    float x, y;
+    float x = 0;
+    float y = 0;
     node["x"] >> x;
     node["y"] >> y;
 
