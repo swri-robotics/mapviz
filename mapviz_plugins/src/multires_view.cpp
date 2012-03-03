@@ -1,20 +1,20 @@
 
+#include "multires_view.h"
+
 // C++ standard libraries
 #include <cmath>
 #include <iostream>
 
 #include <ros/ros.h>
 
-#include "multires_view.h"
-
 MultiresView::MultiresView(multires_image::TileSet* tiles, QGLWidget* widget) :
-m_tiles(tiles),
-m_cache(tiles, widget),
-m_currentLayer(tiles->LayerCount() - 1),
-m_startRow(0),
-m_startColumn(0),
-m_endRow(0),
-m_endColumn(0)
+    m_tiles(tiles),
+    m_cache(tiles, widget),
+    m_currentLayer(tiles->LayerCount() - 1),
+    m_startRow(0),
+    m_startColumn(0),
+    m_endRow(0),
+    m_endColumn(0)
 {
   double top, left, bottom, right;
   tiles->GeoReference().GetCoordinate(0, 0, left, top);
@@ -32,7 +32,6 @@ m_endColumn(0)
     min_scale_ = scale_y;
 
   ROS_INFO("min_scale: %lf", min_scale_);
-
 }
 
 MultiresView::~MultiresView(void)
@@ -65,19 +64,19 @@ void MultiresView::SetView(double x, double y, double radius, double scale)
     m_startRow = 0;
   if (m_startRow >= m_tiles->GetLayer(m_currentLayer)->RowCount())
     m_startRow = m_tiles->GetLayer(m_currentLayer)->RowCount() - 1;
-  
+
   m_endRow = row + size;
   if (m_endRow < 0)
     m_endRow = 0;
   if (m_endRow >= m_tiles->GetLayer(m_currentLayer)->RowCount())
     m_endRow = m_tiles->GetLayer(m_currentLayer)->RowCount() - 1;
-  
+
   m_startColumn = column - size;
   if (m_startColumn < 0)
     m_startColumn = 0;
   if (m_startColumn >= m_tiles->GetLayer(m_currentLayer)->ColumnCount())
     m_startColumn = m_tiles->GetLayer(m_currentLayer)->ColumnCount() - 1;
-  
+
   m_endColumn = column + size;
   if (m_endColumn < 0)
     m_endColumn = 0;
@@ -91,64 +90,64 @@ void MultiresView::SetView(double x, double y, double radius, double scale)
 
 void MultiresView::Draw()
 {
-	glEnable(GL_TEXTURE_2D);
+  glEnable(GL_TEXTURE_2D);
 
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-	// Always draw bottom layers
+  // Always draw bottom layers
 
   multires_image::TileSetLayer* baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 1);
-		multires_image::Tile* tile = baseLayer->GetTile(0,0);
-		if (tile->TextureLoaded())
-		{
-			tile->DrawRelative();
-		}
-		else
-		{
-			m_cache.Load(tile);
-		}
+    multires_image::Tile* tile = baseLayer->GetTile(0,0);
+    if (tile->TextureLoaded())
+    {
+      tile->DrawRelative();
+    }
+    else
+    {
+      m_cache.Load(tile);
+    }
 
-		baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 2);
-		for (int c = 0; c < baseLayer->ColumnCount(); c++)
-		{
-			for (int r = 0; r <  baseLayer->RowCount(); r++)
-			{
-				multires_image::Tile* tile = baseLayer->GetTile(c, r);
-				if (tile->TextureLoaded())
-				{
-					tile->DrawRelative();
-				}
-				else
-				{
-					m_cache.Load(tile);
-				}
-			}
-		}
+    baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 2);
+    for (int c = 0; c < baseLayer->ColumnCount(); c++)
+    {
+      for (int r = 0; r <  baseLayer->RowCount(); r++)
+      {
+        multires_image::Tile* tile = baseLayer->GetTile(c, r);
+        if (tile->TextureLoaded())
+        {
+          tile->DrawRelative();
+        }
+        else
+        {
+          m_cache.Load(tile);
+        }
+      }
+    }
 
   if (m_currentLayer < m_tiles->LayerCount() - 2)
   {
-	multires_image::TileSetLayer* layer = m_tiles->GetLayer(m_currentLayer);
-	if (m_endColumn < layer->ColumnCount() && m_endRow < layer->RowCount())
-	{
-		  for (int c = m_startColumn; c <= m_endColumn; c++)
-		  {
-			  for (int r = m_startRow; r <= m_endRow; r++)
-			  {
+  multires_image::TileSetLayer* layer = m_tiles->GetLayer(m_currentLayer);
+  if (m_endColumn < layer->ColumnCount() && m_endRow < layer->RowCount())
+  {
+      for (int c = m_startColumn; c <= m_endColumn; c++)
+      {
+        for (int r = m_startRow; r <= m_endRow; r++)
+        {
 
-				  multires_image::Tile* tile = layer->GetTile(c, r);
-				  if (tile->TextureLoaded())
-				  {
-					  tile->DrawRelative();
-				  }
-				  else
-				  {
-					  m_cache.Load(tile);
-				  }
-			  }
-		  }
-		}
-	}
+          multires_image::Tile* tile = layer->GetTile(c, r);
+          if (tile->TextureLoaded())
+          {
+            tile->DrawRelative();
+          }
+          else
+          {
+            m_cache.Load(tile);
+          }
+        }
+      }
+    }
+  }
 
-	glDisable(GL_TEXTURE_2D);
+  glDisable(GL_TEXTURE_2D);
 }
 

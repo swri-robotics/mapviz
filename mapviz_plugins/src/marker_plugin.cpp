@@ -1,3 +1,5 @@
+#include "marker_plugin.h"
+
 // C++ standard libraries
 #include <cmath>
 #include <cstdio>
@@ -10,12 +12,13 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include "marker_plugin.h"
-
-
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, marker, mapviz_plugins::MarkerPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_DECLARE_CLASS(
+    mapviz_plugins, 
+    marker, 
+    mapviz_plugins::MarkerPlugin, 
+    mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
