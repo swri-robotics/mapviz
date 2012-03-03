@@ -174,7 +174,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::markerArrayCallback(const visualization_msgs::MarkerArrayConstPtr markers)
   {
-    for (int i = 0; i < markers->markers.size(); i++)
+    for (unsigned int i = 0; i < markers->markers.size(); i++)
     {
       markerCallback(visualization_msgs::MarkerConstPtr(new visualization_msgs::Marker(markers->markers[i])));
     }

@@ -126,7 +126,7 @@ namespace mapviz_plugins
     std::vector<std::string> frames;
     transform_listener_.getFrameStrings(frames);
 
-    if (frames.size() == ui_.frame->count())
+    if ((int)frames.size() == ui_.frame->count())
     {
       bool changed = false;
       for (unsigned int i = 0; i < frames.size(); i++)
