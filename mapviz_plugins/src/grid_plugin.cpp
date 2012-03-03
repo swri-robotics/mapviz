@@ -11,17 +11,20 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, grid, mapviz_plugins::GridPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_DECLARE_CLASS(
+    mapviz_plugins, 
+    grid, 
+    mapviz_plugins::GridPlugin, 
+    mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-
   GridPlugin::GridPlugin() :
     canvas_(NULL),
     config_widget_(new QWidget()),
     color_(Qt::red),
     alpha_(1.0),
-    top_left_(0,0,0),
+    top_left_(0, 0, 0),
     size_(1),
     rows_(1),
     columns_(1),
@@ -79,28 +82,28 @@ namespace mapviz_plugins
 
     RecalculateGrid();
   }
-  
+
   void GridPlugin::SetY(double y)
   {
     top_left_.setY(y);
 
     RecalculateGrid();
   }
-  
+
   void GridPlugin::SetSize(double size)
   {
     size_ = size;
 
     RecalculateGrid();
   }
-  
+
   void GridPlugin::SetRows(int rows)
   {
     rows_ = rows;
 
     RecalculateGrid();
   }
-  
+
   void GridPlugin::SetColumns(int columns)
   {
     columns_ = columns;
@@ -122,7 +125,7 @@ namespace mapviz_plugins
   {
     if (exit_)
       return;
-  
+
     std::vector<std::string> frames;
     transform_listener_.getFrameStrings(frames);
 
@@ -163,7 +166,7 @@ namespace mapviz_plugins
       ui_.frame->setCurrentIndex(index);
     }
   }
-  
+
   void GridPlugin::SelectColor()
   {
     QColorDialog dialog(color_, config_widget_);
@@ -185,7 +188,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_ERROR("Error: %s", message.c_str()); 
+    ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p);
@@ -197,7 +200,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_INFO("%s", message.c_str()); 
+    ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p);
@@ -230,10 +233,10 @@ namespace mapviz_plugins
     QObject::connect(&frame_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrames()));
 
     frame_timer_.start(1000);
-  
+
     return true;
   }
-    
+
   void GridPlugin::Draw(double x, double y, double scale)
   {
     glLineWidth(3);
@@ -344,20 +347,20 @@ namespace mapviz_plugins
 
     node["alpha"] >> alpha_;
     ui_.alpha->setValue(alpha_);
-    
+
     node["size"] >> size_;
     ui_.size->setValue(size_);
-    
+
     node["rows"] >> rows_;
     ui_.rows->setValue(rows_);
-    
+
     node["columns"] >> columns_;
     ui_.columns->setValue(columns_);
 
     if (canvas_)
       canvas_->update();
   }
-  
+
   void GridPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
   {
     emitter << YAML::Key << "color" << YAML::Value << color_.name().toStdString();
@@ -369,6 +372,5 @@ namespace mapviz_plugins
     emitter << YAML::Key << "rows" << YAML::Value << rows_;
     emitter << YAML::Key << "columns" << YAML::Value << columns_;
   }
-  
 }
 

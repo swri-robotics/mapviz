@@ -7,8 +7,8 @@
 *     Author: Tucker Brown
 */
 
-#ifndef STRING_UTIL_H
-#define STRING_UTIL_H
+#ifndef MULTIRES_IMAGE_STRING_UTIL_H_
+#define MULTIRES_IMAGE_STRING_UTIL_H_
 
 // C++ standard libraries
 #include <string>
@@ -66,4 +66,4 @@ private:
 
 }
 
-#endif /*STRING_UTIL_H*/
+#endif  // MULTIRES_IMAGE_STRING_UTIL_H_

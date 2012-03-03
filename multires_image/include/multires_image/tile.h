@@ -7,8 +7,8 @@
 *     Author: Marc Alban
 */
 
-#ifndef TILE_H
-#define TILE_H
+#ifndef MULTIRES_IMAGE_TILE_H_
+#define MULTIRES_IMAGE_TILE_H_
 
 // C++ standard libraries
 #include <string>
@@ -28,90 +28,88 @@
 
 namespace multires_image
 {
+  class Tile
+  {
+  public:
+    Tile(const georeference::GeoReference& geo, const geospatial_index::WGS84UTM& utm,
+      const std::string& path, int column, int row, int level, const PointT<double>& topLeft,
+      const PointT<double>& topRight, const PointT<double>& bottomLeft, const PointT<double>& bottomRight);
+    ~Tile(void);
 
-class Tile
-{
-public:
-	Tile(const georeference::GeoReference& geo, const geospatial_index::WGS84UTM& utm,
-	  const std::string& path, int column, int row, int level, const PointT<double>& topLeft,
-	  const PointT<double>& topRight, const PointT<double>& bottomLeft, const PointT<double>& bottomRight);
-	~Tile(void);
+    void Initialize();
+    bool Exists();
+    bool HasUtm() const { return m_hasUtm; }
+    bool Failed() { return m_failed; }
+    bool TextureLoaded() { return m_textureLoaded; }
+    const QImage& Image() { return m_image; }
+    long TileID() { return m_tileId; }
+    int Layer() { return m_level; }
+    int MemorySize() { return m_memorySize; }
+    int Row() { return m_row; }
+    int Column() { return m_column; }
 
-  void Initialize();
-	bool Exists();
-	bool HasUtm() const { return m_hasUtm; }
-	bool Failed() { return m_failed; }
-	bool TextureLoaded() { return m_textureLoaded; }
-	const QImage& Image() { return m_image; }
-	long TileID() { return m_tileId; }
-	int Layer() { return m_level; }
-	int MemorySize() { return m_memorySize; }
-	int Row() { return m_row; }
-	int Column() { return m_column; }
+    bool LoadImageToMemory(bool gl = true);
+    void UnloadImage();
 
-	bool LoadImageToMemory(bool gl = true);
-	void UnloadImage();
+    bool LoadTexture();
+    void UnloadTexture();
 
-	bool LoadTexture();
-	void UnloadTexture();
+    void Draw();
+    void DrawUtm();
+    void DrawRelative();
 
-	void Draw();
-	void DrawUtm();
-	void DrawRelative();
+    void GetUtmPosition(
+      double& top_left_x, double& top_left_y,
+      double& top_right_x, double& top_right_y,
+      double& bottom_right_x, double& bottom_right_y,
+      double& bottom_left_x, double& bottom_left_y);
 
-  void GetUtmPosition(
-    double& top_left_x, double& top_left_y,
-    double& top_right_x, double& top_right_y,
-    double& bottom_right_x, double& bottom_right_y,
-    double& bottom_left_x, double& bottom_left_y);
+    void SetRelativePosition(
+      double top_left_x, double top_left_y,
+      double top_right_x, double top_right_y,
+      double bottom_right_x, double bottom_right_y,
+      double bottom_left_x, double bottom_left_y);
 
-	void SetRelativePosition(
-	  double top_left_x, double top_left_y,
-    double top_right_x, double top_right_y,
-    double bottom_right_x, double bottom_right_y,
-    double bottom_left_x, double bottom_left_y);
+    void AdjustGeoReference(double latitude, double longitude);
 
-	void AdjustGeoReference(double latitude, double longitude);
+  private:
 
-private:
+    void ConvertToUtm();
 
-  void ConvertToUtm();
+    const georeference::GeoReference& m_geo;
+    const geospatial_index::WGS84UTM& m_utm;
+    const std::string   m_path;
+    const int           m_column;
+    const int           m_row;
+    const int           m_level;
+    
+    PointT<double>      m_topLeft;
+    PointT<double>      m_topRight;
+    PointT<double>      m_bottomRight;
+    PointT<double>      m_bottomLeft;
 
-  const georeference::GeoReference& m_geo;
-  const geospatial_index::WGS84UTM& m_utm;
-	const std::string   m_path;
-	const int           m_column;
-	const int           m_row;
-	const int           m_level;
-	
-  PointT<double>      m_topLeft;
-  PointT<double>      m_topRight;
-  PointT<double>      m_bottomRight;
-  PointT<double>      m_bottomLeft;
-
-  PointT<double>      m_topLeftUtm;
-  PointT<double>      m_topRightUtm;
-  PointT<double>      m_bottomRightUtm;
-  PointT<double>      m_bottomLeftUtm;
-
-
-  PointT<double>      m_topLeftRelative;
-  PointT<double>      m_topRightRelative;
-  PointT<double>      m_bottomRightRelative;
-  PointT<double>      m_bottomLeftRelative;
+    PointT<double>      m_topLeftUtm;
+    PointT<double>      m_topRightUtm;
+    PointT<double>      m_bottomRightUtm;
+    PointT<double>      m_bottomLeftUtm;
 
 
-  bool                m_hasUtm;
-	bool                m_failed;
-	bool                m_textureLoaded;
-	int                 m_dimension;
-	int                 m_textureId;
-	long                m_tileId;
-	int                 m_memorySize;
-	QImage              m_image;
-	QMutex              m_mutex;
-};
+    PointT<double>      m_topLeftRelative;
+    PointT<double>      m_topRightRelative;
+    PointT<double>      m_bottomRightRelative;
+    PointT<double>      m_bottomLeftRelative;
 
+
+    bool                m_hasUtm;
+    bool                m_failed;
+    bool                m_textureLoaded;
+    int                 m_dimension;
+    int                 m_textureId;
+    long                m_tileId;
+    int                 m_memorySize;
+    QImage              m_image;
+    QMutex              m_mutex;
+  };
 }
 
-#endif // TILE_H
+#endif  // MULTIRES_IMAGE_TILE_H_

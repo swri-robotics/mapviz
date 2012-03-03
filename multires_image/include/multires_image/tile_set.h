@@ -7,8 +7,8 @@
 *     Author: Marc Alban
 */
 
-#ifndef TILESET_H
-#define TILESET_H
+#ifndef MULTIRES_IMAGE_TILESET_H_
+#define MULTIRES_IMAGE_TILESET_H_
 
 // C++ standard libraries
 #include <string>
@@ -22,48 +22,46 @@
 
 namespace multires_image
 {
+  class TileSet
+  {
+  public:
 
-class TileSet
-{
-public:
+    TileSet(const std::string& geofile);
+    TileSet(const std::string& geofile, const std::string extension);
+    TileSet(const georeference::GeoReference& georeference);
+    TileSet(const georeference::GeoReference& georeference,
+            const std::string extension);
 
-	TileSet(const std::string& geofile);
-	TileSet(const std::string& geofile, const std::string extension);
-	TileSet(const georeference::GeoReference& georeference);
-	TileSet(const georeference::GeoReference& georeference,
-	        const std::string extension);
+    ~TileSet(void);
 
-	~TileSet(void);
+    bool Load();
 
-	bool Load();
+    int LayerCount() { return m_layerCount; }
+    int TileSize() { return m_tileSize; }
 
-	int LayerCount() { return m_layerCount; }
-	int TileSize() { return m_tileSize; }
+    georeference::GeoReference& GeoReference() { return m_geo; }
 
-	georeference::GeoReference& GeoReference() { return m_geo; }
+    TileSetLayer* GetLayer(int layer) { return m_layers[layer]; }
 
-	TileSetLayer* GetLayer(int layer) { return m_layers[layer]; }
+    void AdjustGeoReference(double latitude, double longitude);
 
-	void AdjustGeoReference(double latitude, double longitude);
+    void UtmToGeoreference(double easting, double northing, double& x, double& y);
+    void GeoreferenceToUtm(double x, double y, double& easting, double& northing);
 
-  void UtmToGeoreference(double easting, double northing, double& x, double& y);
-  void GeoreferenceToUtm(double x, double y, double& easting, double& northing);
+  private:
+    georeference::GeoReference m_geo;
+    geospatial_index::WGS84UTM m_utm;
+    int                        m_tileSize;
+    int                        m_width;
+    int                        m_height;
 
-private:
-  georeference::GeoReference m_geo;
-  geospatial_index::WGS84UTM m_utm;
-	int                        m_tileSize;
-	int                        m_width;
-	int                        m_height;
+    std::string                m_cacheDir;
+    std::string                m_extension;
 
-	std::string                m_cacheDir;
-	std::string                m_extension;
+    int                        m_layerCount;
 
-	int                        m_layerCount;
-
-	std::vector<TileSetLayer*> m_layers;
-};
-
+    std::vector<TileSetLayer*> m_layers;
+  };
 }
 
-#endif // TILESET_H
+#endif  // MULTIRES_IMAGE_TILESET_H_

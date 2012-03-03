@@ -7,19 +7,17 @@
 *     Author: Marc Alban
 */
 
-#ifndef MATH_UTIL_H
-#define MATH_UTIL_H
+#ifndef MULTIRES_IMAGE_MATH_UTIL_H_
+#define MULTIRES_IMAGE_MATH_UTIL_H_
 
 namespace multires_image
 {
-
-class MathUtil
-{
-public:
-  static double Round(double value);
-  static float Round(float value);
-};
-
+  class MathUtil
+  {
+  public:
+    static double Round(double value);
+    static float Round(float value);
+  };
 }
 
-#endif // MATH_UTIL_H
+#endif  // MULTIRES_IMAGE_MATH_UTIL_H_

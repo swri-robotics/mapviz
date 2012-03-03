@@ -1,7 +1,7 @@
 // C++ standard libraries
+#include <cmath>
 #include <cstdio>
 #include <vector>
-#include <cmath>
 
 // QT libraries
 #include <QDialog>

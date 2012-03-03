@@ -1,5 +1,5 @@
-#ifndef QGLMAP_H
-#define QGLMAP_H
+#ifndef MULTIRES_IMAGE_QGLMAP_H_
+#define MULTIRES_IMAGE_QGLMAP_H_
 
 // QT libraries
 #include <QGLWidget>
@@ -16,63 +16,61 @@
 
 namespace multires_image
 {
+  class QGLMap : public QGLWidget
+  {
+    Q_OBJECT
 
-class QGLMap : public QGLWidget
-{
-	Q_OBJECT
+  public:
+    QGLMap(QWidget *parent = 0);
+    ~QGLMap();
 
-public:
-	QGLMap(QWidget *parent = 0);
-	~QGLMap();
+    void Exit();
+    void UpdateView();
+    void SetTiles(TileSet* tiles);
 
-	void Exit();
-	void UpdateView();
-	void SetTiles(TileSet* tiles);
+    PointT<double> SceneCenter() { return m_sceneBox.Center; }
+    PointT<double> ViewCenter() { return m_viewBox.Center; }
 
-	PointT<double> SceneCenter() { return m_sceneBox.Center; }
-	PointT<double> ViewCenter() { return m_viewBox.Center; }
+  signals:
+    void SignalZoomChange(double z);
+    void SignalViewChange(double x1, double y1, double x2, double y2);
+    void SignalMemorySize(long);
 
-signals:
-  void SignalZoomChange(double z);
-	void SignalViewChange(double x1, double y1, double x2, double y2);
-	void SignalMemorySize(long);
+  public slots:
+    void LoadTexture(Tile* tile);
+    void DeleteTexture(Tile* tile);
+    void ChangeCenter(double x, double y);
+    void SetTextureMemory(long);
 
-public slots:
-	void LoadTexture(Tile* tile);
-	void DeleteTexture(Tile* tile);
-	void ChangeCenter(double x, double y);
-	void SetTextureMemory(long);
+  protected:
+    void initializeGL();
+    void resizeGL( int w, int h );
+    void paintGL();
+    void mousePressEvent(QMouseEvent* e);
+    void mouseDoubleClickEvent(QMouseEvent* e);
+    void mouseReleaseEvent(QMouseEvent* e);
+    void mouseMoveEvent(QMouseEvent* e);
+    void wheelEvent(QWheelEvent* e);
 
-protected:
-	void initializeGL();
-	void resizeGL( int w, int h );
-	void paintGL();
-	void mousePressEvent(QMouseEvent* e);
-	void mouseDoubleClickEvent(QMouseEvent* e);
-	void mouseReleaseEvent(QMouseEvent* e);
-	void mouseMoveEvent(QMouseEvent* e);
-  void wheelEvent(QWheelEvent* e);
+  private:
+    Ui::QGLMapClass ui;
+    PointT<double>  m_viewCenter;
+    bool            m_initialized;
 
-private:
-	Ui::QGLMapClass ui;
-	PointT<double>  m_viewCenter;
-	bool            m_initialized;
+    double          m_scale;
 
-  double          m_scale;
+    bool            m_mouseDown;
+    int             m_mouseDownX;
+    int             m_mouseDownY;
 
-	bool            m_mouseDown;
-	int             m_mouseDownX;
-	int             m_mouseDownY;
+    TileView*       m_tileView;
 
-	TileView*       m_tileView;
+    BoundingBox<double> m_viewBox;
+    BoundingBox<double> m_sceneBox;
 
-	BoundingBox<double> m_viewBox;
-	BoundingBox<double> m_sceneBox;
-
-	void Recenter();
-	void MousePan(int x, int y);
-};
-
+    void Recenter();
+    void MousePan(int x, int y);
+  };
 }
 
-#endif // QGLMAP_H
+#endif  // MULTIRES_IMAGE_QGLMAP_H_

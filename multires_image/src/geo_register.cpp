@@ -106,7 +106,7 @@ std::string GeoRegister::LoadGeoRegisterFile()
       errorString = "Invalid GEO register file.";
     }
   }
-  catch (std::exception e)
+  catch (std::exception& e)
   {
     errorString = "An exception occured loading the geo-register file: ";
     errorString += e.what();

@@ -273,7 +273,7 @@ namespace mapviz_plugins
         PrintError("Failed to load image.");
       }
     }
-    catch(std::exception e)
+    catch(std::exception& e)
     {
       PrintError("Failed to load image.  Exception occured.");
     }

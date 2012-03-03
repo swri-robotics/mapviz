@@ -6,8 +6,8 @@
  * Created on: Feb 22, 2010
  *     Author: Tucker Brown
  */
-#ifndef POINT_H
-#define POINT_H
+#ifndef MULTIRES_IMAGE_POINT_H_
+#define MULTIRES_IMAGE_POINT_H_
 
 // C++ standard libraries
 #include <string>
@@ -18,59 +18,57 @@
 
 namespace multires_image
 {
-
-template <class T> class PointT
-{
-public:
-  T X;
-  T Y;
-
-  PointT() : X(0), Y(0) {}
-  PointT(T x, T y) : X(x), Y(y) {}
-  PointT(const PointT& point) : X(point.X), Y(point.Y) {}
-
-  template < typename T2 >
-  PointT & operator = (const PointT<T2> & other)
+  template <class T> class PointT
   {
-    if (this != (PointT<T>*)&other) // protect against invalid self-assignment
-    {
-      X = (T)other.X;
-      Y = (T)other.Y;
-    }
-    return *this;
-  }
-
-  template < typename T2 >
-  bool operator == (const PointT<T2> & point) const
-  {
-    return X == point.X && Y == point.Y;
-  }
-
-  template < typename T2 >
-  bool operator != (const PointT<T2>& point) const
-  {
-    return !(*this == point);
-  }
-};
-
-class Point
-{
-  long convertStringToLong(std::string number);
-
   public:
-    long Latitude;
-    long Longitude;
+    T X;
+    T Y;
 
-    Point();
-    Point(long lat, long lon);
-    Point(std::string lat, std::string lon);
-    Point(const Point& point);
+    PointT() : X(0), Y(0) {}
+    PointT(T x, T y) : X(x), Y(y) {}
+    PointT(const PointT& point) : X(point.X), Y(point.Y) {}
 
-    //accessors
-    std::string FormattedLat(const PointT<long> refPoint);
-    std::string FormattedLon(const PointT<long> refPoint);
-};
+    template < typename T2 >
+    PointT & operator = (const PointT<T2> & other)
+    {
+      if (this != (PointT<T>*)&other) // protect against invalid self-assignment
+      {
+        X = (T)other.X;
+        Y = (T)other.Y;
+      }
+      return *this;
+    }
 
+    template < typename T2 >
+    bool operator == (const PointT<T2> & point) const
+    {
+      return X == point.X && Y == point.Y;
+    }
+
+    template < typename T2 >
+    bool operator != (const PointT<T2>& point) const
+    {
+      return !(*this == point);
+    }
+  };
+
+  class Point
+  {
+    long convertStringToLong(std::string number);
+
+    public:
+      long Latitude;
+      long Longitude;
+
+      Point();
+      Point(long lat, long lon);
+      Point(std::string lat, std::string lon);
+      Point(const Point& point);
+
+      //accessors
+      std::string FormattedLat(const PointT<long> refPoint);
+      std::string FormattedLon(const PointT<long> refPoint);
+  };
 }
 
-#endif /*POINT_H*/
+#endif  // MULTIRES_IMAGE_POINT_H_

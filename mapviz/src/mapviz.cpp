@@ -15,22 +15,22 @@
 #include "config_item.h"
 
 Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
-  QMainWindow(parent, flags),
-  argc_(argc),
-  argv_(argv),
-  initialized_(false),
-  force_720p_(false),
-  force_480p_(false),
-  resizable_(true),
-  background_(Qt::gray),
-  node_(NULL), 
-  canvas_(NULL)
+    QMainWindow(parent, flags),
+    argc_(argc),
+    argv_(argv),
+    initialized_(false),
+    force_720p_(false),
+    force_480p_(false),
+    resizable_(true),
+    background_(Qt::gray),
+    node_(NULL),
+    canvas_(NULL)
 {
   ui_.setupUi(this);
 
   ui_.statusbar->setVisible(false);
 
-  QActionGroup* group = new QActionGroup( this );
+  QActionGroup* group = new QActionGroup(this);
 
   ui_.actionForce_720p->setActionGroup(group);
   ui_.actionForce_480p->setActionGroup(group);
@@ -243,7 +243,7 @@ void Mapviz::Open(const std::string& filename)
     std::string config_path = filepath.parent_path().string();
 
     ClearDisplays();
-  
+
     YAML::Parser parser(fin);
 
     YAML::Node doc;
@@ -321,9 +321,9 @@ void Mapviz::Open(const std::string& filename)
       canvas_->SetBackground(background_);
     }
 
-    if(const YAML::Node *displays = doc.FindValue("displays"))
+    if (const YAML::Node *displays = doc.FindValue("displays"))
     {
-      for(unsigned int i = 0; i< displays->size();i++) 
+      for (unsigned int i = 0; i< displays->size();i++) 
       {
         std::string type, name;
         (*displays)[i]["type"] >> type;
@@ -395,10 +395,10 @@ void Mapviz::Save(const std::string& filename)
       out << YAML::BeginMap;
 
       out << YAML::Key << "visible" << YAML::Value << plugins_[ui_.configlist->item(i)]->Visible();
-      out << YAML::Key << "collapsed" << YAML::Value << ((ConfigItem*)ui_.configlist->itemWidget(ui_.configlist->item(i)))->Collapsed();
+      out << YAML::Key << "collapsed" << YAML::Value << (static_cast<ConfigItem*>(ui_.configlist->itemWidget(ui_.configlist->item(i))))->Collapsed();
       
       plugins_[ui_.configlist->item(i)]->SaveConfiguration(out, config_path);
-      
+
       out << YAML::EndMap;
       out << YAML::EndMap;
     }
@@ -464,7 +464,7 @@ void Mapviz::SelectNewDisplay()
     ui.displaylist->addItem(type);
   }
   ui.displaylist->setCurrentRow(0);
- 
+
   dialog.exec();
 
   if (dialog.result() == QDialog::Accepted)
@@ -474,7 +474,6 @@ void Mapviz::SelectNewDisplay()
     std::string name = "new display";
     CreateNewDisplay(name, type, true, false);
   }
-  
 }
 
 mapviz::MapvizPlugin* Mapviz::CreateNewDisplay(const std::string& name, const std::string& type, bool visible, bool collapsed)
@@ -482,7 +481,7 @@ mapviz::MapvizPlugin* Mapviz::CreateNewDisplay(const std::string& name, const st
   ConfigItem* config_item = new ConfigItem();
 
   config_item->SetName(name.c_str());
-  
+
   ROS_INFO("creating: %s", type.c_str());
   mapviz::MapvizPlugin* plugin = loader_->createClassInstance(type.c_str());
   plugin->Initialize(canvas_);
@@ -586,7 +585,7 @@ void Mapviz::RemoveDisplay()
 
   canvas_->RemovePlugin(plugins_[item]);
   plugins_[item] = 0;
-  
+
   delete item;
 }
 
@@ -600,7 +599,7 @@ void Mapviz::ClearDisplays()
 
     canvas_->RemovePlugin(plugins_[item]);
     plugins_[item] = 0;
-    
+
     delete item;
   }
 }
@@ -628,7 +627,7 @@ void Mapviz::SelectBackgroundColor()
   }
 }
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
   // Initialize QT
   QApplication app(argc, argv);
