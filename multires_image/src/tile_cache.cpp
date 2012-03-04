@@ -346,12 +346,12 @@ namespace multires_image
       p->m_textureLoadedLock.lock();
 
       tiles = new std::map<long, Tile*>(p->m_textureLoaded);
-      
+
       p->m_textureLoadedLock.unlock();
 
-      std::map<long,Tile*>::iterator iter;
+      std::map<long, Tile*>::iterator iter;
 
-      for (iter = tiles->begin(); iter != tiles->end(); iter++)
+      for (iter = tiles->begin(); iter != tiles->end(); ++iter)
       {
         Tile* tile = iter->second;
         int row, column;
@@ -367,9 +367,11 @@ namespace multires_image
           p->m_precacheRequestSet.erase(tile->TileID());
           p->m_precacheRequestSetLock.unlock();
 
-          p->UnloadTexture(tile); 
+          p->UnloadTexture(tile);
         }
       }
+      
+      delete tiles;
 
       sleep(2);
     }
