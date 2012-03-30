@@ -69,6 +69,10 @@ namespace multires_image
       std::string FormattedLat(const PointT<long> refPoint);
       std::string FormattedLon(const PointT<long> refPoint);
   };
+
+  // Convenience typedefs
+  typedef PointT<int32_t> Int32Point;
+  typedef PointT<double>  DoublePoint;
 }
 
 #endif  // MULTIRES_IMAGE_POINT_H_

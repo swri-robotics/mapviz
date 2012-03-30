@@ -39,14 +39,14 @@ namespace multires_image
     void Initialize();
     bool Exists();
     bool HasUtm() const { return m_hasUtm; }
-    bool Failed() { return m_failed; }
-    bool TextureLoaded() { return m_textureLoaded; }
-    const QImage& Image() { return m_image; }
-    long TileID() { return m_tileId; }
-    int Layer() { return m_level; }
-    int MemorySize() { return m_memorySize; }
-    int Row() { return m_row; }
-    int Column() { return m_column; }
+    bool Failed() const { return m_failed; }
+    bool TextureLoaded() const { return m_textureLoaded; }
+    const QImage& Image() const { return m_image; }
+    long TileID() const { return m_tileId; }
+    int Layer() const { return m_level; }
+    int MemorySize() const { return m_memorySize; }
+    int Row() const { return m_row; }
+    int Column() const { return m_column; }
 
     bool LoadImageToMemory(bool gl = true);
     void UnloadImage();

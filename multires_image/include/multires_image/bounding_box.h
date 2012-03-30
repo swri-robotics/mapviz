@@ -93,6 +93,9 @@ namespace multires_image
       }
   };
 
+  // Convenience typedefs
+  typedef BoundingBox<int32_t> Int32Box;
+  typedef BoundingBox<double>  DoubleBox;
 }
 
 #endif  // MULTIRES_IMAGE_BOUNDING_BOX_H
