@@ -15,9 +15,9 @@
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins, 
-    marker, 
-    mapviz_plugins::MarkerPlugin, 
+    mapviz_plugins,
+    marker,
+    mapviz_plugins::MarkerPlugin,
     mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -246,6 +246,26 @@ namespace mapviz_plugins
       {
         glLineWidth(marker.scale_x_);
         glBegin(GL_LINE_STRIP);
+
+          std::list<tf::Point>::iterator transformed_it = marker.transformed_points_.begin();
+          std::list<QColor>::iterator color_it = marker.colors_.begin();
+          for (; transformed_it != marker.transformed_points_.end(); ++transformed_it)
+          {
+            if (color_it != marker.colors_.end())
+            {
+              glColor4f(color_it->redF(), color_it->greenF(), color_it->blueF(), 1.0f);
+              ++color_it;
+            }
+
+            glVertex2f(transformed_it->getX(), transformed_it->getY());
+          }
+
+        glEnd();
+      }
+      if (marker.display_type_ == visualization_msgs::Marker::LINE_LIST)
+      {
+        glLineWidth(marker.scale_x_);
+        glBegin(GL_LINES);
 
           std::list<tf::Point>::iterator transformed_it = marker.transformed_points_.begin();
           std::list<QColor>::iterator color_it = marker.colors_.begin();
