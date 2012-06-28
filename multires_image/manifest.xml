@@ -9,9 +9,11 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/multires_image</url>
 
+  <depend package="common_rosdeps" />
   <depend package="roscpp"/>
   <depend package="geospatial_index"/>
   <depend package="georeference"/>
+  <depend package="opencv2" />
 
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lmultires_widget -lmultires_image -Wl,-rpath,${prefix}/lib"/>
