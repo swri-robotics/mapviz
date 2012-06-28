@@ -9,10 +9,12 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/mapviz</url>
 
+  <depend package="common_rosdeps"/>
   <depend package="roscpp"/>
   <depend package="pluginlib"/>
   <depend package="tf"/>
-  <depend package="yaml_cpp"/>
+
+  <rosdep name="yaml-cpp"/>
 
   <export>
     <cpp cflags="-I${prefix}/include"/>

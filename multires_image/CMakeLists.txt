@@ -40,6 +40,8 @@ add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
 
+rosbuild_add_boost_directories()
+
 # Build libtile_cache
 file (GLOB TILE_SRC_FILES 
    src/geo_register.cpp
@@ -53,6 +55,7 @@ file (GLOB TILE_SRC_FILES
    src/tile_set_layer.cpp)
 QT4_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
 rosbuild_add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
+rosbuild_link_boost(${PROJECT_NAME} thread)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
 
 # Build libmultires_widget
@@ -64,7 +67,7 @@ file (GLOB WIDGET_SRC_FILES src/tile_view.cpp src/QGLMap.cpp)
 QT4_WRAP_UI(WIDGET_SRC_FILES ${UI_FILES})
 QT4_WRAP_CPP(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
 rosbuild_add_library(multires_widget ${WIDGET_SRC_FILES})
-target_link_libraries(multires_widget ${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
+target_link_libraries(multires_widget ${PROJECT_NAME})
 
 # Build nodes
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/nodes)
@@ -72,4 +75,4 @@ include_directories(src)
 file (GLOB VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
 QT4_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
 rosbuild_add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
-target_link_libraries(multires_view_node multires_widget ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
+target_link_libraries(multires_view_node multires_widget)
