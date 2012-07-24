@@ -1,26 +1,33 @@
 /**
 \mainpage
-\htmlinclude manifest.html
+\section multires_image
 
-\b multires_image is ... 
+\b multires_image is a set of API's and nodes for ... 
 
-<!-- 
-Provide an overview of your package.
--->
+This package... (see sumet_perception/material_classification/mainpage.dox for example description)
 
 
-\section codeapi Code API
+\subsection codeapi Code API
 
-<!--
-Provide links to specific auto-generated API documentation within your
-package that is of particular interest to a reader. Doxygen will
-document pretty much every part of your code, so do your best here to
-point the reader to the actual API.
+The C++ API consists of the following main classes:
 
-If your codebase is fairly large or has different sets of APIs, you
-should use the doxygen 'group' tag to keep these APIs together. For
-example, the roscpp documentation has 'libros' group.
--->
+- \b multires_image::GeoRegister - \copybrief multires_image::GeoRegister
+- \b multires_image::ImageManip - \copybrief multires_image::ImageManip
+- \b multires_image::MathUtil - \copybrief multires_image::MathUtil
+- \b multires_image::Point - \copybrief multires_image::Point
+- \b multires_image::QGLMap - \copybrief multires_image::QGLMap
+- \b multires_image::StringUtil - \copybrief multires_image::StringUtil
+- \b multires_image::TileCache - \copybrief multires_image::TileCache
+- \b multires_image::TileSetLayer - \copybrief multires_image::TileSetLayer
+- \b multires_image::TileSet - \copybrief multires_image::TileSet
+- \b multires_image::TileView - \copybrief multires_image::TileView
+- \b multires_image::Tile - \copybrief multires_image::Tile
 
 
-*/
+\subsection nodes Nodes
+
+\subsubsection multires_view_node
+\copydetails src/nodes/multires_view_node.cpp
+
+
+**/
