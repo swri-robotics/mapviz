@@ -1,26 +1,19 @@
 /**
 \mainpage
-\htmlinclude manifest.html
+\section mapviz
 
-\b mapviz is ... 
+\b mapviz is a set of API's for ... 
 
-<!-- 
-Provide an overview of your package.
--->
+This package... (see sumet_perception/material_classification/mainpage.dox for example description)
 
 
-\section codeapi Code API
+\subsection codeapi Code API
 
-<!--
-Provide links to specific auto-generated API documentation within your
-package that is of particular interest to a reader. Doxygen will
-document pretty much every part of your code, so do your best here to
-point the reader to the actual API.
+The C++ API consists of the following main classes:
 
-If your codebase is fairly large or has different sets of APIs, you
-should use the doxygen 'group' tag to keep these APIs together. For
-example, the roscpp documentation has 'libros' group.
--->
+- \b ConfigItem - \copybrief ConfigItem
+- \b MapCanvas - \copybrief MapCanvas
+- \b mapviz::MapvizPlugin - \copybrief mapviz::MapvizPlugin
+- \b Mapviz - \copybrief Mapviz
 
-
-*/
+**/
