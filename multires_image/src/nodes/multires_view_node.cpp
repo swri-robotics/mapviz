@@ -1,3 +1,23 @@
+/**
+ * \file
+ *
+ * Description.
+ *   - <b>Subscribed Topics</b>
+ *      - \e topic_1 <tt>[type]</tt> - Description.
+ *
+ *   - <b>Published Topics</b>
+ *      - \e topic_1 <tt>[type]</tt> - Description.
+ *
+ *   - <b>Services Called</b>
+ *      - \e service_1 <tt>[type]</tt> - Description.
+ *
+ *   - <b>Services Provided</b>
+ *      - \e service_1 <tt>[type]</tt> - Description.
+ *
+ *   - \b Parameters
+ *      - \e param_1 <tt>[type]</tt> - Description [value].
+ */
+
 // QT libraries
 #include <QtGui/QApplication>
 #include <QString>
