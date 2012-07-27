@@ -1,21 +1,9 @@
 /**
  * \file
  *
- * Description.
- *   - <b>Subscribed Topics</b>
- *      - \e topic_1 <tt>[type]</tt> - Description.
- *
- *   - <b>Published Topics</b>
- *      - \e topic_1 <tt>[type]</tt> - Description.
- *
- *   - <b>Services Called</b>
- *      - \e service_1 <tt>[type]</tt> - Description.
- *
- *   - <b>Services Provided</b>
- *      - \e service_1 <tt>[type]</tt> - Description.
- *
+ * multires_image::MultiresViewNode. Description.
  *   - \b Parameters
- *      - \e param_1 <tt>[type]</tt> - Description [value].
+ *      - \e "node_name"/image_path <tt>[string]</tt> - Description. [""]
  */
 
 // QT libraries
