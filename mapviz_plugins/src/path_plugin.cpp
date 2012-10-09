@@ -104,7 +104,11 @@ namespace mapviz_plugins
 
     for (unsigned int i = 0; i < path->poses.size(); i++)
     {
-      tf::Point point(path->poses[i].pose.position.x, path->poses[i].pose.position.y, 0);
+      tf::Point point(
+        path->poses[i].pose.position.x, 
+        path->poses[i].pose.position.y, 
+        path->poses[i].pose.position.z);
+      
       points_.push_back(point);
       transformed_points_.push_back(transform_ * point);
     }

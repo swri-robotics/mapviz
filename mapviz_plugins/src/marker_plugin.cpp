@@ -143,10 +143,11 @@ namespace mapviz_plugins
       // TODO correctly transform points based on the pose
       double x = marker->pose.position.x;
       double y = marker->pose.position.y;
+      double z = marker->pose.position.z;
 
       if (markerData.display_type_ == visualization_msgs::Marker::CYLINDER)
       {
-        tf::Point point(x, y, 0);
+        tf::Point point(x, y, z);
         markerData.points_.push_back(point);
         markerData.transformed_points_.push_back(transform_ * point);
       }

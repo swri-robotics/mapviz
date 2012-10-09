@@ -134,7 +134,11 @@ namespace mapviz_plugins
       has_message_ = true;
     }
 
-    tf::Point point(odometry->pose.pose.position.x, odometry->pose.pose.position.y, 0);
+    tf::Point point(
+      odometry->pose.pose.position.x, 
+      odometry->pose.pose.position.y,
+      odometry->pose.pose.position.z);
+      
     current_point_ = point;
     current_point_transformed_ = transform_ * point;
 
