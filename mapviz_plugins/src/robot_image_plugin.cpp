@@ -25,7 +25,8 @@ namespace mapviz_plugins
     config_widget_(new QWidget()),
     width_(1),
     height_(1),
-    texture_loaded_(false)
+    texture_loaded_(false),
+    transformed_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -102,6 +103,8 @@ namespace mapviz_plugins
 
     initialized_ = true;
 
+    UpdateShape();
+
     canvas_->update();
   }
 
@@ -133,8 +136,6 @@ namespace mapviz_plugins
     bottom_left_.setY(-height_/2.0);
     bottom_right_.setX(width_/2.0);
     bottom_right_.setY(-height_/2.0);
-
-    Transform();
   }
 
   void RobotImagePlugin::PrintError(const std::string& message)
@@ -189,14 +190,9 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::Draw(double x, double y, double scale)
   {
-    Transform();
-
-    glColor3f(1.0f, 1.0f, 1.0f);
-
-    glPointSize(4);
-
-    if (texture_loaded_)
+    if (texture_loaded_ && transformed_)
     {
+      glColor3f(1.0f, 1.0f, 1.0f);
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, texture_id_);
 
@@ -211,15 +207,28 @@ namespace mapviz_plugins
       glEnd();
 
       glDisable(GL_TEXTURE_2D);
+
+      PrintInfo("OK");
     }
   }
 
   void RobotImagePlugin::Transform()
   {
-    top_left_transformed_ = transform_ * top_left_;
-    top_right_transformed_ = transform_ * top_right_;
-    bottom_left_transformed_ = transform_ * bottom_left_;
-    bottom_right_transformed_ = transform_ * bottom_right_;
+    transformed_ = false;
+
+    tf::StampedTransform transform;
+    if (GetTransform(ros::Time(), transform))
+    {
+      top_left_transformed_ = transform * top_left_;
+      top_right_transformed_ = transform * top_right_;
+      bottom_left_transformed_ = transform * bottom_left_;
+      bottom_right_transformed_ = transform * bottom_right_;
+      transformed_ = true;
+    }
+    else
+    {
+      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+    }
   }
 
   void RobotImagePlugin::LoadImage()

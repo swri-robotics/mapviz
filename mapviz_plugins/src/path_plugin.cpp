@@ -20,6 +20,7 @@ namespace mapviz_plugins
 
   PathPlugin::PathPlugin() :
     config_widget_(new QWidget()),
+    transformed_(false),
     color_(Qt::green),
     line_width_(2)
   {
@@ -99,6 +100,9 @@ namespace mapviz_plugins
       has_message_ = true;
     }
 
+    transformed_ = false;
+
+    stamp_ = path->header.stamp;
     points_.clear();
     transformed_points_.clear();
 
@@ -108,9 +112,9 @@ namespace mapviz_plugins
         path->poses[i].pose.position.x, 
         path->poses[i].pose.position.y, 
         path->poses[i].pose.position.z);
-      
+
       points_.push_back(point);
-      transformed_points_.push_back(transform_ * point);
+      transformed_points_.push_back(point);
     }
 
     canvas_->update();
@@ -168,44 +172,60 @@ namespace mapviz_plugins
 
   void PathPlugin::Draw(double x, double y, double scale)
   {
+    if (transformed_ && has_message_)
+    {
+      glLineWidth(line_width_);
+      glColor4f(color_.redF(), color_.greenF(), color_.blueF(), color_.alphaF());
+      glBegin(GL_LINE_STRIP);
 
-    glLineWidth(line_width_);
-    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), color_.alphaF());
-    glBegin(GL_LINE_STRIP);
+        std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
+        for (; transformed_it != transformed_points_.end(); ++transformed_it)
+        {
+          glVertex2f(transformed_it->getX(), transformed_it->getY());
+        }
 
-      std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
-      for (; transformed_it != transformed_points_.end(); ++transformed_it)
-      {
-        glVertex2f(transformed_it->getX(), transformed_it->getY());
-      }
+      glEnd();
 
-    glEnd();
+      glPointSize(line_width_*4);
 
-    glPointSize(line_width_*4);
+      QColor dark = color_.darker(200);
 
-    QColor dark = color_.darker(200);
+      glColor4f(dark.redF(), dark.greenF(), dark.blueF(), dark.alphaF());
+      glBegin(GL_POINTS);
 
-    glColor4f(dark.redF(), dark.greenF(), dark.blueF(), dark.alphaF());
-    glBegin(GL_POINTS);
+        transformed_it = transformed_points_.begin();
+        for (; transformed_it != transformed_points_.end(); ++transformed_it)
+        {
+          glVertex2f(transformed_it->getX(), transformed_it->getY());
+        }
 
-      transformed_it = transformed_points_.begin();
-      for (; transformed_it != transformed_points_.end(); ++transformed_it)
-      {
-        glVertex2f(transformed_it->getX(), transformed_it->getY());
-      }
+      glEnd();
 
-    glEnd();
+      PrintInfo("OK");
+    }
   }
 
   void PathPlugin::Transform()
   {
-    std::list<tf::Point>::iterator points_it = points_.begin();
-    std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
-    for (; points_it != points_.end() && transformed_it != transformed_points_.end(); ++points_it)
-    {
-      (*transformed_it) = transform_ * (*points_it);
+    transformed_ = false;
 
-      ++transformed_it;
+    tf::StampedTransform transform;
+    if (GetTransform(stamp_, transform))
+    {
+      std::list<tf::Point>::iterator points_it = points_.begin();
+      std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
+      for (; points_it != points_.end() && transformed_it != transformed_points_.end(); ++points_it)
+      {
+        (*transformed_it) = transform * (*points_it);
+
+        ++transformed_it;
+      }
+
+      transformed_ = true;
+    }
+    else
+    {
+      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
 

@@ -64,8 +64,6 @@ namespace mapviz_plugins
     void UpdateFrames();
 
   private:
-    QGLWidget* canvas_;
-  
     Ui::grid_config ui_;
     QWidget* config_widget_;
     QTimer frame_timer_;
@@ -81,6 +79,8 @@ namespace mapviz_plugins
 
     bool exit_;
 
+    bool transformed_;
+
     std::list<tf::Point> top_points_;
     std::list<tf::Point> bottom_points_;
     std::list<tf::Point> left_points_;
@@ -90,6 +90,8 @@ namespace mapviz_plugins
     std::list<tf::Point> transformed_bottom_points_;
     std::list<tf::Point> transformed_left_points_;
     std::list<tf::Point> transformed_right_points_;
+
+    tf::StampedTransform transform_;
 
     void RecalculateGrid();
     void Transform(std::list<tf::Point>& src, std::list<tf::Point>& dst);

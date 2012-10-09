@@ -33,6 +33,14 @@ namespace mapviz_plugins
   
   public:
 
+    struct StampedPoint
+    {
+      tf::Point point;
+      tf::Point transformed_point;
+      bool transformed;
+      ros::Time stamp;
+    };
+
     enum DrawStyle { LINES = 0, POINTS };
 
     OdometryPlugin();
@@ -65,8 +73,6 @@ namespace mapviz_plugins
     void SetDrawStyle(QString style);
     
   private:
-    QGLWidget* canvas_;
-  
     Ui::odometry_config ui_;
     QWidget* config_widget_;
     QColor color_;
@@ -75,9 +81,6 @@ namespace mapviz_plugins
 
     std::string topic_;
 
-    tf::Point current_point_;
-    tf::Point current_point_transformed_;
-
     int buffer_size_;
     float position_tolerance_;
     float angle_tolerance_;
@@ -85,8 +88,8 @@ namespace mapviz_plugins
     ros::Subscriber odometry_sub_;
     bool has_message_;
 
-    std::list<tf::Point> points_;
-    std::list<tf::Point> transformed_points_;
+    StampedPoint current_point_;
+    std::list<StampedPoint> points_;
 
     void odometryCallback(const nav_msgs::OdometryConstPtr odometry);
   };

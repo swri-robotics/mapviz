@@ -23,7 +23,8 @@ namespace mapviz_plugins
     loaded_(false),
     tile_set_(NULL),
     tile_view_(NULL),
-    config_widget_(new QWidget())
+    config_widget_(new QWidget()),
+    transformed_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -110,8 +111,6 @@ namespace mapviz_plugins
 
         initialized_ = true;
 
-        UpdateTransform(true);
-
         MultiresView* view = new MultiresView(tile_set_, canvas_);
         tile_view_ = view;
 
@@ -182,25 +181,26 @@ namespace mapviz_plugins
     
   void MultiresImagePlugin::Draw(double x, double y, double scale)
   {
-    if (tile_set_ != NULL && tile_view_ != NULL)
+    if (transformed_ && tile_set_ != NULL && tile_view_ != NULL)
     {
       GetCenterPoint(x, y);
       tile_view_->SetView(center_x_, center_y_, 1, scale);
       
       tile_view_->Draw();
+
+      PrintInfo("OK");
     }
   }
 
   void MultiresImagePlugin::Transform()
   {
+    transformed_ = false;
+
     if (!loaded_)
       return;
-      
-    ROS_INFO("Transforming multires image.");
 
     if (target_frame_ == "" || target_frame_ == "utm" || target_frame_ == "/utm")
     {
-
       // Set relative positions of tile points to be in straight UTM
       for (int i = 0; i < tile_set_->LayerCount(); i++)
       {
@@ -234,10 +234,10 @@ namespace mapviz_plugins
           }
         }
 
-        PrintInfo("OK");
+        transformed_ = true;
       }
     }
-    else
+    else if (GetTransform(ros::Time(), transform_))
     {
       // Set relative positions of tile points based on tf transform
       for (int i = 0; i < tile_set_->LayerCount(); i++)
@@ -288,7 +288,11 @@ namespace mapviz_plugins
         }
       }
 
-      PrintInfo("OK");
+      transformed_ = true;
+    }
+    else
+    {
+      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
     

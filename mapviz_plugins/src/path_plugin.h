@@ -58,8 +58,6 @@ namespace mapviz_plugins
     void TopicEdited();
 
   private:
-    QGLWidget* canvas_;
-
     Ui::path_config ui_;
     QWidget* config_widget_;
 
@@ -68,8 +66,13 @@ namespace mapviz_plugins
     ros::Subscriber path_sub_;
     bool has_message_;
 
+    ros::Time stamp_;
+
     std::list<tf::Point> points_;
     std::list<tf::Point> transformed_points_;
+
+    bool transformed_;
+
     QColor color_;
     float line_width_;
 

@@ -20,7 +20,6 @@ PLUGINLIB_DECLARE_CLASS(
 namespace mapviz_plugins
 {
   GridPlugin::GridPlugin() :
-    canvas_(NULL),
     config_widget_(new QWidget()),
     color_(Qt::red),
     alpha_(1.0),
@@ -28,7 +27,8 @@ namespace mapviz_plugins
     size_(1),
     rows_(1),
     columns_(1),
-    exit_(false)
+    exit_(false),
+    transformed_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -116,6 +116,8 @@ namespace mapviz_plugins
     source_frame_ = frame.toStdString();
 
     initialized_ = true;
+
+    RecalculateGrid();
 
     if (canvas_)
     canvas_->update();
@@ -239,35 +241,42 @@ namespace mapviz_plugins
 
   void GridPlugin::Draw(double x, double y, double scale)
   {
-    glLineWidth(3);
-    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), alpha_);
-    glBegin(GL_LINES);
+    if (transformed_)
+    {
+      glLineWidth(3);
+      glColor4f(color_.redF(), color_.greenF(), color_.blueF(), alpha_);
+      glBegin(GL_LINES);
 
-      std::list<tf::Point>::iterator transformed_left_it = transformed_left_points_.begin();
-      std::list<tf::Point>::iterator transformed_right_it = transformed_right_points_.begin();
-      for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it)
-      {
-        glVertex2f(transformed_left_it->getX(), transformed_left_it->getY());
-        glVertex2f(transformed_right_it->getX(), transformed_right_it->getY());
+        std::list<tf::Point>::iterator transformed_left_it = transformed_left_points_.begin();
+        std::list<tf::Point>::iterator transformed_right_it = transformed_right_points_.begin();
+        for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it)
+        {
+          glVertex2f(transformed_left_it->getX(), transformed_left_it->getY());
+          glVertex2f(transformed_right_it->getX(), transformed_right_it->getY());
 
-        ++transformed_right_it;
-      }
+          ++transformed_right_it;
+        }
 
-      std::list<tf::Point>::iterator transformed_top_it = transformed_top_points_.begin();
-      std::list<tf::Point>::iterator transformed_bottom_it = transformed_bottom_points_.begin();
-      for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it)
-      {
-        glVertex2f(transformed_top_it->getX(), transformed_top_it->getY());
-        glVertex2f(transformed_bottom_it->getX(), transformed_bottom_it->getY());
+        std::list<tf::Point>::iterator transformed_top_it = transformed_top_points_.begin();
+        std::list<tf::Point>::iterator transformed_bottom_it = transformed_bottom_points_.begin();
+        for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it)
+        {
+          glVertex2f(transformed_top_it->getX(), transformed_top_it->getY());
+          glVertex2f(transformed_bottom_it->getX(), transformed_bottom_it->getY());
 
-        ++transformed_bottom_it;
-      }
+          ++transformed_bottom_it;
+        }
 
-    glEnd();
+      glEnd();
+
+      PrintInfo("OK");
+    }
   }
 
   void GridPlugin::RecalculateGrid()
   {
+    transformed_ = false;
+
     left_points_.clear();
     right_points_.clear();
     top_points_.clear();
@@ -308,10 +317,17 @@ namespace mapviz_plugins
 
   void GridPlugin::Transform()
   {
-    Transform(left_points_, transformed_left_points_);
-    Transform(right_points_, transformed_right_points_);
-    Transform(top_points_, transformed_top_points_);
-    Transform(bottom_points_, transformed_bottom_points_);
+    transformed_ = false;
+
+    if (GetTransform(ros::Time(), transform_))
+    {
+      Transform(left_points_, transformed_left_points_);
+      Transform(right_points_, transformed_right_points_);
+      Transform(top_points_, transformed_top_points_);
+      Transform(bottom_points_, transformed_bottom_points_);
+
+      transformed_ = true;
+    }
   }
 
   void GridPlugin::Transform(std::list<tf::Point>& src, std::list<tf::Point>& dst)

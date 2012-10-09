@@ -43,7 +43,6 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
   QObject::connect(ui_.configlist, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   QObject::connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 
-
   ui_.backgroundcolor->setStyleSheet("background: " + background_.name() + ";");
   canvas_->SetBackground(background_);
 }
@@ -312,6 +311,14 @@ void Mapviz::Open(const std::string& filename)
       canvas_->SetOffsetY(y);
     }
 
+    bool use_latest_transforms = true;
+    if (doc.FindValue("use_latest_transforms"))
+    {
+      doc["use_latest_transforms"] >> use_latest_transforms;
+    }
+    ui_.uselatesttransforms->setChecked(use_latest_transforms);
+    canvas_->ToggleUseLatestTransforms(use_latest_transforms);
+
     if (doc.FindValue("background"))
     {
       std::string color;
@@ -379,6 +386,7 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "view_scale" << YAML::Value << canvas_->ViewScale();
   out << YAML::Key << "offset_x" << YAML::Value << canvas_->OffsetX();
   out << YAML::Key << "offset_y" << YAML::Value << canvas_->OffsetY();
+  out << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.uselatesttransforms->isChecked();
   out << YAML::Key << "background" << YAML::Value << background_.name().toStdString();
 
 
@@ -508,6 +516,7 @@ mapviz::MapvizPlugin* Mapviz::CreateNewDisplay(const std::string& name, const st
 
   // Add plugin to canvas
   plugin->SetTargetFrame(ui_.fixedframecombo->currentText().toStdString());
+  plugin->SetUseLatestTransforms(ui_.uselatesttransforms->isChecked());
   plugins_[item] = plugin;
   canvas_->AddPlugin(plugin, -1);
 
@@ -547,6 +556,11 @@ void Mapviz::TargetFrameSelected(const QString& text)
   {
     canvas_->SetTargetFrame(text.toStdString().c_str());
   }
+}
+
+void Mapviz::ToggleUseLatestTransforms(bool on)
+{
+  canvas_->ToggleUseLatestTransforms(on);
 }
 
 void Mapviz::ToggleFixOrientation(bool on)

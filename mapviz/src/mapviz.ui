@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>710</width>
     <height>600</height>
    </rect>
   </property>
@@ -34,8 +34,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>27</height>
+     <width>710</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -71,8 +71,8 @@
   <widget class="QDockWidget" name="configdock">
    <property name="minimumSize">
     <size>
-     <width>290</width>
-     <height>274</height>
+     <width>300</width>
+     <height>289</height>
     </size>
    </property>
    <property name="features">
@@ -195,7 +195,7 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="5" column="0">
          <widget class="QLabel" name="label_3">
           <property name="maximumSize">
            <size>
@@ -214,7 +214,7 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="5" column="1">
          <widget class="QPushButton" name="backgroundcolor">
           <property name="maximumSize">
            <size>
@@ -233,14 +233,20 @@
           </property>
          </widget>
         </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QCheckBox" name="uselatesttransforms">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="text">
+           <string>Use Latest Transforms</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
-       <zorder>label</zorder>
-       <zorder>fixedframecombo</zorder>
-       <zorder>label_2</zorder>
-       <zorder>targetframecombo</zorder>
-       <zorder>configlist</zorder>
-       <zorder>label_3</zorder>
-       <zorder>backgroundcolor</zorder>
       </widget>
      </item>
      <item>
@@ -554,12 +560,28 @@
    <slot>SelectBackgroundColor()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>113</x>
-     <y>135</y>
+     <x>123</x>
+     <y>171</y>
     </hint>
     <hint type="destinationlabel">
      <x>375</x>
      <y>136</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>uselatesttransforms</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleUseLatestTransforms(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>130</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>460</x>
+     <y>242</y>
     </hint>
    </hints>
   </connection>
@@ -578,5 +600,6 @@
   <slot>Force480p(bool)</slot>
   <slot>SetResizable(bool)</slot>
   <slot>SelectBackgroundColor()</slot>
+  <slot>ToggleUseLatestTransforms(bool)</slot>
  </slots>
 </ui>

@@ -58,8 +58,6 @@ namespace mapviz_plugins
     void HeightChanged(double value);
 
   private:
-    QGLWidget* canvas_;
-
     Ui::robot_image_config ui_;
     QWidget* config_widget_;
 
@@ -71,6 +69,8 @@ namespace mapviz_plugins
     int dimension_;
     int texture_id_;
     bool texture_loaded_;
+
+    bool transformed_;
 
     tf::Point top_left_;
     tf::Point top_right_;

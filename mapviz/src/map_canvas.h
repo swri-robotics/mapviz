@@ -33,6 +33,7 @@ public:
   void SetFixedFrame(const std::string& frame);
   void SetTargetFrame(const std::string& frame);
   void ToggleFixOrientation(bool on);
+  void ToggleUseLatestTransforms(bool on);
   void UpdateView();
   void ReorderDisplays();
 

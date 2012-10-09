@@ -163,6 +163,17 @@ void MapCanvas::ToggleFixOrientation(bool on)
   update();
 }
 
+void MapCanvas::ToggleUseLatestTransforms(bool on)
+{
+  std::list<mapviz::MapvizPlugin*>::iterator it;
+  for (it = plugins_.begin(); it != plugins_.end(); ++it)
+  {
+    (*it)->SetUseLatestTransforms(on);
+  }
+
+  update();
+}
+
 void MapCanvas::AddPlugin(mapviz::MapvizPlugin* plugin, int order)
 {
   plugins_.push_back(plugin);
@@ -190,11 +201,12 @@ void MapCanvas::TransformTarget()
   {
     transform_listener_->lookupTransform(fixed_frame_, target_frame_, ros::Time(0), newTransform);
 
-    double yaw = tf::getYaw(newTransform.getRotation()) * 57.2957795;
+    double roll, pitch, yaw;
+    newTransform.getBasis().getRPY(roll, pitch, yaw);
 
     if (!fix_orientation_)
     {
-      glRotatef(-yaw, 0, 0, 1);
+      glRotatef(-yaw * 57.2957795, 0, 0, 1);
     }
 
     glTranslatef(-newTransform.getOrigin().getX(), -newTransform.getOrigin().getY(), 0);

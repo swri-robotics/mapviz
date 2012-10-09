@@ -32,8 +32,6 @@ namespace mapviz_plugins
     last_width_(0),
     last_height_(0)
   {
-    ignore_transform_ = true;
-
     ui_.setupUi(config_widget_);
 
     // Set background white
@@ -300,6 +298,8 @@ namespace mapviz_plugins
 
     glPixelZoom( 1.0, -1.0 );
     glDrawPixels(image->cols, image->rows, format, GL_UNSIGNED_BYTE, image->ptr());
+
+    PrintInfo("OK");
   }
 
   void ImagePlugin::Draw(double x, double y, double scale)
@@ -384,11 +384,6 @@ namespace mapviz_plugins
 
     last_width_ = width;
     last_height_ = height;
-  }
-
-  void ImagePlugin::Transform()
-  {
-
   }
 
   void ImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)

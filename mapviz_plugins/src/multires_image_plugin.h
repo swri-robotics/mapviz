@@ -60,12 +60,16 @@ namespace mapviz_plugins
     bool     loaded_;
     double center_x_;
     double center_y_;
-    QGLWidget* canvas_;
+
     multires_image::TileSet* tile_set_;
     MultiresView* tile_view_;
 
     Ui::multires_config ui_;
     QWidget* config_widget_;
+
+    tf::StampedTransform transform_;
+
+    bool transformed_;
 
     void InitializeTiles();
     void GetCenterPoint(double x, double y);

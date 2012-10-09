@@ -62,23 +62,29 @@ namespace mapviz_plugins
 
   private:
 
-    struct MarkerData
+    struct StampedPoint
     {
-      ros::Time expire_time_;
-
-      int display_type_;
-      QColor color_;
-
-      std::list<tf::Point> points_;
-      std::list<tf::Point> transformed_points_;
-      std::list<QColor> colors_;
-
-      float scale_x_;
-      float scale_y_;
-      float scale_z_;
+      tf::Point point;
+      tf::Point transformed_point;
+      QColor color;
     };
 
-    QGLWidget* canvas_;
+    struct MarkerData
+    {
+      ros::Time stamp;
+      ros::Time expire_time;
+
+      int display_type;
+      QColor color;
+
+      std::list<StampedPoint> points;
+
+      float scale_x;
+      float scale_y;
+      float scale_z;
+
+      bool transformed;
+    };
 
     Ui::marker_config ui_;
     QWidget* config_widget_;

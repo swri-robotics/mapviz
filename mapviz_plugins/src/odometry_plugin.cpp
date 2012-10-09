@@ -113,7 +113,6 @@ namespace mapviz_plugins
     {
       initialized_ = false;
       points_.clear();
-      transformed_points_.clear();
       has_message_ = false;
       topic_ = ui_.topic->text().toStdString();
       PrintWarning("No messages received.");
@@ -134,18 +133,19 @@ namespace mapviz_plugins
       has_message_ = true;
     }
 
-    tf::Point point(
-      odometry->pose.pose.position.x, 
-      odometry->pose.pose.position.y,
-      odometry->pose.pose.position.z);
-      
-    current_point_ = point;
-    current_point_transformed_ = transform_ * point;
+    StampedPoint stamped_point;
+    stamped_point.stamp = odometry->header.stamp;
 
-    if (points_.empty() || point.distance(points_.back()) >= position_tolerance_)
+    stamped_point.point = tf::Point(
+        odometry->pose.pose.position.x,
+        odometry->pose.pose.position.y,
+        odometry->pose.pose.position.z);
+
+    current_point_ = stamped_point;
+
+    if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
     {
-      points_.push_back(point);
-      transformed_points_.push_back(transform_ * point);
+      points_.push_back(stamped_point);
     }
 
     if (buffer_size_ > 0)
@@ -153,7 +153,6 @@ namespace mapviz_plugins
       while (static_cast<int>(points_.size()) > buffer_size_)
       {
         points_.pop_front();
-        transformed_points_.pop_front();
       }
     }
 
@@ -174,7 +173,6 @@ namespace mapviz_plugins
       while (static_cast<int>(points_.size()) > buffer_size_)
       {
         points_.pop_front();
-        transformed_points_.pop_front();
       }
     }
 
@@ -233,7 +231,6 @@ namespace mapviz_plugins
     
   void OdometryPlugin::Draw(double x, double y, double scale)
   {
-    
     glColor3f(color_.redF(), color_.greenF(), color_.blueF());
 
     if (draw_style_ == LINES)
@@ -247,29 +244,72 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-      std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
-      for (; transformed_it != transformed_points_.end(); ++transformed_it)
-      {
-        glVertex2f(transformed_it->getX(), transformed_it->getY());
-      }
+    bool transformed = false;
 
-      glVertex2f(current_point_transformed_.getX(), current_point_transformed_.getY());
+    std::list<StampedPoint>::iterator it = points_.begin();
+    for (; it != points_.end(); ++it)
+    {
+      if (it->transformed)
+      {
+        glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
+
+        transformed = true;
+      }
+    }
+
+    if (current_point_.transformed)
+    {
+      glVertex2f(
+        current_point_.transformed_point.getX(),
+        current_point_.transformed_point.getY());
+
+      transformed = true;
+    }
 
     glEnd();
+
+    if (transformed)
+    {
+      PrintInfo("OK");
+    }
   }
 
   void OdometryPlugin::Transform()
   {
-    std::list<tf::Point>::iterator points_it = points_.begin();
-    std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
-    for (; points_it != points_.end() && transformed_it != transformed_points_.end(); ++points_it)
-    {
-      (*transformed_it) = transform_ * (*points_it);
+    tf::StampedTransform transform;
 
-      ++transformed_it;
+    bool transformed = false;
+
+    std::list<StampedPoint>::iterator points_it = points_.begin();
+    for (; points_it != points_.end(); ++points_it)
+    {
+      if (GetTransform(points_it->stamp, transform))
+      {
+        points_it->transformed_point = transform * points_it->point;
+        points_it->transformed = true;
+        transformed = true;
+      }
+      else
+      {
+        points_it->transformed = false;
+      }
     }
 
-    current_point_transformed_ = transform_ * current_point_;
+    if (GetTransform(current_point_.stamp, transform))
+    {
+      current_point_.transformed_point = transform * current_point_.point;
+      current_point_.transformed = true;
+      transformed = true;
+    }
+    else
+    {
+      current_point_.transformed = false;
+    }
+
+    if (!points_.empty() && !transformed)
+    {
+      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+    }
   }
     
   void OdometryPlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
@@ -314,6 +354,5 @@ namespace mapviz_plugins
     emitter << YAML::Key << "position_tolerance" << YAML::Value << position_tolerance_;
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
   }
-  
 }
 

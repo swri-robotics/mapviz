@@ -46,7 +46,7 @@ namespace mapviz_plugins
 
     void Draw(double x, double y, double scale);
 
-    void Transform();
+    void Transform() {}
 
     void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
     void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
@@ -69,8 +69,6 @@ namespace mapviz_plugins
     void SetHeight(int height);
 
   private:
-    QGLWidget* canvas_;
-
     Ui::image_config ui_;
     QWidget* config_widget_;
 
