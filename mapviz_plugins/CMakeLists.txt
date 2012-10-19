@@ -40,7 +40,9 @@ file (GLOB UI_FILES src/*.ui)
 
 file (GLOB SRC_FILES 
 	src/multires_image_plugin.cpp 
-	src/image_plugin.cpp src/multires_view.cpp 
+	src/image_plugin.cpp
+	src/disparity_plugin.cpp 
+	src/multires_view.cpp 
 	src/odometry_plugin.cpp 
 	src/marker_plugin.cpp 
 	src/grid_plugin.cpp
@@ -51,7 +53,8 @@ QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 
 QT4_WRAP_CPP(SRC_FILES 
 	src/multires_image_plugin.h 
-	src/image_plugin.h 
+	src/image_plugin.h
+	src/disparity_plugin.h
 	src/odometry_plugin.h 
 	src/marker_plugin.h 
 	src/grid_plugin.h

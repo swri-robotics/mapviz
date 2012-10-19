@@ -13,6 +13,8 @@
   <depend package="tf"/>
   <depend package="std_msgs"/>
   <depend package="nav_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="stereo_msgs"/>
   <depend package="visualization_msgs"/>
   <depend package="mapviz"/>
   <depend package="multires_image"/>

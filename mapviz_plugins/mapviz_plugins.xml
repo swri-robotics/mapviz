@@ -14,6 +14,9 @@
   <class name="mapviz_plugins/image" type="mapviz_plugins::ImagePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Image mapviz plugin.</description>
   </class>
+  <class name="mapviz_plugins/disparity" type="mapviz_plugins::DisparityPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Disparity mapviz plugin.</description>
+  </class>
   <class name="mapviz_plugins/path" type="mapviz_plugins::PathPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Path mapviz plugin.</description>
   </class>
