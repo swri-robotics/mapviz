@@ -297,6 +297,7 @@ namespace mapviz_plugins
     }
 
     glPixelZoom( 1.0, -1.0 );
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glDrawPixels(image->cols, image->rows, format, GL_UNSIGNED_BYTE, image->ptr());
 
     PrintInfo("OK");
