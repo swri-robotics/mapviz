@@ -19,9 +19,9 @@
 namespace multires_image
 {
 
-  TileSetLayer::TileSetLayer(const georeference::GeoReference& geo, 
+  TileSetLayer::TileSetLayer(const georeference::GeoReference& geo,
                   const geospatial_index::WGS84UTM& utm,
-                  const std::string& path, 
+                  const std::string& path,
                   int tileSize, int layer) :
   m_geo(geo),
   m_utm(utm),
@@ -59,8 +59,6 @@ namespace multires_image
 
   bool TileSetLayer::Load(const std::string extension)
   {
-    printf("Loading layer %d: expecting %dx%d tiles\n.", m_layer, m_rows, m_columns);
-
     bool needsTiles = false;
 
     for (int32_t c = 0; c < m_columns; c++)
@@ -78,7 +76,7 @@ namespace multires_image
         int top    = r       * m_tileSize * m_scale;
         int bottom = (r + 1) * m_tileSize * m_scale;
         int right  = (c + 1) * m_tileSize * m_scale;
-        
+
         if (right > (int64_t)m_geo.Width())
         {
           right = m_geo.Width();
@@ -114,7 +112,7 @@ namespace multires_image
       /*
       if (!ImageManip.TileImage(image, path, tileSize))
       {
-        Console.WriteLine("Failed to generate tiles from " + image);  
+        Console.WriteLine("Failed to generate tiles from " + image);
       }
       */
     }
@@ -138,7 +136,7 @@ namespace multires_image
   }
 
   void TileSetLayer::GetTileRange(const BoundingBox<double>& area,
-                  int& startRow, int& startColumn, 
+                  int& startRow, int& startColumn,
                   int& endRow, int& endColumn) const
   {
     GetTileIndex(area.topLeft.X, area.topLeft.Y, startRow, startColumn);
