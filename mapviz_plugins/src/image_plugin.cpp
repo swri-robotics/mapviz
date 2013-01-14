@@ -46,8 +46,8 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    QObject::connect(ui_.anchor, SIGNAL(editTextChanged(QString)), this, SLOT(SetAnchor(QString)));
-    QObject::connect(ui_.units, SIGNAL(editTextChanged(QString)), this, SLOT(SetUnits(QString)));
+    QObject::connect(ui_.anchor, SIGNAL(activated(QString)), this, SLOT(SetAnchor(QString)));
+    QObject::connect(ui_.units, SIGNAL(activated(QString)), this, SLOT(SetUnits(QString)));
     QObject::connect(ui_.offsetx, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetX(int)));
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
@@ -397,11 +397,11 @@ namespace mapviz_plugins
 
     std::string anchor;
     node["anchor"] >> anchor;
-    ui_.anchor->setEditText(anchor.c_str());
+    ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
 
     std::string units;
     node["units"] >> units;
-    ui_.units->setEditText(units.c_str());
+    ui_.units->setCurrentIndex(ui_.units->findText(units.c_str()));
 
     node["offset_x"] >> offset_x_;
     ui_.offsetx->setValue(offset_x_);
