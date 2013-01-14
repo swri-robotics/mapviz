@@ -431,10 +431,12 @@ namespace mapviz_plugins
     std::string anchor;
     node["anchor"] >> anchor;
     ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
+    SetAnchor(anchor.c_str());
 
     std::string units;
     node["units"] >> units;
     ui_.units->setCurrentIndex(ui_.units->findText(units.c_str()));
+    SetUnits(units.c_str());
 
     node["offset_x"] >> offset_x_;
     ui_.offsetx->setValue(offset_x_);
