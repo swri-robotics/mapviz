@@ -46,8 +46,8 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    QObject::connect(ui_.anchor, SIGNAL(activated(QString)), this, SLOT(SetAnchor(QString)));
-    QObject::connect(ui_.units, SIGNAL(activated(QString)), this, SLOT(SetUnits(QString)));
+    QObject::connect(ui_.anchor, SIGNAL(editTextChanged(QString)), this, SLOT(SetAnchor(QString)));
+    QObject::connect(ui_.units, SIGNAL(editTextChanged(QString)), this, SLOT(SetUnits(QString)));
     QObject::connect(ui_.offsetx, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetX(int)));
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));

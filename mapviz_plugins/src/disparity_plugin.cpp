@@ -46,8 +46,8 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    QObject::connect(ui_.anchor, SIGNAL(activated(QString)), this, SLOT(SetAnchor(QString)));
-    QObject::connect(ui_.units, SIGNAL(activated(QString)), this, SLOT(SetUnits(QString)));
+    QObject::connect(ui_.anchor, SIGNAL(editTextChanged(QString)), this, SLOT(SetAnchor(QString)));
+    QObject::connect(ui_.units, SIGNAL(editTextChanged(QString)), this, SLOT(SetUnits(QString)));
     QObject::connect(ui_.offsetx, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetX(int)));
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
@@ -430,16 +430,23 @@ namespace mapviz_plugins
 
     std::string anchor;
     node["anchor"] >> anchor;
-    SetAnchor(anchor.c_str());
+    ui_.anchor->setEditText(anchor.c_str());
 
     std::string units;
     node["units"] >> units;
-    SetAnchor(units.c_str());
+    ui_.units->setEditText(units.c_str());
 
     node["offset_x"] >> offset_x_;
+    ui_.offsetx->setValue(offset_x_);
+
     node["offset_y"] >> offset_y_;
+    ui_.offsety->setValue(offset_y_);
+
     node["width"] >> width_;
+    ui_.width->setValue(width_);
+
     node["height"] >> height_;
+    ui_.height->setValue(height_);
   }
 
   void DisparityPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
