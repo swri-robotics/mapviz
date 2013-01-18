@@ -128,14 +128,10 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::UpdateShape()
   {
-    top_left_.setX(-width_/2.0);
-    top_left_.setY(height_ / 2.0);
-    top_right_.setX(width_/2.0);
-    top_right_.setY(height_ / 2.0);
-    bottom_left_.setX(-width_/2.0);
-    bottom_left_.setY(-height_/2.0);
-    bottom_right_.setX(width_/2.0);
-    bottom_right_.setY(-height_/2.0);
+    top_left_ = tf::Point(-width_ / 2.0, height_ / 2.0, 0);
+    top_right_ = tf::Point(width_ / 2.0, height_ / 2.0, 0);
+    bottom_left_ = tf::Point(-width_ / 2.0, -height_/2.0, 0);
+    bottom_right_ = tf::Point(width_ / 2.0, -height_ / 2.0, 0);
   }
 
   void RobotImagePlugin::PrintError(const std::string& message)
