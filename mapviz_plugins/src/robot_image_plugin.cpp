@@ -77,7 +77,7 @@ namespace mapviz_plugins
     ui.setupUi(&dialog);
 
     std::vector<std::string> frames;
-    transform_listener_.getFrameStrings(frames);
+    transform_listener_->getFrameStrings(frames);
 
     for (unsigned int i = 0; i < frames.size(); i++)
     {

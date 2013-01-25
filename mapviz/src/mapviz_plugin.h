@@ -4,6 +4,9 @@
 // C++ standard libraries
 #include <string>
 
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+
 // QT libraries
 #include <QWidget>
 #include <QGLWidget>
@@ -100,25 +103,25 @@ namespace mapviz
 
       ros::Duration elapsed = ros::Time::now() - time;
 
-      if (time != ros::Time() && elapsed > transform_listener_.getCacheLength())
+      if (time != ros::Time() && elapsed > transform_listener_->getCacheLength())
       {
         return false;
       }
 
       try
       {
-        if (transform_listener_.canTransform(target_frame_, source_frame_, time))
+        if (transform_listener_->canTransform(target_frame_, source_frame_, time))
         {
-          transform_listener_.lookupTransform(target_frame_, source_frame_, time, transform);
+          transform_listener_->lookupTransform(target_frame_, source_frame_, time, transform);
           return true;
         }
         else if (elapsed.toSec() < 0.1)
         {
           // If the stamped transform failed because it is too recent, find the
           // most recent transform in the cache instead.
-          if (transform_listener_.canTransform(target_frame_, source_frame_, ros::Time()))
+          if (transform_listener_->canTransform(target_frame_, source_frame_, ros::Time()))
           {
-            transform_listener_.lookupTransform(target_frame_, source_frame_,  ros::Time(), transform);
+            transform_listener_->lookupTransform(target_frame_, source_frame_,  ros::Time(), transform);
             return true;
           }
         }
@@ -162,7 +165,7 @@ namespace mapviz
 
     ros::NodeHandle node_;
 
-    tf::TransformListener transform_listener_;
+    boost::shared_ptr<tf::TransformListener> transform_listener_;
     std::string target_frame_;
     std::string source_frame_;
     std::string type_;
@@ -176,6 +179,7 @@ namespace mapviz
       initialized_(false),
       visible_(true),
       canvas_(NULL),
+      transform_listener_(boost::make_shared<tf::TransformListener>()),
       target_frame_(""),
       source_frame_(""),
       use_latest_transforms_(false),

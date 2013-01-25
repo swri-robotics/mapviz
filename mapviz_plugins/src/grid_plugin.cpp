@@ -129,7 +129,7 @@ namespace mapviz_plugins
       return;
 
     std::vector<std::string> frames;
-    transform_listener_.getFrameStrings(frames);
+    transform_listener_->getFrameStrings(frames);
 
     if ((int)frames.size() == ui_.frame->count())
     {
