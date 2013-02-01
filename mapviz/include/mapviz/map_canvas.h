@@ -16,7 +16,7 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
 
-#include "mapviz_plugin.h"
+#include <mapviz/mapviz_plugin.h>
 
 class MapCanvas : public QGLWidget
 {

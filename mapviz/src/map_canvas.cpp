@@ -1,7 +1,7 @@
 // C++ standard libraries
 #include <cmath>
 
-#include "map_canvas.h"
+#include <mapviz/map_canvas.h>
 
 bool compare_plugins (mapviz::MapvizPlugin* a, mapviz::MapvizPlugin* b)
 {

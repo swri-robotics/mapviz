@@ -372,7 +372,7 @@
   <customwidget>
    <class>PluginConfigList</class>
    <extends>QListWidget</extends>
-   <header>widgets.h</header>
+   <header>mapviz/widgets.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

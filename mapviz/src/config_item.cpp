@@ -1,6 +1,6 @@
 // QT libraries
 
-#include "config_item.h"
+#include <mapviz/config_item.h>
 
 ConfigItem::ConfigItem(QWidget *parent, Qt::WFlags flags) :
   QWidget(parent, flags),

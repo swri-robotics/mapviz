@@ -11,8 +11,8 @@
 #include <QActionGroup>
 #include <QColorDialog>
 
-#include "mapviz.h"
-#include "config_item.h"
+#include <mapviz/mapviz.h>
+#include <mapviz/config_item.h>
 
 Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
     QMainWindow(parent, flags),

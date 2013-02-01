@@ -28,8 +28,8 @@
 #include "ui_mapviz.h"
 #include "ui_pluginselect.h"
 
-#include "mapviz_plugin.h"
-#include "map_canvas.h"
+#include <mapviz/mapviz_plugin.h>
+#include <mapviz/map_canvas.h>
 
 class Mapviz : public QMainWindow
 {

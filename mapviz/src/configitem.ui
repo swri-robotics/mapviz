@@ -685,7 +685,7 @@
   <customwidget>
    <class>DoubleClickWidget</class>
    <extends>QWidget</extends>
-   <header>widgets.h</header>
+   <header>mapviz/widgets.h</header>
    <container>1</container>
    <slots>
     <signal>DoubleClicked()</signal>
@@ -694,7 +694,7 @@
   <customwidget>
    <class>SingleClickLabel</class>
    <extends>QLabel</extends>
-   <header>widgets.h</header>
+   <header>mapviz/widgets.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
