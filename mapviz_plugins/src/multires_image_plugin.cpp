@@ -10,7 +10,7 @@
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 
-#include "multires_image_plugin.h"
+#include <mapviz_plugins/multires_image_plugin.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

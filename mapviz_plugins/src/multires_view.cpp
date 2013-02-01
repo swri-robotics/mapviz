@@ -1,5 +1,5 @@
 
-#include "multires_view.h"
+#include <mapviz_plugins/multires_view.h>
 
 // C++ standard libraries
 #include <cmath>

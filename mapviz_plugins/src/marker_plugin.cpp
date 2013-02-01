@@ -1,4 +1,4 @@
-#include "marker_plugin.h"
+#include <mapviz_plugins/marker_plugin.h>
 
 // C++ standard libraries
 #include <cmath>

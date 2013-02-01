@@ -11,7 +11,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "image_plugin.h"
+#include <mapviz_plugins/image_plugin.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

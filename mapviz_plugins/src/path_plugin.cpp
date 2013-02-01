@@ -9,7 +9,7 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include "path_plugin.h"
+#include <mapviz_plugins/path_plugin.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

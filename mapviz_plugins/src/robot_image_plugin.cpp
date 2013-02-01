@@ -12,7 +12,7 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include "robot_image_plugin.h"
+#include <mapviz_plugins/robot_image_plugin.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

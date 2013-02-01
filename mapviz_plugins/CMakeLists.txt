@@ -52,14 +52,14 @@ file (GLOB SRC_FILES
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 
 QT4_WRAP_CPP(SRC_FILES 
-	src/multires_image_plugin.h 
-	src/image_plugin.h
-	src/disparity_plugin.h
-	src/odometry_plugin.h 
-	src/marker_plugin.h 
-	src/grid_plugin.h
-	src/path_plugin.h
-	src/robot_image_plugin.h)
+	include/mapviz_plugins/multires_image_plugin.h 
+	include/mapviz_plugins/image_plugin.h
+	include/mapviz_plugins/disparity_plugin.h
+	include/mapviz_plugins/odometry_plugin.h 
+	include/mapviz_plugins/marker_plugin.h 
+	include/mapviz_plugins/grid_plugin.h
+	include/mapviz_plugins/path_plugin.h
+	include/mapviz_plugins/robot_image_plugin.h)
 
 rosbuild_add_library(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})

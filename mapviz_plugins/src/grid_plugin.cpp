@@ -7,7 +7,7 @@
 #include <QGLWidget>
 #include <QPalette>
 
-#include "grid_plugin.h"
+#include <mapviz_plugins/grid_plugin.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
