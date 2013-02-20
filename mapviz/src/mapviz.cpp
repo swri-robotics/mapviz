@@ -646,6 +646,9 @@ int main(int argc, char **argv)
   // Initialize QT
   QApplication app(argc, argv);
 
+  // Initialize glut (for displaying text)
+  glutInit(&argc,argv);
+
   Mapviz mapviz(argc, argv);
   mapviz.show();
 

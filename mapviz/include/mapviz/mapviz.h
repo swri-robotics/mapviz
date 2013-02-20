@@ -23,6 +23,7 @@
 #include <pluginlib/class_loader.h>
 #include <tf/transform_listener.h>
 #include <yaml-cpp/yaml.h>
+#include <GL/glut.h>
 
 // Auto-generated UI files
 #include "ui_mapviz.h"

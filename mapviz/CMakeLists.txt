@@ -20,6 +20,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # Require glu
 FIND_PACKAGE(GLU REQUIRED)
+FIND_PACKAGE(GLUT REQUIRED)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
@@ -44,5 +45,5 @@ file (GLOB SRC_FILES src/mapviz.cpp src/config_item.cpp src/map_canvas.cpp)
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 QT4_WRAP_CPP(SRC_FILES include/mapviz/mapviz.h include/mapviz/config_item.h include/mapviz/widgets.h include/mapviz/map_canvas.h)
 rosbuild_add_executable(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} yaml-cpp)
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} yaml-cpp)
 rosbuild_link_boost(${PROJECT_NAME} system filesystem)
