@@ -138,6 +138,7 @@ namespace mapviz_plugins
       markerData.transformed = true;
 
       markerData.points.clear();
+      markerData.texts.clear();
 
       tf::StampedTransform transform;
       if (!GetTransform(marker->header.stamp, transform))
@@ -161,6 +162,16 @@ namespace mapviz_plugins
         point.color = markerData.color;
 
         markerData.points.push_back(point);
+      }
+      else if(markerData.display_type == visualization_msgs::Marker::TEXT_VIEW_FACING)
+      {
+        StampedPoint point;
+        point.point = tf::Point(x, y, z);
+        point.transformed_point = transform * point.point;
+        point.color = markerData.color;
+
+        markerData.points.push_back(point);
+        markerData.texts.push_back(marker->text);
       }
       else
       {
@@ -376,6 +387,32 @@ namespace mapviz_plugins
             }
 
             glEnd();
+          }
+        }
+        else if (marker.display_type== visualization_msgs::Marker::TEXT_VIEW_FACING)
+        {
+          std::list<StampedPoint>::iterator point_it = marker.points.begin();
+          std::list<std::string>::iterator str_it = marker.texts.begin();
+          if(marker.points.size() == marker.texts.size())
+          {
+            for (; point_it != marker.points.end(); ++point_it)
+            {
+              glPushMatrix();
+              glRasterPos3f(point_it->point.x(), point_it->point.y(), 0.0); // z must be 0.0
+              for (int i = 0; i < (int) (str_it)->size(); i++)
+              {
+                glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10,
+                    static_cast<int>(str_it->c_str()[i]));
+                // glutBitmapCharacter(glutBitmapHelvetica10,buf.at(i));
+              }
+              glPushMatrix();
+              str_it++;
+            }
+          }
+          else
+          {
+            ROS_ERROR("Error: Points list of size %d and texts list of size %d are not equal",
+                (int)marker.points.size(), (int)marker.texts.size());
           }
         }
 

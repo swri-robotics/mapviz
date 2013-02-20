@@ -19,6 +19,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <std_msgs/ColorRGBA.h>
 
+#include <GL/glut.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 
@@ -78,6 +79,7 @@ namespace mapviz_plugins
       QColor color;
 
       std::list<StampedPoint> points;
+      std::list<std::string> texts;
 
       float scale_x;
       float scale_y;
