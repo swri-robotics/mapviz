@@ -7,13 +7,13 @@
   <author>Marc Alban</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/multires_image</url>
+  <url></url>
 
   <depend package="common_rosdeps" />
   <depend package="roscpp"/>
-  <depend package="geospatial_index"/>
-  <depend package="georeference"/>
-  <depend package="opencv2" />
+  <depend package="transform_util" />
+
+  <rosdep name="opencv2.3"/>
 
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lmultires_widget -lmultires_image -Wl,-rpath,${prefix}/lib"/>

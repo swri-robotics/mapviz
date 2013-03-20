@@ -7,7 +7,7 @@
   <author>Marc</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/mapviz</url>
+  <url></url>
 
   <depend package="common_rosdeps"/>
   <depend package="roscpp"/>

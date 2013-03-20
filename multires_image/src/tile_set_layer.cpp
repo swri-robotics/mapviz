@@ -19,8 +19,8 @@
 namespace multires_image
 {
 
-  TileSetLayer::TileSetLayer(const georeference::GeoReference& geo,
-                  const geospatial_index::WGS84UTM& utm,
+  TileSetLayer::TileSetLayer(const transform_util::GeoReference& geo,
+                  const transform_util::UtmTransforms& utm,
                   const std::string& path,
                   int tileSize, int layer) :
   m_geo(geo),

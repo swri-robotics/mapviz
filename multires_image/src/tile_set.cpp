@@ -36,13 +36,13 @@ namespace multires_image
   {
   }
 
-  TileSet::TileSet(const georeference::GeoReference& georeference) :
+  TileSet::TileSet(const transform_util::GeoReference& georeference) :
     m_geo(georeference),
     m_extension("jpg")
   {
   }
 
-  TileSet::TileSet(const georeference::GeoReference& georeference,
+  TileSet::TileSet(const transform_util::GeoReference& georeference,
                    const std::string extension) :
     m_geo(georeference),
     m_extension(extension)
@@ -117,7 +117,7 @@ namespace multires_image
       else if (m_geo.Projection() == "geographic")
       {
         // TODO(malban): UTM zone should not be hard coded.
-        m_utm.GetLatLong(14, 'R', easting, northing, y, x);
+        m_utm.ToLatLon(14, 'R', easting, northing, y, x);
       }
     }
   }
@@ -137,7 +137,7 @@ namespace multires_image
       {
         int zone;
         char band;
-        m_utm.GetUtm(y, x, zone, band, easting, northing);
+        m_utm.ToUtm(y, x, zone, band, easting, northing);
       }
     }
   }

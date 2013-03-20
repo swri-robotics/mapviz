@@ -17,8 +17,8 @@
 #include <QImage>
 #include <QMutex>
 
-#include <georeference/georeference.h>
-#include <geospatial_index/wgs84_utm.h>
+#include <transform_util/georeference.h>
+#include <transform_util/gps_transforms.h>
 
 #include <multires_image/point.h>
 
@@ -31,7 +31,7 @@ namespace multires_image
   class Tile
   {
   public:
-    Tile(const georeference::GeoReference& geo, const geospatial_index::WGS84UTM& utm,
+    Tile(const transform_util::GeoReference& geo, const transform_util::UtmTransforms& utm,
       const std::string& path, int column, int row, int level, const PointT<double>& topLeft,
       const PointT<double>& topRight, const PointT<double>& bottomLeft, const PointT<double>& bottomRight);
     ~Tile(void);
@@ -76,8 +76,8 @@ namespace multires_image
 
     void ConvertToUtm();
 
-    const georeference::GeoReference& m_geo;
-    const geospatial_index::WGS84UTM& m_utm;
+    const transform_util::GeoReference& m_geo;
+    const transform_util::UtmTransforms& m_utm;
     const std::string   m_path;
     const int           m_column;
     const int           m_row;

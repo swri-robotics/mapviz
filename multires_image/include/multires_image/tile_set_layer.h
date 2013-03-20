@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include <georeference/georeference.h>
-#include <geospatial_index/wgs84_utm.h>
+#include <transform_util/georeference.h>
+#include <transform_util/gps_transforms.h>
 
 #include <multires_image/tile.h>
 #include <multires_image/point.h>
@@ -27,7 +27,9 @@ namespace multires_image
   class TileSetLayer
   {
   public:
-    TileSetLayer(const georeference::GeoReference& geo, const geospatial_index::WGS84UTM& utm,
+    TileSetLayer(
+      const transform_util::GeoReference& geo, 
+      const transform_util::UtmTransforms& utm,
       const std::string& path, 
       int tileSize, int layer);
 
@@ -50,8 +52,8 @@ namespace multires_image
     void AdjustGeoReference(double latitude, double longitude);
 
   private:
-    const georeference::GeoReference& m_geo;
-    const geospatial_index::WGS84UTM& m_utm;
+    const transform_util::GeoReference& m_geo;
+    const transform_util::UtmTransforms& m_utm;
     const std::string      m_path;
     const int              m_tileSize;
     const int              m_layer;
