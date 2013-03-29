@@ -15,7 +15,7 @@
 #include <vector>
 
 #include <transform_util/georeference.h>
-#include <transform_util/gps_transforms.h>
+#include <transform_util/utm_util.h>
 
 #include <multires_image/tile_set_layer.h>
 #include <multires_image/point.h>
@@ -50,7 +50,7 @@ namespace multires_image
 
   private:
     transform_util::GeoReference  m_geo;
-    transform_util::UtmTransforms m_utm;
+    transform_util::UtmUtil       m_utm;
     int                           m_tileSize;
     int                           m_width;
     int                           m_height;

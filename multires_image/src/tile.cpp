@@ -23,9 +23,9 @@
 
 namespace multires_image
 {
-  Tile::Tile(const transform_util::GeoReference& geo, const transform_util::UtmTransforms& utm,
-         const std::string& path, int column, int row, int level,  
-         const PointT<double>& topLeft, const PointT<double>& topRight, 
+  Tile::Tile(const transform_util::GeoReference& geo, const transform_util::UtmUtil& utm,
+         const std::string& path, int column, int row, int level,
+         const PointT<double>& topLeft, const PointT<double>& topRight,
          const PointT<double>& bottomLeft, const PointT<double>& bottomRight) :
     m_geo(geo),
     m_utm(utm),
@@ -72,7 +72,7 @@ namespace multires_image
       {
         int zone;
         char band;
-          
+
         m_utm.ToUtm(m_topLeft.Y, m_topLeft.X, zone, band, m_topLeftUtm.X, m_topLeftUtm.Y);
         m_utm.ToUtm(m_topRight.Y, m_topRight.X, zone, band, m_topRightUtm.X, m_topRightUtm.Y);
         m_utm.ToUtm(m_bottomRight.Y, m_bottomRight.X, zone, band, m_bottomRightUtm.X, m_bottomRightUtm.Y);

@@ -18,12 +18,12 @@
 #include <QMutex>
 
 #include <transform_util/georeference.h>
-#include <transform_util/gps_transforms.h>
+#include <transform_util/utm_util.h>
 
 #include <multires_image/point.h>
 
-#ifndef GL_CLAMP_TO_EDGE  
-#define GL_CLAMP_TO_EDGE 0x812F 
+#ifndef GL_CLAMP_TO_EDGE
+#define GL_CLAMP_TO_EDGE 0x812F
 #endif
 
 namespace multires_image
@@ -31,7 +31,7 @@ namespace multires_image
   class Tile
   {
   public:
-    Tile(const transform_util::GeoReference& geo, const transform_util::UtmTransforms& utm,
+    Tile(const transform_util::GeoReference& geo, const transform_util::UtmUtil& utm,
       const std::string& path, int column, int row, int level, const PointT<double>& topLeft,
       const PointT<double>& topRight, const PointT<double>& bottomLeft, const PointT<double>& bottomRight);
     ~Tile(void);
@@ -77,12 +77,12 @@ namespace multires_image
     void ConvertToUtm();
 
     const transform_util::GeoReference& m_geo;
-    const transform_util::UtmTransforms& m_utm;
+    const transform_util::UtmUtil& m_utm;
     const std::string   m_path;
     const int           m_column;
     const int           m_row;
     const int           m_level;
-    
+
     PointT<double>      m_topLeft;
     PointT<double>      m_topRight;
     PointT<double>      m_bottomRight;

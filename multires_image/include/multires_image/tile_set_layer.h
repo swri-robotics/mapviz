@@ -15,7 +15,7 @@
 #include <vector>
 
 #include <transform_util/georeference.h>
-#include <transform_util/gps_transforms.h>
+#include <transform_util/utm_util.h>
 
 #include <multires_image/tile.h>
 #include <multires_image/point.h>
@@ -28,9 +28,9 @@ namespace multires_image
   {
   public:
     TileSetLayer(
-      const transform_util::GeoReference& geo, 
-      const transform_util::UtmTransforms& utm,
-      const std::string& path, 
+      const transform_util::GeoReference& geo,
+      const transform_util::UtmUtil& utm,
+      const std::string& path,
       int tileSize, int layer);
 
     ~TileSetLayer(void);
@@ -43,7 +43,7 @@ namespace multires_image
     void GetTileIndex(const PointT<double>& position, int& row, int& column) const;
     void GetTileIndex(double x, double y, int& row, int& column) const;
     void GetTileRange(const BoundingBox<double>& area,
-      int& startRow, int& startColumn, 
+      int& startRow, int& startColumn,
       int& endRow, int& endColumn) const;
 
     int RowCount() { return m_rows; }
@@ -53,12 +53,12 @@ namespace multires_image
 
   private:
     const transform_util::GeoReference& m_geo;
-    const transform_util::UtmTransforms& m_utm;
+    const transform_util::UtmUtil& m_utm;
     const std::string      m_path;
     const int              m_tileSize;
     const int              m_layer;
     const double           m_scale;
-    
+
     bool                   m_expectTiles;
 
     int                    m_columns;
