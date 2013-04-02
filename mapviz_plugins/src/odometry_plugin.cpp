@@ -63,6 +63,10 @@ namespace mapviz_plugins
     {
       draw_style_ = POINTS;
     }
+    else if (style == "arrows")
+    {
+      draw_style_ = ARROWS;
+    }
 
     canvas_->update();
   }
@@ -84,7 +88,7 @@ namespace mapviz_plugins
       }
     }
     ui.displaylist->setCurrentRow(0);
-    
+
     dialog.exec();
 
     if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
@@ -93,7 +97,7 @@ namespace mapviz_plugins
       TopicEdited();
     }
   }
-  
+
   void OdometryPlugin::SelectColor()
   {
     QColorDialog dialog(color_, config_widget_);
@@ -106,7 +110,7 @@ namespace mapviz_plugins
       canvas_->update();
     }
   }
-  
+
   void OdometryPlugin::TopicEdited()
   {
     if (ui_.topic->text().toStdString() != topic_)
@@ -123,7 +127,7 @@ namespace mapviz_plugins
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
-  
+
   void OdometryPlugin::odometryCallback(const nav_msgs::OdometryConstPtr odometry)
   {
     if (!has_message_)
@@ -140,6 +144,12 @@ namespace mapviz_plugins
         odometry->pose.pose.position.x,
         odometry->pose.pose.position.y,
         odometry->pose.pose.position.z);
+
+    stamped_point.orientation = tf::Quaternion(
+        odometry->pose.pose.orientation.x,
+        odometry->pose.pose.orientation.y,
+        odometry->pose.pose.orientation.z,
+        odometry->pose.pose.orientation.w);
 
     current_point_ = stamped_point;
 
@@ -184,7 +194,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_ERROR("Error: %s", message.c_str()); 
+    ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p);
@@ -196,7 +206,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_INFO("%s", message.c_str()); 
+    ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p);
@@ -225,26 +235,67 @@ namespace mapviz_plugins
   bool OdometryPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
-  
+
     return true;
   }
-    
+
   void OdometryPlugin::Draw(double x, double y, double scale)
   {
     glColor3f(color_.redF(), color_.greenF(), color_.blueF());
 
-    if (draw_style_ == LINES)
+    bool transformed = false;
+
+    if (draw_style_ == ARROWS)
     {
-      glLineWidth(3);
-      glBegin(GL_LINE_STRIP);
+      transformed = DrawArrows();
     }
     else
     {
-      glPointSize(6);
-      glBegin(GL_POINTS);
+      if (draw_style_ == LINES)
+      {
+        glLineWidth(3);
+        glBegin(GL_LINE_STRIP);
+      }
+      else
+      {
+        glPointSize(6);
+        glBegin(GL_POINTS);
+      }
+
+      std::list<StampedPoint>::iterator it = points_.begin();
+      for (; it != points_.end(); ++it)
+      {
+        if (it->transformed)
+        {
+          glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
+
+          transformed = true;
+        }
+      }
+
+      if (current_point_.transformed)
+      {
+        glVertex2f(
+          current_point_.transformed_point.getX(),
+          current_point_.transformed_point.getY());
+
+        transformed = true;
+      }
+
+      glEnd();
     }
 
+    if (transformed)
+    {
+      PrintInfo("OK");
+    }
+  }
+
+  bool OdometryPlugin::DrawArrows()
+  {
     bool transformed = false;
+    glLineWidth(2);
+    glBegin(GL_LINES);
 
     std::list<StampedPoint>::iterator it = points_.begin();
     for (; it != points_.end(); ++it)
@@ -252,6 +303,13 @@ namespace mapviz_plugins
       if (it->transformed)
       {
         glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
+        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
+
+        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
+        glVertex2f(it->transformed_arrow_left.getX(), it->transformed_arrow_left.getY());
+
+        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
+        glVertex2f(it->transformed_arrow_right.getX(), it->transformed_arrow_right.getY());
 
         transformed = true;
       }
@@ -262,16 +320,51 @@ namespace mapviz_plugins
       glVertex2f(
         current_point_.transformed_point.getX(),
         current_point_.transformed_point.getY());
+      glVertex2f(
+        current_point_.transformed_arrow_point.getX(),
+        current_point_.transformed_arrow_point.getY());
+
+      glVertex2f(
+        current_point_.transformed_arrow_point.getX(),
+        current_point_.transformed_arrow_point.getY());
+      glVertex2f(
+        current_point_.transformed_arrow_left.getX(),
+        current_point_.transformed_arrow_left.getY());
+
+      glVertex2f(
+        current_point_.transformed_arrow_point.getX(),
+        current_point_.transformed_arrow_point.getY());
+      glVertex2f(
+        current_point_.transformed_arrow_right.getX(),
+        current_point_.transformed_arrow_right.getY());
 
       transformed = true;
     }
 
+
     glEnd();
 
-    if (transformed)
+    return transformed;
+  }
+
+  bool OdometryPlugin::TransformPoint(StampedPoint& point)
+  {
+    tf::StampedTransform transform;
+    if (GetTransform(point.stamp, transform))
     {
-      PrintInfo("OK");
+      point.transformed_point = transform * point.point;
+
+      tf::Transform orientation(transform * point.orientation);
+      point.transformed_arrow_point = point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
+      point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
+      point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
+
+      point.transformed = true;
+      return true;
     }
+
+     point.transformed = false;
+     return false;
   }
 
   void OdometryPlugin::Transform()
@@ -283,35 +376,17 @@ namespace mapviz_plugins
     std::list<StampedPoint>::iterator points_it = points_.begin();
     for (; points_it != points_.end(); ++points_it)
     {
-      if (GetTransform(points_it->stamp, transform))
-      {
-        points_it->transformed_point = transform * points_it->point;
-        points_it->transformed = true;
-        transformed = true;
-      }
-      else
-      {
-        points_it->transformed = false;
-      }
+      transformed = transformed | TransformPoint(*points_it);
     }
 
-    if (GetTransform(current_point_.stamp, transform))
-    {
-      current_point_.transformed_point = transform * current_point_.point;
-      current_point_.transformed = true;
-      transformed = true;
-    }
-    else
-    {
-      current_point_.transformed = false;
-    }
+    transformed = transformed | TransformPoint(current_point_);
 
     if (!points_.empty() && !transformed)
     {
       PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
-    
+
   void OdometryPlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
   {
     std::string topic;
@@ -325,7 +400,7 @@ namespace mapviz_plugins
 
     std::string draw_style;
     node["draw_style"] >> draw_style;
-    
+
     if (draw_style == "lines")
     {
       draw_style_ = LINES;
@@ -336,6 +411,11 @@ namespace mapviz_plugins
       draw_style_ = POINTS;
       ui_.drawstyle->setCurrentIndex(1);
     }
+    else if (draw_style == "arrows")
+    {
+      draw_style_ = ARROWS;
+      ui_.drawstyle->setCurrentIndex(2);
+    }
 
     node["position_tolerance"] >> position_tolerance_;
     ui_.positiontolerance->setValue(position_tolerance_);
@@ -345,7 +425,7 @@ namespace mapviz_plugins
 
     TopicEdited();
   }
-  
+
   void OdometryPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();

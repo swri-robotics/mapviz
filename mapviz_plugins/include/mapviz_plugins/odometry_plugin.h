@@ -30,29 +30,33 @@ namespace mapviz_plugins
   {
 
     Q_OBJECT
-  
+
   public:
 
     struct StampedPoint
     {
       tf::Point point;
+      tf::Quaternion orientation;
       tf::Point transformed_point;
+      tf::Point transformed_arrow_point;
+      tf::Point transformed_arrow_left;
+      tf::Point transformed_arrow_right;
       bool transformed;
       ros::Time stamp;
     };
 
-    enum DrawStyle { LINES = 0, POINTS };
+    enum DrawStyle { LINES = 0, POINTS, ARROWS };
 
     OdometryPlugin();
     virtual ~OdometryPlugin();
 
     bool Initialize(QGLWidget* canvas);
     void Shutdown() {}
-    
+
     void Draw(double x, double y, double scale);
 
     void Transform();
-    
+
     void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
     void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
 
@@ -71,8 +75,11 @@ namespace mapviz_plugins
     void AngleToleranceChanged(double value);
     void BufferSizeChanged(int value);
     void SetDrawStyle(QString style);
-    
+
   private:
+    bool DrawArrows();
+    bool TransformPoint(StampedPoint& point);
+
     Ui::odometry_config ui_;
     QWidget* config_widget_;
     QColor color_;
