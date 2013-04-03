@@ -3,12 +3,10 @@
 // C++ standard libraries
 #include <cmath>
 
-#include <multires_image/math_util.h>
-
 namespace multires_image
 {
 
-QGLMap::QGLMap(QWidget *parent) : 
+QGLMap::QGLMap(QWidget *parent) :
   QGLWidget(parent),
   m_viewCenter(0,0),
   m_initialized(false),
@@ -47,7 +45,7 @@ void QGLMap::UpdateView()
     glViewport(0, 0, width(), height());
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(m_viewBox.topLeft.X, m_viewBox.bottomRight.X, 
+    glOrtho(m_viewBox.topLeft.X, m_viewBox.bottomRight.X,
       m_viewBox.bottomRight.Y, m_viewBox.topLeft.Y, -0.5f, 0.5f);
 
     update();
@@ -68,12 +66,12 @@ void QGLMap::SetTiles(TileSet* tiles)
   m_sceneBox.topLeft = PointT<double>(left, top);
   m_sceneBox.bottomRight = PointT<double>(right, bottom);
   m_sceneBox.Update();
-  
+
   m_viewCenter = m_sceneBox.Center;
 
   m_tileView = new TileView(tiles, this);
 
-  connect(m_tileView->Cache(), SIGNAL(SignalMemorySize(long)), 
+  connect(m_tileView->Cache(), SIGNAL(SignalMemorySize(long)),
     SLOT(SetTextureMemory(long)));
 
   // Create connections for the texture loading functions which must
@@ -85,7 +83,7 @@ void QGLMap::SetTiles(TileSet* tiles)
 void QGLMap::wheelEvent(QWheelEvent* e)
 {
   float numDegrees = e->delta() / -8;
-  
+
   m_scale *= pow(1.1, numDegrees / 10.0);
 
   UpdateView();

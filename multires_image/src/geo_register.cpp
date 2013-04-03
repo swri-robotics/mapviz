@@ -1,6 +1,6 @@
 /*
 * GeoRegister.cpp
-* 
+*
 * Copyright (C) 2010 Southwest Research Institute <tbrown@swri.org>
 *
 * Created on: Feb 26, 2010
@@ -15,7 +15,7 @@
 #include <vector>
 #include <exception>
 
-#include <multires_image/math_util.h>
+#include <math_util/math_util.h>
 #include <multires_image/string_util.h>
 
 namespace multires_image
@@ -160,8 +160,8 @@ void GeoRegister::ProcessLine(const std::string& line)
       // Assumes degrees.
       double latitude = StringUtil::ToDouble(values[1]);
       double longitude = StringUtil::ToDouble(values[2]);
-      m_referenceCoordinate.Y = (long) MathUtil::Round(latitude * 1000000);
-      m_referenceCoordinate.X = (long) MathUtil::Round(longitude * 1000000);
+      m_referenceCoordinate.Y = (long) math_util::Round(latitude * 1000000);
+      m_referenceCoordinate.X = (long) math_util::Round(longitude * 1000000);
     }
   }
 }

@@ -19,7 +19,7 @@
 #include <QGLWidget>
 #include <QFile>
 
-#include <multires_image/math_util.h>
+#include <math_util/math_util.h>
 
 namespace multires_image
 {
@@ -108,7 +108,7 @@ namespace multires_image
             ConvertToUtm();
 
             int maxDimension = std::max(width, height);
-            m_dimension = (int)MathUtil::Round(pow(2, ceil(log((float)maxDimension)/log(2.0f))));
+            m_dimension = (int32_t)math_util::Round(pow(2, ceil(log((float)maxDimension)/log(2.0f))));
 
             if (width != m_dimension || height != m_dimension)
             {

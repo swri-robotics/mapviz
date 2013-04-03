@@ -46,7 +46,6 @@ rosbuild_add_boost_directories()
 file (GLOB TILE_SRC_FILES 
    src/geo_register.cpp
    src/image_manip.cpp
-   src/math_util.cpp
    src/point.cpp
    src/string_util.cpp
    src/tile.cpp

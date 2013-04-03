@@ -12,6 +12,7 @@
   <depend package="common_rosdeps" />
   <depend package="roscpp"/>
   <depend package="transform_util" />
+  <depend package="math_util" />
 
   <rosdep name="opencv2.3"/>
 
