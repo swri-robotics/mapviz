@@ -20,6 +20,8 @@
   <depend package="multires_image"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
+  
+  <depend package="math_util"/>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

@@ -31,6 +31,8 @@
 // ROS libraries
 #include <ros/master.h>
 
+#include <math_util/constants.h>
+
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
@@ -41,7 +43,6 @@ PLUGINLIB_DECLARE_CLASS(
 
 namespace mapviz_plugins
 {
-
   MarkerPlugin::MarkerPlugin() :
     config_widget_(new QWidget()),
     is_marker_array_(false)
@@ -64,7 +65,6 @@ namespace mapviz_plugins
 
   MarkerPlugin::~MarkerPlugin()
   {
-
   }
 
   void MarkerPlugin::SelectTopic()
@@ -144,9 +144,6 @@ namespace mapviz_plugins
 
     if (marker->action == visualization_msgs::Marker::ADD)
     {
-      //ROS_WARN("Add/modify marker message, id = %d", marker->id);
-
-
       MarkerData& markerData = markers_[marker->id];
       markerData.stamp = marker->header.stamp;
       markerData.display_type = marker->type;
@@ -166,9 +163,9 @@ namespace mapviz_plugins
         PrintError("No transform between " + source_frame_ + " and " + target_frame_);
       }
 
-      // TODO handle lifetime parameter
+      // TODO(malban): handle lifetime parameter
 
-      // TODO correctly transform points based on the pose
+      // TODO(malban): correctly transform points based on the pose
       double x = marker->pose.position.x;
       double y = marker->pose.position.y;
       double z = marker->pose.position.z;
@@ -182,7 +179,7 @@ namespace mapviz_plugins
 
         markerData.points.push_back(point);
       }
-      else if(markerData.display_type == visualization_msgs::Marker::TEXT_VIEW_FACING)
+      else if (markerData.display_type == visualization_msgs::Marker::TEXT_VIEW_FACING)
       {
         StampedPoint point;
         point.point = tf::Point(x, y, z);
@@ -219,7 +216,6 @@ namespace mapviz_plugins
     }
     else
     {
-      //ROS_WARN("delete marker message, id = %d", marker->id);
       markers_.erase(marker->id);
     }
 
@@ -398,11 +394,12 @@ namespace mapviz_plugins
 
             glVertex2f(x, y);
 
-            for (int i = 0; i <= 360; i += 10)
+            for (int32_t i = 0; i <= 360; i += 10)
             {
+              float radians = static_cast<float>(i) * math_util::_deg_2_rad;
               glVertex2f(
-                  x + std::sin((float)i * 0.0174532925) * marker.scale_x,
-                  y + std::cos((float)i * 0.0174532925) * marker.scale_y);
+                  x + std::sin(radians) * marker.scale_x,
+                  y + std::cos(radians) * marker.scale_y);
             }
 
             glEnd();
@@ -412,13 +409,13 @@ namespace mapviz_plugins
         {
           std::list<StampedPoint>::iterator point_it = marker.points.begin();
           std::list<std::string>::iterator str_it = marker.texts.begin();
-          if(marker.points.size() == marker.texts.size())
+          if (marker.points.size() == marker.texts.size())
           {
             for (; point_it != marker.points.end(); ++point_it)
             {
               glPushMatrix();
-              glRasterPos3f(point_it->point.x(), point_it->point.y(), 0.0); // z must be 0.0
-              for (int i = 0; i < (int) (str_it)->size(); i++)
+              glRasterPos3f(point_it->point.x(), point_it->point.y(), 0.0);
+              for (uint32_t i = 0; i < str_it->size(); i++)
               {
                 glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10,
                     static_cast<int>(str_it->c_str()[i]));
@@ -481,6 +478,5 @@ namespace mapviz_plugins
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;
   }
-
 }
 
