@@ -24,6 +24,9 @@
 #include <cstdio>
 #include <vector>
 
+// Boost libraries
+#include <boost/algorithm/string.hpp>
+
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -115,7 +118,7 @@ namespace mapviz_plugins
       initialized_ = false;
       markers_.clear();
       has_message_ = false;
-      topic_ = ui_.topic->text().toStdString();
+      topic_ = boost::trim_copy(ui_.topic->text().toStdString());
       PrintWarning("No messages received.");
 
       marker_sub_.shutdown();
@@ -466,7 +469,7 @@ namespace mapviz_plugins
   {
     std::string topic;
     node["topic"] >> topic;
-    ui_.topic->setText(topic.c_str());
+    ui_.topic->setText(boost::trim_copy(topic).c_str());
 
     node["is_marker_array"] >> is_marker_array_;
 
@@ -475,7 +478,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
   {
-    emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
+    emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
     emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;
   }
 }
