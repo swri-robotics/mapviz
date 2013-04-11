@@ -174,38 +174,6 @@ namespace mapviz_plugins
         odometry->pose.pose.orientation.z,
         odometry->pose.pose.orientation.w);
 
-    if (ui_.show_covariance->isChecked())
-    {
-      tf::Matrix3x3 tf_cov =
-          transform_util::GetUpperLeft(odometry->pose.covariance);
-
-      if (tf_cov[0][0] < 100000 && tf_cov[1][1] < 100000)
-      {
-        cv::Mat cov_matrix_3d(3, 3 CV_32FC1);
-        for (int32_t r = 0; r < 3; r++)
-        {
-          for (int32_t c = 0; c < 3; c++)
-          {
-            cov_matrix_3d.at<float>(r, c) = odometry->pose.covariance[r, c];
-          }
-        }
-
-        cv::Mat cov_matrix_2d = image_util::ProjectEllipsoid(cov_matrix_3d);
-
-        if (!cov_matrix_2d.empty())
-        {
-          stamped_point.covariance_points = image_util::GetEllipsePoints(
-              cov_matrix_2d, stamped_point.point, 3, 16);
-
-          stamped_point.transformed_covariance_points = stamped_point.covariance_points;
-        }
-        else
-        {
-          ROS_ERROR("Failed to project x, y, z covariance to xy-plane.");
-        }
-      }
-    }
-
     if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
     {
       points_.push_back(stamped_point);
@@ -220,6 +188,39 @@ namespace mapviz_plugins
     }
 
     current_point_ = stamped_point;
+
+    if (ui_.show_covariance->isChecked())
+    {
+      tf::Matrix3x3 tf_cov =
+          transform_util::GetUpperLeft(odometry->pose.covariance);
+
+      if (tf_cov[0][0] < 100000 && tf_cov[1][1] < 100000)
+      {
+        cv::Mat cov_matrix_3d(3, 3, CV_32FC1);
+        for (int32_t r = 0; r < 3; r++)
+        {
+          for (int32_t c = 0; c < 3; c++)
+          {
+            cov_matrix_3d.at<float>(r, c) = tf_cov[r][c];
+          }
+        }
+
+        cv::Mat cov_matrix_2d = image_util::ProjectEllipsoid(cov_matrix_3d);
+
+        if (!cov_matrix_2d.empty())
+        {
+          current_point_.covariance_points = image_util::GetEllipsePoints(
+              cov_matrix_2d, current_point_.point, 3, 32);
+
+          current_point_.transformed_covariance_points = current_point_.covariance_points;
+        }
+        else
+        {
+          ROS_ERROR("Failed to project x, y, z covariance to xy-plane.");
+        }
+      }
+    }
+
 
     canvas_->update();
   }
@@ -296,9 +297,16 @@ namespace mapviz_plugins
 
   void OdometryPlugin::Draw(double x, double y, double scale)
   {
-    glColor3f(color_.redF(), color_.greenF(), color_.blueF());
+    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
 
     bool transformed = false;
+
+    if (ui_.show_covariance->isChecked())
+    {
+      DrawCovariance();
+    }
+
+    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
 
     if (draw_style_ == ARROWS)
     {
@@ -340,14 +348,32 @@ namespace mapviz_plugins
       glEnd();
     }
 
-    if (ui_.show_covariance->isChecked())
-    {
-
-    }
-
     if (transformed)
     {
       PrintInfo("OK");
+    }
+  }
+
+  void OdometryPlugin::DrawCovariance()
+  {
+    glLineWidth(4);
+
+    if (current_point_.transformed && !current_point_.transformed_covariance_points.empty())
+    {
+      glBegin(GL_LINE_STRIP);
+
+      for (uint32_t i = 0; i < current_point_.transformed_covariance_points.size(); i++)
+      {
+        glVertex2f(
+            current_point_.transformed_covariance_points[i].getX(),
+            current_point_.transformed_covariance_points[i].getY());
+      }
+
+      glVertex2f(
+          current_point_.transformed_covariance_points.front().getX(),
+          current_point_.transformed_covariance_points.front().getY());
+
+      glEnd();
     }
   }
 

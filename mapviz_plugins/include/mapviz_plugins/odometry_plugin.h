@@ -99,6 +99,7 @@ namespace mapviz_plugins
     void SetDrawStyle(QString style);
 
   private:
+    void DrawCovariance();
     bool DrawArrows();
     bool TransformPoint(StampedPoint& point);
 
