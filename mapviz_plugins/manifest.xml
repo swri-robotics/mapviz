@@ -22,6 +22,8 @@
   <depend package="cv_bridge"/>
   
   <depend package="math_util"/>
+  <depend package="image_util"/>
+  <depend package="transform_util"/>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

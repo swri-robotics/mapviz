@@ -62,6 +62,9 @@ namespace mapviz_plugins
       tf::Point transformed_arrow_right;
       bool transformed;
       ros::Time stamp;
+
+      std::vector<tf::Point> covariance_points;
+      std::vector<tf::Point> transformed_covariance_points;
     };
 
     enum DrawStyle { LINES = 0, POINTS, ARROWS };

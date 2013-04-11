@@ -17,6 +17,8 @@
 //
 // *****************************************************************************
 
+#include <mapviz_plugins/odometry_plugin.h>
+
 // C++ standard libraries
 #include <cstdio>
 #include <vector>
@@ -27,10 +29,13 @@
 #include <QGLWidget>
 #include <QPalette>
 
+#include <opencv2/core/core.hpp>
+
 // ROS libraries
 #include <ros/master.h>
 
-#include <mapviz_plugins/odometry_plugin.h>
+#include <image_util/geometry_util.h>
+#include <transform_util/transform_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -38,7 +43,6 @@ PLUGINLIB_DECLARE_CLASS(mapviz_plugins, odometry, mapviz_plugins::OdometryPlugin
 
 namespace mapviz_plugins
 {
-
   OdometryPlugin::OdometryPlugin() :
     config_widget_(new QWidget()),
     color_(Qt::green),
@@ -170,7 +174,37 @@ namespace mapviz_plugins
         odometry->pose.pose.orientation.z,
         odometry->pose.pose.orientation.w);
 
-    current_point_ = stamped_point;
+    if (ui_.show_covariance->isChecked())
+    {
+      tf::Matrix3x3 tf_cov =
+          transform_util::GetUpperLeft(odometry->pose.covariance);
+
+      if (tf_cov[0][0] < 100000 && tf_cov[1][1] < 100000)
+      {
+        cv::Mat cov_matrix_3d(3, 3 CV_32FC1);
+        for (int32_t r = 0; r < 3; r++)
+        {
+          for (int32_t c = 0; c < 3; c++)
+          {
+            cov_matrix_3d.at<float>(r, c) = odometry->pose.covariance[r, c];
+          }
+        }
+
+        cv::Mat cov_matrix_2d = image_util::ProjectEllipsoid(cov_matrix_3d);
+
+        if (!cov_matrix_2d.empty())
+        {
+          stamped_point.covariance_points = image_util::GetEllipsePoints(
+              cov_matrix_2d, stamped_point.point, 3, 16);
+
+          stamped_point.transformed_covariance_points = stamped_point.covariance_points;
+        }
+        else
+        {
+          ROS_ERROR("Failed to project x, y, z covariance to xy-plane.");
+        }
+      }
+    }
 
     if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
     {
@@ -184,6 +218,8 @@ namespace mapviz_plugins
         points_.pop_front();
       }
     }
+
+    current_point_ = stamped_point;
 
     canvas_->update();
   }
@@ -304,6 +340,11 @@ namespace mapviz_plugins
       glEnd();
     }
 
+    if (ui_.show_covariance->isChecked())
+    {
+
+    }
+
     if (transformed)
     {
       PrintInfo("OK");
@@ -378,6 +419,14 @@ namespace mapviz_plugins
       point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
       point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
 
+      if (ui_.show_covariance->isChecked())
+      {
+        for (uint32_t i = 0; i < point.covariance_points.size(); i++)
+        {
+          point.transformed_covariance_points[i] = transform * point.covariance_points[i];
+        }
+      }
+
       point.transformed = true;
       return true;
     }
@@ -442,6 +491,13 @@ namespace mapviz_plugins
     node["buffer_size"] >> buffer_size_;
     ui_.buffersize->setValue(buffer_size_);
 
+    if (node.FindValue("show_covariance"))
+    {
+      bool show_covariance;
+      node["show_covariance"] >> show_covariance;
+      ui_.show_covariance->setChecked(show_covariance);
+    }
+
     TopicEdited();
   }
 
@@ -452,6 +508,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "draw_style" << YAML::Value << ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "position_tolerance" << YAML::Value << position_tolerance_;
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
+    emitter << YAML::Key << "show_covariance" << YAML::Value << ui_.show_covariance->isChecked();
   }
 }
 
