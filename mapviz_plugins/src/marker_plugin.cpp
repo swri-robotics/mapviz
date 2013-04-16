@@ -125,11 +125,11 @@ namespace mapviz_plugins
 
       if (is_marker_array_)
       {
-        marker_sub_ = node_.subscribe(topic_, 8, &MarkerPlugin::markerArrayCallback, this);
+        marker_sub_ = node_.subscribe(topic_, 100, &MarkerPlugin::markerArrayCallback, this);
       }
       else
       {
-        marker_sub_ = node_.subscribe(topic_, 8, &MarkerPlugin::markerCallback, this);
+        marker_sub_ = node_.subscribe(topic_, 100, &MarkerPlugin::markerCallback, this);
       }
 
       ROS_INFO("Subscribing to %s", topic_.c_str());
