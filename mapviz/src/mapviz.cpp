@@ -21,8 +21,8 @@
 #include <fstream>
 
 // Boost libraries
-#include <boost/filesystem.hpp>
 #define BOOST_FILESYSTEM_VERSION 2
+#include <boost/filesystem.hpp>
 
 // QT libraries
 #include <QtGui/QApplication>
@@ -349,7 +349,7 @@ void Mapviz::Open(const std::string& filename)
 
     if (const YAML::Node *displays = doc.FindValue("displays"))
     {
-      for (unsigned int i = 0; i< displays->size();i++) 
+      for (unsigned int i = 0; i< displays->size();i++)
       {
         std::string type, name;
         (*displays)[i]["type"] >> type;
@@ -423,7 +423,7 @@ void Mapviz::Save(const std::string& filename)
 
       out << YAML::Key << "visible" << YAML::Value << plugins_[ui_.configlist->item(i)]->Visible();
       out << YAML::Key << "collapsed" << YAML::Value << (static_cast<ConfigItem*>(ui_.configlist->itemWidget(ui_.configlist->item(i))))->Collapsed();
-      
+
       plugins_[ui_.configlist->item(i)]->SaveConfiguration(out, config_path);
 
       out << YAML::EndMap;
@@ -432,7 +432,7 @@ void Mapviz::Save(const std::string& filename)
 
     out << YAML::EndSeq;
   }
-  
+
   out << YAML::EndMap;
 
   fout << out.c_str();
