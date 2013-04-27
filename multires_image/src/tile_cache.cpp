@@ -35,11 +35,11 @@
 namespace multires_image
 {
 
-  TileCache::TileCache(TileSet* tileSet, QGLWidget* widget) : 
-    m_tileSet(tileSet), 
+  TileCache::TileCache(TileSet* tileSet, QGLWidget* widget) :
+    m_tileSet(tileSet),
     m_widget(widget),
     m_currentLayer(0),
-    m_currentPosition(0,0),
+    m_currentPosition(0,0,0),
     m_exit(false),
     m_memorySize(0),
     m_cacheThread(this),
@@ -51,10 +51,10 @@ namespace multires_image
     m_textureLoadedLock(QMutex::Recursive)
   {
 
-    connect(this, SIGNAL(SignalLoadTexture(Tile*)), 
+    connect(this, SIGNAL(SignalLoadTexture(Tile*)),
       SLOT(LoadTextureSlot(Tile*)), Qt::BlockingQueuedConnection);
 
-    connect(this, SIGNAL(SignalDeleteTexture(Tile*)), 
+    connect(this, SIGNAL(SignalDeleteTexture(Tile*)),
       SLOT(DeleteTextureSlot(Tile*)), Qt::BlockingQueuedConnection);
 
     m_cacheThread.setPriority(QThread::NormalPriority);
@@ -101,7 +101,7 @@ namespace multires_image
     }
     catch(std::exception& e)
     {
-      std::cout << "An exception occured queueing a tile to be cached: " << e.what() << std::endl;
+      std::cout << "An exception occurred queuing a tile to be cached: " << e.what() << std::endl;
     }
 
     m_renderRequestSetLock.unlock();
@@ -110,11 +110,11 @@ namespace multires_image
 
   void TileCache::Precache(double x, double y)
   {
-    PointT<double> point(x, y);
+    tf::Point point(x, y, 0);
     Precache(point);
   }
 
-  void TileCache::Precache(const PointT<double>& position)
+  void TileCache::Precache(const tf::Point& position)
   {
     m_currentPosition = position;
 
@@ -138,10 +138,10 @@ namespace multires_image
     }
   }
 
-  void TileCache::PrecacheLayer(int layerNum, const PointT<double>& position, int size)
+  void TileCache::PrecacheLayer(int layerNum, const tf::Point& position, int size)
   {
     TileSetLayer* layer = m_tileSet->GetLayer(layerNum);
-    
+
     int row, column;
     layer->GetTileIndex(position, row, column);
 
@@ -169,7 +169,7 @@ namespace multires_image
         }
         catch (std::exception& e)
         {
-          std::cout << "An exception occured queueing tiles for precaching: " << e.what() << std::endl;
+          std::cout << "An exception occurred queuing tiles for precaching: " << e.what() << std::endl;
         }
 
         m_precacheRequestSetLock.unlock();
@@ -198,7 +198,7 @@ namespace multires_image
     }
     catch (std::exception& e)
     {
-      std::cout << "An exception occured loading texture: " << e.what() << std::endl;
+      std::cout << "An exception occurred loading texture: " << e.what() << std::endl;
     }
 
     m_textureLoadedLock.unlock();
@@ -224,7 +224,7 @@ namespace multires_image
     }
     catch (std::exception& e)
     {
-      std::cout << "An exception occured unloading texture: " << e.what() << std::endl;
+      std::cout << "An exception occurred unloading texture: " << e.what() << std::endl;
     }
 
     m_textureLoadedLock.unlock();
@@ -236,13 +236,13 @@ namespace multires_image
     {
       Tile* tile = NULL;
       p->m_renderRequestsLock.lock();
-      
+
       if (p->m_renderRequests.size() > 0)
       {
         tile = p->m_renderRequests.top();
         p->m_renderRequests.pop();
       }
-      
+
       p->m_renderRequestsLock.unlock();
 
       if (tile != NULL)
@@ -312,7 +312,7 @@ namespace multires_image
         }
         catch (std::exception& e)
         {
-          std::cout << "An exception occured precaching texture: " << e.what() << std::endl;
+          std::cout << "An exception occurred precaching texture: " << e.what() << std::endl;
         }
 
         p->m_precacheRequestsLock.unlock();
@@ -326,7 +326,7 @@ namespace multires_image
             if (tile->LoadImageToMemory() == true)
             {
               p->LoadTexture(tile);
-              
+
               tile->UnloadImage();
             }
             else
@@ -380,7 +380,7 @@ namespace multires_image
           p->UnloadTexture(tile);
         }
       }
-      
+
       delete tiles;
 
       sleep(2);

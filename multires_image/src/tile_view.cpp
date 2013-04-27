@@ -53,7 +53,7 @@ namespace multires_image
   void TileView::SetView(double x, double y, double radius, double scale)
   {
     int layer = 0;
-    while (min_scale_ * std::pow(2, layer + 1) < scale) layer++;
+    while (min_scale_ * std::pow(2.0, layer + 1) < scale) layer++;
 
     if (layer >= m_tiles->LayerCount())
       layer = m_tiles->LayerCount() - 1;
@@ -72,19 +72,19 @@ namespace multires_image
       m_startRow = 0;
     if (m_startRow >= m_tiles->GetLayer(m_currentLayer)->RowCount())
       m_startRow = m_tiles->GetLayer(m_currentLayer)->RowCount() - 1;
-    
+
     m_endRow = row + 2;
     if (m_endRow < 0)
       m_endRow = 0;
     if (m_endRow >= m_tiles->GetLayer(m_currentLayer)->RowCount())
       m_endRow = m_tiles->GetLayer(m_currentLayer)->RowCount() - 1;
-    
+
     m_startColumn = column - 2;
     if (m_startColumn < 0)
       m_startColumn = 0;
     if (m_startColumn >= m_tiles->GetLayer(m_currentLayer)->ColumnCount())
       m_startColumn = m_tiles->GetLayer(m_currentLayer)->ColumnCount() - 1;
-    
+
     m_endColumn = column + 2;
     if (m_endColumn < 0)
       m_endColumn = 0;

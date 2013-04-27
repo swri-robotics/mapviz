@@ -30,15 +30,13 @@ namespace multires_image
 {
 
   TileSetLayer::TileSetLayer(const transform_util::GeoReference& geo,
-                  const transform_util::UtmUtil& utm,
                   const std::string& path,
                   int tileSize, int layer) :
   m_geo(geo),
-  m_utm(utm),
   m_path(path),
   m_tileSize(tileSize),
   m_layer(layer),
-  m_scale(std::pow(2, m_layer)),
+  m_scale(std::pow(2.0, m_layer)),
   m_expectTiles(true)
   {
     // Calculate the width and height in pixels of this layer
@@ -64,7 +62,7 @@ namespace multires_image
 
   bool TileSetLayer::Load()
   {
-    return this->Load("jpg");
+    return Load("jpg");
   }
 
   bool TileSetLayer::Load(const std::string extension)
@@ -96,15 +94,20 @@ namespace multires_image
           bottom = m_geo.Height();
         }
 
-        PointT<double> top_left, top_right, bottom_left, bottom_right;
-        m_geo.GetCoordinate(left, top, top_left.X, top_left.Y);
-        m_geo.GetCoordinate(right, top, top_right.X, top_right.Y);
-        m_geo.GetCoordinate(left, bottom, bottom_left.X, bottom_left.Y);
-        m_geo.GetCoordinate(right, bottom, bottom_right.X, bottom_right.Y);
+        double x, y;
+        m_geo.GetCoordinate(left, top, x, y);
+        tf::Point top_left(x, y, 0);
+
+        m_geo.GetCoordinate(right, top, x, y);
+        tf::Point top_right(x, y, 0);
+
+        m_geo.GetCoordinate(left, bottom, x, y);
+        tf::Point bottom_left(x, y, 0);
+
+        m_geo.GetCoordinate(right, bottom, x, y);
+        tf::Point bottom_right(x, y, 0);
 
         m_tiles[c].push_back(new Tile(
-          m_geo,
-          m_utm,
           m_path + "/tile" + rowString + "x" +  columnString + "." + extension,
           c, r, m_layer, top_left, top_right, bottom_left, bottom_right));
 
@@ -119,12 +122,6 @@ namespace multires_image
         printf("Error: Missing expected tiles\n");
         return false;
       }
-      /*
-      if (!ImageManip.TileImage(image, path, tileSize))
-      {
-        Console.WriteLine("Failed to generate tiles from " + image);
-      }
-      */
     }
 
     return true;
@@ -132,24 +129,26 @@ namespace multires_image
 
   void TileSetLayer::GetTileIndex(double x, double y, int& row, int& column) const
   {
-    PointT<double> position(x, y);
+    tf::Point position(x, y, 0);
     GetTileIndex(position, row, column);
   }
 
-  void TileSetLayer::GetTileIndex(const PointT<double>& position, int& row, int& column) const
+  void TileSetLayer::GetTileIndex(const tf::Point& position, int& row, int& column) const
   {
     int x, y;
-    m_geo.GetPixel(position.X, position.Y, x, y);
+    m_geo.GetPixel(position.x(), position.y(), x, y);
 
     column = static_cast<int>(x / (m_scale * m_tileSize));
     row = static_cast<int>(y / (m_scale * m_tileSize));
   }
 
-  void TileSetLayer::GetTileRange(const BoundingBox<double>& area,
-                  int& startRow, int& startColumn,
-                  int& endRow, int& endColumn) const
+  void TileSetLayer::GetTileRange(
+      const tf::Point& top_left,
+      const tf::Point& bottom_right,
+      int& startRow, int& startColumn,
+      int& endRow, int& endColumn) const
   {
-    GetTileIndex(area.topLeft.X, area.topLeft.Y, startRow, startColumn);
+    GetTileIndex(top_left.x(), top_left.y(), startRow, startColumn);
     if (startColumn < 0)
     {
       startColumn = 0;
@@ -167,7 +166,7 @@ namespace multires_image
       startRow = m_tiles[0].size() - 1;
     }
 
-    GetTileIndex(area.bottomRight.X, area.bottomRight.Y, endRow, endColumn);
+    GetTileIndex(bottom_right.x(), bottom_right.y(), endRow, endColumn);
     if (endColumn < 0)
     {
       endColumn = 0;
@@ -183,17 +182,6 @@ namespace multires_image
     if ((uint32_t)endRow >= m_tiles[0].size())
     {
       endRow = m_tiles[0].size() - 1;
-    }
-  }
-
-  void TileSetLayer::AdjustGeoReference(double latitude, double longitude)
-  {
-    for (int c = 0; c < m_columns; c++)
-    {
-      for (int r = 0; r < m_rows; r++)
-      {
-        m_tiles[c][r]->AdjustGeoReference(latitude, longitude);
-      }
     }
   }
 }

@@ -38,12 +38,8 @@ MultiresView::MultiresView(multires_image::TileSet* tiles, QGLWidget* widget) :
   tiles->GeoReference().GetCoordinate(0, 0, left, top);
   tiles->GeoReference().GetCoordinate(tiles->GeoReference().Width(),tiles->GeoReference().Height(), right, bottom);
 
-  double utm_top, utm_left, utm_bottom, utm_right;
-  tiles->GeoreferenceToUtm(left, top, utm_left, utm_top);
-  tiles->GeoreferenceToUtm(right, bottom, utm_right, utm_bottom);
-
-  double scale_x = std::abs(utm_right - utm_left) / tiles->GeoReference().Width();
-  double scale_y = std::abs(utm_top - utm_bottom) / tiles->GeoReference().Height();
+  double scale_x = std::fabs(right - left) / (double)tiles->GeoReference().Width();
+  double scale_y = std::fabs(top - bottom) / (double)tiles->GeoReference().Height();
 
   min_scale_ = scale_x;
   if (scale_y > scale_x)
@@ -59,7 +55,7 @@ MultiresView::~MultiresView(void)
 void MultiresView::SetView(double x, double y, double radius, double scale)
 {
   int layer = 0;
-  while (min_scale_ * std::pow(2, layer + 1) < scale) layer++;
+  while (min_scale_ * std::pow(2.0, layer + 1) < scale) layer++;
 
   if (layer >= m_tiles->LayerCount())
     layer = m_tiles->LayerCount() - 1;
@@ -71,9 +67,7 @@ void MultiresView::SetView(double x, double y, double radius, double scale)
   }
 
   int row, column;
-  double gx, gy;
-  m_tiles->UtmToGeoreference(x, y, gx, gy);
-  m_tiles->GetLayer(m_currentLayer)->GetTileIndex(gx, gy, row, column);
+  m_tiles->GetLayer(m_currentLayer)->GetTileIndex(x, y, row, column);
 
   int size = 3;
 
@@ -101,9 +95,7 @@ void MultiresView::SetView(double x, double y, double radius, double scale)
   if (m_endColumn >= m_tiles->GetLayer(m_currentLayer)->ColumnCount())
     m_endColumn = m_tiles->GetLayer(m_currentLayer)->ColumnCount() - 1;
 
-  double lat, lon;
-  m_tiles->UtmToGeoreference(x, y, lon, lat);
-  m_cache.Precache(lon, lat);
+  m_cache.Precache(x, y);
 }
 
 void MultiresView::Draw()
@@ -118,7 +110,7 @@ void MultiresView::Draw()
     multires_image::Tile* tile = baseLayer->GetTile(0,0);
     if (tile->TextureLoaded())
     {
-      tile->DrawRelative();
+      tile->Draw();
     }
     else
     {
@@ -133,7 +125,7 @@ void MultiresView::Draw()
         multires_image::Tile* tile = baseLayer->GetTile(c, r);
         if (tile->TextureLoaded())
         {
-          tile->DrawRelative();
+          tile->Draw();
         }
         else
         {
@@ -155,7 +147,7 @@ void MultiresView::Draw()
           multires_image::Tile* tile = layer->GetTile(c, r);
           if (tile->TextureLoaded())
           {
-            tile->DrawRelative();
+            tile->Draw();
           }
           else
           {

@@ -27,10 +27,9 @@
 #include <QImage>
 #include <QMutex>
 
-#include <transform_util/georeference.h>
-#include <transform_util/utm_util.h>
+#include <tf/transform_datatypes.h>
 
-#include <multires_image/point.h>
+#include <transform_util/transform.h>
 
 #ifndef GL_CLAMP_TO_EDGE
 #define GL_CLAMP_TO_EDGE 0x812F
@@ -41,14 +40,15 @@ namespace multires_image
   class Tile
   {
   public:
-    Tile(const transform_util::GeoReference& geo, const transform_util::UtmUtil& utm,
-      const std::string& path, int column, int row, int level, const PointT<double>& topLeft,
-      const PointT<double>& topRight, const PointT<double>& bottomLeft, const PointT<double>& bottomRight);
+    Tile(
+      const std::string& path, int column, int row, int level,
+      const tf::Point& topLeft,
+      const tf::Point& topRight,
+      const tf::Point& bottomLeft,
+      const tf::Point& bottomRight);
     ~Tile(void);
 
-    void Initialize();
     bool Exists();
-    bool HasUtm() const { return m_hasUtm; }
     bool Failed() const { return m_failed; }
     bool TextureLoaded() const { return m_textureLoaded; }
     const QImage& Image() const { return m_image; }
@@ -65,52 +65,25 @@ namespace multires_image
     void UnloadTexture();
 
     void Draw();
-    void DrawUtm();
-    void DrawRelative();
 
-    void GetUtmPosition(
-      double& top_left_x, double& top_left_y,
-      double& top_right_x, double& top_right_y,
-      double& bottom_right_x, double& bottom_right_y,
-      double& bottom_left_x, double& bottom_left_y);
-
-    void SetRelativePosition(
-      double top_left_x, double top_left_y,
-      double top_right_x, double top_right_y,
-      double bottom_right_x, double bottom_right_y,
-      double bottom_left_x, double bottom_left_y);
-
-    void AdjustGeoReference(double latitude, double longitude);
+    void Transform(const transform_util::Transform& transform);
 
   private:
-
-    void ConvertToUtm();
-
-    const transform_util::GeoReference& m_geo;
-    const transform_util::UtmUtil& m_utm;
     const std::string   m_path;
     const int           m_column;
     const int           m_row;
     const int           m_level;
 
-    PointT<double>      m_topLeft;
-    PointT<double>      m_topRight;
-    PointT<double>      m_bottomRight;
-    PointT<double>      m_bottomLeft;
+    tf::Point           m_top_left;
+    tf::Point           m_top_right;
+    tf::Point           m_bottom_right;
+    tf::Point           m_bottom_left;
 
-    PointT<double>      m_topLeftUtm;
-    PointT<double>      m_topRightUtm;
-    PointT<double>      m_bottomRightUtm;
-    PointT<double>      m_bottomLeftUtm;
+    tf::Point           m_transformed_top_left;
+    tf::Point           m_transformed_top_right;
+    tf::Point           m_transformed_bottom_right;
+    tf::Point           m_transformed_bottom_left;
 
-
-    PointT<double>      m_topLeftRelative;
-    PointT<double>      m_topRightRelative;
-    PointT<double>      m_bottomRightRelative;
-    PointT<double>      m_bottomLeftRelative;
-
-
-    bool                m_hasUtm;
     bool                m_failed;
     bool                m_textureLoaded;
     int                 m_dimension;

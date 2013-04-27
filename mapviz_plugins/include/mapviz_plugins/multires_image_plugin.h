@@ -24,14 +24,16 @@
 #include <string>
 
 // Boost libraries
-#include <boost/filesystem.hpp>
 #define BOOST_FILESYSTEM_VERSION 2
+#include <boost/filesystem.hpp>
 
 // QT libraries
 #include <QGLWidget>
 #include <QObject>
 #include <QWidget>
 
+#include <transform_util/transform.h>
+#include <transform_util/transform_manager.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 #include <multires_image/tile_set.h>
@@ -48,7 +50,7 @@ namespace mapviz_plugins
   {
 
     Q_OBJECT
-  
+
   public:
 
     MultiresImagePlugin();
@@ -56,11 +58,11 @@ namespace mapviz_plugins
 
     bool Initialize(QGLWidget* canvas);
     void Shutdown() {}
-    
+
     void Draw(double x, double y, double scale);
 
     void Transform();
-    
+
     void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
     void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
 
@@ -86,11 +88,12 @@ namespace mapviz_plugins
     Ui::multires_config ui_;
     QWidget* config_widget_;
 
-    tf::StampedTransform transform_;
+    transform_util::TransformManager transform_manager_;
+    transform_util::Transform transform_;
+    transform_util::Transform inverse_transform_;
 
     bool transformed_;
 
-    void InitializeTiles();
     void GetCenterPoint(double x, double y);
     boost::filesystem::path MakePathRelative(boost::filesystem::path path, boost::filesystem::path base);
   };

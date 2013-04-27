@@ -24,10 +24,8 @@
 #include <vector>
 
 #include <transform_util/georeference.h>
-#include <transform_util/utm_util.h>
 
 #include <multires_image/tile_set_layer.h>
-#include <multires_image/point.h>
 
 namespace multires_image
 {
@@ -52,14 +50,8 @@ namespace multires_image
 
     TileSetLayer* GetLayer(int layer) { return m_layers[layer]; }
 
-    void AdjustGeoReference(double latitude, double longitude);
-
-    void UtmToGeoreference(double easting, double northing, double& x, double& y);
-    void GeoreferenceToUtm(double x, double y, double& easting, double& northing);
-
   private:
     transform_util::GeoReference  m_geo;
-    transform_util::UtmUtil       m_utm;
     int                           m_tileSize;
     int                           m_width;
     int                           m_height;

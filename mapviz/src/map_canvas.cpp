@@ -22,7 +22,9 @@
 
 #include <mapviz/map_canvas.h>
 
-bool compare_plugins (mapviz::MapvizPlugin* a, mapviz::MapvizPlugin* b)
+bool compare_plugins (
+    boost::shared_ptr<mapviz::MapvizPlugin> a,
+    boost::shared_ptr<mapviz::MapvizPlugin> b)
 {
   return a->DrawOrder() < b->DrawOrder();
 }
@@ -49,8 +51,7 @@ MapCanvas::MapCanvas(QWidget *parent) :
   scene_left_(-10),
   scene_right_(10),
   scene_top_(10),
-  scene_bottom_(-10),
-  transform_listener_(NULL)
+  scene_bottom_(-10)
 {
   ROS_INFO("View scale: %f meters/pixel", view_scale_);
 }
@@ -60,9 +61,9 @@ MapCanvas::~MapCanvas()
 
 }
 
-void MapCanvas::InitializeTf()
+void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
 {
-  transform_listener_ = new tf::TransformListener();
+  transform_listener_ = tf;
 }
 
 void MapCanvas::initializeGL()
@@ -100,14 +101,14 @@ void MapCanvas::paintGL()
 	  glColor3f(1, 0, 0);
 	  glVertex2f(0, 0);
     glVertex2f(20, 0);
-    
+
     // Green line to the top
     glColor3f(0, 1, 0);
 	  glVertex2f(0, 0);
     glVertex2f(0, 20);
 	glEnd();
 
-  std::list<mapviz::MapvizPlugin*>::iterator it;
+  std::list<boost::shared_ptr<mapviz::MapvizPlugin> >::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
@@ -120,8 +121,8 @@ void MapCanvas::paintGL()
 void MapCanvas::wheelEvent(QWheelEvent* e)
 {
   float numDegrees = e->delta() / -8;
-  
-	view_scale_ *= pow(1.1, numDegrees / 10.0);
+
+	view_scale_ *= std::pow(1.1, numDegrees / 10.0);
 
 	UpdateView();
 }
@@ -157,7 +158,7 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 void MapCanvas::SetFixedFrame(const std::string& frame)
 {
   fixed_frame_ = frame;
-  std::list<mapviz::MapvizPlugin*>::iterator it;
+  std::list<boost::shared_ptr<mapviz::MapvizPlugin> >::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->SetTargetFrame(frame);
@@ -172,7 +173,7 @@ void MapCanvas::SetTargetFrame(const std::string& frame)
   drag_x_ = 0;
   drag_y_ = 0;
 
-  target_frame_ = frame; 
+  target_frame_ = frame;
   update();
 }
 
@@ -184,7 +185,7 @@ void MapCanvas::ToggleFixOrientation(bool on)
 
 void MapCanvas::ToggleUseLatestTransforms(bool on)
 {
-  std::list<mapviz::MapvizPlugin*>::iterator it;
+  std::list<boost::shared_ptr<mapviz::MapvizPlugin> >::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->SetUseLatestTransforms(on);
@@ -193,12 +194,12 @@ void MapCanvas::ToggleUseLatestTransforms(bool on)
   update();
 }
 
-void MapCanvas::AddPlugin(mapviz::MapvizPlugin* plugin, int order)
+void MapCanvas::AddPlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin, int order)
 {
   plugins_.push_back(plugin);
 }
 
-void MapCanvas::RemovePlugin(mapviz::MapvizPlugin* plugin)
+void MapCanvas::RemovePlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin)
 {
   plugin->Shutdown();
   plugins_.remove(plugin);
@@ -214,7 +215,7 @@ void MapCanvas::TransformTarget()
 
   if (transform_listener_ == NULL || fixed_frame_ == "" || target_frame_ == "" || target_frame_ == "<none>")
     return;
-    
+
   tf::StampedTransform newTransform;
   try
   {

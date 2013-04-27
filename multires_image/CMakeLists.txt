@@ -44,9 +44,6 @@ rosbuild_add_boost_directories()
 
 # Build libtile_cache
 file (GLOB TILE_SRC_FILES 
-   src/geo_register.cpp
-   src/image_manip.cpp
-   src/point.cpp
    src/string_util.cpp
    src/tile.cpp
    src/tile_cache.cpp

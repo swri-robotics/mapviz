@@ -27,13 +27,18 @@ namespace multires_image
 
 QGLMap::QGLMap(QWidget *parent) :
   QGLWidget(parent),
-  m_viewCenter(0,0),
   m_initialized(false),
   m_scale(1.0),
   m_mouseDown(false),
   m_mouseDownX(0),
   m_mouseDownY(0),
-  m_tileView(NULL)
+  m_tileView(NULL),
+  m_view_top_left(0,0,0),
+  m_view_bottom_right(0,0,0),
+  m_view_center(0,0,0),
+  m_scene_top_left(0,0,0),
+  m_scene_bottom_right(0,0,0),
+  m_scene_center(0,0,0)
 {
   ui.setupUi(this);
 }
@@ -58,21 +63,21 @@ void QGLMap::UpdateView()
 
     if (m_tileView != NULL)
     {
-      m_tileView->SetView(m_viewBox.Center.X, m_viewBox.Center.Y, 1, m_scale);
+      m_tileView->SetView(m_view_center.x(), m_view_center.y(), 1, m_scale);
     }
 
     glViewport(0, 0, width(), height());
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(m_viewBox.topLeft.X, m_viewBox.bottomRight.X,
-      m_viewBox.bottomRight.Y, m_viewBox.topLeft.Y, -0.5f, 0.5f);
+    glOrtho(m_view_top_left.x(), m_view_bottom_right.x(),
+        m_view_bottom_right.y(), m_view_top_left.y(), -0.5f, 0.5f);
 
     update();
 
     // Signal a view change as occured.  The minimap listens for this
     // so that it can update its view box.
-    emit SignalViewChange(m_viewBox.topLeft.X, m_viewBox.topLeft.Y,
-      m_viewBox.bottomRight.X, m_viewBox.bottomRight.Y);
+    emit SignalViewChange(m_view_top_left.x(), m_view_top_left.y(),
+        m_view_bottom_right.x(), m_view_bottom_right.y());
   }
 }
 
@@ -82,11 +87,11 @@ void QGLMap::SetTiles(TileSet* tiles)
   tiles->GeoReference().GetCoordinate(0, 0, left, top);
   tiles->GeoReference().GetCoordinate(tiles->GeoReference().Width(),tiles->GeoReference().Height(), right, bottom);
 
-  m_sceneBox.topLeft = PointT<double>(left, top);
-  m_sceneBox.bottomRight = PointT<double>(right, bottom);
-  m_sceneBox.Update();
+  m_scene_top_left = tf::Point(left, top, 0);
+  m_scene_bottom_right = tf::Point(right, bottom, 0);
+  m_scene_center = (m_scene_top_left + m_scene_bottom_right) / 2.0;
 
-  m_viewCenter = m_sceneBox.Center;
+  m_view_center = m_scene_center;
 
   m_tileView = new TileView(tiles, this);
 
@@ -96,7 +101,7 @@ void QGLMap::SetTiles(TileSet* tiles)
   // Create connections for the texture loading functions which must
   // be executed on this object's thread.
 
-  m_tileView->SetView(m_viewBox.Center.X, m_viewBox.Center.Y, 1, m_scale);
+  m_tileView->SetView(m_view_center.x(), m_view_center.y(), 1, m_scale);
 }
 
 void QGLMap::wheelEvent(QWheelEvent* e)
@@ -128,10 +133,10 @@ void QGLMap::SetTextureMemory(long bytes)
 void QGLMap::ChangeCenter(double x, double y)
 {
   if (x != 0)
-    m_viewCenter.X = x;
+    m_view_center.setX(x);
 
   if (y != 0)
-    m_viewCenter.Y = y;
+    m_view_center.setY(y);
 
   UpdateView();
 }
@@ -196,89 +201,90 @@ void QGLMap::mouseMoveEvent(QMouseEvent* e)
 
 void QGLMap::MousePan(int x, int y)
 {
-    bool changed = false;
-    if (m_mouseDown)
-    {
-        double diffX = ((m_mouseDownX - x) * m_scale);
-        double diffY = ((m_mouseDownY - y) * m_scale);
+  bool changed = false;
+  if (m_mouseDown)
+  {
+    double diffX = ((m_mouseDownX - x) * m_scale);
+    double diffY = ((m_mouseDownY - y) * m_scale);
 
-        if (diffX != 0)
-        {
-            m_viewCenter.X += diffX;
-            m_mouseDownX = x;
-            changed = true;
-        }
-        if (diffY != 0)
-        {
-            m_viewCenter.Y += diffY;
-            m_mouseDownY = y;
-            changed = true;
-        }
-    }
-
-    if (changed)
+    if (diffX != 0)
     {
-        UpdateView();
+      m_view_center.setX(m_view_center.x() + diffX);
+      m_mouseDownX = x;
+      changed = true;
     }
+    if (diffY != 0)
+    {
+      m_view_center.setY(m_view_center.y() + diffY);
+      m_mouseDownY = y;
+      changed = true;
+    }
+  }
+
+  if (changed)
+  {
+    UpdateView();
+  }
 }
 
 void QGLMap::Recenter()
 {
-  m_viewBox.topLeft.X = m_viewCenter.X - (width() * m_scale * 0.5);
-  m_viewBox.topLeft.Y = m_viewCenter.Y - (height() * m_scale * 0.5);
+  double scene_width = std::fabs(m_scene_top_left.x() - m_scene_bottom_right.x());
+  double scene_height = std::fabs(m_scene_top_left.y() - m_scene_bottom_right.y());
+  double view_width = width() * m_scale;
+  double view_height = height() * m_scale;
 
-  m_viewBox.bottomRight.X = m_viewCenter.X + (width() * m_scale * 0.5);
-    m_viewBox.bottomRight.Y = m_viewCenter.Y + (height() * m_scale * 0.5);
+  m_view_top_left.setX(m_view_center.x() - (view_width * 0.5));
+  m_view_top_left.setY(m_view_center.y() - (view_width * 0.5));
 
-  m_viewBox.Update();
+  m_view_bottom_right.setX(m_view_center.x() + (view_width * 0.5));
+  m_view_bottom_right.setY(m_view_center.y() + (view_width * 0.5));
 
-  if (m_viewBox.Width > m_sceneBox.Width)
+  if (view_width > scene_width)
+  {
+    m_view_center.setX(m_scene_center.x());
+    m_view_top_left.setX(m_view_center.x() - (view_width * 0.5));
+    m_view_bottom_right.setX(m_view_center.x() + (view_width * 0.5));
+  }
+  else
+  {
+    if (m_view_top_left.x() < m_scene_top_left.x())
     {
-    m_viewCenter.X = m_sceneBox.Center.X;
-        m_viewBox.topLeft.X = m_viewCenter.X - (width() * m_scale * 0.5);
-        m_viewBox.bottomRight.X = m_viewCenter.X + (width() * m_scale * 0.5);
-    }
-    else
-    {
-    if (m_viewBox.topLeft.X < m_sceneBox.topLeft.X)
-        {
-            m_viewBox.topLeft.X = m_sceneBox.topLeft.X;
-            m_viewBox.bottomRight.X = m_viewBox.topLeft.X + (width() * m_scale);
-            m_viewCenter.X = m_viewBox.topLeft.X + (width() * m_scale*0.5);
-        }
-
-    if (m_viewBox.bottomRight.X > m_sceneBox.bottomRight.X)
-        {
-            m_viewBox.bottomRight.X = m_sceneBox.bottomRight.X;
-            m_viewBox.topLeft.X = m_viewBox.bottomRight.X - (width() * m_scale);
-            m_viewCenter.X = m_viewBox.topLeft.X + (width() * m_scale * 0.5);
-        }
+      m_view_top_left.setX(m_scene_top_left.x());
+      m_view_bottom_right.setX(m_view_top_left.x() + view_width);
+      m_view_center.setX(m_view_top_left.x() + (view_width * 0.5));
     }
 
-  if (m_viewBox.Height < m_sceneBox.Height)
+    if (m_view_bottom_right.x() > m_scene_bottom_right.x())
     {
-    m_viewCenter.Y = m_sceneBox.Center.Y;
-        m_viewBox.topLeft.Y = m_viewCenter.Y - (height() * m_scale * 0.5);
-        m_viewBox.bottomRight.Y = m_viewCenter.Y + (height() * m_scale * 0.5);
+      m_view_bottom_right.setX(m_scene_bottom_right.x());
+      m_view_top_left.setX(m_view_bottom_right.x() - view_width);
+      m_view_center.setX(m_view_top_left.x() + (view_width * 0.5));
     }
-    else
+  }
+
+  if (view_height < scene_height)
+  {
+    m_view_center.setY(m_scene_center.y());
+    m_view_top_left.setY(m_scene_center.y() - (view_height * 0.5));
+    m_view_bottom_right.setY(m_scene_center.y() + (view_height * 0.5));
+  }
+  else
+  {
+    if (m_view_top_left.y() > m_scene_top_left.y())
     {
-        if (m_viewBox.topLeft.Y > m_sceneBox.topLeft.Y)
-        {
-            m_viewBox.topLeft.Y = m_sceneBox.topLeft.Y;
-            m_viewBox.bottomRight.Y = m_viewBox.topLeft.Y + (height() * m_scale);
-            m_viewCenter.Y = m_viewBox.topLeft.Y + (height() * m_scale * 0.5);
-        }
-
-        if (m_viewBox.bottomRight.Y < m_sceneBox.bottomRight.Y)
-        {
-            m_viewBox.bottomRight.Y = m_sceneBox.bottomRight.Y;
-            m_viewBox.topLeft.Y = m_viewBox.bottomRight.Y - (height() * m_scale);
-            m_viewCenter.Y = m_viewBox.topLeft.Y + (height() * m_scale * 0.5);
-        }
+      m_view_top_left.setY(m_scene_top_left.y());
+      m_view_bottom_right.setY(m_view_top_left.y() + (view_height));
+      m_view_center.setY(m_view_top_left.y() + (view_height * 0.5));
     }
 
-  m_viewBox.Update();
+    if (m_view_bottom_right.y() < m_scene_bottom_right.y())
+    {
+      m_view_bottom_right.setY(m_scene_bottom_right.y());
+      m_view_top_left.setY(m_view_bottom_right.y() - (view_height));
+      m_view_center.setY(m_view_top_left.y() + (view_height * 0.5));
+    }
+  }
 }
 
 }

@@ -25,8 +25,6 @@
 
 #include <multires_image/tile_set.h>
 #include <multires_image/tile_cache.h>
-#include <multires_image/point.h>
-#include <multires_image/bounding_box.h>
 
 namespace multires_image
 {

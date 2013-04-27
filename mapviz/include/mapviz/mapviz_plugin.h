@@ -45,9 +45,17 @@ namespace mapviz
 
     virtual ~MapvizPlugin() {}
 
-    virtual bool Initialize(QGLWidget* canvas) = 0;
+    virtual bool Initialize(
+        boost::shared_ptr<tf::TransformListener> tf_listener,
+        QGLWidget* canvas)
+    {
+      transform_listener_ = tf_listener;
+
+      return transform_listener_ && Initialize(canvas);
+    }
+
     virtual void Shutdown() = 0;
-    
+
     virtual void Draw(double x, double y, double scale) = 0;
 
     void SetUseLatestTransforms(bool value)
@@ -100,7 +108,7 @@ namespace mapviz
     {
       visible_ = visible;
     }
-    
+
     bool GetTransform(const ros::Time& stamp, tf::StampedTransform& transform)
     {
       if (!initialized_)
@@ -166,7 +174,7 @@ namespace mapviz
     }
 
     virtual void Transform() = 0;
-    
+
     virtual void LoadConfiguration(const YAML::Node& load, const std::string& config_path) = 0;
     virtual void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path) = 0;
 
@@ -194,11 +202,13 @@ namespace mapviz
 
     int draw_order_;
 
+    virtual bool Initialize(QGLWidget* canvas) = 0;
+
     MapvizPlugin() :
       initialized_(false),
       visible_(true),
       canvas_(NULL),
-      transform_listener_(boost::make_shared<tf::TransformListener>()),
+      transform_listener_(),
       target_frame_(""),
       source_frame_(""),
       use_latest_transforms_(false),

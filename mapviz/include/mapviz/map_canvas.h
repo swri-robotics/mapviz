@@ -24,6 +24,8 @@
 #include <list>
 #include <string>
 
+#include <boost/shared_ptr.hpp>
+
 // QT libraries
 #include <QGLWidget>
 #include <QMouseEvent>
@@ -45,10 +47,10 @@ public:
   MapCanvas(QWidget *parent = 0);
   ~MapCanvas();
 
-  void InitializeTf();
+  void InitializeTf(boost::shared_ptr<tf::TransformListener> tf);
 
-  void AddPlugin(mapviz::MapvizPlugin* plugin, int order);
-  void RemovePlugin(mapviz::MapvizPlugin* plugin);
+  void AddPlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin, int order);
+  void RemovePlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin);
   void SetFixedFrame(const std::string& frame);
   void SetTargetFrame(const std::string& frame);
   void ToggleFixOrientation(bool on);
@@ -135,8 +137,8 @@ protected:
   std::string fixed_frame_;
   std::string target_frame_;
 
-  tf::TransformListener* transform_listener_;
-  std::list<mapviz::MapvizPlugin*> plugins_;
+  boost::shared_ptr<tf::TransformListener> transform_listener_;
+  std::list<boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
 
 };
 

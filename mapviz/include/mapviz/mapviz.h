@@ -25,8 +25,10 @@
 #include <vector>
 #include <map>
 
+#include <boost/shared_ptr.hpp>
+
 // QT libraries
-#include <QtGui/QtGui> 
+#include <QtGui/QtGui>
 #include <QtGui/QMainWindow>
 #include <QDialog>
 #include <QTimer>
@@ -98,18 +100,22 @@ protected:
   bool force_480p_;
   bool resizable_;
   QColor background_;
-  
+
   ros::NodeHandle* node_;
-  tf::TransformListener* tf_;
+  boost::shared_ptr<tf::TransformListener> tf_;
 
   pluginlib::ClassLoader<mapviz::MapvizPlugin>* loader_;
   MapCanvas* canvas_;
-  std::map<QListWidgetItem*,mapviz::MapvizPlugin*> plugins_;
+  std::map<QListWidgetItem*,boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
 
   void Open(const std::string& filename);
   void Save(const std::string& filename);
 
-  mapviz::MapvizPlugin* CreateNewDisplay(const std::string& name, const std::string& type, bool visible, bool collapsed);
+  boost::shared_ptr<mapviz::MapvizPlugin> CreateNewDisplay(
+      const std::string& name,
+      const std::string& type,
+      bool visible,
+      bool collapsed);
 
   void ClearDisplays();
   void AdjustWindowSize();

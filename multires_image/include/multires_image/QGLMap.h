@@ -28,10 +28,10 @@
 // QT auto-generated headers
 #include "ui_QGLMap.h"
 
+#include <tf/transform_datatypes.h>
+
 #include <multires_image/tile.h>
 #include <multires_image/tile_view.h>
-#include <multires_image/bounding_box.h>
-#include <multires_image/point.h>
 
 namespace multires_image
 {
@@ -47,8 +47,8 @@ namespace multires_image
     void UpdateView();
     void SetTiles(TileSet* tiles);
 
-    PointT<double> SceneCenter() { return m_sceneBox.Center; }
-    PointT<double> ViewCenter() { return m_viewBox.Center; }
+    tf::Point SceneCenter() { return m_scene_center; }
+    tf::Point ViewCenter() { return m_view_center; }
 
   signals:
     void SignalZoomChange(double z);
@@ -73,7 +73,7 @@ namespace multires_image
 
   private:
     Ui::QGLMapClass ui;
-    PointT<double>  m_viewCenter;
+
     bool            m_initialized;
 
     double          m_scale;
@@ -84,8 +84,13 @@ namespace multires_image
 
     TileView*       m_tileView;
 
-    BoundingBox<double> m_viewBox;
-    BoundingBox<double> m_sceneBox;
+    tf::Point m_view_top_left;
+    tf::Point m_view_bottom_right;
+    tf::Point m_view_center;
+
+    tf::Point m_scene_top_left;
+    tf::Point m_scene_bottom_right;
+    tf::Point m_scene_center;
 
     void Recenter();
     void MousePan(int x, int y);

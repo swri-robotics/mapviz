@@ -58,7 +58,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.browse, SIGNAL(clicked()), this, SLOT(SelectFile()));
     QObject::connect(ui_.path, SIGNAL(editingFinished()), this, SLOT(AcceptConfiguration()));
 
-    source_frame_ = "/utm";
+    source_frame_ = "/";
   }
 
   MultiresImagePlugin::~MultiresImagePlugin()
@@ -72,7 +72,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_ERROR("Error: %s", message.c_str()); 
+    ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p);
@@ -84,7 +84,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_INFO("%s", message.c_str()); 
+    ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p);
@@ -121,12 +121,16 @@ namespace mapviz_plugins
       {
         loaded_ = true;
 
+        source_frame_ = tile_set_->GeoReference().Projection();
+        if (source_frame_.empty() || source_frame_[0] != '/')
+        {
+          source_frame_ = std::string("/") + source_frame_;
+        }
+
         QPalette p(ui_.status->palette());
         p.setColor(QPalette::Text, Qt::green);
         ui_.status->setPalette(p);
         ui_.status->setText("OK");
-
-        InitializeTiles();
 
         initialized_ = true;
 
@@ -141,22 +145,6 @@ namespace mapviz_plugins
         delete tile_set_;
         tile_set_ = 0;
         tile_view_ = 0;
-      }
-    }
-  }
-
-  void MultiresImagePlugin::InitializeTiles()
-  {
-    // Initialize all of the tiles.
-    for (int i = 0; i < tile_set_->LayerCount(); i++)
-    {
-      multires_image::TileSetLayer* layer = tile_set_->GetLayer(i);
-      for (int r = 0; r < layer->RowCount(); r++)
-      {
-        for (int c = 0; c < layer->ColumnCount(); c++)
-        {
-          layer->GetTile(c, r)->Initialize();
-        }
       }
     }
   }
@@ -185,26 +173,28 @@ namespace mapviz_plugins
 
   bool MultiresImagePlugin::Initialize(QGLWidget* canvas)
   {
+    transform_manager_.Initialize(transform_listener_);
+
     canvas_ = canvas;
-  
+
     return true;
   }
 
   void MultiresImagePlugin::GetCenterPoint(double x, double y)
   {
       tf::Point point(x, y, 0);
-      tf::Point center = transform_.inverse() * point;
+      tf::Point center = inverse_transform_ * point;
       center_x_ = center.getX();
       center_y_ = center.getY();
   }
-    
+
   void MultiresImagePlugin::Draw(double x, double y, double scale)
   {
     if (transformed_ && tile_set_ != NULL && tile_view_ != NULL)
     {
       GetCenterPoint(x, y);
       tile_view_->SetView(center_x_, center_y_, 1, scale);
-      
+
       tile_view_->Draw();
 
       PrintInfo("OK");
@@ -218,103 +208,36 @@ namespace mapviz_plugins
     if (!loaded_)
       return;
 
-    if (target_frame_ == "" || target_frame_ == "utm" || target_frame_ == "/utm")
+    if (!transform_manager_.GetTransform(target_frame_, source_frame_, transform_))
     {
-      // Set relative positions of tile points to be in straight UTM
-      for (int i = 0; i < tile_set_->LayerCount(); i++)
-      {
-        multires_image::TileSetLayer* layer = tile_set_->GetLayer(i);
-        for (int r = 0; r < layer->RowCount(); r++)
-        {
-          for (int c = 0; c < layer->ColumnCount(); c++)
-          {
-            multires_image::Tile* tile = layer->GetTile(c, r);
-
-            if (!tile->HasUtm())
-            {
-              PrintError("Can't resolve image to UTM space.");
-            }
-
-            double top_left_x, top_left_y; 
-            double top_right_x, top_right_y;
-            double bottom_right_x, bottom_right_y;
-            double bottom_left_x, bottom_left_y;
-            tile->GetUtmPosition(
-              top_left_x, top_left_y, 
-              top_right_x, top_right_y,
-              bottom_right_x, bottom_right_y,
-              bottom_left_x, bottom_left_y);
-
-            tile->SetRelativePosition(
-              top_left_x, top_left_y, 
-              top_right_x, top_right_y,
-              bottom_right_x, bottom_right_y,
-              bottom_left_x, bottom_left_y);
-          }
-        }
-
-        transformed_ = true;
-      }
+      PrintError("Failed transform from " + source_frame_ + " to " + target_frame_);
+      return;
     }
-    else if (GetTransform(ros::Time(), transform_))
+
+    if (!transform_manager_.GetTransform(source_frame_, target_frame_, inverse_transform_))
     {
-      // Set relative positions of tile points based on tf transform
-      for (int i = 0; i < tile_set_->LayerCount(); i++)
+      PrintError("Failed inverse transform from " + target_frame_ + " to " + source_frame_);
+      return;
+    }
+
+    // Set relative positions of tile points based on tf transform
+    for (int i = 0; i < tile_set_->LayerCount(); i++)
+    {
+      multires_image::TileSetLayer* layer = tile_set_->GetLayer(i);
+      for (int r = 0; r < layer->RowCount(); r++)
       {
-        multires_image::TileSetLayer* layer = tile_set_->GetLayer(i);
-        for (int r = 0; r < layer->RowCount(); r++)
+        for (int c = 0; c < layer->ColumnCount(); c++)
         {
-          for (int c = 0; c < layer->ColumnCount(); c++)
-          {
-            multires_image::Tile* tile = layer->GetTile(c, r);
+          multires_image::Tile* tile = layer->GetTile(c, r);
 
-            if (!tile->HasUtm())
-            {
-              PrintError("Can't resolve image to UTM space.");
-              return;
-            }
-
-            double top_left_x, top_left_y; 
-            double top_right_x, top_right_y;
-            double bottom_right_x, bottom_right_y;
-            double bottom_left_x, bottom_left_y;
-            tile->GetUtmPosition(
-              top_left_x, top_left_y, 
-              top_right_x, top_right_y,
-              bottom_right_x, bottom_right_y,
-              bottom_left_x, bottom_left_y);
-
-            tf::Point topLeftUtm(top_left_x, top_left_y, 0);
-            tf::Point topRightUtm(top_right_x, top_right_y, 0);
-            tf::Point bottomRightUtm(bottom_right_x, bottom_right_y, 0);
-            tf::Point bottomLeftUtm(bottom_left_x, bottom_left_y, 0);
-
-            tf::Point topLeftRelative = transform_ * topLeftUtm;
-            tf::Point topRightRelative = transform_ * topRightUtm;
-            tf::Point bottomRightRelative = transform_ * bottomRightUtm;
-            tf::Point bottomLeftRelative = transform_ * bottomLeftUtm;
-
-            tile->SetRelativePosition(
-              topLeftRelative.getX(),
-              topLeftRelative.getY(),
-              topRightRelative.getX(),
-              topRightRelative.getY(),
-              bottomRightRelative.getX(),
-              bottomRightRelative.getY(),
-              bottomLeftRelative.getX(),
-              bottomLeftRelative.getY());
-          }
+          tile->Transform(transform_);
         }
       }
+    }
 
-      transformed_ = true;
-    }
-    else
-    {
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
-    }
+    transformed_ = true;
   }
-    
+
   boost::filesystem::path MultiresImagePlugin::MakePathRelative(boost::filesystem::path path, boost::filesystem::path base)
   {
     // Borrowed from: https://svn.boost.org/trac/boost/ticket/1976#comment:2
@@ -333,7 +256,7 @@ namespace mapviz_plugins
     {
       if (base.has_root_path())
       {
-        ROS_ERROR("Cannot uncomplete a path relative path from a rooted base.");
+        ROS_WARN("Cannot uncomplete a path relative path from a rooted base.");
         return path;
       }
       else
@@ -378,7 +301,7 @@ namespace mapviz_plugins
 
     AcceptConfiguration();
   }
-  
+
   void MultiresImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
   {
     boost::filesystem::path absolute_path(ui_.path->text().toStdString());
@@ -387,6 +310,6 @@ namespace mapviz_plugins
 
     emitter << YAML::Key << "path" << YAML::Value << relative_path.string();
   }
-  
+
 }
 
