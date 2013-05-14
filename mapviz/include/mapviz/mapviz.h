@@ -55,11 +55,11 @@
 
 class Mapviz : public QMainWindow
 {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	Mapviz(int argc, char **argv, QWidget *parent = 0, Qt::WFlags flags = 0);
-	~Mapviz();
+  Mapviz(int argc, char **argv, QWidget *parent = 0, Qt::WFlags flags = 0);
+  ~Mapviz();
 
   void Initialize();
 
@@ -85,12 +85,11 @@ public Q_SLOTS:
   void SelectBackgroundColor();
 
 protected:
+  Ui::mapviz ui_;
 
-	Ui::mapviz ui_;
-
-	QTimer frame_timer_;
-	QTimer spin_timer_;
-	QTimer save_timer_;
+  QTimer frame_timer_;
+  QTimer spin_timer_;
+  QTimer save_timer_;
 
   int    argc_;
   char** argv_;
@@ -106,7 +105,7 @@ protected:
 
   pluginlib::ClassLoader<mapviz::MapvizPlugin>* loader_;
   MapCanvas* canvas_;
-  std::map<QListWidgetItem*,boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
+  std::map<QListWidgetItem*, boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
 
   void Open(const std::string& filename);
   void Save(const std::string& filename);

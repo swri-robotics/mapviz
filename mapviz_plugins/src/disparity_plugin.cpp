@@ -19,6 +19,7 @@
 
 // C++ standard libraries
 #include <cstdio>
+#include <algorithm>
 #include <vector>
 
 // QT libraries
@@ -34,11 +35,14 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, disparity, mapviz_plugins::DisparityPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_DECLARE_CLASS(
+    mapviz_plugins,
+    disparity,
+    mapviz_plugins::DisparityPlugin,
+    mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-
   DisparityPlugin::DisparityPlugin() :
     config_widget_(new QWidget()),
     anchor_(TOP_LEFT),
@@ -75,7 +79,6 @@ namespace mapviz_plugins
 
   DisparityPlugin::~DisparityPlugin()
   {
-
   }
 
   void DisparityPlugin::SetOffsetX(int offset)
@@ -334,7 +337,7 @@ namespace mapviz_plugins
       return;
 
     GLenum format;
-    switch(image->channels())
+    switch (image->channels())
     {
       case 1:
         format = GL_LUMINANCE;
@@ -349,7 +352,7 @@ namespace mapviz_plugins
         return;
     }
 
-    glPixelZoom( 1.0, -1.0 );
+    glPixelZoom(1.0, -1.0);
     glDrawPixels(image->cols, image->rows, format, GL_UNSIGNED_BYTE, image->ptr());
 
     PrintInfo("OK");

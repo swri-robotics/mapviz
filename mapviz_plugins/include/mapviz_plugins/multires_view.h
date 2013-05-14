@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef MULTIRES_VIEW_H
-#define MULTIRES_VIEW_H
+#ifndef MAPVIZ_PLUGINS_MULTIRES_VIEW_H_
+#define MAPVIZ_PLUGINS_MULTIRES_VIEW_H_
 
 // QT libraries
 #include <QGLWidget>
@@ -29,27 +29,27 @@
 class MultiresView
 {
 public:
-	MultiresView(multires_image::TileSet* tiles, QGLWidget* widget);
-	~MultiresView(void);
+  MultiresView(multires_image::TileSet* tiles, QGLWidget* widget);
+  ~MultiresView(void);
 
-	const multires_image::TileCache* Cache() { return &m_cache; }
+  const multires_image::TileCache* Cache() { return &m_cache; }
 
-	void SetView(double x, double y, double radius, double scale);
+  void SetView(double x, double y, double radius, double scale);
 
-	void Draw();
+  void Draw();
 
-	void Exit() { m_cache.Exit(); }
+  void Exit() { m_cache.Exit(); }
 
 private:
-	multires_image::TileSet*   m_tiles;
-	multires_image::TileCache  m_cache;
-	int        m_currentLayer;
-	int        m_startRow;
-	int        m_startColumn;
-	int        m_endRow;
-	int        m_endColumn;
+  multires_image::TileSet*   m_tiles;
+  multires_image::TileCache  m_cache;
+  int        m_currentLayer;
+  int        m_startRow;
+  int        m_startColumn;
+  int        m_endRow;
+  int        m_endColumn;
 
-	double min_scale_;
+  double min_scale_;
 };
 
-#endif // MULTIRES_VIEW
+#endif // MAPVIZ_PLUGINS_MULTIRES_VIEW_H_
