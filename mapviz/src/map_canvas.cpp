@@ -22,7 +22,7 @@
 
 #include <mapviz/map_canvas.h>
 
-bool compare_plugins (
+bool compare_plugins(
     boost::shared_ptr<mapviz::MapvizPlugin> a,
     boost::shared_ptr<mapviz::MapvizPlugin> b)
 {
@@ -30,7 +30,7 @@ bool compare_plugins (
 }
 
 
-MapCanvas::MapCanvas(QWidget *parent) :
+MapCanvas::MapCanvas(QWidget* parent) :
   QGLWidget(parent),
   initialized_(false),
   fix_orientation_(false),
@@ -58,7 +58,6 @@ MapCanvas::MapCanvas(QWidget *parent) :
 
 MapCanvas::~MapCanvas()
 {
-
 }
 
 void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
@@ -81,7 +80,7 @@ void MapCanvas::initializeGL()
   initialized_ = true;
 }
 
-void MapCanvas::resizeGL( int w, int h )
+void MapCanvas::resizeGL(int w, int h)
 {
   UpdateView();
 }
@@ -96,17 +95,17 @@ void MapCanvas::paintGL()
 
   // Draw test pattern
   glLineWidth(3);
-	glBegin(GL_LINES);
+  glBegin(GL_LINES);
     // Red line to the right
-	  glColor3f(1, 0, 0);
-	  glVertex2f(0, 0);
+    glColor3f(1, 0, 0);
+    glVertex2f(0, 0);
     glVertex2f(20, 0);
 
     // Green line to the top
     glColor3f(0, 1, 0);
-	  glVertex2f(0, 0);
+    glVertex2f(0, 0);
     glVertex2f(0, 20);
-	glEnd();
+  glEnd();
 
   std::list<boost::shared_ptr<mapviz::MapvizPlugin> >::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
@@ -122,9 +121,9 @@ void MapCanvas::wheelEvent(QWheelEvent* e)
 {
   float numDegrees = e->delta() / -8;
 
-	view_scale_ *= std::pow(1.1, numDegrees / 10.0);
+  view_scale_ *= std::pow(1.1, numDegrees / 10.0);
 
-	UpdateView();
+  UpdateView();
 }
 
 void MapCanvas::mousePressEvent(QMouseEvent* e)
@@ -244,15 +243,15 @@ void MapCanvas::TransformTarget()
     view_center_x_ = center.getX();
     view_center_y_ = center.getY();
   }
-  catch (tf::LookupException& e)
+  catch (const tf::LookupException& e)
   {
     ROS_ERROR("%s", e.what());
   }
-  catch (tf::ConnectivityException& e)
+  catch (const tf::ConnectivityException& e)
   {
     ROS_ERROR("%s", e.what());
   }
-  catch (tf::ExtrapolationException& e)
+  catch (const tf::ExtrapolationException& e)
   {
     ROS_ERROR("%s", e.what());
   }
@@ -264,17 +263,17 @@ void MapCanvas::TransformTarget()
 
 void MapCanvas::UpdateView()
 {
-	if (initialized_)
-	{
-		Recenter();
+  if (initialized_)
+  {
+    Recenter();
 
-		glViewport(0, 0, width(), height());
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(view_left_, view_right_, view_top_, view_bottom_, -0.5f, 0.5f);
+    glViewport(0, 0, width(), height());
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(view_left_, view_right_, view_top_, view_bottom_, -0.5f, 0.5f);
 
-		update();
-	}
+    update();
+  }
 }
 
 void MapCanvas::ReorderDisplays()
@@ -285,8 +284,8 @@ void MapCanvas::ReorderDisplays()
 void MapCanvas::Recenter()
 {
   // Recalculate the bounds of the view
-	view_left_ = -(width() * view_scale_ * 0.5);
-	view_top_ = -(height() * view_scale_ * 0.5);
-	view_right_ = (width() * view_scale_ * 0.5);
+  view_left_ = -(width() * view_scale_ * 0.5);
+  view_top_ = -(height() * view_scale_ * 0.5);
+  view_right_ = (width() * view_scale_ * 0.5);
   view_bottom_ = (height() * view_scale_ * 0.5);
 }
