@@ -24,7 +24,6 @@
 
 namespace multires_image
 {
-
 QGLMap::QGLMap(QWidget *parent) :
   QGLWidget(parent),
   m_initialized(false),
@@ -33,12 +32,12 @@ QGLMap::QGLMap(QWidget *parent) :
   m_mouseDownX(0),
   m_mouseDownY(0),
   m_tileView(NULL),
-  m_view_top_left(0,0,0),
-  m_view_bottom_right(0,0,0),
-  m_view_center(0,0,0),
-  m_scene_top_left(0,0,0),
-  m_scene_bottom_right(0,0,0),
-  m_scene_center(0,0,0)
+  m_view_top_left(0, 0, 0),
+  m_view_bottom_right(0, 0, 0),
+  m_view_center(0, 0, 0),
+  m_scene_top_left(0, 0, 0),
+  m_scene_bottom_right(0, 0, 0),
+  m_scene_center(0, 0, 0)
 {
   ui.setupUi(this);
 }
@@ -85,7 +84,7 @@ void QGLMap::SetTiles(TileSet* tiles)
 {
   double top, left, bottom, right;
   tiles->GeoReference().GetCoordinate(0, 0, left, top);
-  tiles->GeoReference().GetCoordinate(tiles->GeoReference().Width(),tiles->GeoReference().Height(), right, bottom);
+  tiles->GeoReference().GetCoordinate(tiles->GeoReference().Width(), tiles->GeoReference().Height(), right, bottom);
 
   m_scene_top_left = tf::Point(left, top, 0);
   m_scene_bottom_right = tf::Point(right, bottom, 0);
@@ -95,8 +94,8 @@ void QGLMap::SetTiles(TileSet* tiles)
 
   m_tileView = new TileView(tiles, this);
 
-  connect(m_tileView->Cache(), SIGNAL(SignalMemorySize(long)),
-    SLOT(SetTextureMemory(long)));
+  connect(m_tileView->Cache(), SIGNAL(SignalMemorySize(int64_t)),
+    SLOT(SetTextureMemory(int64_t)));
 
   // Create connections for the texture loading functions which must
   // be executed on this object's thread.
@@ -123,7 +122,7 @@ void QGLMap::DeleteTexture(Tile* tile)
   tile->UnloadTexture();
 }
 
-void QGLMap::SetTextureMemory(long bytes)
+void QGLMap::SetTextureMemory(int64_t bytes)
 {
   // Signal that the texture memory size has changed.  The status bar listens
   // to this so that the user can see how much memory the map is using.

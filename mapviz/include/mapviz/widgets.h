@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef WIDGETS_H
-#define WIDGETS_H
+#ifndef MAPVIZ_WIDGETS_H_
+#define MAPVIZ_WIDGETS_H_
 
 // QT libraries
 #include <QWidget>
@@ -32,14 +32,14 @@ class PluginConfigList : public QListWidget
   Q_OBJECT
 
 public:
-  PluginConfigList(QWidget *parent = 0) : QListWidget(parent) {}
+  explicit PluginConfigList(QWidget *parent = 0) : QListWidget(parent) {}
   PluginConfigList();
 
 Q_SIGNALS:
   void ItemsMoved();
 
 protected:
-  virtual void dropEvent  (QDropEvent* event)
+  virtual void dropEvent(QDropEvent* event)
   {
     QListWidget::dropEvent(event);
 
@@ -83,4 +83,4 @@ protected:
   }
 };
 
-#endif /* WIDGETS_H */
+#endif  // MAPVIZ_WIDGETS_H_

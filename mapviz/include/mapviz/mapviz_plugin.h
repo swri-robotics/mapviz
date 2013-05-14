@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_PLUGIN_H
-#define MAPVIZ_PLUGIN_H
+#ifndef MAPVIZ_MAPVIZ_PLUGIN_H_
+#define MAPVIZ_MAPVIZ_PLUGIN_H_
 
 // C++ standard libraries
 #include <string>
@@ -216,5 +216,5 @@ namespace mapviz
   };
 }
 
-#endif /* MAPVIZ_PLUGIN_H */
+#endif  // MAPVIZ_MAPVIZ_PLUGIN_H_
 

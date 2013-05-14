@@ -34,11 +34,14 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, image, mapviz_plugins::ImagePlugin, mapviz::MapvizPlugin)
+PLUGINLIB_DECLARE_CLASS(
+    mapviz_plugins,
+    image,
+    mapviz_plugins::ImagePlugin,
+    mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-
   ImagePlugin::ImagePlugin() :
     config_widget_(new QWidget()),
     anchor_(TOP_LEFT),
@@ -75,7 +78,6 @@ namespace mapviz_plugins
 
   ImagePlugin::~ImagePlugin()
   {
-
   }
 
   void ImagePlugin::SetOffsetX(int offset)
@@ -217,7 +219,7 @@ namespace mapviz_plugins
     {
       cv_image_ = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
     }
-    catch (cv_bridge::Exception& e)
+    catch (const cv_bridge::Exception& e)
     {
       PrintError(e.what());
       return;
@@ -291,7 +293,7 @@ namespace mapviz_plugins
 
   void ImagePlugin::DrawIplImage(cv::Mat *image)
   {
-    // TODO glTexture2D may be more efficient than glDrawPixels
+    // TODO(malban) glTexture2D may be more efficient than glDrawPixels
 
     if (image == NULL)
       return;
@@ -300,7 +302,7 @@ namespace mapviz_plugins
       return;
 
     GLenum format;
-    switch(image->channels())
+    switch (image->channels())
     {
       case 1:
         format = GL_LUMINANCE;
@@ -315,7 +317,7 @@ namespace mapviz_plugins
         return;
     }
 
-    glPixelZoom( 1.0, -1.0 );
+    glPixelZoom(1.0, -1.0);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glDrawPixels(image->cols, image->rows, format, GL_UNSIGNED_BYTE, image->ptr());
 
@@ -508,6 +510,5 @@ namespace mapviz_plugins
 
     return units_string;
   }
-
 }
 

@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAP_CANVAS_H
-#define MAP_CANVAS_H
+#ifndef MAPVIZ_MAP_CANVAS_H_
+#define MAPVIZ_MAP_CANVAS_H_
 
 // C++ standard libraries
 #include <list>
@@ -142,4 +142,4 @@ protected:
 
 };
 
-#endif // MAP_CANVAS_H
+#endif  // MAPVIZ_MAP_CANVAS_H_

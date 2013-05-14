@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef CONFIG_ITEM_H
-#define CONFIG_ITEM_H
+#ifndef MAPVIZ_CONFIG_ITEM_H_
+#define MAPVIZ_CONFIG_ITEM_H_
 
 // C++ standard libraries
 #include <string>
@@ -66,4 +66,4 @@ protected:
 
 };
 
-#endif /* CONFIG_ITEM_H */
+#endif  // MAPVIZ_CONFIG_ITEM_H_

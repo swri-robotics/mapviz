@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_H
-#define MAPVIZ_H
+#ifndef MAPVIZ_MAPVIZ_H_
+#define MAPVIZ_MAPVIZ_H_
 
 // C++ standard libraries
 #include <string>
@@ -123,4 +123,4 @@ protected:
   virtual void closeEvent(QCloseEvent* event);
 };
 
-#endif /* MAPVIZ_H */
+#endif  // MAPVIZ_MAPVIZ_H_

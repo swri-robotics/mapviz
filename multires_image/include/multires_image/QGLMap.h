@@ -53,13 +53,13 @@ namespace multires_image
   signals:
     void SignalZoomChange(double z);
     void SignalViewChange(double x1, double y1, double x2, double y2);
-    void SignalMemorySize(long);
+    void SignalMemorySize(int64_t bytes);
 
   public slots:
     void LoadTexture(Tile* tile);
     void DeleteTexture(Tile* tile);
     void ChangeCenter(double x, double y);
-    void SetTextureMemory(long);
+    void SetTextureMemory(int64_t bytes);
 
   protected:
     void initializeGL();
