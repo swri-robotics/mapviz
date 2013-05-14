@@ -62,21 +62,21 @@ namespace multires_image
   Q_SIGNALS:
     void SignalLoadTexture(Tile*);
     void SignalDeleteTexture(Tile*);
-    void SignalMemorySize(long);
+    void SignalMemorySize(int64_t);
 
   private:
     TileSet*                  m_tileSet;
     QGLWidget*                m_widget;
-    int                       m_currentLayer;
+    int32_t                   m_currentLayer;
     tf::Point                 m_currentPosition;
     bool                      m_exit;
-    long                      m_memorySize;
+    int64_t                   m_memorySize;
 
     std::vector<std::queue<Tile*> > m_precacheRequests;
     std::stack<Tile*>               m_renderRequests;
-    std::map<long, Tile*>           m_textureLoaded;
-    std::map<long, Tile*>           m_renderRequestSet;
-    std::map<long, Tile*>           m_precacheRequestSet;
+    std::map<int64_t, Tile*>        m_textureLoaded;
+    std::map<int64_t, Tile*>        m_renderRequestSet;
+    std::map<int64_t, Tile*>        m_precacheRequestSet;
 
     void PrecacheLayer(int layer, const tf::Point& position, int size);
     void LoadTexture(Tile* tile);

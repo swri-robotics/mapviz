@@ -52,7 +52,7 @@ namespace multires_image
     bool Failed() const { return m_failed; }
     bool TextureLoaded() const { return m_textureLoaded; }
     const QImage& Image() const { return m_image; }
-    long TileID() const { return m_tileId; }
+    int64_t TileID() const { return m_tileId; }
     int Layer() const { return m_level; }
     int MemorySize() const { return m_memorySize; }
     int Row() const { return m_row; }
@@ -88,7 +88,7 @@ namespace multires_image
     bool                m_textureLoaded;
     int                 m_dimension;
     int                 m_textureId;
-    long                m_tileId;
+    int64_t             m_tileId;
     int                 m_memorySize;
     QImage              m_image;
     QMutex              m_mutex;

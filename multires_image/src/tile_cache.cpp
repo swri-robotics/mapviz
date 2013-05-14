@@ -34,12 +34,11 @@
 
 namespace multires_image
 {
-
   TileCache::TileCache(TileSet* tileSet, QGLWidget* widget) :
     m_tileSet(tileSet),
     m_widget(widget),
     m_currentLayer(0),
-    m_currentPosition(0,0,0),
+    m_currentPosition(0, 0, 0),
     m_exit(false),
     m_memorySize(0),
     m_cacheThread(this),
@@ -50,7 +49,6 @@ namespace multires_image
     m_precacheRequestSetLock(QMutex::Recursive),
     m_textureLoadedLock(QMutex::Recursive)
   {
-
     connect(this, SIGNAL(SignalLoadTexture(Tile*)),
       SLOT(LoadTextureSlot(Tile*)), Qt::BlockingQueuedConnection);
 
@@ -99,7 +97,7 @@ namespace multires_image
         m_renderRequestSet[tile->TileID()] = tile;
       }
     }
-    catch(std::exception& e)
+    catch(const std::exception& e)
     {
       std::cout << "An exception occurred queuing a tile to be cached: " << e.what() << std::endl;
     }
@@ -167,7 +165,7 @@ namespace multires_image
             m_precacheRequestSet[tile->TileID()] = tile;
           }
         }
-        catch (std::exception& e)
+        catch (const std::exception& e)
         {
           std::cout << "An exception occurred queuing tiles for precaching: " << e.what() << std::endl;
         }
@@ -196,7 +194,7 @@ namespace multires_image
     {
       m_textureLoaded[tile->TileID()] = tile;
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
       std::cout << "An exception occurred loading texture: " << e.what() << std::endl;
     }
@@ -222,7 +220,7 @@ namespace multires_image
     {
       m_textureLoaded.erase(tile->TileID());
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
       std::cout << "An exception occurred unloading texture: " << e.what() << std::endl;
     }
@@ -281,7 +279,6 @@ namespace multires_image
         }
         else
         {
-
         }
       }
       else
@@ -310,7 +307,7 @@ namespace multires_image
             }
           }
         }
-        catch (std::exception& e)
+        catch (const std::exception& e)
         {
           std::cout << "An exception occurred precaching texture: " << e.what() << std::endl;
         }
@@ -352,14 +349,14 @@ namespace multires_image
   {
     while (!p->m_exit)
     {
-      std::map<long, Tile*>* tiles;
+      std::map<int64_t, Tile*>* tiles;
       p->m_textureLoadedLock.lock();
 
-      tiles = new std::map<long, Tile*>(p->m_textureLoaded);
+      tiles = new std::map<int64_t, Tile*>(p->m_textureLoaded);
 
       p->m_textureLoadedLock.unlock();
 
-      std::map<long, Tile*>::iterator iter;
+      std::map<int64_t, Tile*>::iterator iter;
 
       for (iter = tiles->begin(); iter != tiles->end(); ++iter)
       {
