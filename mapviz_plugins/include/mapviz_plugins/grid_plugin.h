@@ -48,7 +48,7 @@ namespace mapviz_plugins
   {
 
     Q_OBJECT
-  
+
   public:
 
     GridPlugin();
@@ -56,11 +56,11 @@ namespace mapviz_plugins
 
     bool Initialize(QGLWidget* canvas);
     void Shutdown();
-    
+
     void Draw(double x, double y, double scale);
 
     void Transform();
-    
+
     void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
     void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
 

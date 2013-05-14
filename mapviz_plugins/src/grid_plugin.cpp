@@ -31,9 +31,9 @@
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins, 
-    grid, 
-    mapviz_plugins::GridPlugin, 
+    mapviz_plugins,
+    grid,
+    mapviz_plugins::GridPlugin,
     mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -126,7 +126,7 @@ namespace mapviz_plugins
   void GridPlugin::SetColumns(int columns)
   {
     columns_ = columns;
-  
+
     RecalculateGrid();
   }
 
@@ -360,7 +360,7 @@ namespace mapviz_plugins
       ++transformed_it;
     }
   }
-    
+
   void GridPlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
   {
     std::string color;
