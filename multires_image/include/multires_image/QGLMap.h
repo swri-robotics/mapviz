@@ -40,7 +40,7 @@ namespace multires_image
     Q_OBJECT
 
   public:
-    QGLMap(QWidget *parent = 0);
+    explicit QGLMap(QWidget *parent = 0);
     ~QGLMap();
 
     void Exit();
@@ -63,7 +63,7 @@ namespace multires_image
 
   protected:
     void initializeGL();
-    void resizeGL( int w, int h );
+    void resizeGL(int w, int h);
     void paintGL();
     void mousePressEvent(QMouseEvent* e);
     void mouseDoubleClickEvent(QMouseEvent* e);

@@ -104,7 +104,7 @@ namespace multires_image
     if (m_currentLayer != m_tiles->LayerCount() - 1)
     {
       TileSetLayer* baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 1);
-      Tile* tile = baseLayer->GetTile(0,0);
+      Tile* tile = baseLayer->GetTile(0, 0);
       if (tile->TextureLoaded())
       {
         tile->Draw();

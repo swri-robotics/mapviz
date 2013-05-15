@@ -32,7 +32,6 @@
 
 namespace multires_image
 {
-
   class TileSetLayer
   {
   public:

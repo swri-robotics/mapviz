@@ -16,8 +16,8 @@
 // PARTICULAR PURPOSE.
 //
 // *****************************************************************************
-#ifndef MULTIRES_IMAGE_TILESET_H_
-#define MULTIRES_IMAGE_TILESET_H_
+#ifndef MULTIRES_IMAGE_TILE_SET_H_
+#define MULTIRES_IMAGE_TILE_SET_H_
 
 // C++ standard libraries
 #include <string>
@@ -32,10 +32,9 @@ namespace multires_image
   class TileSet
   {
   public:
-
-    TileSet(const std::string& geofile);
+    explicit TileSet(const std::string& geofile);
     TileSet(const std::string& geofile, const std::string extension);
-    TileSet(const transform_util::GeoReference& georeference);
+    explicit TileSet(const transform_util::GeoReference& georeference);
     TileSet(const transform_util::GeoReference& georeference,
             const std::string extension);
 
@@ -65,4 +64,4 @@ namespace multires_image
   };
 }
 
-#endif  // MULTIRES_IMAGE_TILESET_H_
+#endif  // MULTIRES_IMAGE_TILE_SET_H_

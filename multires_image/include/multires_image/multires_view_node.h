@@ -51,7 +51,7 @@ namespace multires_image
     virtual void showEvent(QShowEvent* event);
 
     void Initialize();
-    
+
     void Spin();
 
   private:
@@ -68,7 +68,6 @@ namespace multires_image
     std::string image_path_;
 
     TileSet* tile_set_;
-
   };
 }
 

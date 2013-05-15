@@ -109,7 +109,7 @@ namespace multires_image
   }
 }
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
   // Initialize QT
   QApplication app(argc, argv);
