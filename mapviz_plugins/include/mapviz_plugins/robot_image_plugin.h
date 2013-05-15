@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef ROBOT_IMAGE_PLUGIN_H
-#define ROBOT_IMAGE_PLUGIN_H
+#ifndef MAPVIZ_PLUGINS_ROBOT_IMAGE_PLUGIN_H_
+#define MAPVIZ_PLUGINS_ROBOT_IMAGE_PLUGIN_H_
 
 // C++ standard libraries
 #include <string>
@@ -41,14 +41,11 @@
 
 namespace mapviz_plugins
 {
-
   class RobotImagePlugin : public mapviz::MapvizPlugin
   {
-
     Q_OBJECT
 
   public:
-
     RobotImagePlugin();
     virtual ~RobotImagePlugin();
 
@@ -106,4 +103,4 @@ namespace mapviz_plugins
   };
 }
 
-#endif /* ROBOT_IMAGE_PLUGIN_H */
+#endif  // MAPVIZ_PLUGINS_ROBOT_IMAGE_PLUGIN_H_

@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef ODOMETRY_PLUGIN_H
-#define ODOMETRY_PLUGIN_H
+#ifndef MAPVIZ_PLUGINS_ODOMETRY_PLUGIN_H_
+#define MAPVIZ_PLUGINS_ODOMETRY_PLUGIN_H_
 
 // C++ standard libraries
 #include <string>
@@ -125,4 +125,4 @@ namespace mapviz_plugins
   };
 }
 
-#endif /* ODOMETRY_PLUGIN_H */
+#endif  // MAPVIZ_PLUGINS_ODOMETRY_PLUGIN_H_

@@ -19,6 +19,7 @@
 
 // C++ standard libraries
 #include <cstdio>
+#include <algorithm>
 #include <vector>
 
 // QT libraries
@@ -35,11 +36,14 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, robot_image, mapviz_plugins::RobotImagePlugin, mapviz::MapvizPlugin);
+PLUGINLIB_DECLARE_CLASS(
+    mapviz_plugins,
+    robot_image,
+    mapviz_plugins::RobotImagePlugin,
+    mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
-
   RobotImagePlugin::RobotImagePlugin() :
     config_widget_(new QWidget()),
     width_(1),
@@ -70,7 +74,6 @@ namespace mapviz_plugins
 
   RobotImagePlugin::~RobotImagePlugin()
   {
-
   }
 
   void RobotImagePlugin::SelectFile()
@@ -297,7 +300,7 @@ namespace mapviz_plugins
         PrintError("Failed to load image.");
       }
     }
-    catch(std::exception& e)
+    catch(const std::exception& e)
     {
       PrintError("Failed to load image.  Exception occured.");
     }
@@ -329,6 +332,5 @@ namespace mapviz_plugins
     emitter << YAML::Key << "width" << YAML::Value << width_;
     emitter << YAML::Key << "height" << YAML::Value << height_;
   }
-
 }
 

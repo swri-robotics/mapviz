@@ -28,7 +28,6 @@
 
 namespace multires_image
 {
-
   TileSetLayer::TileSetLayer(const transform_util::GeoReference& geo,
                   const std::string& path,
                   int tileSize, int layer) :
@@ -53,7 +52,6 @@ namespace multires_image
       m_tiles.push_back(std::vector<Tile*>());
       m_tiles[c].reserve(m_rows);
     }
-
   }
 
   TileSetLayer::~TileSetLayer(void)
@@ -74,10 +72,10 @@ namespace multires_image
       for (int32_t r = 0; r < m_rows; r++)
       {
         std::string rowString = QString::number(r).toStdString();
-        while(rowString.length() < 5) rowString = '0' + rowString;
+        while (rowString.length() < 5) rowString = '0' + rowString;
 
         std::string columnString = QString::number(c).toStdString();
-        while(columnString.length() < 5) columnString = '0' + columnString;
+        while (columnString.length() < 5) columnString = '0' + columnString;
 
         // Get 4 corners of this tile
         int left   = c       * m_tileSize * m_scale;

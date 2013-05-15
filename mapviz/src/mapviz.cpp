@@ -349,7 +349,7 @@ void Mapviz::Open(const std::string& filename)
 
     if (const YAML::Node *displays = doc.FindValue("displays"))
     {
-      for (unsigned int i = 0; i< displays->size();i++)
+      for (uint32_t i = 0; i < displays->size(); i++)
       {
         std::string type, name;
         (*displays)[i]["type"] >> type;
@@ -369,12 +369,12 @@ void Mapviz::Open(const std::string& filename)
       }
     }
   }
-  catch (YAML::ParserException& e)
+  catch (const YAML::ParserException& e)
   {
     ROS_ERROR("%s", e.what());
     return;
   }
-  catch (YAML::Exception& e)
+  catch (const YAML::Exception& e)
   {
     ROS_ERROR("%s", e.what());
     return;
@@ -671,7 +671,7 @@ int main(int argc, char **argv)
   QApplication app(argc, argv);
 
   // Initialize glut (for displaying text)
-  glutInit(&argc,argv);
+  glutInit(&argc, argv);
 
   Mapviz mapviz(argc, argv);
   mapviz.show();

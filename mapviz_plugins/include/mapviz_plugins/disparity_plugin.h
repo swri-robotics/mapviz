@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef IMAGE_PLUGIN_H
-#define IMAGE_PLUGIN_H
+#ifndef MAPVIZ_PLUGINS_DISPARITY_PLUGIN_H_
+#define MAPVIZ_PLUGINS_DISPARITY_PLUGIN_H_
 
 // C++ standard libraries
 #include <string>
@@ -123,4 +123,4 @@ namespace mapviz_plugins
   };
 }
 
-#endif /* IMAGE_PLUGIN_H */
+#endif  // MAPVIZ_PLUGINS_DISPARITY_PLUGIN_H_

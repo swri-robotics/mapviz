@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef GRID_PLUGIN_H
-#define GRID_PLUGIN_H
+#ifndef MAPVIZ_PLUGINS_GRID_PLUGIN_H_
+#define MAPVIZ_PLUGINS_GRID_PLUGIN_H_
 
 // C++ standard libraries
 #include <string>
@@ -117,4 +117,4 @@ namespace mapviz_plugins
   };
 }
 
-#endif /* GRID_PLUGIN_H */
+#endif  // MAPVIZ_PLUGINS_GRID_PLUGIN_H_
