@@ -150,7 +150,7 @@ namespace multires_image
 
         m_textureLoaded = true;
       }
-      catch(std::exception& e)
+      catch (const std::exception& e)
       {
         std::cout << "An exception occured loading texture: " << e.what() << std::endl;
         m_failed = true;

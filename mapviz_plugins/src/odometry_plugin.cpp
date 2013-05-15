@@ -39,7 +39,11 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, odometry, mapviz_plugins::OdometryPlugin, mapviz::MapvizPlugin);
+PLUGINLIB_DECLARE_CLASS(
+    mapviz_plugins,
+    odometry,
+    mapviz_plugins::OdometryPlugin,
+    mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
@@ -73,7 +77,6 @@ namespace mapviz_plugins
 
   OdometryPlugin::~OdometryPlugin()
   {
-
   }
 
   void OdometryPlugin::SetDrawStyle(QString style)
