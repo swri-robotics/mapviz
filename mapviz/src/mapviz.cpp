@@ -621,10 +621,13 @@ void Mapviz::RemoveDisplay()
 
   QListWidgetItem* item = ui_.configlist->takeItem(ui_.configlist->currentRow());
 
-  canvas_->RemovePlugin(plugins_[item]);
-  plugins_[item] = boost::shared_ptr<mapviz::MapvizPlugin>();
+  if (item)
+  {
+    canvas_->RemovePlugin(plugins_[item]);
+    plugins_[item] = boost::shared_ptr<mapviz::MapvizPlugin>();
 
-  delete item;
+    delete item;
+  }
 }
 
 void Mapviz::ClearDisplays()
