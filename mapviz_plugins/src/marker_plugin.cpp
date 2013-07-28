@@ -172,7 +172,10 @@ namespace mapviz_plugins
       {
         markerData.expire_time = ros::TIME_MAX;
       }
-      markerData.expire_time = ros::Time::now() + lifetime;
+      else
+      {
+        markerData.expire_time = ros::Time::now() + lifetime;
+      }
 
       // TODO(malban): correctly transform points based on the pose
       double x = marker->pose.position.x;
