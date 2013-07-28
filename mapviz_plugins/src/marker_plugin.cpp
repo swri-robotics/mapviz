@@ -451,7 +451,7 @@ namespace mapviz_plugins
       else
       {
         PrintInfo("OK");
-        ROS_ERROR("Not displaying expired marker: %lf < %lf (now)", marker.expire_time.toSec(), now.toSec());
+        ROS_ERROR("Not displaying expired marker[%s:%d]: %lf < %lf (now)", topic_.c_str(), markerIter->first, marker.expire_time.toSec(), now.toSec());
       }
     }
   }
