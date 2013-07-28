@@ -174,7 +174,8 @@ namespace mapviz_plugins
       }
       else
       {
-        markerData.expire_time = ros::Time::now() + lifetime;
+        // Temporarily add 5 seconds to fix some existing markers.
+        markerData.expire_time = ros::Time::now() + lifetime + ros::Duration(5);
       }
 
       // TODO(malban): correctly transform points based on the pose
