@@ -166,7 +166,12 @@ namespace mapviz_plugins
         PrintError("No transform between " + source_frame_ + " and " + target_frame_);
       }
 
-      // TODO(malban): handle lifetime parameter
+      // Handle lifetime parameter
+      if (marker->duration == 0)
+      {
+        markerData.expire_time = ros::TIME_MAX;
+      }
+      markerData.expire_time = ros::Time::now() + marker->lifetime;
 
       // TODO(malban): correctly transform points based on the pose
       double x = marker->pose.position.x;
