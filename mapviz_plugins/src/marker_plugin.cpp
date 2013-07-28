@@ -167,7 +167,7 @@ namespace mapviz_plugins
       }
 
       // Handle lifetime parameter
-      if (marker->lifetime == 0)
+      if (marker->lifetime.isZero())
       {
         markerData.expire_time = ros::TIME_MAX;
       }
