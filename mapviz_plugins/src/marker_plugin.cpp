@@ -291,12 +291,15 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Draw(double x, double y, double scale)
   {
+    ros::Time now = ros::Time::now();
+
     std::map<int, MarkerData>::iterator markerIter;
     for (markerIter = markers_.begin(); markerIter != markers_.end(); ++markerIter)
     {
       MarkerData& marker = markerIter->second;
 
-      if (marker.transformed)
+
+      if (marker.expire_time > now && marker.transformed)
       {
         glColor4f(marker.color.redF(), marker.color.greenF(), marker.color.blueF(), 1.0f);
 
