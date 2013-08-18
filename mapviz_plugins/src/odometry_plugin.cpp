@@ -522,7 +522,7 @@ namespace mapviz_plugins
 
     if (node.FindValue("show_covariance"))
     {
-      bool show_covariance;
+      bool show_covariance = false;
       node["show_covariance"] >> show_covariance;
       ui_.show_covariance->setChecked(show_covariance);
     }
