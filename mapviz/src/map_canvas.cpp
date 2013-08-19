@@ -29,7 +29,6 @@ bool compare_plugins(
   return a->DrawOrder() < b->DrawOrder();
 }
 
-
 MapCanvas::MapCanvas(QWidget* parent) :
   QGLWidget(parent),
   initialized_(false),
@@ -114,7 +113,6 @@ void MapCanvas::paintGL()
   }
 
   glPopMatrix();
-
 }
 
 void MapCanvas::wheelEvent(QWheelEvent* e)

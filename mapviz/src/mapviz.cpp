@@ -533,7 +533,7 @@ boost::shared_ptr<mapviz::MapvizPlugin> Mapviz::CreateNewDisplay(
   config_item->SetListItem(item);
   item->setSizeHint(config_item->sizeHint());
   QObject::connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
-  QObject::connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*,bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*,bool)));
+  QObject::connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
 
   ui_.configlist->addItem(item);
   ui_.configlist->setItemWidget(item, config_item);

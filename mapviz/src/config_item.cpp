@@ -28,7 +28,6 @@ ConfigItem::ConfigItem(QWidget *parent, Qt::WFlags flags) :
 
 ConfigItem::~ConfigItem()
 {
-
 }
 
 void ConfigItem::ToggleDraw(bool toggled)
@@ -39,13 +38,13 @@ void ConfigItem::ToggleDraw(bool toggled)
 void ConfigItem::SetName(QString name)
 {
   name_ = name;
-  ui_.namelabel->setText(type_ + " (" + name_ + ")" );
+  ui_.namelabel->setText(type_ + " (" + name_ + ")");
 }
 
 void ConfigItem::SetType(QString type)
 {
   type_ = type;
-  ui_.namelabel->setText(type_ + " (" + name_ + ")" );
+  ui_.namelabel->setText(type_ + " (" + name_ + ")");
 }
 
 void ConfigItem::SetWidget(QWidget* widget)
