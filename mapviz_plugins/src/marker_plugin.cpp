@@ -183,7 +183,8 @@ namespace mapviz_plugins
       double y = marker->pose.position.y;
       double z = marker->pose.position.z;
 
-      if (markerData.display_type == visualization_msgs::Marker::CYLINDER)
+      if (markerData.display_type == visualization_msgs::Marker::CYLINDER ||
+          markerData.display_type == visualization_msgs::Marker::CUBE)
       {
         StampedPoint point;
         point.point = tf::Point(x, y, z);
@@ -418,6 +419,33 @@ namespace mapviz_plugins
                     x + std::sin(radians) * marker.scale_x,
                     y + std::cos(radians) * marker.scale_y);
               }
+
+              glEnd();
+            }
+          }
+          else if (marker.display_type == visualization_msgs::Marker::CUBE ||
+              marker.display_type == visualization_msgs::Marker::CUBE_LIST)
+          {
+            std::list<StampedPoint>::iterator point_it = marker.points.begin();
+            for (; point_it != marker.points.end(); ++point_it)
+            {
+              glColor4f(
+                  point_it->color.redF(),
+                  point_it->color.greenF(),
+                  point_it->color.blueF(),
+                  point_it->color.alphaF());
+
+
+              glBegin(GL_TRIANGLE_FAN);
+
+
+              float x = point_it->transformed_point.getX();
+              float y = point_it->transformed_point.getY();
+
+              glVertex2f(x + marker.scale_x / 2, y + marker.scale_x / 2);
+              glVertex2f(x - marker.scale_x / 2, y + marker.scale_x / 2);
+              glVertex2f(x - marker.scale_x / 2, y - marker.scale_x / 2);
+              glVertex2f(x + marker.scale_x / 2, y - marker.scale_x / 2);
 
               glEnd();
             }
