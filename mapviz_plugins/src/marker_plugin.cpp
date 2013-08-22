@@ -392,7 +392,9 @@ namespace mapviz_plugins
 
             glEnd();
           }
-          else if (marker.display_type == visualization_msgs::Marker::CYLINDER)
+          else if (marker.display_type == visualization_msgs::Marker::CYLINDER ||
+              marker.display_type == visualization_msgs::Marker::SPHERE ||
+              marker.display_type == visualization_msgs::Marker::SPHERE_LIST)
           {
             std::list<StampedPoint>::iterator point_it = marker.points.begin();
             for (; point_it != marker.points.end(); ++point_it)
@@ -415,6 +417,11 @@ namespace mapviz_plugins
               for (int32_t i = 0; i <= 360; i += 10)
               {
                 float radians = static_cast<float>(i) * math_util::_deg_2_rad;
+                // Spheres may be specified w/ only one scale value
+                if(marker.scale_y == 0.0)
+                {
+                  marker.scale_y = marker.scale_x;
+                }
                 glVertex2f(
                     x + std::sin(radians) * marker.scale_x,
                     y + std::cos(radians) * marker.scale_y);
