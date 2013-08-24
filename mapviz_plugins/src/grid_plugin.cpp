@@ -398,9 +398,14 @@ namespace mapviz_plugins
 
   void GridPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
   {
-    emitter << YAML::Key << "color" << YAML::Value << color_.name().toStdString();
+    std::string color = color_.name().toStdString();
+    emitter << YAML::Key << "color" << YAML::Value << color;
+
     emitter << YAML::Key << "alpha" << YAML::Value << alpha_;
-    emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->currentText().toStdString();
+
+    std::string frame = ui_.frame->currentText().toStdString();
+    emitter << YAML::Key << "frame" << YAML::Value << frame;
+
     emitter << YAML::Key << "x" << YAML::Value << top_left_.getX();
     emitter << YAML::Key << "y" << YAML::Value << top_left_.getY();
     emitter << YAML::Key << "size" << YAML::Value << size_;

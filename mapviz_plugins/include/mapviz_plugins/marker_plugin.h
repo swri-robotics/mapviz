@@ -53,7 +53,6 @@ namespace mapviz_plugins
     Q_OBJECT
 
   public:
-
     MarkerPlugin();
     virtual ~MarkerPlugin();
 
@@ -79,7 +78,6 @@ namespace mapviz_plugins
     void TopicEdited();
 
   private:
-
     struct StampedPoint
     {
       tf::Point point;
@@ -118,7 +116,9 @@ namespace mapviz_plugins
     bool is_marker_array_;
 
     void markerCallback(const visualization_msgs::MarkerConstPtr odometry);
-    void markerArrayCallback(const visualization_msgs::MarkerArrayConstPtr markers);
+
+    void markerArrayCallback(
+      const visualization_msgs::MarkerArrayConstPtr markers);
   };
 }
 

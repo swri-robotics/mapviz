@@ -48,7 +48,7 @@ namespace mapviz_plugins
   class OdometryPlugin : public mapviz::MapvizPlugin
   {
     Q_OBJECT
-    
+
   public:
     struct StampedPoint
     {
@@ -61,8 +61,8 @@ namespace mapviz_plugins
       bool transformed;
       ros::Time stamp;
 
-      std::vector<tf::Point> covariance_points;
-      std::vector<tf::Point> transformed_covariance_points;
+      std::vector<tf::Point> cov_points;
+      std::vector<tf::Point> transformed_cov_points;
     };
 
     enum DrawStyle { LINES = 0, POINTS, ARROWS };
@@ -116,7 +116,7 @@ namespace mapviz_plugins
     ros::Subscriber odometry_sub_;
     bool has_message_;
 
-    StampedPoint current_point_;
+    StampedPoint cur_point_;
     std::list<StampedPoint> points_;
 
     void odometryCallback(const nav_msgs::OdometryConstPtr odometry);

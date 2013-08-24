@@ -325,7 +325,7 @@ namespace mapviz_plugins
 
   void DisparityPlugin::DrawIplImage(cv::Mat *image)
   {
-    // TODO glTexture2D may be more efficient than glDrawPixels
+    // TODO(malban): glTexture2D may be more efficient than glDrawPixels
 
     if (!has_image_)
       return;

@@ -45,14 +45,11 @@
 
 namespace mapviz_plugins
 {
-
   class MultiresImagePlugin : public mapviz::MapvizPlugin
   {
-
     Q_OBJECT
 
   public:
-
     MultiresImagePlugin();
     virtual ~MultiresImagePlugin();
 
@@ -63,8 +60,8 @@ namespace mapviz_plugins
 
     void Transform();
 
-    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
-    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
+    void LoadConfiguration(const YAML::Node& node, const std::string& path);
+    void SaveConfiguration(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
@@ -95,7 +92,10 @@ namespace mapviz_plugins
     bool transformed_;
 
     void GetCenterPoint(double x, double y);
-    boost::filesystem::path MakePathRelative(boost::filesystem::path path, boost::filesystem::path base);
+    
+    boost::filesystem::path MakePathRelative(
+      boost::filesystem::path path, 
+      boost::filesystem::path base);
   };
 }
 

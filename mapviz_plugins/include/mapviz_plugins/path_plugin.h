@@ -47,7 +47,7 @@ namespace mapviz_plugins
   class PathPlugin : public mapviz::MapvizPlugin
   {
     Q_OBJECT
-    
+
   public:
     PathPlugin();
     virtual ~PathPlugin();

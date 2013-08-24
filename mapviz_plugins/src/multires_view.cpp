@@ -38,7 +38,12 @@ namespace mapviz_plugins
   {
     double top, left, bottom, right;
     tiles->GeoReference().GetCoordinate(0, 0, left, top);
-    tiles->GeoReference().GetCoordinate(tiles->GeoReference().Width(),tiles->GeoReference().Height(), right, bottom);
+
+    tiles->GeoReference().GetCoordinate(
+      tiles->GeoReference().Width(),
+      tiles->GeoReference().Height(),
+      right,
+      bottom);
 
     double scale_x = std::fabs(right - left) / (double)tiles->GeoReference().Width();
     double scale_y = std::fabs(top - bottom) / (double)tiles->GeoReference().Height();
@@ -46,8 +51,6 @@ namespace mapviz_plugins
     min_scale_ = scale_x;
     if (scale_y > scale_x)
       min_scale_ = scale_y;
-
-    ROS_INFO("min_scale: %lf", min_scale_);
   }
 
   MultiresView::~MultiresView(void)
@@ -109,7 +112,7 @@ namespace mapviz_plugins
     // Always draw bottom layers
 
     multires_image::TileSetLayer* baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 1);
-      multires_image::Tile* tile = baseLayer->GetTile(0,0);
+      multires_image::Tile* tile = baseLayer->GetTile(0, 0);
       if (tile->TextureLoaded())
       {
         tile->Draw();
@@ -145,7 +148,6 @@ namespace mapviz_plugins
         {
           for (int r = m_startRow; r <= m_endRow; r++)
           {
-
             multires_image::Tile* tile = layer->GetTile(c, r);
             if (tile->TextureLoaded())
             {

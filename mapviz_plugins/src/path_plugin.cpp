@@ -36,7 +36,6 @@ PLUGINLIB_DECLARE_CLASS(mapviz_plugins, path, mapviz_plugins::PathPlugin, mapviz
 
 namespace mapviz_plugins
 {
-
   PathPlugin::PathPlugin() :
     config_widget_(new QWidget()),
     transformed_(false),
@@ -61,7 +60,6 @@ namespace mapviz_plugins
 
   PathPlugin::~PathPlugin()
   {
-
   }
 
   void PathPlugin::SelectTopic()
@@ -259,8 +257,8 @@ namespace mapviz_plugins
 
   void PathPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
   {
-    emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
+    std::string topic = ui_.topic->text().toStdString();
+    emitter << YAML::Key << "topic" << YAML::Value << topic;
   }
-
 }
 

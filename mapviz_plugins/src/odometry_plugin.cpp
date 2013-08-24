@@ -190,7 +190,7 @@ namespace mapviz_plugins
       }
     }
 
-    current_point_ = stamped_point;
+    cur_point_ = stamped_point;
 
     if (ui_.show_covariance->isChecked())
     {
@@ -212,10 +212,10 @@ namespace mapviz_plugins
 
         if (!cov_matrix_2d.empty())
         {
-          current_point_.covariance_points = image_util::GetEllipsePoints(
-              cov_matrix_2d, current_point_.point, 3, 32);
+          cur_point_.cov_points = image_util::GetEllipsePoints(
+              cov_matrix_2d, cur_point_.point, 3, 32);
 
-          current_point_.transformed_covariance_points = current_point_.covariance_points;
+          cur_point_.transformed_cov_points = cur_point_.cov_points;
         }
         else
         {
@@ -223,7 +223,6 @@ namespace mapviz_plugins
         }
       }
     }
-
 
     canvas_->update();
   }
@@ -339,11 +338,11 @@ namespace mapviz_plugins
         }
       }
 
-      if (current_point_.transformed)
+      if (cur_point_.transformed)
       {
         glVertex2f(
-          current_point_.transformed_point.getX(),
-          current_point_.transformed_point.getY());
+          cur_point_.transformed_point.getX(),
+          cur_point_.transformed_point.getY());
 
         transformed = true;
       }
@@ -361,20 +360,20 @@ namespace mapviz_plugins
   {
     glLineWidth(4);
 
-    if (current_point_.transformed && !current_point_.transformed_covariance_points.empty())
+    if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
     {
       glBegin(GL_LINE_STRIP);
 
-      for (uint32_t i = 0; i < current_point_.transformed_covariance_points.size(); i++)
+      for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
       {
         glVertex2f(
-            current_point_.transformed_covariance_points[i].getX(),
-            current_point_.transformed_covariance_points[i].getY());
+            cur_point_.transformed_cov_points[i].getX(),
+            cur_point_.transformed_cov_points[i].getY());
       }
 
       glVertex2f(
-          current_point_.transformed_covariance_points.front().getX(),
-          current_point_.transformed_covariance_points.front().getY());
+          cur_point_.transformed_cov_points.front().getX(),
+          cur_point_.transformed_cov_points.front().getY());
 
       glEnd();
     }
@@ -404,28 +403,28 @@ namespace mapviz_plugins
       }
     }
 
-    if (current_point_.transformed)
+    if (cur_point_.transformed)
     {
       glVertex2f(
-        current_point_.transformed_point.getX(),
-        current_point_.transformed_point.getY());
+        cur_point_.transformed_point.getX(),
+        cur_point_.transformed_point.getY());
       glVertex2f(
-        current_point_.transformed_arrow_point.getX(),
-        current_point_.transformed_arrow_point.getY());
+        cur_point_.transformed_arrow_point.getX(),
+        cur_point_.transformed_arrow_point.getY());
 
       glVertex2f(
-        current_point_.transformed_arrow_point.getX(),
-        current_point_.transformed_arrow_point.getY());
+        cur_point_.transformed_arrow_point.getX(),
+        cur_point_.transformed_arrow_point.getY());
       glVertex2f(
-        current_point_.transformed_arrow_left.getX(),
-        current_point_.transformed_arrow_left.getY());
+        cur_point_.transformed_arrow_left.getX(),
+        cur_point_.transformed_arrow_left.getY());
 
       glVertex2f(
-        current_point_.transformed_arrow_point.getX(),
-        current_point_.transformed_arrow_point.getY());
+        cur_point_.transformed_arrow_point.getX(),
+        cur_point_.transformed_arrow_point.getY());
       glVertex2f(
-        current_point_.transformed_arrow_right.getX(),
-        current_point_.transformed_arrow_right.getY());
+        cur_point_.transformed_arrow_right.getX(),
+        cur_point_.transformed_arrow_right.getY());
 
       transformed = true;
     }
@@ -450,9 +449,9 @@ namespace mapviz_plugins
 
       if (ui_.show_covariance->isChecked())
       {
-        for (uint32_t i = 0; i < point.covariance_points.size(); i++)
+        for (uint32_t i = 0; i < point.cov_points.size(); i++)
         {
-          point.transformed_covariance_points[i] = transform * point.covariance_points[i];
+          point.transformed_cov_points[i] = transform * point.cov_points[i];
         }
       }
 
@@ -476,7 +475,7 @@ namespace mapviz_plugins
       transformed = transformed | TransformPoint(*points_it);
     }
 
-    transformed = transformed | TransformPoint(current_point_);
+    transformed = transformed | TransformPoint(cur_point_);
 
     if (!points_.empty() && !transformed)
     {
@@ -532,12 +531,21 @@ namespace mapviz_plugins
 
   void OdometryPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
   {
-    emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
-    emitter << YAML::Key << "color" << YAML::Value << color_.name().toStdString();
-    emitter << YAML::Key << "draw_style" << YAML::Value << ui_.drawstyle->currentText().toStdString();
+    std::string topic = ui_.topic->text().toStdString();
+    emitter << YAML::Key << "topic" << YAML::Value << topic;
+
+    std::string color = color_.name().toStdString();
+    emitter << YAML::Key << "color" << YAML::Value << color;
+
+    std::string draw_style = ui_.drawstyle->currentText().toStdString();
+    emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
+
     emitter << YAML::Key << "position_tolerance" << YAML::Value << position_tolerance_;
+
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
-    emitter << YAML::Key << "show_covariance" << YAML::Value << ui_.show_covariance->isChecked();
+
+    bool show_covariance = ui_.show_covariance->isChecked();
+    emitter << YAML::Key << "show_covariance" << YAML::Value << show_covariance;
   }
 }
 
