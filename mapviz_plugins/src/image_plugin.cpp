@@ -408,7 +408,7 @@ namespace mapviz_plugins
     last_height_ = height;
   }
 
-  void ImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
+  void ImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -440,7 +440,7 @@ namespace mapviz_plugins
     ui_.height->setValue(height_);
   }
 
-  void ImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
+  void ImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "anchor" << YAML::Value << AnchorToString(anchor_);

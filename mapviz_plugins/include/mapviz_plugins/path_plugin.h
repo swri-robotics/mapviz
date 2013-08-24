@@ -17,8 +17,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_PLUGIN_PATH_PLUGIN_H_
-#define MAPVIZ_PLUGIN_PATH_PLUGIN_H_
+#ifndef MAPVIZ_PLUGINS_PATH_PLUGIN_H_
+#define MAPVIZ_PLUGINS_PATH_PLUGIN_H_
 
 // C++ standard libraries
 #include <string>
@@ -44,14 +44,11 @@
 
 namespace mapviz_plugins
 {
-
   class PathPlugin : public mapviz::MapvizPlugin
   {
-
     Q_OBJECT
-
+    
   public:
-
     PathPlugin();
     virtual ~PathPlugin();
 
@@ -62,8 +59,8 @@ namespace mapviz_plugins
 
     void Transform();
 
-    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
-    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
+    void LoadConfiguration(const YAML::Node& node, const std::string& path);
+    void SaveConfiguration(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
@@ -99,4 +96,4 @@ namespace mapviz_plugins
   };
 }
 
-#endif  // MAPVIZ_PLUGIN_PATH_PLUGIN_H_
+#endif  // MAPVIZ_PLUGINS_PATH_PLUGIN_H_

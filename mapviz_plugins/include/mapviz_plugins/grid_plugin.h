@@ -43,14 +43,11 @@
 
 namespace mapviz_plugins
 {
-
   class GridPlugin : public mapviz::MapvizPlugin
   {
-
     Q_OBJECT
 
   public:
-
     GridPlugin();
     virtual ~GridPlugin();
 
@@ -61,8 +58,8 @@ namespace mapviz_plugins
 
     void Transform();
 
-    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
-    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
+    void LoadConfiguration(const YAML::Node& node, const std::string& path);
+    void SaveConfiguration(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 

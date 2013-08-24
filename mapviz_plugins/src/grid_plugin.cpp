@@ -361,7 +361,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GridPlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
+  void GridPlugin::LoadConfiguration(const YAML::Node& node, const std::string& path)
   {
     std::string color;
     node["color"] >> color;
@@ -396,7 +396,7 @@ namespace mapviz_plugins
       canvas_->update();
   }
 
-  void GridPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
+  void GridPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "color" << YAML::Value << color_.name().toStdString();
     emitter << YAML::Key << "alpha" << YAML::Value << alpha_;

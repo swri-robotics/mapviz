@@ -21,8 +21,9 @@
 #define MAPVIZ_PLUGINS_ODOMETRY_PLUGIN_H_
 
 // C++ standard libraries
-#include <string>
 #include <list>
+#include <string>
+#include <vector>
 
 // QT libraries
 #include <QGLWidget>
@@ -44,14 +45,11 @@
 
 namespace mapviz_plugins
 {
-
   class OdometryPlugin : public mapviz::MapvizPlugin
   {
-
     Q_OBJECT
-
+    
   public:
-
     struct StampedPoint
     {
       tf::Point point;
@@ -79,8 +77,8 @@ namespace mapviz_plugins
 
     void Transform();
 
-    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
-    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
+    void LoadConfiguration(const YAML::Node& node, const std::string& path);
+    void SaveConfiguration(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
