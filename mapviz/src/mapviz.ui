@@ -215,7 +215,7 @@
          </widget>
         </item>
         <item row="5" column="1">
-         <widget class="QPushButton" name="backgroundcolor">
+         <widget class="QPushButton" name="bg_color">
           <property name="maximumSize">
            <size>
             <width>24</width>
@@ -554,7 +554,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>backgroundcolor</sender>
+   <sender>bg_color</sender>
    <signal>clicked()</signal>
    <receiver>mapviz</receiver>
    <slot>SelectBackgroundColor()</slot>

@@ -60,10 +60,11 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
 
   canvas_ = new MapCanvas(this);
   setCentralWidget(canvas_);
-  QObject::connect(ui_.configlist, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
-  QObject::connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 
-  ui_.backgroundcolor->setStyleSheet("background: " + background_.name() + ";");
+  connect(ui_.configlist, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
+  connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
+
+  ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
   canvas_->SetBackground(background_);
 }
 
@@ -89,12 +90,13 @@ void Mapviz::Initialize()
     ros::init(argc_, argv_, "mapviz");
 
     spin_timer_.start(30);
-    QObject::connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
+    connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
 
     node_ = new ros::NodeHandle();
     tf_ = boost::make_shared<tf::TransformListener>();
 
-    loader_ = new pluginlib::ClassLoader<mapviz::MapvizPlugin>("mapviz", "mapviz::MapvizPlugin");
+    loader_ = new pluginlib::ClassLoader<mapviz::MapvizPlugin>(
+        "mapviz", "mapviz::MapvizPlugin");
 
     std::vector<std::string> plugins = loader_->getDeclaredClasses();
     for (unsigned int i = 0; i < plugins.size(); i++)
@@ -106,17 +108,19 @@ void Mapviz::Initialize()
     canvas_->SetFixedFrame(ui_.fixedframecombo->currentText().toStdString());
     canvas_->SetTargetFrame(ui_.targetframecombo->currentText().toStdString());
 
+    ros::NodeHandle priv("~");
+
     std::string config;
-    node_->param(ros::this_node::getName() + "/config", config, std::string(QDir::homePath().toStdString() + "/.mapviz_config"));
+    priv.param("config", config, QDir::homePath().toStdString() + "/.mapviz_config");
 
     Open(config);
 
     UpdateFrames();
     frame_timer_.start(1000);
-    QObject::connect(&frame_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrames()));
+    connect(&frame_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrames()));
 
     save_timer_.start(10000);
-    QObject::connect(&save_timer_, SIGNAL(timeout()), this, SLOT(AutoSave()));
+    connect(&save_timer_, SIGNAL(timeout()), this, SLOT(AutoSave()));
 
     initialized_ = true;
   }
@@ -219,7 +223,7 @@ void Mapviz::SetResizable(bool on)
 void Mapviz::AdjustWindowSize()
 {
   canvas_->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
-  this->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
+  setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
 
   if (force_720p_)
   {
@@ -227,7 +231,7 @@ void Mapviz::AdjustWindowSize()
     canvas_->setMaximumSize(1280, 720);
     canvas_->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     adjustSize();
-    this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
   }
   else if (force_480p_)
   {
@@ -235,7 +239,7 @@ void Mapviz::AdjustWindowSize()
     canvas_->setMaximumSize(640, 480);
     canvas_->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     adjustSize();
-    this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
   }
   else
   {
@@ -343,7 +347,7 @@ void Mapviz::Open(const std::string& filename)
       std::string color;
       doc["background"] >> color;
       background_ = QColor(color.c_str());
-      ui_.backgroundcolor->setStyleSheet("background: " + background_.name() + ";");
+      ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
       canvas_->SetBackground(background_);
     }
 
@@ -532,8 +536,8 @@ boost::shared_ptr<mapviz::MapvizPlugin> Mapviz::CreateNewDisplay(
   QListWidgetItem* item = new QListWidgetItem();
   config_item->SetListItem(item);
   item->setSizeHint(config_item->sizeHint());
-  QObject::connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
-  QObject::connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
+  connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
+  connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
 
   ui_.configlist->addItem(item);
   ui_.configlist->setItemWidget(item, config_item);
@@ -663,7 +667,7 @@ void Mapviz::SelectBackgroundColor()
   if (dialog.result() == QDialog::Accepted)
   {
     background_ = dialog.selectedColor();
-    ui_.backgroundcolor->setStyleSheet("background: " + background_.name() + ";");
+    ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
     canvas_->SetBackground(background_);
   }
 }
