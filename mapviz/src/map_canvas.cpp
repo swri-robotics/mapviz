@@ -255,7 +255,7 @@ void MapCanvas::TransformTarget()
   }
   catch (...)
   {
-    ROS_ERROR("Error looking up transform");;
+    ROS_ERROR("Error looking up transform");
   }
 }
 

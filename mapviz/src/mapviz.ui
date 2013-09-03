@@ -127,7 +127,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QComboBox" name="fixedframecombo">
+         <widget class="QComboBox" name="fixedframe">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -171,7 +171,7 @@
          </widget>
         </item>
         <item row="1" column="1" rowspan="2">
-         <widget class="QComboBox" name="targetframecombo">
+         <widget class="QComboBox" name="targetframe">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -426,7 +426,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>fixedframecombo</sender>
+   <sender>fixedframe</sender>
    <signal>editTextChanged(QString)</signal>
    <receiver>mapviz</receiver>
    <slot>FixedFrameSelected(QString)</slot>
@@ -442,7 +442,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>targetframecombo</sender>
+   <sender>targetframe</sender>
    <signal>editTextChanged(QString)</signal>
    <receiver>mapviz</receiver>
    <slot>TargetFrameSelected(QString)</slot>

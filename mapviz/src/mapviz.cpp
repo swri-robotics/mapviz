@@ -58,7 +58,7 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
   ui_.actionForce_480p->setActionGroup(group);
   ui_.actionResizable->setActionGroup(group);
 
-  ui_.targetframecombo->addItem("<none>");
+  ui_.targetframe->addItem("<none>");
 
   canvas_ = new MapCanvas(this);
   setCentralWidget(canvas_);
@@ -107,8 +107,8 @@ void Mapviz::Initialize()
     }
 
     canvas_->InitializeTf(tf_);
-    canvas_->SetFixedFrame(ui_.fixedframecombo->currentText().toStdString());
-    canvas_->SetTargetFrame(ui_.targetframecombo->currentText().toStdString());
+    canvas_->SetFixedFrame(ui_.fixedframe->currentText().toStdString());
+    canvas_->SetTargetFrame(ui_.targetframe->currentText().toStdString());
 
     ros::NodeHandle priv("~");
 
@@ -145,12 +145,12 @@ void Mapviz::UpdateFrames()
   std::vector<std::string> frames;
   tf_->getFrameStrings(frames);
 
-  if ((int)frames.size() == ui_.fixedframecombo->count())
+  if ((int)frames.size() == ui_.fixedframe->count())
   {
     bool changed = false;
     for (unsigned int i = 0; i < frames.size(); i++)
     {
-      if (frames[i] != ui_.fixedframecombo->itemText(i).toStdString())
+      if (frames[i] != ui_.fixedframe->itemText(i).toStdString())
       {
         changed = true;
       }
@@ -162,45 +162,45 @@ void Mapviz::UpdateFrames()
 
   ROS_INFO("Updating frames...");
 
-  std::string current = ui_.fixedframecombo->currentText().toStdString();
+  std::string current = ui_.fixedframe->currentText().toStdString();
 
-  ui_.fixedframecombo->clear();
+  ui_.fixedframe->clear();
   for (unsigned int i = 0; i < frames.size(); i++)
   {
-    ui_.fixedframecombo->addItem(frames[i].c_str());
+    ui_.fixedframe->addItem(frames[i].c_str());
   }
 
   if (current != "")
   {
-    int index = ui_.fixedframecombo->findText(current.c_str());
+    int index = ui_.fixedframe->findText(current.c_str());
     if (index < 0)
     {
-      ui_.fixedframecombo->addItem(current.c_str());
+      ui_.fixedframe->addItem(current.c_str());
     }
 
-    index = ui_.fixedframecombo->findText(current.c_str());
-    ui_.fixedframecombo->setCurrentIndex(index);
+    index = ui_.fixedframe->findText(current.c_str());
+    ui_.fixedframe->setCurrentIndex(index);
   }
 
-  current = ui_.targetframecombo->currentText().toStdString();
+  current = ui_.targetframe->currentText().toStdString();
 
-  ui_.targetframecombo->clear();
-  ui_.targetframecombo->addItem("<none>");
+  ui_.targetframe->clear();
+  ui_.targetframe->addItem("<none>");
   for (unsigned int i = 0; i < frames.size(); i++)
   {
-    ui_.targetframecombo->addItem(frames[i].c_str());
+    ui_.targetframe->addItem(frames[i].c_str());
   }
 
   if (current != "")
   {
-    int index = ui_.targetframecombo->findText(current.c_str());
+    int index = ui_.targetframe->findText(current.c_str());
     if (index < 0)
     {
-      ui_.targetframecombo->addItem(current.c_str());
+      ui_.targetframe->addItem(current.c_str());
     }
 
-    index = ui_.targetframecombo->findText(current.c_str());
-    ui_.targetframecombo->setCurrentIndex(index);
+    index = ui_.targetframe->findText(current.c_str());
+    ui_.targetframe->setCurrentIndex(index);
   }
 }
 
@@ -277,14 +277,14 @@ void Mapviz::Open(const std::string& filename)
     {
       std::string fixed_frame;
       doc["fixed_frame"] >> fixed_frame;
-      ui_.fixedframecombo->setEditText(fixed_frame.c_str());
+      ui_.fixedframe->setEditText(fixed_frame.c_str());
     }
 
     if (doc.FindValue("target_frame"))
     {
       std::string target_frame;
       doc["target_frame"] >> target_frame;
-      ui_.targetframecombo->setEditText(target_frame.c_str());
+      ui_.targetframe->setEditText(target_frame.c_str());
     }
 
     if (doc.FindValue("fix_orientation"))
@@ -403,8 +403,8 @@ void Mapviz::Save(const std::string& filename)
   YAML::Emitter out;
 
   out << YAML::BeginMap;
-  out << YAML::Key << "fixed_frame" << YAML::Value << ui_.fixedframecombo->currentText().toStdString();
-  out << YAML::Key << "target_frame" << YAML::Value << ui_.targetframecombo->currentText().toStdString();
+  out << YAML::Key << "fixed_frame" << YAML::Value << ui_.fixedframe->currentText().toStdString();
+  out << YAML::Key << "target_frame" << YAML::Value << ui_.targetframe->currentText().toStdString();
   out << YAML::Key << "fix_orientation" << YAML::Value << ui_.actionFix_Orientation->isChecked();
   out << YAML::Key << "show_displays" << YAML::Value << ui_.actionConfig_Dock->isChecked();
   out << YAML::Key << "window_width" << YAML::Value << width();
@@ -545,7 +545,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   ui_.configs->setItemWidget(item, config_item);
 
   // Add plugin to canvas
-  plugin->SetTargetFrame(ui_.fixedframecombo->currentText().toStdString());
+  plugin->SetTargetFrame(ui_.fixedframe->currentText().toStdString());
   plugin->SetUseLatestTransforms(ui_.uselatesttransforms->isChecked());
   plugins_[item] = plugin;
   canvas_->AddPlugin(plugin, -1);
