@@ -33,37 +33,38 @@
 // Auto-generated UI files
 #include "ui_configitem.h"
 
-class ConfigItem : public QWidget
+namespace mapviz
 {
-  Q_OBJECT
+  class ConfigItem : public QWidget
+  {
+    Q_OBJECT
 
-public:
-  ConfigItem(QWidget *parent = 0, Qt::WFlags flags = 0);
-  ~ConfigItem();
+  public:
+    ConfigItem(QWidget *parent = 0, Qt::WFlags flags = 0);
+    ~ConfigItem();
 
-  void SetName(QString name);
-  void SetType(QString type);
-  void SetWidget(QWidget* widget);
-  void ToggleDraw(bool toggled);
-  void SetListItem(QListWidgetItem* item) { item_ = item; }
-  bool Collapsed() const { return ui_.content->isHidden(); }
+    void SetName(QString name);
+    void SetType(QString type);
+    void SetWidget(QWidget* widget);
+    void ToggleDraw(bool toggled);
+    void SetListItem(QListWidgetItem* item) { item_ = item; }
+    bool Collapsed() const { return ui_.content->isHidden(); }
 
-Q_SIGNALS:
-  void UpdateSizeHint();
-  void ToggledDraw(QListWidgetItem* plugin, bool visible);
+  Q_SIGNALS:
+    void UpdateSizeHint();
+    void ToggledDraw(QListWidgetItem* plugin, bool visible);
 
-public Q_SLOTS:
-  void Hide();
-  void Draw(bool on) { Q_EMIT ToggledDraw(item_, on); }
+  public Q_SLOTS:
+    void Hide();
+    void Draw(bool on) { Q_EMIT ToggledDraw(item_, on); }
 
-protected:
+  protected:
+    Ui::configitem ui_;
 
-  Ui::configitem ui_;
-
-  QListWidgetItem* item_;
-  QString name_;
-  QString type_;
-
-};
+    QListWidgetItem* item_;
+    QString name_;
+    QString type_;
+  };
+}
 
 #endif  // MAPVIZ_CONFIG_ITEM_H_

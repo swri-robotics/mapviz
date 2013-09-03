@@ -34,6 +34,8 @@
 #include <mapviz/mapviz.h>
 #include <mapviz/config_item.h>
 
+namespace mapviz
+{
 Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
     QMainWindow(parent, flags),
     argc_(argc),
@@ -671,6 +673,7 @@ void Mapviz::SelectBackgroundColor()
     canvas_->SetBackground(background_);
   }
 }
+}
 
 int main(int argc, char **argv)
 {
@@ -680,7 +683,7 @@ int main(int argc, char **argv)
   // Initialize glut (for displaying text)
   glutInit(&argc, argv);
 
-  Mapviz mapviz(argc, argv);
+  mapviz::Mapviz mapviz(argc, argv);
   mapviz.show();
 
   return app.exec();

@@ -53,74 +53,78 @@
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 
-class Mapviz : public QMainWindow
+namespace mapviz
 {
-  Q_OBJECT
 
-public:
-  Mapviz(int argc, char **argv, QWidget *parent = 0, Qt::WFlags flags = 0);
-  ~Mapviz();
+  class Mapviz : public QMainWindow
+  {
+    Q_OBJECT
 
-  void Initialize();
+  public:
+    Mapviz(int argc, char **argv, QWidget *parent = 0, Qt::WFlags flags = 0);
+    ~Mapviz();
 
-public Q_SLOTS:
-  void AutoSave();
-  void OpenConfig();
-  void SaveConfig();
-  void SelectNewDisplay();
-  void RemoveDisplay();
-  void ReorderDisplays();
-  void FixedFrameSelected(const QString& text);
-  void TargetFrameSelected(const QString& text);
-  void ToggleUseLatestTransforms(bool on);
-  void UpdateFrames();
-  void SpinOnce();
-  void UpdateSizeHints();
-  void ToggleConfigPanel(bool on);
-  void ToggleFixOrientation(bool on);
-  void ToggleShowPlugin(QListWidgetItem* item, bool visible);
-  void Force720p(bool on);
-  void Force480p(bool on);
-  void SetResizable(bool on);
-  void SelectBackgroundColor();
+    void Initialize();
 
-protected:
-  Ui::mapviz ui_;
+  public Q_SLOTS:
+    void AutoSave();
+    void OpenConfig();
+    void SaveConfig();
+    void SelectNewDisplay();
+    void RemoveDisplay();
+    void ReorderDisplays();
+    void FixedFrameSelected(const QString& text);
+    void TargetFrameSelected(const QString& text);
+    void ToggleUseLatestTransforms(bool on);
+    void UpdateFrames();
+    void SpinOnce();
+    void UpdateSizeHints();
+    void ToggleConfigPanel(bool on);
+    void ToggleFixOrientation(bool on);
+    void ToggleShowPlugin(QListWidgetItem* item, bool visible);
+    void Force720p(bool on);
+    void Force480p(bool on);
+    void SetResizable(bool on);
+    void SelectBackgroundColor();
 
-  QTimer frame_timer_;
-  QTimer spin_timer_;
-  QTimer save_timer_;
+  protected:
+    Ui::mapviz ui_;
 
-  int    argc_;
-  char** argv_;
+    QTimer frame_timer_;
+    QTimer spin_timer_;
+    QTimer save_timer_;
 
-  bool initialized_;
-  bool force_720p_;
-  bool force_480p_;
-  bool resizable_;
-  QColor background_;
+    int    argc_;
+    char** argv_;
 
-  ros::NodeHandle* node_;
-  boost::shared_ptr<tf::TransformListener> tf_;
+    bool initialized_;
+    bool force_720p_;
+    bool force_480p_;
+    bool resizable_;
+    QColor background_;
 
-  pluginlib::ClassLoader<mapviz::MapvizPlugin>* loader_;
-  MapCanvas* canvas_;
-  std::map<QListWidgetItem*, boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
+    ros::NodeHandle* node_;
+    boost::shared_ptr<tf::TransformListener> tf_;
 
-  void Open(const std::string& filename);
-  void Save(const std::string& filename);
+    pluginlib::ClassLoader<mapviz::MapvizPlugin>* loader_;
+    MapCanvas* canvas_;
+    std::map<QListWidgetItem*, boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
 
-  boost::shared_ptr<mapviz::MapvizPlugin> CreateNewDisplay(
-      const std::string& name,
-      const std::string& type,
-      bool visible,
-      bool collapsed);
+    void Open(const std::string& filename);
+    void Save(const std::string& filename);
 
-  void ClearDisplays();
-  void AdjustWindowSize();
+    boost::shared_ptr<mapviz::MapvizPlugin> CreateNewDisplay(
+        const std::string& name,
+        const std::string& type,
+        bool visible,
+        bool collapsed);
 
-  virtual void showEvent(QShowEvent* event);
-  virtual void closeEvent(QCloseEvent* event);
-};
+    void ClearDisplays();
+    void AdjustWindowSize();
+
+    virtual void showEvent(QShowEvent* event);
+    virtual void closeEvent(QCloseEvent* event);
+  };
+}
 
 #endif  // MAPVIZ_MAPVIZ_H_

@@ -22,6 +22,9 @@
 
 #include <mapviz/map_canvas.h>
 
+namespace mapviz
+{
+
 bool compare_plugins(
     boost::shared_ptr<mapviz::MapvizPlugin> a,
     boost::shared_ptr<mapviz::MapvizPlugin> b)
@@ -286,4 +289,5 @@ void MapCanvas::Recenter()
   view_top_ = -(height() * view_scale_ * 0.5);
   view_right_ = (width() * view_scale_ * 0.5);
   view_bottom_ = (height() * view_scale_ * 0.5);
+}
 }

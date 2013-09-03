@@ -19,6 +19,9 @@
 
 #include <mapviz/config_item.h>
 
+namespace mapviz
+{
+
 ConfigItem::ConfigItem(QWidget *parent, Qt::WFlags flags) :
   QWidget(parent, flags),
   item_(0)
@@ -68,4 +71,5 @@ void ConfigItem::Hide()
   }
 
   Q_EMIT UpdateSizeHint();
+}
 }

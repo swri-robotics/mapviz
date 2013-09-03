@@ -27,60 +27,63 @@
 #include <QMouseEvent>
 #include <QDropEvent>
 
-class PluginConfigList : public QListWidget
+namespace mapviz
 {
-  Q_OBJECT
-
-public:
-  explicit PluginConfigList(QWidget *parent = 0) : QListWidget(parent) {}
-  PluginConfigList();
-
-Q_SIGNALS:
-  void ItemsMoved();
-
-protected:
-  virtual void dropEvent(QDropEvent* event)
+  class PluginConfigList : public QListWidget
   {
-    QListWidget::dropEvent(event);
+    Q_OBJECT
 
-    Q_EMIT ItemsMoved();
-  }
-};
+  public:
+    explicit PluginConfigList(QWidget *parent = 0) : QListWidget(parent) {}
+    PluginConfigList();
 
-class SingleClickLabel : public QLabel
-{
-  Q_OBJECT
+  Q_SIGNALS:
+    void ItemsMoved();
 
-public:
-  SingleClickLabel(QWidget *parent = 0, Qt::WFlags flags = 0) : QLabel(parent, flags) {}
-  ~SingleClickLabel() {}
+  protected:
+    virtual void dropEvent(QDropEvent* event)
+    {
+      QListWidget::dropEvent(event);
 
-Q_SIGNALS:
-  void Clicked();
+      Q_EMIT ItemsMoved();
+    }
+  };
 
-protected:
-  virtual void mousePressEvent(QMouseEvent* event)
+  class SingleClickLabel : public QLabel
   {
-    Q_EMIT Clicked();
-  }
-};
+    Q_OBJECT
 
-class DoubleClickWidget : public QWidget
-{
-  Q_OBJECT
+  public:
+    SingleClickLabel(QWidget *parent = 0, Qt::WFlags flags = 0) : QLabel(parent, flags) {}
+    ~SingleClickLabel() {}
 
-public:
-  DoubleClickWidget(QWidget *parent = 0, Qt::WFlags flags = 0) : QWidget(parent, flags) {}
-  ~DoubleClickWidget() {}
+  Q_SIGNALS:
+    void Clicked();
 
-Q_SIGNALS:
-  void DoubleClicked();
+  protected:
+    virtual void mousePressEvent(QMouseEvent* event)
+    {
+      Q_EMIT Clicked();
+    }
+  };
 
-protected:
-  virtual void mouseDoubleClickEvent(QMouseEvent* event)
+  class DoubleClickWidget : public QWidget
   {
-    Q_EMIT DoubleClicked();
-  }
-};
+    Q_OBJECT
+
+  public:
+    DoubleClickWidget(QWidget *parent = 0, Qt::WFlags flags = 0) : QWidget(parent, flags) {}
+    ~DoubleClickWidget() {}
+
+  Q_SIGNALS:
+    void DoubleClicked();
+
+  protected:
+    virtual void mouseDoubleClickEvent(QMouseEvent* event)
+    {
+      Q_EMIT DoubleClicked();
+    }
+  };
+}
 
 #endif  // MAPVIZ_WIDGETS_H_
