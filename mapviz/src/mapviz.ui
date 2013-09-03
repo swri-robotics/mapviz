@@ -250,7 +250,7 @@
       </widget>
      </item>
      <item>
-      <widget class="mapviz::PluginConfigList" name="configlist">
+      <widget class="mapviz::PluginConfigList" name="configs">
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAsNeeded</enum>
        </property>

@@ -51,7 +51,6 @@ namespace mapviz
 
   void ConfigItem::SetWidget(QWidget* widget)
   {
-    //ui_.verticalLayout->removeWidget(ui_.content);
     ui_.label->hide();
     ui_.content_layout->addWidget(widget);
   }

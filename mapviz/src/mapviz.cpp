@@ -63,7 +63,7 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
   canvas_ = new MapCanvas(this);
   setCentralWidget(canvas_);
 
-  connect(ui_.configlist, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
+  connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 
   ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
@@ -416,22 +416,22 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "background" << YAML::Value << background_.name().toStdString();
 
 
-  if (ui_.configlist->count() > 0)
+  if (ui_.configs->count() > 0)
   {
     out << YAML::Key << "displays"<< YAML::Value << YAML::BeginSeq;
 
-    for (int i = 0; i < ui_.configlist->count(); i++)
+    for (int i = 0; i < ui_.configs->count(); i++)
     {
       out << YAML::BeginMap;
-      out << YAML::Key << "type" << YAML::Value << plugins_[ui_.configlist->item(i)]->Type();
-      out << YAML::Key << "name" << YAML::Value << plugins_[ui_.configlist->item(i)]->Name();
+      out << YAML::Key << "type" << YAML::Value << plugins_[ui_.configs->item(i)]->Type();
+      out << YAML::Key << "name" << YAML::Value << plugins_[ui_.configs->item(i)]->Name();
       out << YAML::Key << "config" << YAML::Value;
       out << YAML::BeginMap;
 
-      out << YAML::Key << "visible" << YAML::Value << plugins_[ui_.configlist->item(i)]->Visible();
-      out << YAML::Key << "collapsed" << YAML::Value << (static_cast<ConfigItem*>(ui_.configlist->itemWidget(ui_.configlist->item(i))))->Collapsed();
+      out << YAML::Key << "visible" << YAML::Value << plugins_[ui_.configs->item(i)]->Visible();
+      out << YAML::Key << "collapsed" << YAML::Value << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Collapsed();
 
-      plugins_[ui_.configlist->item(i)]->SaveConfig(out, config_path);
+      plugins_[ui_.configs->item(i)]->SaveConfig(out, config_path);
 
       out << YAML::EndMap;
       out << YAML::EndMap;
@@ -527,7 +527,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   plugin->SetName(name);
   plugin->SetNode(*node_);
   plugin->SetVisible(visible);
-  plugin->SetDrawOrder(ui_.configlist->count());
+  plugin->SetDrawOrder(ui_.configs->count());
 
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
@@ -541,8 +541,8 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
   connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
 
-  ui_.configlist->addItem(item);
-  ui_.configlist->setItemWidget(item, config_item);
+  ui_.configs->addItem(item);
+  ui_.configs->setItemWidget(item, config_item);
 
   // Add plugin to canvas
   plugin->SetTargetFrame(ui_.fixedframecombo->currentText().toStdString());
@@ -615,9 +615,9 @@ void Mapviz::ToggleConfigPanel(bool on)
 void Mapviz::UpdateSizeHints()
 {
   ROS_INFO("Updating size hints");
-  for (int i = 0; i < ui_.configlist->count(); i++)
+  for (int i = 0; i < ui_.configs->count(); i++)
   {
-    ui_.configlist->item(i)->setSizeHint(ui_.configlist->itemWidget(ui_.configlist->item(i))->sizeHint());
+    ui_.configs->item(i)->setSizeHint(ui_.configs->itemWidget(ui_.configs->item(i))->sizeHint());
   }
 }
 
@@ -625,7 +625,7 @@ void Mapviz::RemoveDisplay()
 {
   ROS_INFO("Remove display ...");
 
-  QListWidgetItem* item = ui_.configlist->takeItem(ui_.configlist->currentRow());
+  QListWidgetItem* item = ui_.configs->takeItem(ui_.configs->currentRow());
 
   if (item)
   {
@@ -638,11 +638,11 @@ void Mapviz::RemoveDisplay()
 
 void Mapviz::ClearDisplays()
 {
-  while (ui_.configlist->count() > 0)
+  while (ui_.configs->count() > 0)
   {
     ROS_INFO("Remove display ...");
 
-    QListWidgetItem* item = ui_.configlist->takeItem(0);
+    QListWidgetItem* item = ui_.configs->takeItem(0);
 
     canvas_->RemovePlugin(plugins_[item]);
     plugins_[item] = MapvizPluginPtr();
@@ -654,9 +654,9 @@ void Mapviz::ClearDisplays()
 void Mapviz::ReorderDisplays()
 {
   ROS_INFO("Reorder displays");
-  for (int i = 0; i < ui_.configlist->count(); i++)
+  for (int i = 0; i < ui_.configs->count(); i++)
   {
-    plugins_[ui_.configlist->item(i)]->SetDrawOrder(i);
+    plugins_[ui_.configs->item(i)]->SetDrawOrder(i);
   }
   canvas_->ReorderDisplays();
 }
