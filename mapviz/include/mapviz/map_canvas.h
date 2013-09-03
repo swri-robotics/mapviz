@@ -51,8 +51,8 @@ namespace mapviz
 
     void InitializeTf(boost::shared_ptr<tf::TransformListener> tf);
 
-    void AddPlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin, int order);
-    void RemovePlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin);
+    void AddPlugin(MapvizPluginPtr plugin, int order);
+    void RemovePlugin(MapvizPluginPtr plugin);
     void SetFixedFrame(const std::string& frame);
     void SetTargetFrame(const std::string& frame);
     void ToggleFixOrientation(bool on);
@@ -84,13 +84,13 @@ namespace mapviz
 
     void SetBackground(const QColor& color)
     {
-      background_ = color;
+      bg_color_ = color;
       update();
     }
 
   protected:
     void initializeGL();
-    void resizeGL( int w, int h );
+    void resizeGL(int w, int h);
     void paintGL();
     void wheelEvent(QWheelEvent* e);
     void mousePressEvent(QMouseEvent* e);
@@ -103,7 +103,7 @@ namespace mapviz
     bool initialized_;
     bool fix_orientation_;
 
-    QColor background_;
+    QColor bg_color_;
 
     bool mouse_pressed_;
     int mouse_x_;
@@ -139,8 +139,8 @@ namespace mapviz
     std::string fixed_frame_;
     std::string target_frame_;
 
-    boost::shared_ptr<tf::TransformListener> transform_listener_;
-    std::list<boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
+    boost::shared_ptr<tf::TransformListener> tf_;
+    std::list<MapvizPluginPtr> plugins_;
   };
 }
 

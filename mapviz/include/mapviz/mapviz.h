@@ -55,7 +55,6 @@
 
 namespace mapviz
 {
-
   class Mapviz : public QMainWindow
   {
     Q_OBJECT
@@ -106,14 +105,14 @@ namespace mapviz
     ros::NodeHandle* node_;
     boost::shared_ptr<tf::TransformListener> tf_;
 
-    pluginlib::ClassLoader<mapviz::MapvizPlugin>* loader_;
+    pluginlib::ClassLoader<MapvizPlugin>* loader_;
     MapCanvas* canvas_;
-    std::map<QListWidgetItem*, boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
+    std::map<QListWidgetItem*, MapvizPluginPtr> plugins_;
 
     void Open(const std::string& filename);
     void Save(const std::string& filename);
 
-    boost::shared_ptr<mapviz::MapvizPlugin> CreateNewDisplay(
+    MapvizPluginPtr CreateNewDisplay(
         const std::string& name,
         const std::string& type,
         bool visible,

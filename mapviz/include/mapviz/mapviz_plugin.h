@@ -42,7 +42,6 @@ namespace mapviz
   class MapvizPlugin : public QObject
   {
   public:
-
     virtual ~MapvizPlugin() {}
 
     virtual bool Initialize(
@@ -214,6 +213,7 @@ namespace mapviz
       use_latest_transforms_(false),
       draw_order_(0) {}
   };
+  typedef boost::shared_ptr<MapvizPlugin> MapvizPluginPtr;
 }
 
 #endif  // MAPVIZ_MAPVIZ_PLUGIN_H_

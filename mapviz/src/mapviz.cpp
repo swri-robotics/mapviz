@@ -97,7 +97,7 @@ void Mapviz::Initialize()
     node_ = new ros::NodeHandle();
     tf_ = boost::make_shared<tf::TransformListener>();
 
-    loader_ = new pluginlib::ClassLoader<mapviz::MapvizPlugin>(
+    loader_ = new pluginlib::ClassLoader<MapvizPlugin>(
         "mapviz", "mapviz::MapvizPlugin");
 
     std::vector<std::string> plugins = loader_->getDeclaredClasses();
@@ -369,7 +369,7 @@ void Mapviz::Open(const std::string& filename)
         bool collapsed = false;
         config["collapsed"] >> collapsed;
 
-        boost::shared_ptr<mapviz::MapvizPlugin> plugin =
+        MapvizPluginPtr plugin =
             CreateNewDisplay(name, type, visible, collapsed);
         plugin->LoadConfig(config, config_path);
       }
@@ -510,7 +510,7 @@ void Mapviz::SelectNewDisplay()
   }
 }
 
-boost::shared_ptr<mapviz::MapvizPlugin> Mapviz::CreateNewDisplay(
+MapvizPluginPtr Mapviz::CreateNewDisplay(
     const std::string& name,
     const std::string& type,
     bool visible,
@@ -521,7 +521,7 @@ boost::shared_ptr<mapviz::MapvizPlugin> Mapviz::CreateNewDisplay(
   config_item->SetName(name.c_str());
 
   ROS_INFO("creating: %s", type.c_str());
-  boost::shared_ptr<mapviz::MapvizPlugin> plugin = loader_->createInstance(type.c_str());
+  MapvizPluginPtr plugin = loader_->createInstance(type.c_str());
   plugin->Initialize(tf_, canvas_);
   plugin->SetType(type.c_str());
   plugin->SetName(name);
@@ -630,7 +630,7 @@ void Mapviz::RemoveDisplay()
   if (item)
   {
     canvas_->RemovePlugin(plugins_[item]);
-    plugins_[item] = boost::shared_ptr<mapviz::MapvizPlugin>();
+    plugins_[item] = MapvizPluginPtr();
 
     delete item;
   }
@@ -645,7 +645,7 @@ void Mapviz::ClearDisplays()
     QListWidgetItem* item = ui_.configlist->takeItem(0);
 
     canvas_->RemovePlugin(plugins_[item]);
-    plugins_[item] = boost::shared_ptr<mapviz::MapvizPlugin>();
+    plugins_[item] = MapvizPluginPtr();
 
     delete item;
   }
