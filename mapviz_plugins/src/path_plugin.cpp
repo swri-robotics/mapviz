@@ -246,7 +246,7 @@ namespace mapviz_plugins
     }
   }
 
-  void PathPlugin::LoadConfiguration(const YAML::Node& node, const std::string& path)
+  void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -255,7 +255,7 @@ namespace mapviz_plugins
     TopicEdited();
   }
 
-  void PathPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
+  void PathPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;

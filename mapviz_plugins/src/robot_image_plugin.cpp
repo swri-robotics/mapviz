@@ -99,7 +99,7 @@ namespace mapviz_plugins
     ui.setupUi(&dialog);
 
     std::vector<std::string> frames;
-    transform_listener_->getFrameStrings(frames);
+    tf_->getFrameStrings(frames);
 
     for (unsigned int i = 0; i < frames.size(); i++)
     {
@@ -306,7 +306,7 @@ namespace mapviz_plugins
     }
   }
 
-  void RobotImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& path)
+  void RobotImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     node["frame"] >> source_frame_;
     ui_.frame->setText(source_frame_.c_str());
@@ -325,7 +325,7 @@ namespace mapviz_plugins
     FrameEdited();
   }
 
-  void RobotImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
+  void RobotImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->text().toStdString();
     emitter << YAML::Key << "image" << YAML::Value << ui_.image->text().toStdString();

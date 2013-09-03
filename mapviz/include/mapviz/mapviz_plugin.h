@@ -49,9 +49,9 @@ namespace mapviz
         boost::shared_ptr<tf::TransformListener> tf_listener,
         QGLWidget* canvas)
     {
-      transform_listener_ = tf_listener;
+      tf_ = tf_listener;
 
-      return transform_listener_ && Initialize(canvas);
+      return tf_ && Initialize(canvas);
     }
 
     virtual void Shutdown() = 0;
@@ -130,25 +130,25 @@ namespace mapviz
 
       ros::Duration elapsed = ros::Time::now() - time;
 
-      if (time != ros::Time() && elapsed > transform_listener_->getCacheLength())
+      if (time != ros::Time() && elapsed > tf_->getCacheLength())
       {
         return false;
       }
 
       try
       {
-        if (transform_listener_->canTransform(target_frame_, source_frame_, time))
+        if (tf_->canTransform(target_frame_, source_frame_, time))
         {
-          transform_listener_->lookupTransform(target_frame_, source_frame_, time, transform);
+          tf_->lookupTransform(target_frame_, source_frame_, time, transform);
           return true;
         }
         else if (elapsed.toSec() < 0.1)
         {
           // If the stamped transform failed because it is too recent, find the
           // most recent transform in the cache instead.
-          if (transform_listener_->canTransform(target_frame_, source_frame_, ros::Time()))
+          if (tf_->canTransform(target_frame_, source_frame_, ros::Time()))
           {
-            transform_listener_->lookupTransform(target_frame_, source_frame_,  ros::Time(), transform);
+            tf_->lookupTransform(target_frame_, source_frame_,  ros::Time(), transform);
             return true;
           }
         }
@@ -175,8 +175,8 @@ namespace mapviz
 
     virtual void Transform() = 0;
 
-    virtual void LoadConfiguration(const YAML::Node& load, const std::string& path) = 0;
-    virtual void SaveConfiguration(YAML::Emitter& emitter, const std::string& path) = 0;
+    virtual void LoadConfig(const YAML::Node& load, const std::string& path) = 0;
+    virtual void SaveConfig(YAML::Emitter& emitter, const std::string& path) = 0;
 
     virtual QWidget* GetConfigWidget(QWidget* parent) { return NULL; }
 
@@ -192,7 +192,7 @@ namespace mapviz
 
     ros::NodeHandle node_;
 
-    boost::shared_ptr<tf::TransformListener> transform_listener_;
+    boost::shared_ptr<tf::TransformListener> tf_;
     std::string target_frame_;
     std::string source_frame_;
     std::string type_;
@@ -208,7 +208,7 @@ namespace mapviz
       initialized_(false),
       visible_(true),
       canvas_(NULL),
-      transform_listener_(),
+      tf_(),
       target_frame_(""),
       source_frame_(""),
       use_latest_transforms_(false),

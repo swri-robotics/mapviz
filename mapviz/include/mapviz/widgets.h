@@ -54,7 +54,9 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    SingleClickLabel(QWidget *parent = 0, Qt::WFlags flags = 0) : QLabel(parent, flags) {}
+    SingleClickLabel(QWidget *parent = 0, Qt::WFlags flags = 0) :
+      QLabel(parent, flags) {}
+
     ~SingleClickLabel() {}
 
   Q_SIGNALS:
@@ -72,7 +74,9 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    DoubleClickWidget(QWidget *parent = 0, Qt::WFlags flags = 0) : QWidget(parent, flags) {}
+    DoubleClickWidget(QWidget *parent = 0, Qt::WFlags flags = 0) :
+      QWidget(parent, flags) {}
+
     ~DoubleClickWidget() {}
 
   Q_SIGNALS:

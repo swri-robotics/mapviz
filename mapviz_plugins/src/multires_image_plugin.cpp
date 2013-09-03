@@ -172,7 +172,7 @@ namespace mapviz_plugins
 
   bool MultiresImagePlugin::Initialize(QGLWidget* canvas)
   {
-    transform_manager_.Initialize(transform_listener_);
+    transform_manager_.Initialize(tf_);
 
     canvas_ = canvas;
 
@@ -284,7 +284,7 @@ namespace mapviz_plugins
     }
   }
 
-  void MultiresImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& path)
+  void MultiresImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string path_string;
     node["path"] >> path_string;
@@ -293,7 +293,7 @@ namespace mapviz_plugins
     if (image_path.is_complete() == false)
     {
       boost::filesystem::path base_path(path);
-      path_string = 
+      path_string =
         (path / image_path.relative_path()).normalize().string();
     }
 
@@ -302,7 +302,7 @@ namespace mapviz_plugins
     AcceptConfiguration();
   }
 
-  void MultiresImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
+  void MultiresImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     boost::filesystem::path abs_path(ui_.path->text().toStdString());
     boost::filesystem::path base_path(path);

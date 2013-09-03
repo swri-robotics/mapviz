@@ -371,7 +371,7 @@ void Mapviz::Open(const std::string& filename)
 
         boost::shared_ptr<mapviz::MapvizPlugin> plugin =
             CreateNewDisplay(name, type, visible, collapsed);
-        plugin->LoadConfiguration(config, config_path);
+        plugin->LoadConfig(config, config_path);
       }
     }
   }
@@ -431,7 +431,7 @@ void Mapviz::Save(const std::string& filename)
       out << YAML::Key << "visible" << YAML::Value << plugins_[ui_.configlist->item(i)]->Visible();
       out << YAML::Key << "collapsed" << YAML::Value << (static_cast<ConfigItem*>(ui_.configlist->itemWidget(ui_.configlist->item(i))))->Collapsed();
 
-      plugins_[ui_.configlist->item(i)]->SaveConfiguration(out, config_path);
+      plugins_[ui_.configlist->item(i)]->SaveConfig(out, config_path);
 
       out << YAML::EndMap;
       out << YAML::EndMap;

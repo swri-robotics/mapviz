@@ -148,7 +148,7 @@ namespace mapviz_plugins
       return;
 
     std::vector<std::string> frames;
-    transform_listener_->getFrameStrings(frames);
+    tf_->getFrameStrings(frames);
 
     if ((int)frames.size() == ui_.frame->count())
     {
@@ -361,7 +361,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GridPlugin::LoadConfiguration(const YAML::Node& node, const std::string& path)
+  void GridPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string color;
     node["color"] >> color;
@@ -396,7 +396,7 @@ namespace mapviz_plugins
       canvas_->update();
   }
 
-  void GridPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
+  void GridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     std::string color = color_.name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;

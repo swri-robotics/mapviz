@@ -442,7 +442,7 @@ namespace mapviz_plugins
     last_height_ = height;
   }
 
-  void DisparityPlugin::LoadConfiguration(const YAML::Node& node, const std::string& path)
+  void DisparityPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -473,7 +473,7 @@ namespace mapviz_plugins
     ui_.height->setValue(height_);
   }
 
-  void DisparityPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& path)
+  void DisparityPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "anchor" << YAML::Value << AnchorToString(anchor_);
