@@ -9,7 +9,6 @@
   <review status="unreviewed" notes=""/>
   <url></url>
 
-  <depend package="common_rosdeps" />
   <depend package="roscpp"/>
   <depend package="transform_util" />
   <depend package="math_util" />
