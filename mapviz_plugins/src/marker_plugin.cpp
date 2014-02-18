@@ -159,7 +159,7 @@ namespace mapviz_plugins
       markerData.points.clear();
       markerData.texts.clear();
 
-      tf::StampedTransform transform;
+      transform_util::Transform transform;
       if (!GetTransform(marker->header.stamp, transform))
       {
         markerData.transformed = false;
@@ -447,7 +447,7 @@ namespace mapviz_plugins
     {
       MarkerData& marker = markerIter->second;
 
-      tf::StampedTransform transform;
+      transform_util::Transform transform;
       if (GetTransform(marker.stamp, transform))
       {
         marker.transformed = true;

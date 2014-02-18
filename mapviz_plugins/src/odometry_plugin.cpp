@@ -437,12 +437,12 @@ namespace mapviz_plugins
 
   bool OdometryPlugin::TransformPoint(StampedPoint& point)
   {
-    tf::StampedTransform transform;
+    transform_util::Transform transform;
     if (GetTransform(point.stamp, transform))
     {
       point.transformed_point = transform * point.point;
 
-      tf::Transform orientation(transform * point.orientation);
+      tf::Transform orientation(tf::Transform(transform.GetOrientation()) * point.orientation);
       point.transformed_arrow_point = point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
       point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
       point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
@@ -465,8 +465,6 @@ namespace mapviz_plugins
 
   void OdometryPlugin::Transform()
   {
-    tf::StampedTransform transform;
-
     bool transformed = false;
 
     std::list<StampedPoint>::iterator points_it = points_.begin();

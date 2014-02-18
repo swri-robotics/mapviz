@@ -34,7 +34,8 @@
 // ROS libraries
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
+#include <transform_util/transform.h>
+#include <transform_util/transform_manager.h>
 #include <yaml-cpp/yaml.h>
 
 namespace mapviz
@@ -49,8 +50,8 @@ namespace mapviz
         QGLWidget* canvas)
     {
       tf_ = tf_listener;
-
-      return tf_ && Initialize(canvas);
+      tf_manager_.Initialize(tf_);
+      return Initialize(canvas);
     }
 
     virtual void Shutdown() = 0;
@@ -108,17 +109,10 @@ namespace mapviz
       visible_ = visible;
     }
 
-    bool GetTransform(const ros::Time& stamp, tf::StampedTransform& transform)
+    bool GetTransform(const ros::Time& stamp, transform_util::Transform& transform)
     {
       if (!initialized_)
         return false;
-
-      if (source_frame_ == target_frame_)
-      {
-        transform.setData(tf::StampedTransform::getIdentity());
-        transform.stamp_ = stamp;
-        return true;
-      }
 
       ros::Time time = stamp;
 
@@ -134,39 +128,54 @@ namespace mapviz
         return false;
       }
 
-      try
+      if (tf_manager_.GetTransform(target_frame_, source_frame_, time, transform))
       {
-        if (tf_->canTransform(target_frame_, source_frame_, time))
+        return true;
+      }
+      else if (elapsed.toSec() < 0.1)
+      {
+        // If the stamped transform failed because it is too recent, find the
+        // most recent transform in the cache instead.
+        if (tf_manager_.GetTransform(target_frame_, source_frame_,  ros::Time(), transform))
         {
-          tf_->lookupTransform(target_frame_, source_frame_, time, transform);
           return true;
         }
-        else if (elapsed.toSec() < 0.1)
+      }
+
+      return false;
+    }
+    
+    bool GetTransform(const std::string& source, const ros::Time& stamp, transform_util::Transform& transform)
+    {
+      if (!initialized_)
+        return false;
+
+      ros::Time time = stamp;
+
+      if (use_latest_transforms_)
+      {
+        time = ros::Time();
+      }
+
+      ros::Duration elapsed = ros::Time::now() - time;
+
+      if (time != ros::Time() && elapsed > tf_->getCacheLength())
+      {
+        return false;
+      }
+
+      if (tf_manager_.GetTransform(target_frame_, source, time, transform))
+      {
+        return true;
+      }
+      else if (elapsed.toSec() < 0.1)
+      {
+        // If the stamped transform failed because it is too recent, find the
+        // most recent transform in the cache instead.
+        if (tf_manager_.GetTransform(target_frame_, source,  ros::Time(), transform))
         {
-          // If the stamped transform failed because it is too recent, find the
-          // most recent transform in the cache instead.
-          if (tf_->canTransform(target_frame_, source_frame_, ros::Time()))
-          {
-            tf_->lookupTransform(target_frame_, source_frame_,  ros::Time(), transform);
-            return true;
-          }
+          return true;
         }
-      }
-      catch (tf::LookupException& e)
-      {
-        PrintError(e.what());
-      }
-      catch (tf::ConnectivityException& e)
-      {
-        PrintError(e.what());
-      }
-      catch (tf::ExtrapolationException& e)
-      {
-        PrintError(e.what());
-      }
-      catch (...)
-      {
-        PrintError("Failed to lookup transform");
       }
 
       return false;
@@ -192,6 +201,8 @@ namespace mapviz
     ros::NodeHandle node_;
 
     boost::shared_ptr<tf::TransformListener> tf_;
+    transform_util::TransformManager tf_manager_;
+    
     std::string target_frame_;
     std::string source_frame_;
     std::string type_;
