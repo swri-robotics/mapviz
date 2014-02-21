@@ -101,6 +101,8 @@ namespace mapviz
     bool force_480p_;
     bool resizable_;
     QColor background_;
+    
+    bool updating_frames_;
 
     ros::NodeHandle* node_;
     boost::shared_ptr<tf::TransformListener> tf_;
