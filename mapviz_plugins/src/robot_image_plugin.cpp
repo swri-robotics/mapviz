@@ -99,7 +99,7 @@ namespace mapviz_plugins
     ui.setupUi(&dialog);
 
     std::vector<std::string> frames;
-    transform_listener_->getFrameStrings(frames);
+    tf_->getFrameStrings(frames);
 
     for (unsigned int i = 0; i < frames.size(); i++)
     {
@@ -234,7 +234,7 @@ namespace mapviz_plugins
   {
     transformed_ = false;
 
-    tf::StampedTransform transform;
+    transform_util::Transform transform;
     if (GetTransform(ros::Time(), transform))
     {
       top_left_transformed_ = transform * top_left_;
@@ -300,13 +300,13 @@ namespace mapviz_plugins
         PrintError("Failed to load image.");
       }
     }
-    catch(const std::exception& e)
+    catch (const std::exception& e)
     {
       PrintError("Failed to load image.  Exception occured.");
     }
   }
 
-  void RobotImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
+  void RobotImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     node["frame"] >> source_frame_;
     ui_.frame->setText(source_frame_.c_str());
@@ -325,7 +325,7 @@ namespace mapviz_plugins
     FrameEdited();
   }
 
-  void RobotImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
+  void RobotImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->text().toStdString();
     emitter << YAML::Key << "image" << YAML::Value << ui_.image->text().toStdString();

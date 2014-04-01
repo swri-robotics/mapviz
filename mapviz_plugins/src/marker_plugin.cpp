@@ -159,7 +159,7 @@ namespace mapviz_plugins
       markerData.points.clear();
       markerData.texts.clear();
 
-      tf::StampedTransform transform;
+      transform_util::Transform transform;
       if (!GetTransform(marker->header.stamp, transform))
       {
         markerData.transformed = false;
@@ -502,7 +502,7 @@ namespace mapviz_plugins
     {
       MarkerData& marker = markerIter->second;
 
-      tf::StampedTransform transform;
+      transform_util::Transform transform;
       if (GetTransform(marker.stamp, transform))
       {
         marker.transformed = true;
@@ -520,7 +520,7 @@ namespace mapviz_plugins
     }
   }
 
-  void MarkerPlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
+  void MarkerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -531,7 +531,7 @@ namespace mapviz_plugins
     TopicEdited();
   }
 
-  void MarkerPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
+  void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
     emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;

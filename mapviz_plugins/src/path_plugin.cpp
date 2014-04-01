@@ -36,7 +36,6 @@ PLUGINLIB_DECLARE_CLASS(mapviz_plugins, path, mapviz_plugins::PathPlugin, mapviz
 
 namespace mapviz_plugins
 {
-
   PathPlugin::PathPlugin() :
     config_widget_(new QWidget()),
     transformed_(false),
@@ -61,7 +60,6 @@ namespace mapviz_plugins
 
   PathPlugin::~PathPlugin()
   {
-
   }
 
   void PathPlugin::SelectTopic()
@@ -228,7 +226,7 @@ namespace mapviz_plugins
   {
     transformed_ = false;
 
-    tf::StampedTransform transform;
+    transform_util::Transform transform;
     if (GetTransform(stamp_, transform))
     {
       std::list<tf::Point>::iterator points_it = points_.begin();
@@ -248,7 +246,7 @@ namespace mapviz_plugins
     }
   }
 
-  void PathPlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
+  void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -257,10 +255,10 @@ namespace mapviz_plugins
     TopicEdited();
   }
 
-  void PathPlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
+  void PathPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
+    std::string topic = ui_.topic->text().toStdString();
+    emitter << YAML::Key << "topic" << YAML::Value << topic;
   }
-
 }
 

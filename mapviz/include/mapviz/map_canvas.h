@@ -39,107 +39,109 @@
 
 #include <mapviz/mapviz_plugin.h>
 
-class MapCanvas : public QGLWidget
+namespace mapviz
 {
-  Q_OBJECT
-
-public:
-  MapCanvas(QWidget *parent = 0);
-  ~MapCanvas();
-
-  void InitializeTf(boost::shared_ptr<tf::TransformListener> tf);
-
-  void AddPlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin, int order);
-  void RemovePlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin);
-  void SetFixedFrame(const std::string& frame);
-  void SetTargetFrame(const std::string& frame);
-  void ToggleFixOrientation(bool on);
-  void ToggleUseLatestTransforms(bool on);
-  void UpdateView();
-  void ReorderDisplays();
-
-  float ViewScale() const { return view_scale_; }
-  float OffsetX() const { return offset_x_; }
-  float OffsetY() const { return offset_y_; }
-
-  void SetViewScale(float scale)
+  class MapCanvas : public QGLWidget
   {
-    view_scale_ = scale;
-    UpdateView();
-  }
+    Q_OBJECT
 
-  void SetOffsetX(float x)
-  {
-    offset_x_ = x;
-    UpdateView();
-  }
+  public:
+    MapCanvas(QWidget *parent = 0);
+    ~MapCanvas();
 
-  void SetOffsetY(float y)
-  {
-    offset_y_ = y;
-    UpdateView();
-  }
+    void InitializeTf(boost::shared_ptr<tf::TransformListener> tf);
 
-  void SetBackground(const QColor& color)
-  {
-    background_ = color;
-    update();
-  }
+    void AddPlugin(MapvizPluginPtr plugin, int order);
+    void RemovePlugin(MapvizPluginPtr plugin);
+    void SetFixedFrame(const std::string& frame);
+    void SetTargetFrame(const std::string& frame);
+    void ToggleFixOrientation(bool on);
+    void ToggleUseLatestTransforms(bool on);
+    void UpdateView();
+    void ReorderDisplays();
 
-protected:
-  void initializeGL();
-  void resizeGL( int w, int h );
-  void paintGL();
-  void wheelEvent(QWheelEvent* e);
-  void mousePressEvent(QMouseEvent* e);
-  void mouseReleaseEvent(QMouseEvent* e);
-  void mouseMoveEvent(QMouseEvent* e);
+    float ViewScale() const { return view_scale_; }
+    float OffsetX() const { return offset_x_; }
+    float OffsetY() const { return offset_y_; }
 
-  void Recenter();
-  void TransformTarget();
+    void SetViewScale(float scale)
+    {
+      view_scale_ = scale;
+      UpdateView();
+    }
 
-  bool initialized_;
-  bool fix_orientation_;
+    void SetOffsetX(float x)
+    {
+      offset_x_ = x;
+      UpdateView();
+    }
 
-  QColor background_;
+    void SetOffsetY(float y)
+    {
+      offset_y_ = y;
+      UpdateView();
+    }
 
-  bool mouse_pressed_;
-  int mouse_x_;
-  int mouse_y_;
+    void SetBackground(const QColor& color)
+    {
+      bg_color_ = color;
+      update();
+    }
 
-  // Offset based on previous mouse drags
-  double offset_x_;
-  double offset_y_;
+  protected:
+    void initializeGL();
+    void resizeGL(int w, int h);
+    void paintGL();
+    void wheelEvent(QWheelEvent* e);
+    void mousePressEvent(QMouseEvent* e);
+    void mouseReleaseEvent(QMouseEvent* e);
+    void mouseMoveEvent(QMouseEvent* e);
 
-  // Offset based on current mouse drag
-  double drag_x_;
-  double drag_y_;
+    void Recenter();
+    void TransformTarget();
 
-  // The center of the view
-  float view_center_x_;
-  float view_center_y_;
+    bool initialized_;
+    bool fix_orientation_;
 
-  // View scale in meters per pixel
-  float view_scale_;
+    QColor bg_color_;
 
-  // The bounds of the view
-  float view_left_;
-  float view_right_;
-  float view_top_;
-  float view_bottom_;
+    bool mouse_pressed_;
+    int mouse_x_;
+    int mouse_y_;
 
-  // The bounds of the scene
-  float scene_left_;
-  float scene_right_;
-  float scene_top_;
-  float scene_bottom_;
+    // Offset based on previous mouse drags
+    double offset_x_;
+    double offset_y_;
 
-  std::string fixed_frame_;
-  std::string target_frame_;
+    // Offset based on current mouse drag
+    double drag_x_;
+    double drag_y_;
 
-  boost::shared_ptr<tf::TransformListener> transform_listener_;
-  std::list<boost::shared_ptr<mapviz::MapvizPlugin> > plugins_;
+    // The center of the view
+    float view_center_x_;
+    float view_center_y_;
 
-};
+    // View scale in meters per pixel
+    float view_scale_;
+
+    // The bounds of the view
+    float view_left_;
+    float view_right_;
+    float view_top_;
+    float view_bottom_;
+
+    // The bounds of the scene
+    float scene_left_;
+    float scene_right_;
+    float scene_top_;
+    float scene_bottom_;
+
+    std::string fixed_frame_;
+    std::string target_frame_;
+
+    boost::shared_ptr<tf::TransformListener> tf_;
+    std::list<MapvizPluginPtr> plugins_;
+  };
+}
 
 #endif  // MAPVIZ_MAP_CANVAS_H_

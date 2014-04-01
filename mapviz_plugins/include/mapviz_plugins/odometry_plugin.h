@@ -21,8 +21,9 @@
 #define MAPVIZ_PLUGINS_ODOMETRY_PLUGIN_H_
 
 // C++ standard libraries
-#include <string>
 #include <list>
+#include <string>
+#include <vector>
 
 // QT libraries
 #include <QGLWidget>
@@ -44,14 +45,11 @@
 
 namespace mapviz_plugins
 {
-
   class OdometryPlugin : public mapviz::MapvizPlugin
   {
-
     Q_OBJECT
 
   public:
-
     struct StampedPoint
     {
       tf::Point point;
@@ -63,8 +61,8 @@ namespace mapviz_plugins
       bool transformed;
       ros::Time stamp;
 
-      std::vector<tf::Point> covariance_points;
-      std::vector<tf::Point> transformed_covariance_points;
+      std::vector<tf::Point> cov_points;
+      std::vector<tf::Point> transformed_cov_points;
     };
 
     enum DrawStyle { LINES = 0, POINTS, ARROWS };
@@ -79,8 +77,8 @@ namespace mapviz_plugins
 
     void Transform();
 
-    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
-    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
+    void LoadConfig(const YAML::Node& node, const std::string& path);
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
@@ -118,7 +116,7 @@ namespace mapviz_plugins
     ros::Subscriber odometry_sub_;
     bool has_message_;
 
-    StampedPoint current_point_;
+    StampedPoint cur_point_;
     std::list<StampedPoint> points_;
 
     void odometryCallback(const nav_msgs::OdometryConstPtr odometry);

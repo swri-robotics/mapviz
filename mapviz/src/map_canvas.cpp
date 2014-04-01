@@ -22,13 +22,12 @@
 
 #include <mapviz/map_canvas.h>
 
-bool compare_plugins(
-    boost::shared_ptr<mapviz::MapvizPlugin> a,
-    boost::shared_ptr<mapviz::MapvizPlugin> b)
+namespace mapviz
+{
+bool compare_plugins(MapvizPluginPtr a, MapvizPluginPtr b)
 {
   return a->DrawOrder() < b->DrawOrder();
 }
-
 
 MapCanvas::MapCanvas(QWidget* parent) :
   QGLWidget(parent),
@@ -62,7 +61,7 @@ MapCanvas::~MapCanvas()
 
 void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
 {
-  transform_listener_ = tf;
+  tf_ = tf;
 }
 
 void MapCanvas::initializeGL()
@@ -87,7 +86,7 @@ void MapCanvas::resizeGL(int w, int h)
 
 void MapCanvas::paintGL()
 {
-  glClearColor(background_.redF(), background_.greenF(), background_.blueF(), 1.0f);
+  glClearColor(bg_color_.redF(), bg_color_.greenF(), bg_color_.blueF(), 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glPushMatrix();
@@ -107,14 +106,13 @@ void MapCanvas::paintGL()
     glVertex2f(0, 20);
   glEnd();
 
-  std::list<boost::shared_ptr<mapviz::MapvizPlugin> >::iterator it;
+  std::list<MapvizPluginPtr>::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
   }
 
   glPopMatrix();
-
 }
 
 void MapCanvas::wheelEvent(QWheelEvent* e)
@@ -157,7 +155,7 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 void MapCanvas::SetFixedFrame(const std::string& frame)
 {
   fixed_frame_ = frame;
-  std::list<boost::shared_ptr<mapviz::MapvizPlugin> >::iterator it;
+  std::list<MapvizPluginPtr>::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->SetTargetFrame(frame);
@@ -184,7 +182,7 @@ void MapCanvas::ToggleFixOrientation(bool on)
 
 void MapCanvas::ToggleUseLatestTransforms(bool on)
 {
-  std::list<boost::shared_ptr<mapviz::MapvizPlugin> >::iterator it;
+  std::list<MapvizPluginPtr>::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->SetUseLatestTransforms(on);
@@ -193,12 +191,12 @@ void MapCanvas::ToggleUseLatestTransforms(bool on)
   update();
 }
 
-void MapCanvas::AddPlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin, int order)
+void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int order)
 {
   plugins_.push_back(plugin);
 }
 
-void MapCanvas::RemovePlugin(boost::shared_ptr<mapviz::MapvizPlugin> plugin)
+void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
 {
   plugin->Shutdown();
   plugins_.remove(plugin);
@@ -212,33 +210,33 @@ void MapCanvas::TransformTarget()
   view_center_x_ = -offset_x_ - drag_x_;
   view_center_y_ = -offset_y_ - drag_y_;
 
-  if (transform_listener_ == NULL || fixed_frame_ == "" || target_frame_ == "" || target_frame_ == "<none>")
+  if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
     return;
 
-  tf::StampedTransform newTransform;
+  tf::StampedTransform transform;
   try
   {
-    transform_listener_->lookupTransform(fixed_frame_, target_frame_, ros::Time(0), newTransform);
+    tf_->lookupTransform(fixed_frame_, target_frame_, ros::Time(0), transform);
 
     double roll, pitch, yaw;
-    newTransform.getBasis().getRPY(roll, pitch, yaw);
+    transform.getBasis().getRPY(roll, pitch, yaw);
 
     if (!fix_orientation_)
     {
       glRotatef(-yaw * 57.2957795, 0, 0, 1);
     }
 
-    glTranslatef(-newTransform.getOrigin().getX(), -newTransform.getOrigin().getY(), 0);
+    glTranslatef(-transform.getOrigin().getX(), -transform.getOrigin().getY(), 0);
 
     tf::Point point(view_center_x_, view_center_y_, 0);
 
     // If the viewer orientation is fixed don't rotate the center point.
     if (fix_orientation_)
     {
-      newTransform.setRotation(tf::Transform::getIdentity().getRotation());
+      transform.setRotation(tf::Transform::getIdentity().getRotation());
     }
 
-    tf::Point center = newTransform * point;
+    tf::Point center = transform * point;
 
     view_center_x_ = center.getX();
     view_center_y_ = center.getY();
@@ -257,7 +255,7 @@ void MapCanvas::TransformTarget()
   }
   catch (...)
   {
-    ROS_ERROR("Error looking up transform");;
+    ROS_ERROR("Error looking up transform");
   }
 }
 
@@ -288,4 +286,5 @@ void MapCanvas::Recenter()
   view_top_ = -(height() * view_scale_ * 0.5);
   view_right_ = (width() * view_scale_ * 0.5);
   view_bottom_ = (height() * view_scale_ * 0.5);
+}
 }

@@ -37,7 +37,6 @@ PLUGINLIB_DECLARE_CLASS(mapviz_plugins, mutlires_image, mapviz_plugins::Multires
 
 namespace mapviz_plugins
 {
-
   MultiresImagePlugin::MultiresImagePlugin() :
     loaded_(false),
     tile_set_(NULL),
@@ -173,8 +172,6 @@ namespace mapviz_plugins
 
   bool MultiresImagePlugin::Initialize(QGLWidget* canvas)
   {
-    transform_manager_.Initialize(transform_listener_);
-
     canvas_ = canvas;
 
     return true;
@@ -208,13 +205,13 @@ namespace mapviz_plugins
     if (!loaded_)
       return;
 
-    if (!transform_manager_.GetTransform(target_frame_, source_frame_, transform_))
+    if (!tf_manager_.GetTransform(target_frame_, source_frame_, transform_))
     {
       PrintError("Failed transform from " + source_frame_ + " to " + target_frame_);
       return;
     }
 
-    if (!transform_manager_.GetTransform(source_frame_, target_frame_, inverse_transform_))
+    if (!tf_manager_.GetTransform(source_frame_, target_frame_, inverse_transform_))
     {
       PrintError("Failed inverse transform from " + target_frame_ + " to " + source_frame_);
       return;
@@ -285,31 +282,31 @@ namespace mapviz_plugins
     }
   }
 
-  void MultiresImagePlugin::LoadConfiguration(const YAML::Node& node, const std::string& config_path)
+  void MultiresImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    std::string path;
-    node["path"] >> path;
+    std::string path_string;
+    node["path"] >> path_string;
 
-    boost::filesystem::path image_path(path);
-    if(image_path.is_complete() == false)
+    boost::filesystem::path image_path(path_string);
+    if (image_path.is_complete() == false)
     {
-      boost::filesystem::path base_path(config_path);
-      path = (config_path / image_path.relative_path()).normalize().string();
+      boost::filesystem::path base_path(path);
+      path_string =
+        (path / image_path.relative_path()).normalize().string();
     }
 
-    ui_.path->setText(path.c_str());
+    ui_.path->setText(path_string.c_str());
 
     AcceptConfiguration();
   }
 
-  void MultiresImagePlugin::SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path)
+  void MultiresImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    boost::filesystem::path absolute_path(ui_.path->text().toStdString());
-    boost::filesystem::path base_path(config_path);
-    boost::filesystem::path relative_path = MakePathRelative(absolute_path, base_path);
+    boost::filesystem::path abs_path(ui_.path->text().toStdString());
+    boost::filesystem::path base_path(path);
+    boost::filesystem::path rel_path = MakePathRelative(abs_path, base_path);
 
-    emitter << YAML::Key << "path" << YAML::Value << relative_path.string();
+    emitter << YAML::Key << "path" << YAML::Value << rel_path.string();
   }
-
 }
 

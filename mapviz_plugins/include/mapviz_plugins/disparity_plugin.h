@@ -48,12 +48,20 @@ namespace mapviz_plugins
 {
   class DisparityPlugin : public mapviz::MapvizPlugin
   {
-
     Q_OBJECT
 
   public:
+    enum Anchor {
+      TOP_LEFT,
+      TOP_CENTER,
+      TOP_RIGHT,
+      CENTER_LEFT,
+      CENTER,
+      CENTER_RIGHT,
+      BOTTOM_LEFT,
+      BOTTOM_CENTER,
+      BOTTOM_RIGHT};
 
-    enum Anchor {TOP_LEFT, TOP_CENTER, TOP_RIGHT, CENTER_LEFT, CENTER, CENTER_RIGHT, BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT};
     enum Units {PIXELS, PERCENT};
 
     DisparityPlugin();
@@ -66,8 +74,8 @@ namespace mapviz_plugins
 
     void Transform() {}
 
-    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
-    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
+    void LoadConfig(const YAML::Node& node, const std::string& path);
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 

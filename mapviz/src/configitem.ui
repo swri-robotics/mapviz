@@ -33,7 +33,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="DoubleClickWidget" name="header" native="true">
+    <widget class="mapviz::DoubleClickWidget" name="header" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -469,7 +469,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="SingleClickLabel" name="signlabel">
+       <widget class="mapviz::SingleClickLabel" name="signlabel">
         <property name="palette">
          <palette>
           <active>
@@ -683,7 +683,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DoubleClickWidget</class>
+   <class>mapviz::DoubleClickWidget</class>
    <extends>QWidget</extends>
    <header>mapviz/widgets.h</header>
    <container>1</container>
@@ -692,7 +692,7 @@
    </slots>
   </customwidget>
   <customwidget>
-   <class>SingleClickLabel</class>
+   <class>mapviz::SingleClickLabel</class>
    <extends>QLabel</extends>
    <header>mapviz/widgets.h</header>
   </customwidget>

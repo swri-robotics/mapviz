@@ -32,8 +32,6 @@
 #include <QObject>
 #include <QWidget>
 
-#include <transform_util/transform.h>
-#include <transform_util/transform_manager.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 #include <multires_image/tile_set.h>
@@ -45,14 +43,11 @@
 
 namespace mapviz_plugins
 {
-
   class MultiresImagePlugin : public mapviz::MapvizPlugin
   {
-
     Q_OBJECT
 
   public:
-
     MultiresImagePlugin();
     virtual ~MultiresImagePlugin();
 
@@ -63,8 +58,8 @@ namespace mapviz_plugins
 
     void Transform();
 
-    void LoadConfiguration(const YAML::Node& node, const std::string& config_path);
-    void SaveConfiguration(YAML::Emitter& emitter, const std::string& config_path);
+    void LoadConfig(const YAML::Node& node, const std::string& path);
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
@@ -88,14 +83,16 @@ namespace mapviz_plugins
     Ui::multires_config ui_;
     QWidget* config_widget_;
 
-    transform_util::TransformManager transform_manager_;
     transform_util::Transform transform_;
     transform_util::Transform inverse_transform_;
 
     bool transformed_;
 
     void GetCenterPoint(double x, double y);
-    boost::filesystem::path MakePathRelative(boost::filesystem::path path, boost::filesystem::path base);
+
+    boost::filesystem::path MakePathRelative(
+      boost::filesystem::path path,
+      boost::filesystem::path base);
   };
 }
 
