@@ -121,6 +121,10 @@ namespace mapviz_plugins
     {
       draw_style_ = POINTS;
     }
+    else if (style == "arrows")
+    {
+      draw_style_ = ARROWS;
+    }
 
     canvas_->update();
   }
@@ -165,6 +169,7 @@ namespace mapviz_plugins
     {
       StampedPoint stamped_point;
       stamped_point.point = transform.GetOrigin();
+      stamped_point.orientation = transform.GetOrientation();
       stamped_point.frame = target_frame_;
       stamped_point.stamp = transform.GetStamp();
       stamped_point.transformed = false;
@@ -250,16 +255,57 @@ namespace mapviz_plugins
 
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
 
-    if (draw_style_ == LINES)
+    if (draw_style_ == ARROWS)
     {
-      glLineWidth(3);
-      glBegin(GL_LINE_STRIP);
+      transformed = DrawArrows();
     }
     else
     {
-      glPointSize(6);
-      glBegin(GL_POINTS);
+      if (draw_style_ == LINES)
+      {
+        glLineWidth(3);
+        glBegin(GL_LINE_STRIP);
+      }
+      else
+      {
+        glPointSize(6);
+        glBegin(GL_POINTS);
+      }
+
+      std::list<StampedPoint>::iterator it = points_.begin();
+      for (; it != points_.end(); ++it)
+      {
+        if (it->transformed)
+        {
+          glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
+
+          transformed = true;
+        }
+      }
+
+      if (cur_point_.transformed)
+      {
+        glVertex2f(
+          cur_point_.transformed_point.getX(),
+          cur_point_.transformed_point.getY());
+
+        transformed = true;
+      }
+
+      glEnd();
     }
+
+    if (transformed)
+    {
+      PrintInfo("OK");
+    }
+  }
+  
+  bool TfFramePlugin::DrawArrows()
+  {
+    bool transformed = false;
+    glLineWidth(2);
+    glBegin(GL_LINES);
 
     std::list<StampedPoint>::iterator it = points_.begin();
     for (; it != points_.end(); ++it)
@@ -267,6 +313,13 @@ namespace mapviz_plugins
       if (it->transformed)
       {
         glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
+        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
+
+        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
+        glVertex2f(it->transformed_arrow_left.getX(), it->transformed_arrow_left.getY());
+
+        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
+        glVertex2f(it->transformed_arrow_right.getX(), it->transformed_arrow_right.getY());
 
         transformed = true;
       }
@@ -277,16 +330,31 @@ namespace mapviz_plugins
       glVertex2f(
         cur_point_.transformed_point.getX(),
         cur_point_.transformed_point.getY());
+      glVertex2f(
+        cur_point_.transformed_arrow_point.getX(),
+        cur_point_.transformed_arrow_point.getY());
+
+      glVertex2f(
+        cur_point_.transformed_arrow_point.getX(),
+        cur_point_.transformed_arrow_point.getY());
+      glVertex2f(
+        cur_point_.transformed_arrow_left.getX(),
+        cur_point_.transformed_arrow_left.getY());
+
+      glVertex2f(
+        cur_point_.transformed_arrow_point.getX(),
+        cur_point_.transformed_arrow_point.getY());
+      glVertex2f(
+        cur_point_.transformed_arrow_right.getX(),
+        cur_point_.transformed_arrow_right.getY());
 
       transformed = true;
     }
 
+
     glEnd();
 
-    if (transformed)
-    {
-      PrintInfo("OK");
-    }
+    return transformed;
   }
 
   bool TfFramePlugin::TransformPoint(StampedPoint& point)
@@ -295,6 +363,11 @@ namespace mapviz_plugins
     if (GetTransform(point.frame, point.stamp, transform))
     {
       point.transformed_point = transform * point.point;
+
+      tf::Transform orientation(tf::Transform(transform.GetOrientation()) * point.orientation);
+      point.transformed_arrow_point = point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
+      point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
+      point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
 
       point.transformed = true;
       return true;

@@ -52,14 +52,20 @@ namespace mapviz_plugins
     struct StampedPoint
     {
       tf::Point point;
+      tf::Quaternion orientation;
+      
       tf::Point transformed_point;
+      
+      tf::Point transformed_arrow_point;
+      tf::Point transformed_arrow_left;
+      tf::Point transformed_arrow_right;
 
       bool transformed;
       std::string frame;
       ros::Time stamp;
     };
 
-    enum DrawStyle { LINES = 0, POINTS };
+    enum DrawStyle { LINES = 0, POINTS, ARROWS };
 
     TfFramePlugin();
     virtual ~TfFramePlugin();
@@ -90,6 +96,7 @@ namespace mapviz_plugins
     void SetDrawStyle(QString style);
 
   private:
+    bool DrawArrows();
     bool TransformPoint(StampedPoint& point);
 
     Ui::tf_frame_config ui_;
