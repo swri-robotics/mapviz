@@ -45,6 +45,7 @@
 #include <tf/transform_listener.h>
 #include <yaml-cpp/yaml.h>
 #include <GL/glut.h>
+#include <std_srvs/Empty.h>
 
 // Auto-generated UI files
 #include "ui_mapviz.h"
@@ -85,6 +86,7 @@ namespace mapviz
     void Force480p(bool on);
     void SetResizable(bool on);
     void SelectBackgroundColor();
+    void BlackBoxTrigger();
 
   protected:
     Ui::mapviz ui_;
@@ -106,6 +108,10 @@ namespace mapviz
 
     ros::NodeHandle* node_;
     boost::shared_ptr<tf::TransformListener> tf_;
+
+    ros::Timer blackbox_monitor_timer_;
+    ros::ServiceClient blackbox_trigger_srv_;
+    void BlackBoxTimer(const ros::TimerEvent &event);
 
     pluginlib::ClassLoader<MapvizPlugin>* loader_;
     MapCanvas* canvas_;

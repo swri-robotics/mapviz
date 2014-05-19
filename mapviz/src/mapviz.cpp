@@ -67,6 +67,10 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
   connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 
+  connect(ui_.blackbox_trigger_btn, SIGNAL(clicked()),
+          this, SLOT(BlackBoxTrigger()));
+  ui_.blackbox_trigger_btn->setEnabled(false);
+
   ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
   canvas_->SetBackground(background_);
 }
@@ -97,6 +101,12 @@ void Mapviz::Initialize()
 
     node_ = new ros::NodeHandle();
     tf_ = boost::make_shared<tf::TransformListener>();
+
+    blackbox_monitor_timer_ = node_->createTimer(ros::Duration(0.1),
+                                                 &Mapviz::BlackBoxTimer,
+                                                 this);
+    blackbox_trigger_srv_ = node_->serviceClient<std_srvs::Empty>(
+      "/black_box/trigger_record");
 
     loader_ = new pluginlib::ClassLoader<MapvizPlugin>(
         "mapviz", "mapviz::MapvizPlugin");
@@ -760,6 +770,21 @@ void Mapviz::SelectBackgroundColor()
     ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
     canvas_->SetBackground(background_);
   }
+}
+
+void Mapviz::BlackBoxTimer(const ros::TimerEvent &event)
+{
+  if (blackbox_trigger_srv_.exists())
+    ui_.blackbox_trigger_btn->setEnabled(true);
+  else
+    ui_.blackbox_trigger_btn->setEnabled(false);
+}
+
+void Mapviz::BlackBoxTrigger()
+{
+  std_srvs::Empty srv;
+  if (blackbox_trigger_srv_.exists())
+    blackbox_trigger_srv_.call(srv);
 }
 }
 
