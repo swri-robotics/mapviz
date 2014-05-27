@@ -9,7 +9,6 @@
   <review status="unreviewed" notes=""/>
   <url></url>
 
-  <depend package="common_rosdeps"/>
   <depend package="roscpp"/>
   <depend package="pluginlib"/>
   <depend package="tf"/>
