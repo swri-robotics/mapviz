@@ -29,6 +29,7 @@
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
   </export>
 
+  <depend package="build_tools"/>
 </package>
 
 
