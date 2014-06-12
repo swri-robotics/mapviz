@@ -172,8 +172,6 @@ namespace mapviz_plugins
 
   bool MultiresImagePlugin::Initialize(QGLWidget* canvas)
   {
-    transform_manager_.Initialize(tf_);
-
     canvas_ = canvas;
 
     return true;
@@ -207,13 +205,13 @@ namespace mapviz_plugins
     if (!loaded_)
       return;
 
-    if (!transform_manager_.GetTransform(target_frame_, source_frame_, transform_))
+    if (!tf_manager_.GetTransform(target_frame_, source_frame_, transform_))
     {
       PrintError("Failed transform from " + source_frame_ + " to " + target_frame_);
       return;
     }
 
-    if (!transform_manager_.GetTransform(source_frame_, target_frame_, inverse_transform_))
+    if (!tf_manager_.GetTransform(source_frame_, target_frame_, inverse_transform_))
     {
       PrintError("Failed inverse transform from " + target_frame_ + " to " + source_frame_);
       return;

@@ -32,8 +32,6 @@
 #include <QObject>
 #include <QWidget>
 
-#include <transform_util/transform.h>
-#include <transform_util/transform_manager.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 #include <multires_image/tile_set.h>
@@ -85,7 +83,6 @@ namespace mapviz_plugins
     Ui::multires_config ui_;
     QWidget* config_widget_;
 
-    transform_util::TransformManager transform_manager_;
     transform_util::Transform transform_;
     transform_util::Transform inverse_transform_;
 

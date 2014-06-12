@@ -45,6 +45,7 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
     force_480p_(false),
     resizable_(true),
     background_(Qt::gray),
+    updating_frames_(false),
     node_(NULL),
     canvas_(NULL)
 {
@@ -170,9 +171,10 @@ void Mapviz::UpdateFrames()
       return;
   }
 
+  updating_frames_ = true;
   ROS_INFO("Updating frames...");
 
-  std::string current = ui_.fixedframe->currentText().toStdString();
+  std::string current_fixed = ui_.fixedframe->currentText().toStdString();
 
   ui_.fixedframe->clear();
   for (unsigned int i = 0; i < frames.size(); i++)
@@ -180,19 +182,19 @@ void Mapviz::UpdateFrames()
     ui_.fixedframe->addItem(frames[i].c_str());
   }
 
-  if (current != "")
+  if (current_fixed != "")
   {
-    int index = ui_.fixedframe->findText(current.c_str());
+    int index = ui_.fixedframe->findText(current_fixed.c_str());
     if (index < 0)
     {
-      ui_.fixedframe->addItem(current.c_str());
+      ui_.fixedframe->addItem(current_fixed.c_str());
     }
 
-    index = ui_.fixedframe->findText(current.c_str());
+    index = ui_.fixedframe->findText(current_fixed.c_str());
     ui_.fixedframe->setCurrentIndex(index);
   }
 
-  current = ui_.targetframe->currentText().toStdString();
+  std::string current_target = ui_.targetframe->currentText().toStdString();
 
   ui_.targetframe->clear();
   ui_.targetframe->addItem("<none>");
@@ -201,35 +203,77 @@ void Mapviz::UpdateFrames()
     ui_.targetframe->addItem(frames[i].c_str());
   }
 
-  if (current != "")
+  if (current_target != "")
   {
-    int index = ui_.targetframe->findText(current.c_str());
+    int index = ui_.targetframe->findText(current_target.c_str());
     if (index < 0)
     {
-      ui_.targetframe->addItem(current.c_str());
+      ui_.targetframe->addItem(current_target.c_str());
     }
 
-    index = ui_.targetframe->findText(current.c_str());
+    index = ui_.targetframe->findText(current_target.c_str());
     ui_.targetframe->setCurrentIndex(index);
+  }
+  
+  updating_frames_ = false;
+
+  if (current_target != ui_.targetframe->currentText().toStdString())
+  {
+    TargetFrameSelected(ui_.targetframe->currentText());
+  }
+
+  if (current_fixed != ui_.fixedframe->currentText().toStdString())
+  {
+    FixedFrameSelected(ui_.fixedframe->currentText());
   }
 }
 
 void Mapviz::Force720p(bool on)
 {
-  force_720p_ = on;
-  AdjustWindowSize();
+  if (force_720p_ != on)
+  {
+    force_720p_ = on;
+
+    if (force_720p_)
+    {
+      force_480p_ = false;
+      resizable_ = false;
+    }
+
+    AdjustWindowSize();
+  }
 }
 
 void Mapviz::Force480p(bool on)
 {
-  force_480p_ = on;
-  AdjustWindowSize();
+  if (force_480p_ != on)
+  {
+    force_480p_ = on;
+
+    if (force_480p_)
+    {
+      force_720p_ = false;
+      resizable_ = false;
+    }
+
+    AdjustWindowSize();
+  }
 }
 
 void Mapviz::SetResizable(bool on)
 {
-  resizable_ = on;
-  AdjustWindowSize();
+  if (resizable_ != on)
+  {
+    resizable_ = on;
+
+    if (resizable_)
+    {
+      force_720p_ = false;
+      force_480p_ = false;
+    }
+
+    AdjustWindowSize();
+  }
 }
 
 void Mapviz::AdjustWindowSize()
@@ -237,12 +281,17 @@ void Mapviz::AdjustWindowSize()
   canvas_->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
   setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
 
+  this->setMinimumSize(QSize(100, 100));
+  this->setMaximumSize(QSize(10000, 10000));
+
   if (force_720p_)
   {
     canvas_->setMinimumSize(1280, 720);
     canvas_->setMaximumSize(1280, 720);
     canvas_->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     adjustSize();
+    this->setMaximumSize(this->sizeHint());
+    this->setMinimumSize(this->sizeHint());
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
   }
   else if (force_480p_)
@@ -251,6 +300,8 @@ void Mapviz::AdjustWindowSize()
     canvas_->setMaximumSize(640, 480);
     canvas_->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     adjustSize();
+    this->setMaximumSize(this->sizeHint());
+    this->setMinimumSize(this->sizeHint());
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
   }
   else
@@ -346,6 +397,28 @@ void Mapviz::Open(const std::string& filename)
       canvas_->SetOffsetY(y);
     }
 
+    if (doc.FindValue("force_720p"))
+    {
+      bool force_720p;
+      doc["force_720p"] >> force_720p;
+
+      if (force_720p)
+      {
+        ui_.actionForce_720p->setChecked(true);
+      }
+    }
+    
+    if (doc.FindValue("force_480p"))
+    {
+      bool force_480p;
+      doc["force_480p"] >> force_480p;
+      
+      if (force_480p)
+      {
+        ui_.actionForce_480p->setChecked(true);
+      }
+    }
+
     bool use_latest_transforms = true;
     if (doc.FindValue("use_latest_transforms"))
     {
@@ -425,6 +498,15 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.uselatesttransforms->isChecked();
   out << YAML::Key << "background" << YAML::Value << background_.name().toStdString();
 
+  if (force_720p_)
+  {
+    out << YAML::Key << "force_720p" << YAML::Value << force_720p_;
+  }
+
+  if (force_480p_)
+  {
+    out << YAML::Key << "force_480p" << YAML::Value << force_480p_;
+  }
 
   if (ui_.configs->count() > 0)
   {
@@ -581,20 +663,26 @@ void Mapviz::ToggleShowPlugin(QListWidgetItem* item, bool visible)
 
 void Mapviz::FixedFrameSelected(const QString& text)
 {
-  ROS_INFO("Fixed frame selected: %s", text.toStdString().c_str());
-  if (canvas_ != NULL)
+  if (!updating_frames_)
   {
-    canvas_->SetFixedFrame(text.toStdString().c_str());
+    ROS_INFO("Fixed frame selected: %s", text.toStdString().c_str());
+    if (canvas_ != NULL)
+    {
+      canvas_->SetFixedFrame(text.toStdString().c_str());
+    }
   }
 }
 
 void Mapviz::TargetFrameSelected(const QString& text)
 {
-  ROS_INFO("Target frame selected: %s", text.toStdString().c_str());
-
-  if (canvas_ != NULL)
+  if (!updating_frames_)
   {
-    canvas_->SetTargetFrame(text.toStdString().c_str());
+    ROS_INFO("Target frame selected: %s", text.toStdString().c_str());
+
+    if (canvas_ != NULL)
+    {
+      canvas_->SetTargetFrame(text.toStdString().c_str());
+    }
   }
 }
 

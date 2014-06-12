@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (C) 2013 All Right Reserved, Southwest Research Institute® (SwRI®)
+// Copyright (C) 2014 All Right Reserved, Southwest Research Institute® (SwRI®)
 //
 // Contract No.  10-58058A
 // Contractor    Southwest Research Institute® (SwRI®)
@@ -17,37 +17,33 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/odometry_plugin.h>
-
 // C++ standard libraries
 #include <cstdio>
+#include <algorithm>
 #include <vector>
 
 // QT libraries
-#include <QDialog>
 #include <QColorDialog>
+#include <QDialog>
 #include <QGLWidget>
 #include <QPalette>
-
-#include <opencv2/core/core.hpp>
 
 // ROS libraries
 #include <ros/master.h>
 
-#include <image_util/geometry_util.h>
-#include <transform_util/transform_util.h>
+#include <mapviz_plugins/tf_frame_plugin.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
     mapviz_plugins,
-    odometry,
-    mapviz_plugins::OdometryPlugin,
+    tf_frame,
+    mapviz_plugins::TfFramePlugin,
     mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
-  OdometryPlugin::OdometryPlugin() :
+  TfFramePlugin::TfFramePlugin() :
     config_widget_(new QWidget()),
     color_(Qt::green),
     draw_style_(LINES)
@@ -68,18 +64,54 @@ namespace mapviz_plugins
     ui_.status->setPalette(p3);
 
     QObject::connect(ui_.selectcolor, SIGNAL(clicked()), this, SLOT(SelectColor()));
-    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    QObject::connect(ui_.selectframe, SIGNAL(clicked()), this, SLOT(SelectFrame()));
+    QObject::connect(ui_.frame, SIGNAL(editingFinished()), this, SLOT(FrameEdited()));
     QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this, SLOT(PositionToleranceChanged(double)));
     QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this, SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this, SLOT(SetDrawStyle(QString)));
   }
 
-  OdometryPlugin::~OdometryPlugin()
+  TfFramePlugin::~TfFramePlugin()
   {
   }
 
-  void OdometryPlugin::SetDrawStyle(QString style)
+  void TfFramePlugin::SelectFrame()
+  {
+    QDialog dialog;
+    Ui::topicselect ui;
+    ui.setupUi(&dialog);
+
+    std::vector<std::string> frames;
+    tf_->getFrameStrings(frames);
+
+    for (unsigned int i = 0; i < frames.size(); i++)
+    {
+      ui.displaylist->addItem(frames[i].c_str());
+    }
+    ui.displaylist->setCurrentRow(0);
+
+    dialog.exec();
+
+    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
+    {
+      ui_.frame->setText(ui.displaylist->selectedItems().first()->text());
+      FrameEdited();
+    }
+  }
+
+  void TfFramePlugin::FrameEdited()
+  {
+    source_frame_ = ui_.frame->text().toStdString();
+    PrintWarning("Waiting for transform.");
+
+    ROS_INFO("Setting target frame to to %s", source_frame_.c_str());
+
+    initialized_ = true;
+
+    canvas_->update();
+  }
+  
+  void TfFramePlugin::SetDrawStyle(QString style)
   {
     if (style == "lines")
     {
@@ -96,35 +128,8 @@ namespace mapviz_plugins
 
     canvas_->update();
   }
-
-  void OdometryPlugin::SelectTopic()
-  {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
-
-    std::vector<ros::master::TopicInfo> topics;
-    ros::master::getTopics(topics);
-
-    for (unsigned int i = 0; i < topics.size(); i++)
-    {
-      if (topics[i].datatype == "nav_msgs/Odometry")
-      {
-        ui.displaylist->addItem(topics[i].name.c_str());
-      }
-    }
-    ui.displaylist->setCurrentRow(0);
-
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.topic->setText(ui.displaylist->selectedItems().first()->text());
-      TopicEdited();
-    }
-  }
-
-  void OdometryPlugin::SelectColor()
+  
+  void TfFramePlugin::SelectColor()
   {
     QColorDialog dialog(color_, config_widget_);
     dialog.exec();
@@ -136,103 +141,13 @@ namespace mapviz_plugins
       canvas_->update();
     }
   }
-
-  void OdometryPlugin::TopicEdited()
-  {
-    if (ui_.topic->text().toStdString() != topic_)
-    {
-      initialized_ = false;
-      points_.clear();
-      has_message_ = false;
-      topic_ = ui_.topic->text().toStdString();
-      PrintWarning("No messages received.");
-
-      odometry_sub_.shutdown();
-      odometry_sub_ = node_.subscribe(topic_, 1, &OdometryPlugin::odometryCallback, this);
-
-      ROS_INFO("Subscribing to %s", topic_.c_str());
-    }
-  }
-
-  void OdometryPlugin::odometryCallback(const nav_msgs::OdometryConstPtr odometry)
-  {
-    if (!has_message_)
-    {
-      source_frame_ = odometry->header.frame_id;
-      initialized_ = true;
-      has_message_ = true;
-    }
-
-    StampedPoint stamped_point;
-    stamped_point.stamp = odometry->header.stamp;
-
-    stamped_point.point = tf::Point(
-        odometry->pose.pose.position.x,
-        odometry->pose.pose.position.y,
-        odometry->pose.pose.position.z);
-
-    stamped_point.orientation = tf::Quaternion(
-        odometry->pose.pose.orientation.x,
-        odometry->pose.pose.orientation.y,
-        odometry->pose.pose.orientation.z,
-        odometry->pose.pose.orientation.w);
-
-    if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
-    {
-      points_.push_back(stamped_point);
-    }
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) > buffer_size_)
-      {
-        points_.pop_front();
-      }
-    }
-
-    cur_point_ = stamped_point;
-
-    if (ui_.show_covariance->isChecked())
-    {
-      tf::Matrix3x3 tf_cov =
-          transform_util::GetUpperLeft(odometry->pose.covariance);
-
-      if (tf_cov[0][0] < 100000 && tf_cov[1][1] < 100000)
-      {
-        cv::Mat cov_matrix_3d(3, 3, CV_32FC1);
-        for (int32_t r = 0; r < 3; r++)
-        {
-          for (int32_t c = 0; c < 3; c++)
-          {
-            cov_matrix_3d.at<float>(r, c) = tf_cov[r][c];
-          }
-        }
-
-        cv::Mat cov_matrix_2d = image_util::ProjectEllipsoid(cov_matrix_3d);
-
-        if (!cov_matrix_2d.empty())
-        {
-          cur_point_.cov_points = image_util::GetEllipsePoints(
-              cov_matrix_2d, cur_point_.point, 3, 32);
-
-          cur_point_.transformed_cov_points = cur_point_.cov_points;
-        }
-        else
-        {
-          ROS_ERROR("Failed to project x, y, z covariance to xy-plane.");
-        }
-      }
-    }
-
-    canvas_->update();
-  }
-
-  void OdometryPlugin::PositionToleranceChanged(double value)
+  
+  void TfFramePlugin::PositionToleranceChanged(double value)
   {
     position_tolerance_ = value;
   }
 
-  void OdometryPlugin::BufferSizeChanged(int value)
+  void TfFramePlugin::BufferSizeChanged(int value)
   {
     buffer_size_ = value;
 
@@ -246,8 +161,41 @@ namespace mapviz_plugins
 
     canvas_->update();
   }
+  
+  void TfFramePlugin::TimerCallback(const ros::TimerEvent& event)
+  {
+    transform_util::Transform transform;
+    if (GetTransform(ros::Time(), transform))
+    {
+      StampedPoint stamped_point;
+      stamped_point.point = transform.GetOrigin();
+      stamped_point.orientation = transform.GetOrientation();
+      stamped_point.frame = target_frame_;
+      stamped_point.stamp = transform.GetStamp();
+      stamped_point.transformed = false;
 
-  void OdometryPlugin::PrintError(const std::string& message)
+      double distance = std::sqrt(
+        std::pow(stamped_point.point.x() - points_.back().point.x(), 2) + 
+        std::pow(stamped_point.point.y() - points_.back().point.y(), 2));
+
+      if (points_.empty() || distance >= position_tolerance_)
+      {
+        points_.push_back(stamped_point);
+      }
+
+      if (buffer_size_ > 0)
+      {
+        while (static_cast<int>(points_.size()) > buffer_size_)
+        {
+          points_.pop_front();
+        }
+      }
+    
+      cur_point_ = stamped_point;
+    }
+  }
+
+  void TfFramePlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -259,7 +207,7 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  void OdometryPlugin::PrintInfo(const std::string& message)
+  void TfFramePlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -271,7 +219,7 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  void OdometryPlugin::PrintWarning(const std::string& message)
+  void TfFramePlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -283,30 +231,27 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  QWidget* OdometryPlugin::GetConfigWidget(QWidget* parent)
+  QWidget* TfFramePlugin::GetConfigWidget(QWidget* parent)
   {
     config_widget_->setParent(parent);
 
     return config_widget_;
   }
 
-  bool OdometryPlugin::Initialize(QGLWidget* canvas)
+  bool TfFramePlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
+
+    timer_ = node_.createTimer(ros::Duration(0.1), &TfFramePlugin::TimerCallback, this);
 
     return true;
   }
 
-  void OdometryPlugin::Draw(double x, double y, double scale)
+  void TfFramePlugin::Draw(double x, double y, double scale)
   {
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
 
     bool transformed = false;
-
-    if (ui_.show_covariance->isChecked())
-    {
-      DrawCovariance();
-    }
 
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
 
@@ -355,31 +300,8 @@ namespace mapviz_plugins
       PrintInfo("OK");
     }
   }
-
-  void OdometryPlugin::DrawCovariance()
-  {
-    glLineWidth(4);
-
-    if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
-    {
-      glBegin(GL_LINE_STRIP);
-
-      for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
-      {
-        glVertex2f(
-            cur_point_.transformed_cov_points[i].getX(),
-            cur_point_.transformed_cov_points[i].getY());
-      }
-
-      glVertex2f(
-          cur_point_.transformed_cov_points.front().getX(),
-          cur_point_.transformed_cov_points.front().getY());
-
-      glEnd();
-    }
-  }
-
-  bool OdometryPlugin::DrawArrows()
+  
+  bool TfFramePlugin::DrawArrows()
   {
     bool transformed = false;
     glLineWidth(2);
@@ -435,10 +357,10 @@ namespace mapviz_plugins
     return transformed;
   }
 
-  bool OdometryPlugin::TransformPoint(StampedPoint& point)
+  bool TfFramePlugin::TransformPoint(StampedPoint& point)
   {
     transform_util::Transform transform;
-    if (GetTransform(point.stamp, transform))
+    if (GetTransform(point.frame, point.stamp, transform))
     {
       point.transformed_point = transform * point.point;
 
@@ -446,14 +368,6 @@ namespace mapviz_plugins
       point.transformed_arrow_point = point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
       point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
       point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
-
-      if (ui_.show_covariance->isChecked())
-      {
-        for (uint32_t i = 0; i < point.cov_points.size(); i++)
-        {
-          point.transformed_cov_points[i] = transform * point.cov_points[i];
-        }
-      }
 
       point.transformed = true;
       return true;
@@ -463,7 +377,7 @@ namespace mapviz_plugins
      return false;
   }
 
-  void OdometryPlugin::Transform()
+  void TfFramePlugin::Transform()
   {
     bool transformed = false;
 
@@ -477,15 +391,14 @@ namespace mapviz_plugins
 
     if (!points_.empty() && !transformed)
     {
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+      PrintError("No transform error.");
     }
   }
 
-  void OdometryPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void TfFramePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    std::string topic;
-    node["topic"] >> topic;
-    ui_.topic->setText(topic.c_str());
+    node["frame"] >> source_frame_;
+    ui_.frame->setText(source_frame_.c_str());
 
     std::string color;
     node["color"] >> color;
@@ -505,11 +418,6 @@ namespace mapviz_plugins
       draw_style_ = POINTS;
       ui_.drawstyle->setCurrentIndex(1);
     }
-    else if (draw_style == "arrows")
-    {
-      draw_style_ = ARROWS;
-      ui_.drawstyle->setCurrentIndex(2);
-    }
 
     node["position_tolerance"] >> position_tolerance_;
     ui_.positiontolerance->setValue(position_tolerance_);
@@ -517,21 +425,13 @@ namespace mapviz_plugins
     node["buffer_size"] >> buffer_size_;
     ui_.buffersize->setValue(buffer_size_);
 
-    if (node.FindValue("show_covariance"))
-    {
-      bool show_covariance = false;
-      node["show_covariance"] >> show_covariance;
-      ui_.show_covariance->setChecked(show_covariance);
-    }
-
-    TopicEdited();
+    FrameEdited();
   }
 
-  void OdometryPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void TfFramePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    std::string topic = ui_.topic->text().toStdString();
-    emitter << YAML::Key << "topic" << YAML::Value << topic;
-
+    emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->text().toStdString();
+    
     std::string color = color_.name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;
 
@@ -541,9 +441,6 @@ namespace mapviz_plugins
     emitter << YAML::Key << "position_tolerance" << YAML::Value << position_tolerance_;
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
-
-    bool show_covariance = ui_.show_covariance->isChecked();
-    emitter << YAML::Key << "show_covariance" << YAML::Value << show_covariance;
   }
 }
 

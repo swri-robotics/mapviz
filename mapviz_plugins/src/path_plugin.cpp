@@ -226,7 +226,7 @@ namespace mapviz_plugins
   {
     transformed_ = false;
 
-    tf::StampedTransform transform;
+    transform_util::Transform transform;
     if (GetTransform(stamp_, transform))
     {
       std::list<tf::Point>::iterator points_it = points_.begin();
