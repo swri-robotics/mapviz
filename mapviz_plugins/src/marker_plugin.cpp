@@ -147,7 +147,7 @@ namespace mapviz_plugins
 
     if (marker->action == visualization_msgs::Marker::ADD)
     {
-      MarkerData& markerData = markers_[marker->id];
+      MarkerData& markerData = markers_[marker->ns][marker->id];
       markerData.stamp = marker->header.stamp;
       markerData.display_type = marker->type;
       markerData.color = QColor::fromRgbF(marker->color.r, marker->color.g, marker->color.b, marker->color.a);
@@ -157,7 +157,7 @@ namespace mapviz_plugins
       markerData.transformed = true;
 
       markerData.points.clear();
-      markerData.texts.clear();
+      markerData.text = std::string();
 
       transform_util::Transform transform;
       if (!GetTransform(marker->header.stamp, transform))
@@ -201,7 +201,7 @@ namespace mapviz_plugins
         point.color = markerData.color;
 
         markerData.points.push_back(point);
-        markerData.texts.push_back(marker->text);
+        markerData.text = marker->text;
       }
       else
       {
@@ -230,7 +230,7 @@ namespace mapviz_plugins
     }
     else
     {
-      markers_.erase(marker->id);
+      markers_[marker->ns].erase(marker->id);
     }
 
     canvas_->update();
@@ -298,224 +298,224 @@ namespace mapviz_plugins
   {
     ros::Time now = ros::Time::now();
 
-    std::map<int, MarkerData>::iterator markerIter;
-    for (markerIter = markers_.begin(); markerIter != markers_.end(); ++markerIter)
+    std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
+    for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
-      MarkerData& marker = markerIter->second;
-
-      if (marker.expire_time > now)
+      std::map<int, MarkerData>::iterator markerIter;
+      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
-        if (marker.transformed)
+        MarkerData& marker = markerIter->second;
+
+        if (marker.expire_time > now)
         {
-          glColor4f(marker.color.redF(), marker.color.greenF(), marker.color.blueF(), 1.0f);
-
-          if (marker.display_type == visualization_msgs::Marker::LINE_STRIP)
+          if (marker.transformed)
           {
-            glLineWidth(marker.scale_x);
-            glBegin(GL_LINE_STRIP);
+            glColor4f(marker.color.redF(), marker.color.greenF(), marker.color.blueF(), 1.0f);
 
-              std::list<StampedPoint>::iterator point_it = marker.points.begin();
-              for (; point_it != marker.points.end(); ++point_it)
-              {
-                glColor4f(
-                    point_it->color.redF(),
-                    point_it->color.greenF(),
-                    point_it->color.blueF(),
-                    point_it->color.alphaF());
-
-                glVertex2f(
-                    point_it->transformed_point.getX(),
-                    point_it->transformed_point.getY());
-              }
-
-            glEnd();
-          }
-          if (marker.display_type == visualization_msgs::Marker::LINE_LIST)
-          {
-            glLineWidth(marker.scale_x);
-            glBegin(GL_LINES);
-
-              std::list<StampedPoint>::iterator point_it = marker.points.begin();
-              for (; point_it != marker.points.end(); ++point_it)
-              {
-                glColor4f(
-                    point_it->color.redF(),
-                    point_it->color.greenF(),
-                    point_it->color.blueF(),
-                    point_it->color.alphaF());
-
-                glVertex2f(
-                    point_it->transformed_point.getX(),
-                    point_it->transformed_point.getY());
-              }
-
-            glEnd();
-          }
-          else if (marker.display_type == visualization_msgs::Marker::POINTS)
-          {
-            glPointSize(marker.scale_x);
-            glBegin(GL_POINTS);
-
-            std::list<StampedPoint>::iterator point_it = marker.points.begin();
-            for (; point_it != marker.points.end(); ++point_it)
+            if (marker.display_type == visualization_msgs::Marker::LINE_STRIP)
             {
-              glColor4f(
-                  point_it->color.redF(),
-                  point_it->color.greenF(),
-                  point_it->color.blueF(),
-                  point_it->color.alphaF());
+              glLineWidth(marker.scale_x);
+              glBegin(GL_LINE_STRIP);
 
-              glVertex2f(
-                  point_it->transformed_point.getX(),
-                  point_it->transformed_point.getY());
-            }
-
-            glEnd();
-          }
-          else if (marker.display_type == visualization_msgs::Marker::TRIANGLE_LIST)
-          {
-            glBegin(GL_TRIANGLES);
-
-            std::list<StampedPoint>::iterator point_it = marker.points.begin();
-            for (; point_it != marker.points.end(); ++point_it)
-            {
-              glColor4f(
-                  point_it->color.redF(),
-                  point_it->color.greenF(),
-                  point_it->color.blueF(),
-                  point_it->color.alphaF());
-
-              glVertex2f(
-                  point_it->transformed_point.getX(),
-                  point_it->transformed_point.getY());
-            }
-
-            glEnd();
-          }
-          else if (marker.display_type == visualization_msgs::Marker::CYLINDER ||
-              marker.display_type == visualization_msgs::Marker::SPHERE ||
-              marker.display_type == visualization_msgs::Marker::SPHERE_LIST)
-          {
-            std::list<StampedPoint>::iterator point_it = marker.points.begin();
-            for (; point_it != marker.points.end(); ++point_it)
-            {
-              glColor4f(
-                  point_it->color.redF(),
-                  point_it->color.greenF(),
-                  point_it->color.blueF(),
-                  point_it->color.alphaF());
-
-
-              glBegin(GL_TRIANGLE_FAN);
-
-
-              float x = point_it->transformed_point.getX();
-              float y = point_it->transformed_point.getY();
-
-              glVertex2f(x, y);
-
-              for (int32_t i = 0; i <= 360; i += 10)
-              {
-                float radians = static_cast<float>(i) * math_util::_deg_2_rad;
-                // Spheres may be specified w/ only one scale value
-                if(marker.scale_y == 0.0)
+                std::list<StampedPoint>::iterator point_it = marker.points.begin();
+                for (; point_it != marker.points.end(); ++point_it)
                 {
-                  marker.scale_y = marker.scale_x;
+                  glColor4f(
+                      point_it->color.redF(),
+                      point_it->color.greenF(),
+                      point_it->color.blueF(),
+                      point_it->color.alphaF());
+
+                  glVertex2f(
+                      point_it->transformed_point.getX(),
+                      point_it->transformed_point.getY());
                 }
+
+              glEnd();
+            }
+            if (marker.display_type == visualization_msgs::Marker::LINE_LIST)
+            {
+              glLineWidth(marker.scale_x);
+              glBegin(GL_LINES);
+
+                std::list<StampedPoint>::iterator point_it = marker.points.begin();
+                for (; point_it != marker.points.end(); ++point_it)
+                {
+                  glColor4f(
+                      point_it->color.redF(),
+                      point_it->color.greenF(),
+                      point_it->color.blueF(),
+                      point_it->color.alphaF());
+
+                  glVertex2f(
+                      point_it->transformed_point.getX(),
+                      point_it->transformed_point.getY());
+                }
+
+              glEnd();
+            }
+            else if (marker.display_type == visualization_msgs::Marker::POINTS)
+            {
+              glPointSize(marker.scale_x);
+              glBegin(GL_POINTS);
+
+              std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              for (; point_it != marker.points.end(); ++point_it)
+              {
+                glColor4f(
+                    point_it->color.redF(),
+                    point_it->color.greenF(),
+                    point_it->color.blueF(),
+                    point_it->color.alphaF());
+
                 glVertex2f(
-                    x + std::sin(radians) * marker.scale_x,
-                    y + std::cos(radians) * marker.scale_y);
+                    point_it->transformed_point.getX(),
+                    point_it->transformed_point.getY());
               }
 
               glEnd();
             }
-          }
-          else if (marker.display_type == visualization_msgs::Marker::CUBE ||
-              marker.display_type == visualization_msgs::Marker::CUBE_LIST)
-          {
-            std::list<StampedPoint>::iterator point_it = marker.points.begin();
-            for (; point_it != marker.points.end(); ++point_it)
+            else if (marker.display_type == visualization_msgs::Marker::TRIANGLE_LIST)
             {
-              glColor4f(
-                  point_it->color.redF(),
-                  point_it->color.greenF(),
-                  point_it->color.blueF(),
-                  point_it->color.alphaF());
+              glBegin(GL_TRIANGLES);
 
+              std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              for (; point_it != marker.points.end(); ++point_it)
+              {
+                glColor4f(
+                    point_it->color.redF(),
+                    point_it->color.greenF(),
+                    point_it->color.blueF(),
+                    point_it->color.alphaF());
 
-              glBegin(GL_TRIANGLE_FAN);
-
-
-              float x = point_it->transformed_point.getX();
-              float y = point_it->transformed_point.getY();
-
-              glVertex2f(x + marker.scale_x / 2, y + marker.scale_x / 2);
-              glVertex2f(x - marker.scale_x / 2, y + marker.scale_x / 2);
-              glVertex2f(x - marker.scale_x / 2, y - marker.scale_x / 2);
-              glVertex2f(x + marker.scale_x / 2, y - marker.scale_x / 2);
+                glVertex2f(
+                    point_it->transformed_point.getX(),
+                    point_it->transformed_point.getY());
+              }
 
               glEnd();
             }
-          }
-          else if (marker.display_type== visualization_msgs::Marker::TEXT_VIEW_FACING)
-          {
-            std::list<StampedPoint>::iterator point_it = marker.points.begin();
-            std::list<std::string>::iterator str_it = marker.texts.begin();
-            if (marker.points.size() == marker.texts.size())
+            else if (marker.display_type == visualization_msgs::Marker::CYLINDER ||
+                marker.display_type == visualization_msgs::Marker::SPHERE ||
+                marker.display_type == visualization_msgs::Marker::SPHERE_LIST)
             {
+              std::list<StampedPoint>::iterator point_it = marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
+                glColor4f(
+                    point_it->color.redF(),
+                    point_it->color.greenF(),
+                    point_it->color.blueF(),
+                    point_it->color.alphaF());
+
+
+                glBegin(GL_TRIANGLE_FAN);
+
+
+                float x = point_it->transformed_point.getX();
+                float y = point_it->transformed_point.getY();
+
+                glVertex2f(x, y);
+
+                for (int32_t i = 0; i <= 360; i += 10)
+                {
+                  float radians = static_cast<float>(i) * math_util::_deg_2_rad;
+                  // Spheres may be specified w/ only one scale value
+                  if(marker.scale_y == 0.0)
+                  {
+                    marker.scale_y = marker.scale_x;
+                  }
+                  glVertex2f(
+                      x + std::sin(radians) * marker.scale_x,
+                      y + std::cos(radians) * marker.scale_y);
+                }
+
+                glEnd();
+              }
+            }
+            else if (marker.display_type == visualization_msgs::Marker::CUBE ||
+                marker.display_type == visualization_msgs::Marker::CUBE_LIST)
+            {
+              std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              for (; point_it != marker.points.end(); ++point_it)
+              {
+                glColor4f(
+                    point_it->color.redF(),
+                    point_it->color.greenF(),
+                    point_it->color.blueF(),
+                    point_it->color.alphaF());
+
+
+                glBegin(GL_TRIANGLE_FAN);
+
+
+                float x = point_it->transformed_point.getX();
+                float y = point_it->transformed_point.getY();
+
+                glVertex2f(x + marker.scale_x / 2, y + marker.scale_x / 2);
+                glVertex2f(x - marker.scale_x / 2, y + marker.scale_x / 2);
+                glVertex2f(x - marker.scale_x / 2, y - marker.scale_x / 2);
+                glVertex2f(x + marker.scale_x / 2, y - marker.scale_x / 2);
+
+                glEnd();
+              }
+            }
+            else if (marker.display_type== visualization_msgs::Marker::TEXT_VIEW_FACING)
+            {
+              if (!marker.points.empty())
+              {
+                StampedPoint& point = marker.points.front();
+                std::string text = marker.text;
+
                 glPushMatrix();
-                glRasterPos3f(point_it->point.x(), point_it->point.y(), 0.0);
-                for (uint32_t i = 0; i < str_it->size(); i++)
+                glRasterPos3f(point.transformed_point.x(), point.transformed_point.y(), 0.0);
+                for (uint32_t i = 0; i < text.size(); i++)
                 {
                   glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10,
-                      static_cast<int>(str_it->c_str()[i]));
-                  // glutBitmapCharacter(glutBitmapHelvetica10,buf.at(i));
+                      static_cast<int>(text.c_str()[i]));
+                    // glutBitmapCharacter(glutBitmapHelvetica10,buf.at(i));
                 }
                 glPushMatrix();
-                str_it++;
               }
             }
-            else
-            {
-              ROS_ERROR("Error: Points list of size %d and texts list of size %d are not equal",
-                  (int)marker.points.size(), (int)marker.texts.size());
-            }
-          }
 
-          PrintInfo("OK");
+            PrintInfo("OK");
+          }
         }
-      }
-      else
-      {
-        PrintInfo("OK");
-        ROS_ERROR("Not displaying expired marker[%s:%d]: %lf < %lf (now)", topic_.c_str(), markerIter->first, marker.expire_time.toSec(), now.toSec());
+        else
+        {
+          PrintInfo("OK");
+          ROS_ERROR("Not displaying expired marker[%s:%d]: %lf < %lf (now)", topic_.c_str(), markerIter->first, marker.expire_time.toSec(), now.toSec());
+        }
       }
     }
   }
 
   void MarkerPlugin::Transform()
   {
-    std::map<int, MarkerData>::iterator markerIter;
-    for (markerIter = markers_.begin(); markerIter != markers_.end(); ++markerIter)
+    std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
+    for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
-      MarkerData& marker = markerIter->second;
-
-      transform_util::Transform transform;
-      if (GetTransform(marker.stamp, transform))
+      std::map<int, MarkerData>::iterator markerIter;
+      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
-        marker.transformed = true;
+        MarkerData& marker = markerIter->second;
 
-        std::list<StampedPoint>::iterator point_it = marker.points.begin();
-        for (; point_it != marker.points.end(); ++point_it)
+        transform_util::Transform transform;
+        if (GetTransform(marker.stamp, transform))
         {
-          point_it->transformed_point = transform * point_it->point;
+          marker.transformed = true;
+
+          std::list<StampedPoint>::iterator point_it = marker.points.begin();
+          for (; point_it != marker.points.end(); ++point_it)
+          {
+            point_it->transformed_point = transform * point_it->point;
+          }
         }
-      }
-      else
-      {
-        marker.transformed = false;
+        else
+        {
+          marker.transformed = false;
+        }
       }
     }
   }

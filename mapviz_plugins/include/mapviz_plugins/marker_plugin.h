@@ -94,7 +94,7 @@ namespace mapviz_plugins
       QColor color;
 
       std::list<StampedPoint> points;
-      std::list<std::string> texts;
+      std::string text;
 
       float scale_x;
       float scale_y;
@@ -111,7 +111,7 @@ namespace mapviz_plugins
     ros::Subscriber marker_sub_;
     bool has_message_;
 
-    std::map<int, MarkerData> markers_;
+    std::map<std::string, std::map<int, MarkerData> > markers_;
 
     bool is_marker_array_;
 
