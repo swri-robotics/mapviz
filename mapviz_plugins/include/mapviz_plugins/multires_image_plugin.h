@@ -24,7 +24,6 @@
 #include <string>
 
 // Boost libraries
-#define BOOST_FILESYSTEM_VERSION 2
 #include <boost/filesystem.hpp>
 
 // QT libraries

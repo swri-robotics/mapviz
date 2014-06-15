@@ -17,6 +17,8 @@
 //
 // *****************************************************************************
 
+#include <mapviz_plugins/multires_image_plugin.h>
+
 // C++ standard libraries
 #include <cstdio>
 
@@ -29,7 +31,7 @@
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 
-#include <mapviz_plugins/multires_image_plugin.h>
+#include <yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

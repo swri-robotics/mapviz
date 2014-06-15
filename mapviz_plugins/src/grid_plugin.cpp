@@ -17,6 +17,8 @@
 //
 // *****************************************************************************
 
+#include <mapviz_plugins/grid_plugin.h>
+
 // C++ standard libraries
 #include <cstdio>
 #include <vector>
@@ -26,7 +28,7 @@
 #include <QGLWidget>
 #include <QPalette>
 
-#include <mapviz_plugins/grid_plugin.h>
+#include <yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

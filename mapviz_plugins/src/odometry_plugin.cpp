@@ -36,6 +36,7 @@
 
 #include <image_util/geometry_util.h>
 #include <transform_util/transform_util.h>
+#include <yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -517,7 +518,7 @@ namespace mapviz_plugins
     node["buffer_size"] >> buffer_size_;
     ui_.buffersize->setValue(buffer_size_);
 
-    if (node.FindValue("show_covariance"))
+    if (yaml_util::FindValue(node, "show_covariance"))
     {
       bool show_covariance = false;
       node["show_covariance"] >> show_covariance;

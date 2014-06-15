@@ -17,6 +17,8 @@
 //
 // *****************************************************************************
 
+#include <mapviz_plugins/disparity_plugin.h>
+
 // C++ standard libraries
 #include <cstdio>
 #include <algorithm>
@@ -31,7 +33,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <mapviz_plugins/disparity_plugin.h>
+#include <yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

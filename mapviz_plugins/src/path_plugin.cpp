@@ -17,6 +17,8 @@
 //
 // *****************************************************************************
 
+#include <mapviz_plugins/path_plugin.h>
+
 // C++ standard libraries
 #include <cstdio>
 #include <vector>
@@ -28,7 +30,7 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include <mapviz_plugins/path_plugin.h>
+#include <yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

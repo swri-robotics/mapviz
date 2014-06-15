@@ -17,6 +17,8 @@
 //
 // *****************************************************************************
 
+#include <mapviz_plugins/tf_frame_plugin.h>
+
 // C++ standard libraries
 #include <cstdio>
 #include <algorithm>
@@ -31,7 +33,7 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include <mapviz_plugins/tf_frame_plugin.h>
+#include <yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

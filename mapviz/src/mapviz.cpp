@@ -17,11 +17,12 @@
 //
 // *****************************************************************************
 
+#include <mapviz/mapviz.h>
+
 // C++ standard libraries
 #include <fstream>
 
 // Boost libraries
-#define BOOST_FILESYSTEM_VERSION 2
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 
@@ -31,7 +32,8 @@
 #include <QActionGroup>
 #include <QColorDialog>
 
-#include <mapviz/mapviz.h>
+#include <yaml_util/yaml_util.h>
+
 #include <mapviz/config_item.h>
 
 namespace mapviz
@@ -315,8 +317,8 @@ void Mapviz::Open(const std::string& filename)
 {
   ROS_INFO("Loading configuration from: %s", filename.c_str());
 
-  std::ifstream fin(filename.c_str());
-  if (fin.fail())
+  YAML::Node doc;
+  if (!yaml_util::LoadFile(filename, doc))
   {
     ROS_ERROR("Failed to load file: %s", filename.c_str());
     return;
@@ -329,75 +331,70 @@ void Mapviz::Open(const std::string& filename)
 
     ClearDisplays();
 
-    YAML::Parser parser(fin);
-
-    YAML::Node doc;
-    parser.GetNextDocument(doc);
-
-    if (doc.FindValue("fixed_frame"))
+    if (yaml_util::FindValue(doc, "fixed_frame"))
     {
       std::string fixed_frame;
       doc["fixed_frame"] >> fixed_frame;
       ui_.fixedframe->setEditText(fixed_frame.c_str());
     }
 
-    if (doc.FindValue("target_frame"))
+    if (yaml_util::FindValue(doc, "target_frame"))
     {
       std::string target_frame;
       doc["target_frame"] >> target_frame;
       ui_.targetframe->setEditText(target_frame.c_str());
     }
 
-    if (doc.FindValue("fix_orientation"))
+    if (yaml_util::FindValue(doc, "fix_orientation"))
     {
       bool fix_orientation = false;
       doc["fix_orientation"] >> fix_orientation;
       ui_.actionFix_Orientation->setChecked(fix_orientation);
     }
 
-    if (doc.FindValue("show_displays"))
+    if (yaml_util::FindValue(doc, "show_displays"))
     {
       bool show_displays = false;
       doc["show_displays"] >> show_displays;
       ui_.actionConfig_Dock->setChecked(show_displays);
     }
 
-    if (doc.FindValue("window_width"))
+    if (yaml_util::FindValue(doc, "window_width"))
     {
       int window_width = 0;
       doc["window_width"] >> window_width;
       resize(window_width, height());
     }
 
-    if (doc.FindValue("window_height"))
+    if (yaml_util::FindValue(doc, "window_height"))
     {
       int window_height = 0;
       doc["window_height"] >> window_height;
       resize(width(), window_height);
     }
 
-    if (doc.FindValue("view_scale"))
+    if (yaml_util::FindValue(doc, "view_scale"))
     {
       float scale = 0;
       doc["view_scale"] >> scale;
       canvas_->SetViewScale(scale);
     }
 
-    if (doc.FindValue("offset_x"))
+    if (yaml_util::FindValue(doc, "offset_x"))
     {
       float x = 0;
       doc["offset_x"] >> x;
       canvas_->SetOffsetX(x);
     }
 
-    if (doc.FindValue("offset_x"))
+    if (yaml_util::FindValue(doc, "offset_x"))
     {
       float y = 0;
       doc["offset_y"] >> y;
       canvas_->SetOffsetY(y);
     }
 
-    if (doc.FindValue("force_720p"))
+    if (yaml_util::FindValue(doc, "force_720p"))
     {
       bool force_720p;
       doc["force_720p"] >> force_720p;
@@ -408,7 +405,7 @@ void Mapviz::Open(const std::string& filename)
       }
     }
     
-    if (doc.FindValue("force_480p"))
+    if (yaml_util::FindValue(doc, "force_480p"))
     {
       bool force_480p;
       doc["force_480p"] >> force_480p;
@@ -420,14 +417,14 @@ void Mapviz::Open(const std::string& filename)
     }
 
     bool use_latest_transforms = true;
-    if (doc.FindValue("use_latest_transforms"))
+    if (yaml_util::FindValue(doc, "use_latest_transforms"))
     {
       doc["use_latest_transforms"] >> use_latest_transforms;
     }
     ui_.uselatesttransforms->setChecked(use_latest_transforms);
     canvas_->ToggleUseLatestTransforms(use_latest_transforms);
 
-    if (doc.FindValue("background"))
+    if (yaml_util::FindValue(doc, "background"))
     {
       std::string color;
       doc["background"] >> color;
@@ -436,15 +433,16 @@ void Mapviz::Open(const std::string& filename)
       canvas_->SetBackground(background_);
     }
 
-    if (const YAML::Node *displays = doc.FindValue("displays"))
+    if (yaml_util::FindValue(doc, "displays"))
     {
-      for (uint32_t i = 0; i < displays->size(); i++)
+      const YAML::Node& displays = doc["displays"];
+      for (uint32_t i = 0; i < displays.size(); i++)
       {
         std::string type, name;
-        (*displays)[i]["type"] >> type;
-        (*displays)[i]["name"] >> name;
+        displays[i]["type"] >> type;
+        displays[i]["name"] >> name;
 
-        const YAML::Node& config = (*displays)[i]["config"];
+        const YAML::Node& config = displays[i]["config"];
 
         bool visible = false;
         config["visible"] >> visible;

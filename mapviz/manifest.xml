@@ -13,6 +13,7 @@
   <depend package="pluginlib"/>
   <depend package="tf"/>
   <depend package="transform_util"/>
+  <depend package="yaml_util"/>
 
   <rosdep name="yaml-cpp"/>
 
