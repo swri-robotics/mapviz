@@ -50,6 +50,7 @@ file (GLOB SRC_FILES
 	src/marker_plugin.cpp 
 	src/grid_plugin.cpp
 	src/path_plugin.cpp
+	src/textured_marker_plugin.cpp
 	src/tf_frame_plugin.cpp
 	src/robot_image_plugin.cpp)
 	
@@ -63,6 +64,7 @@ QT4_WRAP_CPP(SRC_FILES
 	include/mapviz_plugins/marker_plugin.h 
 	include/mapviz_plugins/grid_plugin.h
 	include/mapviz_plugins/path_plugin.h
+	include/mapviz_plugins/textured_marker_plugin.h
 	include/mapviz_plugins/tf_frame_plugin.h
 	include/mapviz_plugins/robot_image_plugin.h)
 
