@@ -16,6 +16,7 @@
   <depend package="sensor_msgs"/>
   <depend package="stereo_msgs"/>
   <depend package="visualization_msgs"/>
+  <depend package="marti_visualization_msgs"/>
   <depend package="mapviz"/>
   <depend package="multires_image"/>
   <depend package="cv_bridge"/>
@@ -29,6 +30,7 @@
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
   </export>
 
+  <depend package="build_tools"/>
 </package>
 
 

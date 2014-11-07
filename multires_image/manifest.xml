@@ -19,6 +19,7 @@
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lmultires_widget -lmultires_image -Wl,-rpath,${prefix}/lib"/>
   </export>
   
+  <depend package="build_tools"/>
 </package>
 
 

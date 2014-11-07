@@ -21,6 +21,7 @@
     <cpp cflags="-I${prefix}/include"/>
   </export>
 
+  <depend package="build_tools"/>
 </package>
 
 
