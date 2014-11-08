@@ -248,6 +248,10 @@ namespace mapviz_plugins
         {
           markerData.texture_.resize(markerData.texture_size_ * markerData.texture_size_ * 4);
         }
+        else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8)
+        {
+          markerData.texture_.resize(markerData.texture_size_ * markerData.texture_size_ * 3);
+        }
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -286,6 +290,32 @@ namespace mapviz_plugins
             markerData.texture_size_, 
             0, 
             GL_BGRA, 
+            GL_UNSIGNED_BYTE, 
+            markerData.texture_.data());
+      }
+      else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8)
+      {
+        for (size_t row = 0; row < marker.image.height; row++)
+        {
+          for (size_t col = 0; col < marker.image.width; col++)
+          {
+            size_t src_index = (row * marker.image.width + col) * 3;
+            size_t dst_index = (row * markerData.texture_size_ + col) * 3;
+            
+            markerData.texture_[dst_index + 0] = marker.image.data[src_index + 0];
+            markerData.texture_[dst_index + 1] = marker.image.data[src_index + 1];
+            markerData.texture_[dst_index + 2] = marker.image.data[src_index + 2];
+          }
+        }
+      
+        glTexImage2D(
+            GL_TEXTURE_2D, 
+            0, 
+            GL_RGB, 
+            markerData.texture_size_, 
+            markerData.texture_size_, 
+            0, 
+            GL_BGR, 
             GL_UNSIGNED_BYTE, 
             markerData.texture_.data());
       }
