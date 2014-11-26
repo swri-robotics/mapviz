@@ -49,6 +49,7 @@ namespace mapviz
     void ToggleDraw(bool toggled);
     void SetListItem(QListWidgetItem* item) { item_ = item; }
     bool Collapsed() const { return ui_.content->isHidden(); }
+    QString Name() const { return name_; }
 
   Q_SIGNALS:
     void UpdateSizeHint();
@@ -56,6 +57,7 @@ namespace mapviz
 
   public Q_SLOTS:
     void Hide();
+    void EditName();
     void Draw(bool on) { Q_EMIT ToggledDraw(item_, on); }
 
   protected:

@@ -689,6 +689,7 @@
    <container>1</container>
    <slots>
     <signal>DoubleClicked()</signal>
+    <signal>RightClicked()</signal>
    </slots>
   </customwidget>
   <customwidget>
@@ -747,9 +748,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>header</sender>
+   <signal>RightClicked()</signal>
+   <receiver>configitem</receiver>
+   <slot>EditName()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>12</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>Hide()</slot>
   <slot>Draw(bool)</slot>
+  <slot>EditName()</slot>
  </slots>
 </ui>

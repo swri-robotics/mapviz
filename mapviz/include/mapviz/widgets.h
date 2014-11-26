@@ -81,11 +81,23 @@ namespace mapviz
 
   Q_SIGNALS:
     void DoubleClicked();
+    void RightClicked();
 
   protected:
     virtual void mouseDoubleClickEvent(QMouseEvent* event)
     {
-      Q_EMIT DoubleClicked();
+      if (event->button() == Qt::LeftButton)
+      {
+        Q_EMIT DoubleClicked();
+      }
+    }
+    
+    virtual void mouseReleaseEvent(QMouseEvent* event)
+    {
+      if (event->button() == Qt::RightButton)
+      {
+        Q_EMIT RightClicked();
+      }
     }
   };
 }

@@ -19,6 +19,8 @@
 
 #include <mapviz/config_item.h>
 
+#include <QInputDialog>
+
 namespace mapviz
 {
   ConfigItem::ConfigItem(QWidget *parent, Qt::WFlags flags) :
@@ -53,6 +55,22 @@ namespace mapviz
   {
     ui_.label->hide();
     ui_.content_layout->addWidget(widget);
+  }
+
+  void ConfigItem::EditName()
+  {
+    bool ok;
+    QString text = QInputDialog::getText(
+      this, 
+      tr("Set Display name"),
+      tr(""), 
+      QLineEdit::Normal,
+      name_, &ok);
+     
+    if (ok && !text.isEmpty())
+    {
+      SetName(text);
+    }
   }
 
   void ConfigItem::Hide()

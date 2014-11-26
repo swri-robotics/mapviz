@@ -514,7 +514,7 @@ void Mapviz::Save(const std::string& filename)
     {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << plugins_[ui_.configs->item(i)]->Type();
-      out << YAML::Key << "name" << YAML::Value << plugins_[ui_.configs->item(i)]->Name();
+      out << YAML::Key << "name" << YAML::Value << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Name().toStdString();
       out << YAML::Key << "config" << YAML::Value;
       out << YAML::BeginMap;
 
