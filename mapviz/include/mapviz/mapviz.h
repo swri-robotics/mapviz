@@ -27,6 +27,10 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <GL/glew.h>
+
+#include <opencv2/highgui/highgui.hpp>
+
 // QT libraries
 #include <QtGui/QtGui>
 #include <QtGui/QMainWindow>
@@ -51,6 +55,7 @@
 #include "ui_mapviz.h"
 #include "ui_pluginselect.h"
 
+#include <transform_util/transform_manager.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 
@@ -80,13 +85,21 @@ namespace mapviz
     void SpinOnce();
     void UpdateSizeHints();
     void ToggleConfigPanel(bool on);
+    void ToggleStatusBar(bool on);
+    void ToggleCaptureTools(bool on);
     void ToggleFixOrientation(bool on);
     void ToggleShowPlugin(QListWidgetItem* item, bool visible);
+    void ToggleRecord(bool on);
+    void CaptureVideoFrame();
+    void StopRecord();
+    void Screenshot();
     void Force720p(bool on);
     void Force480p(bool on);
     void SetResizable(bool on);
     void SelectBackgroundColor();
     void BlackBoxTrigger();
+    void SetCaptureDirectory();
+    void Hover(double x, double y, double scale);
 
   protected:
     Ui::mapviz ui_;
@@ -94,6 +107,19 @@ namespace mapviz
     QTimer frame_timer_;
     QTimer spin_timer_;
     QTimer save_timer_;
+    QTimer record_timer_;
+
+    QLabel* xy_pos_label_;
+    QLabel* lat_lon_pos_label_;
+    
+    QWidget* spacer1_;
+    QWidget* spacer2_;
+    QWidget* spacer3_;
+    QPushButton* rec_button_;
+    QPushButton* stop_button_;
+    QPushButton* screenshot_button_;
+    
+    boost::shared_ptr<cv::VideoWriter> video_writer_;
 
     int    argc_;
     char** argv_;
@@ -104,10 +130,13 @@ namespace mapviz
     bool resizable_;
     QColor background_;
     
+    std::string capture_directory_;
+    
     bool updating_frames_;
 
     ros::NodeHandle* node_;
     boost::shared_ptr<tf::TransformListener> tf_;
+    transform_util::TransformManager tf_manager_;
 
     ros::Timer blackbox_monitor_timer_;
     ros::ServiceClient blackbox_trigger_srv_;

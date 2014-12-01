@@ -17,10 +17,10 @@
 //
 // *****************************************************************************
 
+#include <mapviz/map_canvas.h>
+
 // C++ standard libraries
 #include <cmath>
-
-#include <mapviz/map_canvas.h>
 
 namespace mapviz
 {
@@ -31,6 +31,10 @@ bool compare_plugins(MapvizPluginPtr a, MapvizPluginPtr b)
 
 MapCanvas::MapCanvas(QWidget* parent) :
   QGLWidget(parent),
+  has_pixel_buffers_(false),
+  pixel_buffer_size_(0),
+  pixel_buffer_index_(0),
+  capture_frames_(false),
   initialized_(false),
   fix_orientation_(false),
   mouse_pressed_(false),
@@ -53,10 +57,15 @@ MapCanvas::MapCanvas(QWidget* parent) :
   scene_bottom_(-10)
 {
   ROS_INFO("View scale: %f meters/pixel", view_scale_);
+  setMouseTracking(true);
 }
 
 MapCanvas::~MapCanvas()
 {
+  if(pixel_buffer_size_ != 0)
+  {
+    glDeleteBuffersARB(2, pixel_buffer_ids_);
+  }
 }
 
 void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
@@ -64,8 +73,45 @@ void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
   tf_ = tf;
 }
 
+void MapCanvas::InitializePixelBuffers()
+{
+  if(has_pixel_buffers_)
+  {
+    int32_t buffer_size = width() * height() * 4;
+    
+    if (pixel_buffer_size_ != buffer_size)
+    {
+      if (pixel_buffer_size_ != 0)
+      {
+        glDeleteBuffersARB(2, pixel_buffer_ids_);
+      }
+    
+      glGenBuffersARB(2, pixel_buffer_ids_);
+      glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[0]);
+      glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, buffer_size, 0, GL_STREAM_READ_ARB);
+      glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[1]);
+      glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, buffer_size, 0, GL_STREAM_READ_ARB);
+      glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
+      
+      pixel_buffer_size_ = buffer_size;
+    }
+  }
+}
+
 void MapCanvas::initializeGL()
 {
+  GLenum err = glewInit();
+  if (GLEW_OK != err)
+  {
+    ROS_ERROR("Error: %s\n", glewGetErrorString(err));
+  }
+  else
+  {
+    // Check if pixel buffers are available for asynchronous capturing
+    std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
+    has_pixel_buffers_ = extensions.find("GL_ARB_pixel_buffer_object") != std::string::npos;  
+  }
+
   glClearColor(0.58f, 0.56f, 0.5f, 1);
   glEnable(GL_POINT_SMOOTH);
   glEnable(GL_LINE_SMOOTH);
@@ -76,6 +122,7 @@ void MapCanvas::initializeGL()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_NEVER);
   glDisable(GL_DEPTH_TEST);
+  
   initialized_ = true;
 }
 
@@ -84,8 +131,50 @@ void MapCanvas::resizeGL(int w, int h)
   UpdateView();
 }
 
+void MapCanvas::CaptureFrame(bool force)
+{
+  // Ensure the pixel size is actually 4
+  glPixelStorei(GL_PACK_ALIGNMENT, 4);
+  
+  if (has_pixel_buffers_ && !force)
+  {
+    InitializePixelBuffers();
+    
+    pixel_buffer_index_ = (pixel_buffer_index_ + 1) % 2;
+    int32_t next_index = (pixel_buffer_index_ + 1) % 2;
+    
+    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[pixel_buffer_index_]);
+    glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
+    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[next_index]);
+    GLubyte* data = (GLubyte*)glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB);
+    if(data)
+    {
+      capture_buffer_.clear();
+      capture_buffer_.resize(pixel_buffer_size_);
+      
+      memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
+      
+      glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
+    }
+    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
+  }
+  else
+  {
+    int32_t buffer_size = width() * height() * 4;
+    capture_buffer_.clear();
+    capture_buffer_.resize(buffer_size);
+
+    glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, &capture_buffer_[0]);
+  }
+}
+
 void MapCanvas::paintGL()
 {
+  if (capture_frames_)
+  {
+    CaptureFrame();
+  }
+  
   glClearColor(bg_color_.redF(), bg_color_.greenF(), bg_color_.blueF(), 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -150,6 +239,17 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
     drag_y_ = ((mouse_y_ - e->y()) * view_scale_);
     update();
   }
+  
+  double center_x = -offset_x_ - drag_x_;
+  double center_y = -offset_y_ - drag_y_;
+  double x = center_x + (e->x() - width() / 2.0) * view_scale_;
+  double y = center_y + (height() / 2.0  - e->y()) * view_scale_;
+  Q_EMIT Hover(x, y, view_scale_);
+}
+
+void MapCanvas::leaveEvent(QEvent* e)
+{
+  Q_EMIT Hover(0, 0, 0);
 }
 
 void MapCanvas::SetFixedFrame(const std::string& frame)

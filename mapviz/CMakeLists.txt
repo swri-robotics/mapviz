@@ -20,9 +20,13 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+find_package(OpenCV REQUIRED)
+
 # Require glu
+FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLU REQUIRED)
 FIND_PACKAGE(GLUT REQUIRED)
+FIND_PACKAGE(GLEW REQUIRED)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
@@ -30,7 +34,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 find_package(Qt4 REQUIRED)
 
 include(${QT_USE_FILE})
-include_directories(${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
+include_directories(${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR} ${OpenGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 
@@ -44,8 +48,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(src)
 file (GLOB UI_FILES src/*.ui)
 file (GLOB SRC_FILES src/mapviz.cpp src/config_item.cpp src/map_canvas.cpp)
+QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 QT4_WRAP_CPP(SRC_FILES include/mapviz/mapviz.h include/mapviz/config_item.h include/mapviz/widgets.h include/mapviz/map_canvas.h)
-rosbuild_add_executable(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} yaml-cpp)
+rosbuild_add_executable(${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} yaml-cpp)
 rosbuild_link_boost(${PROJECT_NAME} system filesystem)

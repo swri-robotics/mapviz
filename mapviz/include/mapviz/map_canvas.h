@@ -21,10 +21,15 @@
 #define MAPVIZ_MAP_CANVAS_H_
 
 // C++ standard libraries
+#include <cstring>
 #include <list>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
+
+#include <GL/glew.h>
+#include <GL/gl.h>
 
 // QT libraries
 #include <QGLWidget>
@@ -87,6 +92,31 @@ namespace mapviz
       bg_color_ = color;
       update();
     }
+    
+    void CaptureFrames(bool enabled)
+    {
+      capture_frames_ = enabled;
+      update();
+    }
+    
+    bool CopyCaptureBuffer(std::vector<uint8_t>& buffer)
+    {
+      buffer.clear();
+      if (!capture_buffer_.empty())
+      {
+        buffer.resize(capture_buffer_.size());
+        memcpy(&buffer[0], &capture_buffer_[0], buffer.size());
+        
+        return true;
+      }
+      
+      return false;
+    }
+    
+    void CaptureFrame(bool force = false);
+    
+  Q_SIGNALS:
+    void Hover(double x, double y, double scale);
 
   protected:
     void initializeGL();
@@ -96,9 +126,18 @@ namespace mapviz
     void mousePressEvent(QMouseEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
+    void leaveEvent(QEvent* e);
 
     void Recenter();
     void TransformTarget();
+
+    void InitializePixelBuffers();
+
+    bool has_pixel_buffers_;
+    int32_t pixel_buffer_size_;
+    GLuint pixel_buffer_ids_[2];
+    int32_t pixel_buffer_index_;
+    bool capture_frames_;
 
     bool initialized_;
     bool fix_orientation_;
@@ -141,6 +180,8 @@ namespace mapviz
 
     boost::shared_ptr<tf::TransformListener> tf_;
     std::list<MapvizPluginPtr> plugins_;
+    
+    std::vector<uint8_t> capture_buffer_;
   };
 }
 

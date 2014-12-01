@@ -20,18 +20,30 @@
 #include <mapviz/mapviz.h>
 
 // C++ standard libraries
+#include <cmath>
+#include <cstdlib>
 #include <fstream>
+#include <sstream>
 
 // Boost libraries
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 // QT libraries
 #include <QtGui/QApplication>
 #include <QFileDialog>
 #include <QActionGroup>
 #include <QColorDialog>
+#include <QLabel>
 
+#include <math_util/constants.h>
+#include <transform_util/frames.h>
 #include <yaml_util/yaml_util.h>
 
 #include <mapviz/config_item.h>
@@ -40,6 +52,8 @@ namespace mapviz
 {
 Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
     QMainWindow(parent, flags),
+    xy_pos_label_(new QLabel("fixed: 0.0,0.0")),
+    lat_lon_pos_label_(new QLabel("lat/lon: 0.0,0.0")),
     argc_(argc),
     argv_(argv),
     initialized_(false),
@@ -47,13 +61,55 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
     force_480p_(false),
     resizable_(true),
     background_(Qt::gray),
+    capture_directory_("~"),
     updating_frames_(false),
     node_(NULL),
     canvas_(NULL)
 {
   ui_.setupUi(this);
 
-  ui_.statusbar->setVisible(false);
+  xy_pos_label_->setVisible(false);
+  lat_lon_pos_label_->setVisible(false);
+
+  ui_.statusbar->addPermanentWidget(xy_pos_label_);
+  ui_.statusbar->addPermanentWidget(lat_lon_pos_label_);
+  
+  spacer1_ = new QWidget(ui_.statusbar);
+  spacer1_->setMaximumSize(22,22);
+  spacer1_->setMinimumSize(22,22);
+  ui_.statusbar->addPermanentWidget(spacer1_);
+  
+  screenshot_button_ = new QPushButton();
+  screenshot_button_->setMaximumSize(22,22);
+  screenshot_button_->setIcon(QIcon(":/images/image-x-generic.png"));
+  screenshot_button_->setFlat(true);
+  ui_.statusbar->addPermanentWidget(screenshot_button_);
+  
+  spacer2_ = new QWidget(ui_.statusbar);
+  spacer2_->setMaximumSize(22,22);
+  spacer2_->setMinimumSize(22,22);
+  ui_.statusbar->addPermanentWidget(spacer2_);
+  
+  rec_button_ = new QPushButton();
+  rec_button_->setMaximumSize(22,22);
+  rec_button_->setIcon(QIcon(":/images/media-record.png"));
+  rec_button_->setCheckable(true);
+  rec_button_->setFlat(true);
+  ui_.statusbar->addPermanentWidget(rec_button_);
+  
+  stop_button_ = new QPushButton();
+  stop_button_->setMaximumSize(22,22);
+  stop_button_->setIcon(QIcon(":/images/media-playback-stop.png"));
+  stop_button_->setEnabled(false);
+  stop_button_->setFlat(true);
+  ui_.statusbar->addPermanentWidget(stop_button_);
+  
+  spacer3_ = new QWidget(ui_.statusbar);
+  spacer3_->setMaximumSize(22,22);
+  spacer3_->setMinimumSize(22,22);
+  ui_.statusbar->addPermanentWidget(spacer3_);
+  
+  ui_.statusbar->setVisible(true);
 
   QActionGroup* group = new QActionGroup(this);
 
@@ -66,8 +122,13 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
   canvas_ = new MapCanvas(this);
   setCentralWidget(canvas_);
 
+  connect(canvas_, SIGNAL(Hover(double,double,double)), this, SLOT(Hover(double,double,double)));
   connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
+
+  connect(rec_button_, SIGNAL(toggled(bool)), this, SLOT(ToggleRecord(bool)));
+  connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
+  connect(screenshot_button_, SIGNAL(clicked()), this, SLOT(Screenshot()));
 
   connect(ui_.blackbox_trigger_btn, SIGNAL(clicked()),
           this, SLOT(BlackBoxTrigger()));
@@ -103,6 +164,7 @@ void Mapviz::Initialize()
 
     node_ = new ros::NodeHandle();
     tf_ = boost::make_shared<tf::TransformListener>();
+    tf_manager_.Initialize(tf_);
 
     blackbox_monitor_timer_ = node_->createTimer(ros::Duration(0.1),
                                                  &Mapviz::BlackBoxTimer,
@@ -136,6 +198,8 @@ void Mapviz::Initialize()
 
     save_timer_.start(10000);
     connect(&save_timer_, SIGNAL(timeout()), this, SLOT(AutoSave()));
+    
+    connect(&record_timer_, SIGNAL(timeout()), this, SLOT(CaptureVideoFrame()));
 
     initialized_ = true;
   }
@@ -306,6 +370,16 @@ void Mapviz::AdjustWindowSize()
     this->setMinimumSize(this->sizeHint());
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
   }
+  else if (stop_button_->isEnabled())
+  {
+    canvas_->setMinimumSize(canvas_->width(), canvas_->height());
+    canvas_->setMaximumSize(canvas_->width(), canvas_->height());
+    canvas_->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    adjustSize();
+    this->setMaximumSize(this->sizeHint());
+    this->setMinimumSize(this->sizeHint());
+    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+  }
   else
   {
     canvas_->setMinimumSize(100, 100);
@@ -330,6 +404,11 @@ void Mapviz::Open(const std::string& filename)
     std::string config_path = filepath.parent_path().string();
 
     ClearDisplays();
+
+    if (yaml_util::FindValue(doc, "capture_directory"))
+    {
+      doc["capture_directory"] >> capture_directory_;
+    }
 
     if (yaml_util::FindValue(doc, "fixed_frame"))
     {
@@ -357,6 +436,27 @@ void Mapviz::Open(const std::string& filename)
       bool show_displays = false;
       doc["show_displays"] >> show_displays;
       ui_.actionConfig_Dock->setChecked(show_displays);
+    }
+
+    if (yaml_util::FindValue(doc, "show_capture_tools"))
+    {
+      bool show_capture_tools = false;
+      doc["show_capture_tools"] >> show_capture_tools;
+      ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
+    }
+    
+    if (yaml_util::FindValue(doc, "show_status_bar"))
+    {
+      bool show_status_bar = false;
+      doc["show_status_bar"] >> show_status_bar;
+      ui_.actionShow_Status_Bar->setChecked(show_status_bar);
+    }
+
+    if (yaml_util::FindValue(doc, "show_capture_tools"))
+    {
+      bool show_capture_tools = false;
+      doc["show_capture_tools"] >> show_capture_tools;
+      ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
     if (yaml_util::FindValue(doc, "window_width"))
@@ -484,10 +584,13 @@ void Mapviz::Save(const std::string& filename)
   YAML::Emitter out;
 
   out << YAML::BeginMap;
+  out << YAML::Key << "capture_directory" << YAML::Value << capture_directory_;
   out << YAML::Key << "fixed_frame" << YAML::Value << ui_.fixedframe->currentText().toStdString();
   out << YAML::Key << "target_frame" << YAML::Value << ui_.targetframe->currentText().toStdString();
   out << YAML::Key << "fix_orientation" << YAML::Value << ui_.actionFix_Orientation->isChecked();
   out << YAML::Key << "show_displays" << YAML::Value << ui_.actionConfig_Dock->isChecked();
+  out << YAML::Key << "show_status_bar" << YAML::Value << ui_.actionShow_Status_Bar->isChecked();
+  out << YAML::Key << "show_capture_tools" << YAML::Value << ui_.actionShow_Capture_Tools->isChecked();
   out << YAML::Key << "window_width" << YAML::Value << width();
   out << YAML::Key << "window_height" << YAML::Value << height();
   out << YAML::Key << "view_scale" << YAML::Value << canvas_->ViewScale();
@@ -600,6 +703,85 @@ void Mapviz::SelectNewDisplay()
   }
 }
 
+void Mapviz::Hover(double x, double y, double scale)
+{
+  if (ui_.statusbar->isVisible())
+  {
+    if (scale == 0)
+    {
+      xy_pos_label_->setVisible(false);
+      lat_lon_pos_label_->setVisible(false);
+      return;
+    }
+  
+    int32_t precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / scale))));
+
+    QString text = ui_.fixedframe->currentText();
+    if (text.isEmpty() || text == "/")
+    {
+      text = "fixed";
+    }
+    text += ": ";
+
+    std::ostringstream x_ss;
+    x_ss << std::fixed << std::setprecision(precision);
+    x_ss << x;
+    text += x_ss.str().c_str();
+    
+    text += ", ";
+    
+    std::ostringstream y_ss;
+    y_ss << std::fixed << std::setprecision(precision);
+    y_ss << y;
+    text += y_ss.str().c_str();
+    
+    xy_pos_label_->setText(text);
+    xy_pos_label_->setVisible(true);
+    xy_pos_label_->update();
+    
+    transform_util::Transform transform;
+    if (tf_manager_.SupportsTransform(
+           transform_util::_wgs84_frame, 
+           ui_.fixedframe->currentText().toStdString()) &&
+        tf_manager_.GetTransform(
+           transform_util::_wgs84_frame, 
+           ui_.fixedframe->currentText().toStdString(),
+           transform))
+    {
+      tf::Vector3 point(x, y, 0);
+      point = transform * point;
+      
+      QString lat_lon_text = "lat/lon: ";
+      
+      double lat_scale = (1.0 / 111111.0) * scale;
+      int32_t lat_precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / lat_scale))));
+      
+      std::ostringstream lat_ss;
+      lat_ss << std::fixed << std::setprecision(lat_precision);
+      lat_ss << point.y();
+      lat_lon_text += lat_ss.str().c_str();
+      
+      lat_lon_text += ", ";
+    
+      double lon_scale = (1.0 / (111111.0 * std::cos(point.y() * math_util::_deg_2_rad))) * scale;
+      int32_t lon_precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / lon_scale))));
+      
+      std::ostringstream lon_ss;
+      lon_ss << std::fixed << std::setprecision(lon_precision);
+      lon_ss << point.x();
+      lat_lon_text += lon_ss.str().c_str();
+      
+      lat_lon_pos_label_->setText(lat_lon_text);
+      lat_lon_pos_label_->setVisible(true);
+      lat_lon_pos_label_->update();
+    }
+    else if (lat_lon_pos_label_->isVisible())
+    {
+      lat_lon_pos_label_->setVisible(false);
+    }
+  }
+}
+
 MapvizPluginPtr Mapviz::CreateNewDisplay(
     const std::string& name,
     const std::string& type,
@@ -708,6 +890,142 @@ void Mapviz::ToggleConfigPanel(bool on)
   AdjustWindowSize();
 }
 
+void Mapviz::ToggleStatusBar(bool on)
+{
+  ui_.statusbar->setVisible(on);
+
+  AdjustWindowSize();
+}
+
+void Mapviz::ToggleCaptureTools(bool on)
+{
+  if (on)
+  {
+    ui_.actionShow_Status_Bar->setChecked(true);
+  }
+  
+  screenshot_button_->setVisible(on);
+  rec_button_->setVisible(on);
+  stop_button_->setVisible(on);
+  spacer1_->setVisible(on);
+  spacer2_->setVisible(on);
+  spacer3_->setVisible(on);
+}
+
+void Mapviz::ToggleRecord(bool on)
+{
+  stop_button_->setEnabled(true);
+
+  if (on)
+  {
+    rec_button_->setIcon(QIcon(":/images/media-playback-pause.png"));
+    
+    if (!video_writer_)
+    {
+      // Lock the window size.
+      AdjustWindowSize();
+      
+      canvas_->CaptureFrames(true);
+    
+      std::string posix_time = boost::posix_time::to_iso_string(ros::WallTime::now().toBoost());
+      boost::replace_all(posix_time, ".", "_");    
+      std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".avi";
+      boost::replace_all(filename, "~", getenv("HOME"));
+      ROS_INFO("Writing video to: %s", filename.c_str());
+    
+      video_writer_ = boost::make_shared<cv::VideoWriter>(
+        filename, 
+        CV_FOURCC('M', 'J', 'P', 'G'), 
+        30, 
+        cv::Size(canvas_->width(), canvas_->height()));
+        
+      if (!video_writer_->isOpened())
+      {
+        ROS_ERROR("Failed to open video file for writing.");
+        StopRecord();
+        return;
+      }
+      
+      std::string status = std::string("Recording video mapviz_") + posix_time + ".avi";
+      ui_.statusbar->showMessage(QString::fromStdString(status));
+      
+      canvas_->updateGL();
+    }
+    
+    record_timer_.start(1000.0 / 30.0);
+  }
+  else
+  {
+    rec_button_->setIcon(QIcon(":/images/media-record.png"));
+    
+    record_timer_.stop();
+  }
+}
+
+void Mapviz::CaptureVideoFrame()
+{
+  std::vector<uint8_t> frame;
+  if (canvas_->CopyCaptureBuffer(frame))
+  {
+    cv::Mat image(canvas_->height(), canvas_->width(), CV_8UC4, &frame[0]);
+    
+    cv::Mat video_frame;
+    cvtColor(image, video_frame, CV_BGRA2BGR);
+    
+    cv::flip(video_frame, video_frame, 0);
+    
+    video_writer_->write(video_frame);
+  }
+  else
+  {
+    ROS_ERROR("Failed to get capture buffer");
+  }
+}
+
+void Mapviz::StopRecord()
+{
+  rec_button_->setChecked(false);
+  stop_button_->setEnabled(false);
+  
+  record_timer_.stop();
+  video_writer_.reset();
+  canvas_->CaptureFrames(false);
+  
+   ui_.statusbar->showMessage(QString(""));
+  
+  AdjustWindowSize();
+}
+
+void Mapviz::Screenshot()
+{
+  canvas_->CaptureFrame(true);
+  
+  std::vector<uint8_t> frame;
+  if (canvas_->CopyCaptureBuffer(frame))
+  {
+    cv::Mat image(canvas_->height(), canvas_->width(), CV_8UC4, &frame[0]);
+    cv::Mat screenshot;
+    cvtColor(image, screenshot, CV_BGRA2BGR);
+    
+    cv::flip(screenshot, screenshot, 0);
+    
+    std::string posix_time = boost::posix_time::to_iso_string(ros::WallTime::now().toBoost());
+    boost::replace_all(posix_time, ".", "_");    
+    std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
+    boost::replace_all(filename, "~", getenv("HOME"));
+    ROS_INFO("Writing screenshot to: %s", filename.c_str());
+    
+    std::string status = std::string("Saved image mapviz_") + posix_time + ".png";
+    ui_.statusbar->showMessage(QString::fromStdString(status));
+    
+    cv::imwrite(filename, screenshot);
+  }
+  else
+  {
+    ROS_ERROR("Failed to take screenshot.");
+  }
+}
+
 void Mapviz::UpdateSizeHints()
 {
   ROS_INFO("Updating size hints");
@@ -783,6 +1101,19 @@ void Mapviz::BlackBoxTrigger()
   std_srvs::Empty srv;
   if (blackbox_trigger_srv_.exists())
     blackbox_trigger_srv_.call(srv);
+}
+
+void Mapviz::SetCaptureDirectory()
+{
+  QFileDialog dialog(this, "Select Capture Directory");
+  dialog.setFileMode(QFileDialog::DirectoryOnly);
+
+  dialog.exec();
+
+  if (dialog.result() == QDialog::Accepted && dialog.selectedFiles().count() == 1)
+  {
+    capture_directory_ = dialog.selectedFiles().first().toStdString();
+  }
 }
 }
 

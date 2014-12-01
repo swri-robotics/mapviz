@@ -46,6 +46,7 @@
     <addaction name="separator"/>
     <addaction name="actionSave_config"/>
     <addaction name="separator"/>
+    <addaction name="actionSet_Capture_Directory"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menu_View">
@@ -59,6 +60,8 @@
     <addaction name="actionResizable"/>
     <addaction name="separator"/>
     <addaction name="actionConfig_Dock"/>
+    <addaction name="actionShow_Status_Bar"/>
+    <addaction name="actionShow_Capture_Tools"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_View"/>
@@ -374,6 +377,33 @@
     <string>Resizable</string>
    </property>
   </action>
+  <action name="actionSet_Capture_Directory">
+   <property name="text">
+    <string>Set Capture Directory</string>
+   </property>
+  </action>
+  <action name="actionShow_Status_Bar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Status Bar</string>
+   </property>
+  </action>
+  <action name="actionShow_Capture_Tools">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Capture Tools</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -382,7 +412,19 @@
    <header>mapviz/widgets.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <tabstops>
+  <tabstop>fixedframe</tabstop>
+  <tabstop>targetframe</tabstop>
+  <tabstop>uselatesttransforms</tabstop>
+  <tabstop>bg_color</tabstop>
+  <tabstop>blackbox_trigger_btn</tabstop>
+  <tabstop>configs</tabstop>
+  <tabstop>addbutton</tabstop>
+  <tabstop>removebutton</tabstop>
+ </tabstops>
+ <resources>
+  <include location="resources/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>addbutton</sender>
@@ -391,8 +433,8 @@
    <slot>SelectNewDisplay()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>50</x>
-     <y>552</y>
+     <x>107</x>
+     <y>573</y>
     </hint>
     <hint type="destinationlabel">
      <x>327</x>
@@ -592,6 +634,54 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSet_Capture_Directory</sender>
+   <signal>activated()</signal>
+   <receiver>mapviz</receiver>
+   <slot>SetCaptureDirectory()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionShow_Status_Bar</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleStatusBar(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionShow_Capture_Tools</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleCaptureTools(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectNewDisplay()</slot>
@@ -608,5 +698,8 @@
   <slot>SetResizable(bool)</slot>
   <slot>SelectBackgroundColor()</slot>
   <slot>ToggleUseLatestTransforms(bool)</slot>
+  <slot>SetCaptureDirectory()</slot>
+  <slot>ToggleStatusBar(bool)</slot>
+  <slot>ToggleCaptureTools(bool)</slot>
  </slots>
 </ui>
