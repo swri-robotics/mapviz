@@ -26,7 +26,9 @@ find_package(OpenCV REQUIRED)
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLU REQUIRED)
 FIND_PACKAGE(GLUT REQUIRED)
-FIND_PACKAGE(GLEW REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GLEW glew)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
@@ -52,5 +54,5 @@ QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 QT4_WRAP_CPP(SRC_FILES include/mapviz/mapviz.h include/mapviz/config_item.h include/mapviz/widgets.h include/mapviz/map_canvas.h)
 rosbuild_add_executable(${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARY} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} yaml-cpp)
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} yaml-cpp)
 rosbuild_link_boost(${PROJECT_NAME} system filesystem)
