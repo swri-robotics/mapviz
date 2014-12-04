@@ -5,6 +5,8 @@ Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in s
 
 ![](https://github.com/swri-robotics/mapviz/wiki/mapviz_features.png)
 
+Mapviz currently depends on the [marti_common](https://github.com/swri-robotics/marti_common) and [marti_messages](https://github.com/swri-robotics/marti_messages) repositories for some utility functions and message definitions.
+
 Plug-ins
 --------
 
