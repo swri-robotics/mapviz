@@ -1,0 +1,56 @@
+<package>
+  <name>mapviz_plugins</name>
+  <version>0.0.1</version>
+  <description>
+
+     mapviz_plugins
+
+  </description>
+  <author>Marc Alban</author>
+  <maintainer email="malban@swri.org">Marc Alban</maintainer>
+  <license>BSD</license>
+  <url>https://github.com/swri-robotics/mapviz</url>
+
+  <build_depend>roscpp"</build_depend>
+  <build_depend>tf"</build_depend>
+  <build_depend>std_msgs"</build_depend>
+  <build_depend>nav_msgs"</build_depend>
+  <build_depend>sensor_msgs"</build_depend>
+  <build_depend>stereo_msgs"</build_depend>
+  <build_depend>visualization_msgs"</build_depend>
+  <build_depend>marti_visualization_msgs"</build_depend>
+  <build_depend>mapviz"</build_depend>
+  <build_depend>multires_image"</build_depend>
+  <build_depend>cv_bridge"</build_depend>
+  <build_depend>math_util"</build_depend>
+  <build_depend>image_util"</build_depend>
+  <build_depend>transform_util"</build_depend>
+  <build_depend>yaml_util"</build_depend>
+  <build_depend>build_tools"</build_depend>
+  <build_depend>libqt4-dev</build_depend>
+  <build_depend>qt4-qmake</build_depend>
+
+  <run_depend>roscpp"</run_depend>
+  <run_depend>tf"</run_depend>
+  <run_depend>std_msgs"</run_depend>
+  <run_depend>nav_msgs"</run_depend>
+  <run_depend>sensor_msgs"</run_depend>
+  <run_depend>stereo_msgs"</run_depend>
+  <run_depend>visualization_msgs"</run_depend>
+  <run_depend>marti_visualization_msgs"</run_depend>
+  <run_depend>mapviz"</run_depend>
+  <run_depend>multires_image"</run_depend>
+  <run_depend>cv_bridge"</run_depend>
+  <run_depend>math_util"</run_depend>
+  <run_depend>image_util"</run_depend>
+  <run_depend>transform_util"</run_depend>
+  <run_depend>yaml_util"</run_depend>
+  <run_depend>libqt4</run_depend>
+
+  <export>
+    <mapviz plugin="${prefix}/mapviz_plugins.xml" />
+  </export>
+
+</package>
+
+
