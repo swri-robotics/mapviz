@@ -1,41 +1,69 @@
 cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+project(mapviz_plugins)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS 
+  roscpp 
+  pluginlib 
+  tf 
+  std_msgs 
+  nav_msgs
+  sensor_msgs
+  stereo_msgs
+  visualization_msgs
+  marti_visualization_msgs
+  mapviz
+  multires_image
+  cv_bridge
+  transform_util
+  math_util
+  image_util
+  yaml_util
+  build_tools)
 
-rosbuild_init()
-rosbuild_find_ros_package(build_tools)
+find_package(Qt4 REQUIRED)
+
+find_package(GLU REQUIRED)
+find_package(GLUT REQUIRED)
+
+catkin_package(
+  INCLUDE_DIRS include
+  DEPENDS libqt4
+  CATKIN_DEPENDS 
+    roscpp 
+    pluginlib 
+    tf 
+    std_msgs 
+    nav_msgs
+    sensor_msgs
+    stereo_msgs
+    visualization_msgs
+    marti_visualization_msgs
+    mapviz
+    multires_image
+    cv_bridge
+    transform_util
+    math_util
+    image_util
+    yaml_util
+)
+
+execute_process(
+  COMMAND rospack find build_tools
+  ERROR_VARIABLE __null
+  OUTPUT_VARIABLE build_tools_PACKAGE_PATH
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 include(${build_tools_PACKAGE_PATH}/scripts/build_common.cmake)
-
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-# Require glu
-FIND_PACKAGE(GLU REQUIRED)
-FIND_PACKAGE(GLUT REQUIRED)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-find_package(Qt4 REQUIRED)
-
 include(${QT_USE_FILE})
-include_directories(${QT_INCLUDE_DIR}  ${QT_QTOPENGL_INCLUDE_DIR})
+include_directories(${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
 set(QT_USE_QTCORE TRUE)
 set(QT_USE_QTGUI TRUE)
-
-rosbuild_add_boost_directories()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -68,5 +96,19 @@ QT4_WRAP_CPP(SRC_FILES
 	include/mapviz_plugins/tf_frame_plugin.h
 	include/mapviz_plugins/robot_image_plugin.h)
 
-rosbuild_add_library(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY})
+add_library(${PROJECT_NAME} ${SRC_FILES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${catkin_LIBRARIES})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
+
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
+install(FILES mapviz_plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
