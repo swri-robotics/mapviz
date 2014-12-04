@@ -1,0 +1,33 @@
+/**
+\mainpage
+\section multires_image
+
+\b multires_image is a set of API's and nodes for ... 
+
+This package... (see sumet_perception/material_classification/mainpage.dox for example description)
+
+
+\subsection codeapi Code API
+
+The C++ API consists of the following main classes:
+
+- \b multires_image::GeoRegister - \copybrief multires_image::GeoRegister
+- \b multires_image::ImageManip - \copybrief multires_image::ImageManip
+- \b multires_image::MathUtil - \copybrief multires_image::MathUtil
+- \b multires_image::Point - \copybrief multires_image::Point
+- \b multires_image::QGLMap - \copybrief multires_image::QGLMap
+- \b multires_image::StringUtil - \copybrief multires_image::StringUtil
+- \b multires_image::TileCache - \copybrief multires_image::TileCache
+- \b multires_image::TileSetLayer - \copybrief multires_image::TileSetLayer
+- \b multires_image::TileSet - \copybrief multires_image::TileSet
+- \b multires_image::TileView - \copybrief multires_image::TileView
+- \b multires_image::Tile - \copybrief multires_image::Tile
+
+
+\subsection nodes Nodes
+
+\subsubsection multires_view_node
+\copydetails src/nodes/multires_view_node.cpp
+
+
+**/

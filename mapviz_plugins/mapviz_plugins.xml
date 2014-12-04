@@ -1,0 +1,33 @@
+<library path="lib/libmapviz_plugins">
+  <class name="mapviz_plugins/mutlires_image" type="mapviz_plugins::MultiresImagePlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Multires image mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/odometry" type="mapviz_plugins::OdometryPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Odometry mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/marker" type="mapviz_plugins::MarkerPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Marker mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/textured_marker" type="mapviz_plugins::TexturedMarkerPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Textured marker mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/grid" type="mapviz_plugins::GridPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Grid mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/image" type="mapviz_plugins::ImagePlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Image mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/disparity" type="mapviz_plugins::DisparityPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Disparity mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/path" type="mapviz_plugins::PathPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Path mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/tf_frame" type="mapviz_plugins::TfFramePlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>TF frame mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/robot_image" type="mapviz_plugins::RobotImagePlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Robot image mapviz plugin.</description>
+  </class>
+</library>
+

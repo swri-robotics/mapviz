@@ -1,0 +1,19 @@
+/**
+\mainpage
+\section mapviz
+
+\b mapviz is a set of API's for ... 
+
+This package... (see sumet_perception/material_classification/mainpage.dox for example description)
+
+
+\subsection codeapi Code API
+
+The C++ API consists of the following main classes:
+
+- \b ConfigItem - \copybrief ConfigItem
+- \b MapCanvas - \copybrief MapCanvas
+- \b mapviz::MapvizPlugin - \copybrief mapviz::MapvizPlugin
+- \b Mapviz - \copybrief Mapviz
+
+**/

@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mapviz</class>
+ <widget class="QMainWindow" name="mapviz">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>710</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>400</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>mapviz</string>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>710</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionOpen_config"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_config"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_Capture_Directory"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actionFix_Orientation"/>
+    <addaction name="separator"/>
+    <addaction name="actionForce_720p"/>
+    <addaction name="actionForce_480p"/>
+    <addaction name="actionResizable"/>
+    <addaction name="separator"/>
+    <addaction name="actionConfig_Dock"/>
+    <addaction name="actionShow_Status_Bar"/>
+    <addaction name="actionShow_Capture_Tools"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menu_View"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QDockWidget" name="configdock">
+   <property name="minimumSize">
+    <size>
+     <width>332</width>
+     <height>301</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Config</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>2</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QWidget" name="widget_2" native="true">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label">
+          <property name="maximumSize">
+           <size>
+            <width>85</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Sans Serif</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Fixed Frame:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" rowspan="2">
+         <widget class="QLabel" name="label_2">
+          <property name="maximumSize">
+           <size>
+            <width>85</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Sans Serif</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Target Frame:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="maximumSize">
+           <size>
+            <width>85</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Sans Serif</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Background:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QPushButton" name="bg_color">
+          <property name="maximumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="2">
+         <widget class="QPushButton" name="blackbox_trigger_btn">
+          <property name="text">
+           <string>BlackBox</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" rowspan="2" colspan="2">
+         <widget class="QComboBox" name="targetframe">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>25</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Sans Serif</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="2">
+         <widget class="QComboBox" name="fixedframe">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>25</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Sans Serif</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="3">
+         <widget class="QCheckBox" name="uselatesttransforms">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="text">
+           <string>Use Latest Transforms</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="mapviz::PluginConfigList" name="configs">
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAsNeeded</enum>
+       </property>
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::InternalMove</enum>
+       </property>
+       <property name="defaultDropAction">
+        <enum>Qt::MoveAction</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="widget" native="true">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="topMargin">
+         <number>4</number>
+        </property>
+        <property name="bottomMargin">
+         <number>4</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="addbutton">
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Add</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="removebutton">
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Remove</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionOpen_config">
+   <property name="text">
+    <string>Open Config</string>
+   </property>
+  </action>
+  <action name="actionSave_config">
+   <property name="text">
+    <string>Save Config</string>
+   </property>
+  </action>
+  <action name="actionConfig_Dock">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Config Panel</string>
+   </property>
+  </action>
+  <action name="actionFix_Orientation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fix Orientation</string>
+   </property>
+  </action>
+  <action name="actionForce_720p">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Force 720p</string>
+   </property>
+  </action>
+  <action name="actionForce_480p">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Force 480p</string>
+   </property>
+  </action>
+  <action name="actionResizable">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Resizable</string>
+   </property>
+  </action>
+  <action name="actionSet_Capture_Directory">
+   <property name="text">
+    <string>Set Capture Directory</string>
+   </property>
+  </action>
+  <action name="actionShow_Status_Bar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Status Bar</string>
+   </property>
+  </action>
+  <action name="actionShow_Capture_Tools">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Capture Tools</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>mapviz::PluginConfigList</class>
+   <extends>QListWidget</extends>
+   <header>mapviz/widgets.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>fixedframe</tabstop>
+  <tabstop>targetframe</tabstop>
+  <tabstop>uselatesttransforms</tabstop>
+  <tabstop>bg_color</tabstop>
+  <tabstop>blackbox_trigger_btn</tabstop>
+  <tabstop>configs</tabstop>
+  <tabstop>addbutton</tabstop>
+  <tabstop>removebutton</tabstop>
+ </tabstops>
+ <resources>
+  <include location="resources/icons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>addbutton</sender>
+   <signal>clicked()</signal>
+   <receiver>mapviz</receiver>
+   <slot>SelectNewDisplay()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>107</x>
+     <y>573</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>327</x>
+     <y>471</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>removebutton</sender>
+   <signal>clicked()</signal>
+   <receiver>mapviz</receiver>
+   <slot>RemoveDisplay()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>224</x>
+     <y>573</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>328</x>
+     <y>407</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionConfig_Dock</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleConfigPanel(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fixedframe</sender>
+   <signal>editTextChanged(QString)</signal>
+   <receiver>mapviz</receiver>
+   <slot>FixedFrameSelected(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>185</x>
+     <y>62</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>428</x>
+     <y>192</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>targetframe</sender>
+   <signal>editTextChanged(QString)</signal>
+   <receiver>mapviz</receiver>
+   <slot>TargetFrameSelected(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>206</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>428</x>
+     <y>330</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionFix_Orientation</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleFixOrientation(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionOpen_config</sender>
+   <signal>activated()</signal>
+   <receiver>mapviz</receiver>
+   <slot>OpenConfig()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSave_config</sender>
+   <signal>activated()</signal>
+   <receiver>mapviz</receiver>
+   <slot>SaveConfig()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionForce_720p</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>Force720p(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionForce_480p</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>Force480p(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionResizable</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>SetResizable(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bg_color</sender>
+   <signal>clicked()</signal>
+   <receiver>mapviz</receiver>
+   <slot>SelectBackgroundColor()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>123</x>
+     <y>171</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>375</x>
+     <y>136</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>uselatesttransforms</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleUseLatestTransforms(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>130</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>460</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSet_Capture_Directory</sender>
+   <signal>activated()</signal>
+   <receiver>mapviz</receiver>
+   <slot>SetCaptureDirectory()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionShow_Status_Bar</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleStatusBar(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionShow_Capture_Tools</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleCaptureTools(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>SelectNewDisplay()</slot>
+  <slot>RemoveDisplay()</slot>
+  <slot>ToggleConfigPanel(bool)</slot>
+  <slot>FixedFrameSelected(QString)</slot>
+  <slot>TargetFrameSelected(QString)</slot>
+  <slot>ToggleFixOrientation(bool)</slot>
+  <slot>MoveDisplay(QModelIndexList)</slot>
+  <slot>OpenConfig()</slot>
+  <slot>SaveConfig()</slot>
+  <slot>Force720p(bool)</slot>
+  <slot>Force480p(bool)</slot>
+  <slot>SetResizable(bool)</slot>
+  <slot>SelectBackgroundColor()</slot>
+  <slot>ToggleUseLatestTransforms(bool)</slot>
+  <slot>SetCaptureDirectory()</slot>
+  <slot>ToggleStatusBar(bool)</slot>
+  <slot>ToggleCaptureTools(bool)</slot>
+ </slots>
+</ui>

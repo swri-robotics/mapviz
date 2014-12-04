@@ -1,0 +1,23 @@
+/**
+\mainpage
+\section mapviz_plugins
+
+\b mapviz_plugins is a set of API's for ... 
+
+This package... (see sumet_perception/material_classification/mainpage.dox for example description)
+
+
+\subsection codeapi Code API
+
+The C++ API consists of the following main classes:
+
+- \b mapviz_plugins::GridPlugin - \copybrief mapviz_plugins::GridPlugin
+- \b mapviz_plugins::ImagePlugin - \copybrief mapviz_plugins::ImagePlugin
+- \b mapviz_plugins::MarkerPlugin - \copybrief mapviz_plugins::MarkerPlugin
+- \b mapviz_plugins::MultiresImagePlugin - \copybrief mapviz_plugins::MultiresImagePlugin
+- \b MultiresView - \copybrief MultiresView
+- \b mapviz_plugins::OdometryPlugin - \copybrief mapviz_plugins::OdometryPlugin
+- \b mapviz_plugins::PathPlugin - \copybrief mapviz_plugins::PathPlugin
+- \b mapviz_plugins::RobotImagePlugin - \copybrief mapviz_plugins::RobotImagePlugin
+
+**/

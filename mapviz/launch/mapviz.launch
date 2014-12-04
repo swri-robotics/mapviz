@@ -1,0 +1,27 @@
+<launch>
+
+  <env name="ROSCONSOLE_FORMAT" value="[${thread}] [${node}/${function}:${line}]: ${message}"/>
+
+  <node pkg="mapviz" type="mapviz" name="mapviz"/>
+
+  <param name="/local_xy_frame" value="/far_field"/>
+  <node pkg="transform_util" type="initialize_origin.py" name="initialize_origin" >
+    <param name="local_xy_origin" value="swri"/>
+    <rosparam param="local_xy_origins">
+      [{ name: swri,
+         latitude: 29.45196669,
+         longitude: -98.61370577,
+         altitude: 233.719,
+         heading: 0.0},
+         
+       { name: back_40,
+         latitude: 29.447507,
+         longitude: -98.629367,
+         altitude: 200.0,
+         heading: 0.0}]
+    </rosparam>
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="swri_transform" args="0 0 0 0 0 0 /far_field /origin 100"  />
+
+</launch>
