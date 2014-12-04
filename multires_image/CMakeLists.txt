@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.4.6)
-project(mapviz)
+project(multires_image)
 
 find_package(catkin REQUIRED COMPONENTS 
   roscpp 
