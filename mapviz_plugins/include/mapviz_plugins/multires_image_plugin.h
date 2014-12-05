@@ -36,12 +36,13 @@
 // Boost libraries
 #include <boost/filesystem.hpp>
 
+#include <mapviz/mapviz_plugin.h>
+
 // QT libraries
 #include <QGLWidget>
 #include <QObject>
 #include <QWidget>
 
-#include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 #include <multires_image/tile_set.h>
 
