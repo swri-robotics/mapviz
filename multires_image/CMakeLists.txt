@@ -15,6 +15,7 @@ find_package(Qt4 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME} multires_widget
   DEPENDS libqt4
   CATKIN_DEPENDS roscpp pluginlib tf transform_util yaml_util
 )
