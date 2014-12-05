@@ -27,7 +27,7 @@ execute_process(
 include(${build_tools_PACKAGE_PATH}/scripts/build_common.cmake)
 
 include(${QT_USE_FILE})
-include_directories(${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)

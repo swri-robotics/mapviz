@@ -11,17 +11,23 @@
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
+  <buildtool_depend>catkin</buildtool_depend>
+
   <build_depend>roscpp</build_depend>
   <build_depend>pluginlib</build_depend>
+  <build_depend>tf</build_depend>
   <build_depend>transform_util</build_depend>
   <build_depend>math_util</build_depend>
+  <build_depend>yaml_util</build_depend>
   <build_depend>build_tools</build_depend>
   <build_depend>opencv2</build_depend>
   
   <run_depend>roscpp</run_depend>
   <run_depend>pluginlib</run_depend>
+  <run_depend>tf</run_depend>
   <run_depend>transform_util</run_depend>
   <run_depend>math_util</run_depend>
+  <run_depend>yaml_util</run_depend>
   <run_depend>opencv2</run_depend>
   
 </package>

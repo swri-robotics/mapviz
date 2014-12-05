@@ -27,6 +27,7 @@
   <run_depend>pluginlib</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>transform_util</run_depend>
+  <run_depend>yaml_util</run_depend>
   <run_depend>libqt4</run_depend>
 
 </package>
