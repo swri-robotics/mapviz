@@ -14,7 +14,7 @@ Installing ROS [Fuerte](http://wiki.ros.org/fuerte/Installation/Ubuntu), [Groovy
 Additional Ubuntu dependencies beyond ROS base for mapviz:
 
     $ sudo apt-get install ros-XXXX-tf ros-XXXX-common-msgs ros-XXXX-plugin-lib ros-XXXX-gps-umd \
-        ros-XXXX-nodelet ros-XXXX-cv-bridge ros-XXXX-image-geometry \
+        ros-XXXX-nodelet ros-XXXX-cv-bridge ros-XXXX-image-geometry ros-XXXX-angles \
         ros-XXXX-camera-calibration-parsers ros-XXXX-image-transport
 
     $ sudo apt-get install yaml-cpp libboost-random-dev libblas-dev liblapack-dev libproj-dev \
