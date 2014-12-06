@@ -93,6 +93,7 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
   screenshot_button_->setMaximumSize(22,22);
   screenshot_button_->setIcon(QIcon(":/images/image-x-generic.png"));
   screenshot_button_->setFlat(true);
+  screenshot_button_->setToolTip("Capture screenshot of display canvas");
   ui_.statusbar->addPermanentWidget(screenshot_button_);
   
   spacer2_ = new QWidget(ui_.statusbar);
@@ -105,11 +106,13 @@ Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
   rec_button_->setIcon(QIcon(":/images/media-record.png"));
   rec_button_->setCheckable(true);
   rec_button_->setFlat(true);
+  rec_button_->setToolTip("Start recording video of display canvas");
   ui_.statusbar->addPermanentWidget(rec_button_);
   
   stop_button_ = new QPushButton();
   stop_button_->setMaximumSize(22,22);
   stop_button_->setIcon(QIcon(":/images/media-playback-stop.png"));
+  stop_button_->setToolTip("Stop recording video of display canvas");
   stop_button_->setEnabled(false);
   stop_button_->setFlat(true);
   ui_.statusbar->addPermanentWidget(stop_button_);
@@ -929,7 +932,7 @@ void Mapviz::ToggleRecord(bool on)
   if (on)
   {
     rec_button_->setIcon(QIcon(":/images/media-playback-pause.png"));
-    
+    rec_button_->setToolTip("Pause recording video of display canvas");
     if (!video_writer_)
     {
       // Lock the window size.
@@ -967,7 +970,7 @@ void Mapviz::ToggleRecord(bool on)
   else
   {
     rec_button_->setIcon(QIcon(":/images/media-record.png"));
-    
+    rec_button_->setToolTip("Continue recording video of display canvas");
     record_timer_.stop();
   }
 }
@@ -1001,7 +1004,8 @@ void Mapviz::StopRecord()
   video_writer_.reset();
   canvas_->CaptureFrames(false);
   
-   ui_.statusbar->showMessage(QString(""));
+  ui_.statusbar->showMessage(QString(""));
+  rec_button_->setToolTip("Start recording video of display canvas");
   
   AdjustWindowSize();
 }
