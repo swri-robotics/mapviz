@@ -175,6 +175,9 @@
             <height>24</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>Set the background color</string>
+          </property>
           <property name="autoFillBackground">
            <bool>false</bool>
           </property>
@@ -213,6 +216,9 @@
             <pointsize>9</pointsize>
            </font>
           </property>
+          <property name="toolTip">
+           <string>The reference frame for the camera view</string>
+          </property>
           <property name="editable">
            <bool>true</bool>
           </property>
@@ -238,6 +244,9 @@
             <pointsize>9</pointsize>
            </font>
           </property>
+          <property name="toolTip">
+           <string>The reference frame used to denote the &quot;world&quot; frame</string>
+          </property>
           <property name="editable">
            <bool>true</bool>
           </property>
@@ -245,6 +254,9 @@
         </item>
         <item row="3" column="0" colspan="3">
          <widget class="QCheckBox" name="uselatesttransforms">
+          <property name="toolTip">
+           <string>Use the current time when transforming data instead of using the timestamps associated with the data</string>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
           </property>
@@ -292,6 +304,9 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>Add a new display</string>
+          </property>
           <property name="text">
            <string>Add</string>
           </property>
@@ -304,6 +319,9 @@
             <width>80</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="toolTip">
+           <string>Remove the selected display</string>
           </property>
           <property name="text">
            <string>Remove</string>
@@ -341,6 +359,9 @@
    <property name="text">
     <string>Show Config Panel</string>
    </property>
+   <property name="statusTip">
+    <string>Show the display configuration panel</string>
+   </property>
   </action>
   <action name="actionFix_Orientation">
    <property name="checkable">
@@ -348,6 +369,9 @@
    </property>
    <property name="text">
     <string>Fix Orientation</string>
+   </property>
+   <property name="statusTip">
+    <string>Fix the orientation of the camera</string>
    </property>
   </action>
   <action name="actionForce_720p">
@@ -357,6 +381,9 @@
    <property name="text">
     <string>Force 720p</string>
    </property>
+   <property name="statusTip">
+    <string>Lock the display canvas to 720p</string>
+   </property>
   </action>
   <action name="actionForce_480p">
    <property name="checkable">
@@ -364,6 +391,9 @@
    </property>
    <property name="text">
     <string>Force 480p</string>
+   </property>
+   <property name="statusTip">
+    <string>Lock the display canvas to 480p</string>
    </property>
   </action>
   <action name="actionResizable">
@@ -376,10 +406,16 @@
    <property name="text">
     <string>Resizable</string>
    </property>
+   <property name="statusTip">
+    <string>Make the window resizable</string>
+   </property>
   </action>
   <action name="actionSet_Capture_Directory">
    <property name="text">
     <string>Set Capture Directory</string>
+   </property>
+   <property name="statusTip">
+    <string>Set the capture directory for screeshots and videos</string>
    </property>
   </action>
   <action name="actionShow_Status_Bar">
@@ -392,6 +428,9 @@
    <property name="text">
     <string>Show Status Bar</string>
    </property>
+   <property name="statusTip">
+    <string>Show the status bar</string>
+   </property>
   </action>
   <action name="actionShow_Capture_Tools">
    <property name="checkable">
@@ -402,6 +441,9 @@
    </property>
    <property name="text">
     <string>Show Capture Tools</string>
+   </property>
+   <property name="statusTip">
+    <string>Show the capture tools on the status bar</string>
    </property>
   </action>
  </widget>
