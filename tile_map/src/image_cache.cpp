@@ -32,9 +32,11 @@
 #include <boost/make_shared.hpp>
 
 #include <QtAlgorithms>
+#include <QByteArray>
 #include <QList>
 #include <QNetworkAccessManager>
 #include <QNetworkDiskCache>
+#include <QUrl>
 
 namespace tile_map
 {
@@ -62,6 +64,7 @@ namespace tile_map
   ImageCache::ImageCache(const QString& cache_dir) :
     cache_dir_(cache_dir), 
     exit_(false),
+    pending_(0),
     cache_thread_(this)
   {
     cache_thread_.setPriority(QThread::NormalPriority);
@@ -99,15 +102,47 @@ namespace tile_map
     
     cache_mutex_.unlock();
     
+    unprocessed_mutex_.lock();
     if (image && !image->GetImage() && !image->Loading())
     {
-      unprocessed_mutex_.lock();
       image->SetPriority(priority);
       unprocessed_[uri] = image;
-      unprocessed_mutex_.unlock();
     }
+    unprocessed_mutex_.unlock();
     
     return image;
+  }
+  
+  void ImageCache::ProcessReply(QNetworkReply* reply)
+  {
+    QString url = reply->url().toString();
+    
+    ImagePtr image;
+    unprocessed_mutex_.lock();
+    
+    image = unprocessed_.take(url);
+    if (image)
+    {
+      image->SetLoading(false);
+    }
+    
+    if (image && reply->error() == QNetworkReply::NoError)
+    {
+      QByteArray data = reply->readAll();
+      image->GetImage().reset(new QImage());
+      if (!image->GetImage()->loadFromData(data))
+      {
+        image->GetImage().reset();
+      }
+    }
+    
+    unprocessed_mutex_.unlock();
+    
+    reply->deleteLater();
+    
+    pending_--;
+    
+    // Condition variable?
   }
   
   void ImageCache::CacheThread::run()
@@ -117,9 +152,13 @@ namespace tile_map
     disk_cache->setCacheDirectory(p->cache_dir_);
     network_manager.setCache(disk_cache);
     
+    connect(&network_manager, SIGNAL(finished(QNetworkReply*)), p, SLOT(ProcessReply(QNetworkReply*)));
+    
     while (!p->exit_)
     {
       QList<ImagePtr> images;
+      
+      // TODO(malban): Condition variable to wait for pending < 6 ?
       
       p->unprocessed_mutex_.lock();
       
@@ -136,9 +175,26 @@ namespace tile_map
       
       images = p->unprocessed_.values();
       
-      p->unprocessed_mutex_.unlock();
-    
       qSort(images.begin(), images.end(), ComparePriority);
+    
+      while (p->pending_ < 6 && !images.empty())
+      {
+        ImagePtr image = images.front();
+        image->SetLoading(true);
+        images.pop_front();
+        
+        QNetworkRequest request;
+        request.setUrl(QUrl(image->Uri()));
+        request.setAttribute(
+          QNetworkRequest::CacheLoadControlAttribute,
+          QNetworkRequest::PreferCache);
+        
+        network_manager.get(request);
+        
+        p->pending_++;
+      }
+      
+      p->unprocessed_mutex_.unlock();
     
       usleep(10);
     }

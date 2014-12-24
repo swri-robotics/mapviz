@@ -35,10 +35,11 @@
 
 #include <QCache>
 #include <QImage>
+#include <QMap>
 #include <QMutex>
+#include <QNetworkReply>
 #include <QObject>
 #include <QThread>
-#include <QMap>
 
 namespace tile_map
 {
@@ -52,9 +53,13 @@ namespace tile_map
     void SetPriority(int32_t priority);
   
     bool Loading() const { return loading_; }
+    void SetLoading(bool loading) { loading_ = loading; }
+    
+    QString Uri() const { return uri_; }
   
     boost::shared_ptr<const QImage> GetImage() const { return image_; }
-  
+    boost::shared_ptr<QImage> GetImage() { return image_; }
+
   private:
     QString uri_;
     
@@ -74,7 +79,10 @@ namespace tile_map
     ~ImageCache();
     
     ImagePtr GetImage(const QString& uri, int32_t priority = 0);
-    
+  
+  public Q_SLOTS:
+    void ProcessReply(QNetworkReply* reply);
+  
   private:
     QString cache_dir_;
   
@@ -85,14 +93,18 @@ namespace tile_map
     QMutex unprocessed_mutex_;
     boost::atomic<bool> exit_;
     
+    boost::atomic<int32_t> pending_;
+    
     class CacheThread : public QThread
     {
     public:
       CacheThread(ImageCache* parent) : p(parent) {}
+      
       virtual void run();
 
     private:
       ImageCache* p;
+ 
     };
     friend class CacheThread;
     
