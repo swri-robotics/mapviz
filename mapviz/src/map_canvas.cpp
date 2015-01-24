@@ -50,6 +50,9 @@ MapCanvas::MapCanvas(QWidget* parent) :
   mouse_pressed_(false),
   mouse_x_(0),
   mouse_y_(0),
+  mouse_hovering_(false),
+  mouse_hover_x_(0),
+  mouse_hover_y_(0),
   offset_x_(0),
   offset_y_(0),
   drag_x_(0),
@@ -68,6 +71,8 @@ MapCanvas::MapCanvas(QWidget* parent) :
 {
   ROS_INFO("View scale: %f meters/pixel", view_scale_);
   setMouseTracking(true);
+  
+  transform_.setIdentity();
 }
 
 MapCanvas::~MapCanvas()
@@ -254,11 +259,19 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
   double center_y = -offset_y_ - drag_y_;
   double x = center_x + (e->x() - width() / 2.0) * view_scale_;
   double y = center_y + (height() / 2.0  - e->y()) * view_scale_;
-  Q_EMIT Hover(x, y, view_scale_);
+  
+  tf::Point point(x, y, 0);
+  point = transform_ * point;
+  
+  mouse_hovering_ = true;
+  mouse_hover_x_ = e->x();
+  mouse_hover_y_ = e->y();
+  Q_EMIT Hover(point.x(), point.y(), view_scale_);
 }
 
 void MapCanvas::leaveEvent(QEvent* e)
 {
+  mouse_hovering_ = false;
   Q_EMIT Hover(0, 0, 0);
 }
 
@@ -323,33 +336,45 @@ void MapCanvas::TransformTarget()
   if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
     return;
 
-  tf::StampedTransform transform;
   try
   {
-    tf_->lookupTransform(fixed_frame_, target_frame_, ros::Time(0), transform);
+    tf_->lookupTransform(fixed_frame_, target_frame_, ros::Time(0), transform_);
 
     double roll, pitch, yaw;
-    transform.getBasis().getRPY(roll, pitch, yaw);
+    transform_.getBasis().getRPY(roll, pitch, yaw);
 
     if (!fix_orientation_)
     {
       glRotatef(-yaw * 57.2957795, 0, 0, 1);
     }
 
-    glTranslatef(-transform.getOrigin().getX(), -transform.getOrigin().getY(), 0);
+    glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
 
     tf::Point point(view_center_x_, view_center_y_, 0);
 
     // If the viewer orientation is fixed don't rotate the center point.
     if (fix_orientation_)
     {
-      transform.setRotation(tf::Transform::getIdentity().getRotation());
+      transform_.setRotation(tf::Transform::getIdentity().getRotation());
     }
 
-    tf::Point center = transform * point;
+    tf::Point center = transform_ * point;
 
     view_center_x_ = center.getX();
     view_center_y_ = center.getY();
+    
+    if (mouse_hovering_)
+    {
+      double center_x = -offset_x_ - drag_x_;
+      double center_y = -offset_y_ - drag_y_;
+      double x = center_x + (mouse_hover_x_ - width() / 2.0) * view_scale_;
+      double y = center_y + (height() / 2.0  - mouse_hover_y_) * view_scale_;
+      
+      tf::Point hover(x, y, 0);
+      hover = transform_ * hover;
+      
+      Q_EMIT Hover(hover.x(), hover.y(), view_scale_);
+    }
   }
   catch (const tf::LookupException& e)
   {
