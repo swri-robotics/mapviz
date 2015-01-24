@@ -158,6 +158,10 @@ namespace mapviz
     int mouse_x_;
     int mouse_y_;
 
+    bool mouse_hovering_;
+    int mouse_hover_x_;
+    int mouse_hover_y_;
+
     // Offset based on previous mouse drags
     double offset_x_;
     double offset_y_;
@@ -189,6 +193,7 @@ namespace mapviz
     std::string target_frame_;
 
     boost::shared_ptr<tf::TransformListener> tf_;
+    tf::StampedTransform transform_;
     std::list<MapvizPluginPtr> plugins_;
     
     std::vector<uint8_t> capture_buffer_;
