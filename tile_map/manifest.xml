@@ -12,12 +12,15 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <depend package="roscpp"/>
+  <depend package="pluginlib"/>
   <depend package="build_tools"/>
   <depend package="math_util"/>
   <depend package="transform_util" />
+  <depend package="mapviz" />
 
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -ltile_map -Wl,-rpath,${prefix}/lib"/>
+    <mapviz plugin="${prefix}/mapviz_plugins.xml" />
   </export>
   
 </package>
