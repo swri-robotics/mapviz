@@ -50,7 +50,7 @@ namespace tile_map
   class TextureCache
   {
   public:
-    TextureCache(ImageCachePtr image_cache);
+    explicit TextureCache(ImageCachePtr image_cache);
   
     TexturePtr GetTexture(const QString& uri);
     
@@ -61,6 +61,7 @@ namespace tile_map
     
     ImageCachePtr image_cache_;
   };
+  typedef boost::shared_ptr<TextureCache> TextureCachePtr;
 }
 
 #endif  // TILE_MAP_TEXTURE_CACHE_H_

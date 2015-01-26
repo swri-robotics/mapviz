@@ -30,7 +30,6 @@
 #ifndef TILE_MAP_TILE_MAP_VIEW_H_
 #define TILE_MAP_TILE_MAP_VIEW_H_
 
-#include <tile_map/image_cache.h>
 #include <tile_map/texture_cache.h>
 
 #include <transform_util/transform.h>
@@ -57,8 +56,14 @@ namespace tile_map
     
   private:
     int32_t level_;
-    
     std::string base_url_;
+    
+    int32_t width_;
+    int32_t height_;
+    
+    std::string tmp_url_;
+    
+    TextureCachePtr tile_cache_;
   };
 }
 

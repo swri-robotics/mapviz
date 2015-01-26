@@ -56,6 +56,12 @@ namespace tile_map
     glDeleteTextures(1, &ids[0]);
   }
 
+  TextureCache::TextureCache(ImageCachePtr image_cache) : 
+    image_cache_(image_cache)
+  {
+  
+  }
+
   TexturePtr TextureCache::GetTexture(const QString& uri)
   {
     TexturePtr texture;

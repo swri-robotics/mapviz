@@ -37,6 +37,7 @@
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 
+#include <transform_util/frames.h>
 #include <yaml_util/yaml_util.h>
 
 // Declare plugin
@@ -59,7 +60,9 @@ namespace tile_map
     p2.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p2);
 
-    source_frame_ = "/";
+    source_frame_ = transform_util::_wgs84_frame;
+    
+    QObject::connect(ui_.source_combo, SIGNAL(activated(QString)), this, SLOT(SelectSource(QString)));
   }
 
   TileMapPlugin::~TileMapPlugin()
@@ -92,6 +95,8 @@ namespace tile_map
     {
       tile_map_.SetBaseUrl(source.toStdString());
     }
+
+    initialized_ = true;
 
     canvas_->update();
   }
@@ -148,6 +153,16 @@ namespace tile_map
 
   void TileMapPlugin::Draw(double x, double y, double scale)
   {
+    ROS_ERROR("Draw(%lf, %lf, %lf)", x, y, scale);
+    transform_util::Transform to_wgs84;
+    if (tf_manager_.GetTransform(source_frame_, target_frame_, to_wgs84))
+    {
+      ROS_ERROR("%s -> %s", target_frame_.c_str(), source_frame_.c_str());
+      tf::Vector3 center(x, y, 0);
+      center = to_wgs84 * center;
+      tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+      tile_map_.Draw();
+    }
   }
 
   void TileMapPlugin::Transform()
@@ -183,6 +198,8 @@ namespace tile_map
       {
         ui_.source_combo->setCurrentIndex(index);
       }
+      
+      SelectSource(QString::fromStdString(source));
     }
   }
 
