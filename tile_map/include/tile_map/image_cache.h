@@ -34,7 +34,7 @@
 
 #include <boost/functional/hash.hpp>
 
-#include <boost/atomic.hpp>
+//#include <boost/atomic.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <QCache>
@@ -77,9 +77,9 @@ namespace tile_map
     
     size_t uri_hash_;
     
-    boost::atomic<bool> loading_;
-    boost::atomic<int32_t> failures_;
-    boost::atomic<uint64_t> priority_;
+    bool loading_;
+    int32_t failures_;
+    uint64_t priority_;
     
     mutable boost::shared_ptr<QImage> image_;
   };
@@ -111,11 +111,10 @@ namespace tile_map
     
     QMutex cache_mutex_;
     QMutex unprocessed_mutex_;
-    boost::atomic<bool> exit_;
-    boost::atomic<int32_t> failures_;
+    bool exit_;
     
-    boost::atomic<int32_t> pending_;
-    boost::atomic<uint64_t> tick_;
+    int32_t pending_;
+    uint64_t tick_;
     
     CacheThread* cache_thread_;
     

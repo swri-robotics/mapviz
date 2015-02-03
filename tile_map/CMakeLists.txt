@@ -1,38 +1,80 @@
 cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+project(tile_map)
 
-rosbuild_init()
-rosbuild_find_ros_package(build_tools)
+find_package(catkin REQUIRED COMPONENTS 
+  roscpp 
+  pluginlib 
+  tf 
+  mapviz
+  transform_util
+  math_util
+  build_tools)
+
+find_package(Qt4 REQUIRED QtCore QtGui QtNetwork QtOpenGl)
+
+find_package(GLU REQUIRED)
+
+catkin_package(
+  INCLUDE_DIRS include
+  DEPENDS libqt4
+  CATKIN_DEPENDS 
+    roscpp 
+    pluginlib 
+    tf 
+    mapviz
+    transform_util
+    math_util
+)
+
+execute_process(
+  COMMAND rospack find build_tools
+  ERROR_VARIABLE __null
+  OUTPUT_VARIABLE build_tools_PACKAGE_PATH
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 include(${build_tools_PACKAGE_PATH}/scripts/build_common.cmake)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-# Require glu
-FIND_PACKAGE(GLU REQUIRED)
-find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui QtNetwork QtOpenGl)
+# Fix conflict between Boost signals used by tf and QT signals used by mapviz
+add_definitions(-DQT_NO_KEYWORDS)
 
 include(${QT_USE_FILE})
-include_directories(${QT_INCLUDE_DIRS} ${QT_QTOPENGL_INCLUDE_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR})
 add_definitions(${QT_DEFINITIONS})
 
+set(QT_USE_QTCORE TRUE)
+set(QT_USE_QTGUI TRUE)
 set(QT_USE_QTOPENGL TRUE)
+set(QT_USE_NETWORK TRUE)
 
-rosbuild_add_boost_directories()
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 file (GLOB TILE_SRC_FILES 
    src/image_cache.cpp
    src/texture_cache.cpp
    src/tile_map_view.cpp)
 QT4_WRAP_CPP(TILE_SRC_FILES include/tile_map/image_cache.h)
-rosbuild_add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
+add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${catkin_LIBRARIES})
 
 file (GLOB PLUGIN_SRC_FILES src/tile_map_plugin.cpp)
 file (GLOB PLUGIN_UI_FILES src/*.ui)
 QT4_WRAP_UI(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
 QT4_WRAP_CPP(PLUGIN_SRC_FILES include/tile_map/tile_map_plugin.h)
 
-rosbuild_add_library(${PROJECT_NAME}_plugin ${PLUGIN_SRC_FILES})
+add_library(${PROJECT_NAME}_plugin ${PLUGIN_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
+
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
+install(FILES mapviz_plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+

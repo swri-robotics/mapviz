@@ -180,14 +180,12 @@ namespace tile_map
           ROS_ERROR("FAILED TO CREATE IMAGE FROM REPLY: %s", url.c_str());
           image->ClearImage();
           image->AddFailure();
-          failures_++;
         }
       }
       else
       {
         ROS_ERROR("============ AN ERROR OCCURRED ==============: %s", url.c_str());
         image->AddFailure();
-        failures_++;
       }
     }
     
@@ -197,12 +195,14 @@ namespace tile_map
       image->SetLoading(false);
     }
     
+    pending_--;
+
     unprocessed_mutex_.unlock();
     
     reply->deleteLater();
     
-    pending_--;
     
+
     // Condition variable?
   }
   
@@ -237,7 +237,10 @@ namespace tile_map
         
           Q_EMIT RequestImage(QString::fromStdString(image->Uri()));
         
+          p->unprocessed_mutex_.lock();
           p->pending_++;
+          p->unprocessed_mutex_.unlock();
+
           count++;
         }
         else
