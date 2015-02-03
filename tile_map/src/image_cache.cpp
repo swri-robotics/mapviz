@@ -38,17 +38,21 @@
 #include <QNetworkDiskCache>
 #include <QUrl>
 
+#include <ros/ros.h>
+
 namespace tile_map
 {
   bool ComparePriority(const ImagePtr left, const ImagePtr right)
   {
-    return left->Priority() < right->Priority();
+    return left->Priority() > right->Priority();
   }
 
-  Image::Image(const QString& uri, int32_t priority) :
+  Image::Image(const std::string& uri, size_t uri_hash, uint64_t priority) :
     uri_(uri),
+    uri_hash_(uri_hash),
     loading_(false),
-    priority_(priority)
+    priority_(priority),
+    failures_(0)
   {
   }
   
@@ -56,84 +60,141 @@ namespace tile_map
   {
   }
 
-  void Image::SetPriority(int32_t priority)
+  void Image::InitializeImage()
   {
-    priority_ = priority;
+    image_ = boost::make_shared<QImage>();
+  }
+  
+  void Image::ClearImage()
+  {
+    image_.reset();
   }
 
-  ImageCache::ImageCache(const QString& cache_dir) :
-    cache_dir_(cache_dir), 
+  ImageCache::ImageCache(const QString& cache_dir, size_t size) :
+    network_manager_(this),
+    cache_dir_(cache_dir),
+    cache_(size),
     exit_(false),
     pending_(0),
-    cache_thread_(this)
+    tick_(0),
+    cache_thread_(new CacheThread(this))
   {
-    cache_thread_.setPriority(QThread::NormalPriority);
-    cache_thread_.start();
+    QNetworkDiskCache* disk_cache = new QNetworkDiskCache(this);
+    disk_cache->setCacheDirectory(cache_dir_);
+    network_manager_.setCache(disk_cache);
+  
+    connect(&network_manager_, SIGNAL(finished(QNetworkReply*)), this, SLOT(ProcessReply(QNetworkReply*)));
+    connect(cache_thread_, SIGNAL(RequestImage(QString)), this, SLOT(ProcessRequest(QString)));
 
+    cache_thread_->start();
+    cache_thread_->setPriority(QThread::NormalPriority);
   }
   
   ImageCache::~ImageCache()
   {
     exit_ = true;
-    cache_thread_.wait();
+    cache_thread_->wait();
+    delete cache_thread_;
   }
 
-  ImagePtr ImageCache::GetImage(const QString& uri, int32_t priority)
+  ImagePtr ImageCache::GetImage(size_t uri_hash, const std::string& uri, int32_t priority)
   {
     ImagePtr image;
     
     // Retrieve the image reference from the cache, updating the freshness.
     cache_mutex_.lock();
-    ImagePtr* image_ptr = cache_.object(uri);
+    ImagePtr* image_ptr = cache_.take(uri_hash);
     if (!image_ptr)
     {
       // If the image is not in the cache, create a new reference.
-      image_ptr = new ImagePtr(boost::make_shared<Image>(uri, priority));
-      if (!cache_.insert(uri, image_ptr))
+      image_ptr = new ImagePtr(boost::make_shared<Image>(uri, uri_hash, priority));
+      image = *image_ptr;
+      if (!cache_.insert(uri_hash, image_ptr))
       {
+        ROS_ERROR("FAILED TO CREATE HANDLE: %s", uri.c_str());
         image_ptr = 0;
       }
     }
-    
-    if (image_ptr)
+    else
     {
       image = *image_ptr;
+      
+      // Add raw pointer back to cache.
+      cache_.insert(uri_hash, image_ptr);
     }
     
     cache_mutex_.unlock();
     
     unprocessed_mutex_.lock();
-    if (image && !image->GetImage() && !image->Loading())
+    if (image && !image->GetImage())
     {
-      image->SetPriority(priority);
-      unprocessed_[uri] = image;
+      if (image->Failures() < 3)
+      {
+        if (!unprocessed_.contains(uri_hash))
+        {
+          image->SetPriority(tick_++);
+          unprocessed_[uri_hash] = image;
+        }
+      }
+      else
+      {
+        ROS_ERROR("To many failures for image: %s", uri.c_str());
+      }
     }
+
     unprocessed_mutex_.unlock();
     
     return image;
   }
   
+  void ImageCache::ProcessRequest(QString uri)
+  {
+    QNetworkRequest request;
+    request.setUrl(QUrl(uri));
+    request.setRawHeader("User-Agent", "mapviz-1.0");
+    request.setAttribute(
+    QNetworkRequest::CacheLoadControlAttribute,
+    QNetworkRequest::PreferCache);
+        
+    QNetworkReply *reply = network_manager_.get(request);
+    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+  } 
+  
   void ImageCache::ProcessReply(QNetworkReply* reply)
   {
-    QString url = reply->url().toString();
+    std::string url = reply->url().toString().toStdString();
+    size_t hash = hash_function_(url);
     
     ImagePtr image;
     unprocessed_mutex_.lock();
     
-    image = unprocessed_.take(url);
+    image = unprocessed_[hash];
+    if (image)
+    {
+      if (reply->error() == QNetworkReply::NoError)
+      {
+        QByteArray data = reply->readAll();
+        image->InitializeImage();
+        if (!image->GetImage()->loadFromData(data))
+        {
+          ROS_ERROR("FAILED TO CREATE IMAGE FROM REPLY: %s", url.c_str());
+          image->ClearImage();
+          image->AddFailure();
+          failures_++;
+        }
+      }
+      else
+      {
+        ROS_ERROR("============ AN ERROR OCCURRED ==============: %s", url.c_str());
+        image->AddFailure();
+        failures_++;
+      }
+    }
+    
+    unprocessed_.remove(hash);
     if (image)
     {
       image->SetLoading(false);
-    }
-    
-    if (image && reply->error() == QNetworkReply::NoError)
-    {
-      QByteArray data = reply->readAll();
-      image->GetImage().reset(new QImage());
-      if (!image->GetImage()->loadFromData(data))
-      {
-        image->GetImage().reset();
-      }
     }
     
     unprocessed_mutex_.unlock();
@@ -145,58 +206,57 @@ namespace tile_map
     // Condition variable?
   }
   
-  void ImageCache::CacheThread::run()
+  void ImageCache::NetworkError(QNetworkReply::NetworkError error)
   {
-    QNetworkAccessManager network_manager(p);
-    QNetworkDiskCache* disk_cache = new QNetworkDiskCache(p);
-    disk_cache->setCacheDirectory(p->cache_dir_);
-    network_manager.setCache(disk_cache);
-    
-    connect(&network_manager, SIGNAL(finished(QNetworkReply*)), p, SLOT(ProcessReply(QNetworkReply*)));
-    
+    ROS_ERROR("NETWORK ERROR");
+    // TODO add failure
+  }
+  
+  void CacheThread::run()
+  {    
     while (!p->exit_)
     {
-      QList<ImagePtr> images;
-      
-      // TODO(malban): Condition variable to wait for pending < 6 ?
+      // TODO: Condition variable to wait for pending < 6 ?
       
       p->unprocessed_mutex_.lock();
       
-      QMap<QString,ImagePtr>::iterator iter;
-      for (iter = p->unprocessed_.begin(); iter != p->unprocessed_.end(); ++iter)
-      {
-        p->cache_mutex_.lock();
-        if (!p->cache_.contains(iter.key()))
-        {
-          iter = p->unprocessed_.erase(iter);
-        }
-        p->cache_mutex_.unlock();
-      }
+      QList<ImagePtr> images = p->unprocessed_.values();
       
-      images = p->unprocessed_.values();
+      p->unprocessed_mutex_.unlock();
       
       qSort(images.begin(), images.end(), ComparePriority);
     
-      while (p->pending_ < 6 && !images.empty())
+      int32_t count = 0;
+      while (p->pending_ < 6 && !images.empty() && count < 12)
       {
         ImagePtr image = images.front();
-        image->SetLoading(true);
-        images.pop_front();
+        if (!image->Loading())
+        {
+          image->SetLoading(true);
+          images.pop_front();
         
-        QNetworkRequest request;
-        request.setUrl(QUrl(image->Uri()));
-        request.setAttribute(
-          QNetworkRequest::CacheLoadControlAttribute,
-          QNetworkRequest::PreferCache);
+          Q_EMIT RequestImage(QString::fromStdString(image->Uri()));
         
-        network_manager.get(request);
-        
-        p->pending_++;
+          p->pending_++;
+          count++;
+        }
+        else
+        {
+          images.pop_front();
+        }
       }
       
+      p->unprocessed_mutex_.lock();
+      // Remove the oldest images from the unprocessed list.
+      while (images.size() > 100)
+      {
+        ImagePtr image = images.back();
+        images.pop_back();
+        p->unprocessed_.remove(image->UriHash());
+      }
       p->unprocessed_mutex_.unlock();
     
-      usleep(10);
+      usleep(1000);
     }
   }
 }

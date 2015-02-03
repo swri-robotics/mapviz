@@ -74,26 +74,39 @@ namespace tile_map
     if (source == "MapQuest (satellite)")
     {
       tile_map_.SetBaseUrl("http://otile1.mqcdn.com/tiles/1.0.0/sat/");
+      tile_map_.SetExtension(".jpg");
+      tile_map_.SetMaxLevel(18);
     }
     else if (source == "MapQuest (roads)")
     {
       tile_map_.SetBaseUrl("http://otile1.mqcdn.com/tiles/1.0.0/map/");
+      tile_map_.SetExtension(".jpg");
+      tile_map_.SetMaxLevel(19);
     }
     else if (source == "Stamen (watercolor)")
     {
       tile_map_.SetBaseUrl("http://tile.stamen.com/watercolor/");
+      tile_map_.SetExtension(".jpg");
+      tile_map_.SetMaxLevel(19);
+      
     }
     else if (source == "Stamen (terrain)")
     {
       tile_map_.SetBaseUrl("http://tile.stamen.com/terrain/");
+      tile_map_.SetExtension(".jpg");
+      tile_map_.SetMaxLevel(15);
     }
     else if (source == "Stamen (toner)")
     {
       tile_map_.SetBaseUrl("http://tile.stamen.com/toner/");
+      tile_map_.SetExtension(".png");
+      tile_map_.SetMaxLevel(19);
     }
     else
     {
       tile_map_.SetBaseUrl(source.toStdString());
+      tile_map_.SetExtension(".jpg");
+      tile_map_.SetMaxLevel(19);
     }
 
     initialized_ = true;
@@ -153,11 +166,11 @@ namespace tile_map
 
   void TileMapPlugin::Draw(double x, double y, double scale)
   {
-    ROS_ERROR("Draw(%lf, %lf, %lf)", x, y, scale);
+    //ROS_ERROR("Draw(%lf, %lf, %lf)", x, y, scale);
     transform_util::Transform to_wgs84;
     if (tf_manager_.GetTransform(source_frame_, target_frame_, to_wgs84))
     {
-      ROS_ERROR("%s -> %s", target_frame_.c_str(), source_frame_.c_str());
+      //ROS_ERROR("%s -> %s", target_frame_.c_str(), source_frame_.c_str());
       tf::Vector3 center(x, y, 0);
       center = to_wgs84 * center;
       tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
@@ -167,6 +180,11 @@ namespace tile_map
 
   void TileMapPlugin::Transform()
   {
+    transform_util::Transform to_target;
+    if (tf_manager_.GetTransform(target_frame_, source_frame_, to_target))
+    {
+      tile_map_.SetTransform(to_target);
+    }
   }
 
   void TileMapPlugin::LoadConfig(const YAML::Node& node, const std::string& path)

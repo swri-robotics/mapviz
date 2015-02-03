@@ -34,6 +34,9 @@
 #include <boost/make_shared.hpp>
 
 #include <GL/gl.h>
+#include <GL/glu.h>
+
+#include <ros/ros.h>
 
 #include <QGLWidget>
 #include <QImage>
@@ -42,12 +45,15 @@
 
 namespace tile_map
 {
-  Texture::Texture(int32_t texture_id) : id(texture_id)
+  Texture::Texture(int32_t texture_id, size_t hash) : 
+    id(texture_id),
+    url_hash(hash)
   {
   }
 
   Texture::~Texture()
   {
+    //ROS_ERROR("==== DELETING TEXTURE: %d ====", id);
     // The texture will automatically be freed from the GPU memory when it goes
     // out of scope.  This is effectively when it is no longer in the texture
     // cache or being referenced for a render.
@@ -56,33 +62,34 @@ namespace tile_map
     glDeleteTextures(1, &ids[0]);
   }
 
-  TextureCache::TextureCache(ImageCachePtr image_cache) : 
+  TextureCache::TextureCache(ImageCachePtr image_cache, size_t size) : 
+    cache_(size),
     image_cache_(image_cache)
   {
   
   }
 
-  TexturePtr TextureCache::GetTexture(const QString& uri)
+  TexturePtr TextureCache::GetTexture(size_t url_hash, const std::string& url, bool& failed)
   {
     TexturePtr texture;
 
-    cache_mutex_.lock();
+    failed = false;
 
-    TexturePtr* texture_ptr = cache_.object(uri);
+    TexturePtr* texture_ptr = cache_.take(url_hash);
     if (texture_ptr)
     {
       texture = *texture_ptr;
+      delete texture_ptr;
     }
-    
-    cache_mutex_.unlock();
     
     if (!texture)
     {
-      ImagePtr image = image_cache_->GetImage(uri);
+      ImagePtr image = image_cache_->GetImage(url_hash, url);
       
       if (image)
       {
-        boost::shared_ptr<const QImage> image_ptr = image->GetImage();
+        failed = image->Failures() > 2;
+        boost::shared_ptr<QImage> image_ptr = image->GetImage();
         if (image_ptr)
         {
           // All of the OpenGL calls need to occur on the main thread and so
@@ -91,9 +98,22 @@ namespace tile_map
           QImage qimage = *image_ptr;
         
           GLuint ids[1];
+          int32_t check = 9999999;
+          ids[0] = check;
+          
           glGenTextures(1, &ids[0]);
         
-          texture_ptr = new TexturePtr(boost::make_shared<Texture>(ids[0]));
+          if (check == ids[0])
+          {
+            ROS_ERROR("FAILED TO CREATE TEXTURE");
+            
+            GLenum err = glGetError();
+            const GLubyte *errString = gluErrorString(err);
+            ROS_ERROR("GL ERROR(%d): %s", (int)err, errString);
+            return texture;
+          }
+        
+          texture_ptr = new TexturePtr(boost::make_shared<Texture>(ids[0], url_hash));
           texture = *texture_ptr;
 
           int32_t max_dimension = std::max(qimage.width(), qimage.height());
@@ -105,7 +125,7 @@ namespace tile_map
             qimage = qimage.scaled(dimension, dimension, Qt::IgnoreAspectRatio, Qt::FastTransformation);
           }
           
-          glBindTexture(GL_TEXTURE_2D, (*texture_ptr)->id);
+          glBindTexture(GL_TEXTURE_2D, texture->id);
           glTexImage2D(
             GL_TEXTURE_2D, 
             0, 
@@ -123,13 +143,20 @@ namespace tile_map
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
           
-          cache_mutex_.lock();
-          cache_.insert(uri, texture_ptr);
-          cache_mutex_.unlock();
+          cache_.insert(url_hash, texture_ptr);
         }
       }
     }
     
     return texture;
+  }
+  
+  void TextureCache::AddTexture(const TexturePtr& texture)
+  {
+    if (texture)
+    {
+      TexturePtr* texture_ptr = new TexturePtr(texture);
+      cache_.insert(texture->url_hash, texture_ptr);
+    }
   }
 }

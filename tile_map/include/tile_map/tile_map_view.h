@@ -30,18 +30,46 @@
 #ifndef TILE_MAP_TILE_MAP_VIEW_H_
 #define TILE_MAP_TILE_MAP_VIEW_H_
 
+#include <string>
+
+#include <boost/functional/hash.hpp>
+
 #include <tile_map/texture_cache.h>
 
 #include <transform_util/transform.h>
 
 namespace tile_map
 {
+  struct Tile
+  {
+  public:
+    std::string url;
+    size_t url_hash;
+    int32_t level;
+    
+    TexturePtr texture;
+    
+    tf::Vector3 top_left;
+    tf::Vector3 top_right;
+    tf::Vector3 bottom_left;
+    tf::Vector3 bottom_right;
+    
+    tf::Vector3 top_left_t;
+    tf::Vector3 top_right_t;
+    tf::Vector3 bottom_left_t;
+    tf::Vector3 bottom_right_t;
+  };
+
   class TileMapView
   {
   public:
     TileMapView();
     
     void SetBaseUrl(const std::string& url);
+    
+    void SetMaxLevel(int32_t level);
+    
+    void SetExtension(const std::string& extension);
     
     void SetTransform(const transform_util::Transform& transform);
     
@@ -55,15 +83,34 @@ namespace tile_map
     void Draw();
     
   private:
-    int32_t level_;
     std::string base_url_;
+    
+    std::string extension_;
+    
+    transform_util::Transform transform_;
+    
+    int32_t max_level_;
+    
+    int32_t level_;
+    
+    int64_t center_x_;
+    int64_t center_y_;
+    
+    int64_t size_;
     
     int32_t width_;
     int32_t height_;
     
-    std::string tmp_url_;
+    std::vector<Tile> tiles_;
+    std::vector<Tile> precache_below_;
+    std::vector<Tile> precache_above_;
     
+    boost::hash<std::string> hash_function_;
     TextureCachePtr tile_cache_;
+    
+    void ToLatLon(int32_t level, int32_t x, int32_t y, double& latitude, double& longitude);
+    
+    void InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile);
   };
 }
 

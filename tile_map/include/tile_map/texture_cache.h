@@ -40,24 +40,26 @@ namespace tile_map
   class Texture
   {
   public:
-    Texture(int32_t texture_id);
+    Texture(int32_t texture_id, size_t hash);
     ~Texture();
     
+    const size_t url_hash;
     const int32_t id;
+    
+    bool failed;
   };
   typedef boost::shared_ptr<Texture> TexturePtr;
 
   class TextureCache
   {
   public:
-    explicit TextureCache(ImageCachePtr image_cache);
+    TextureCache(ImageCachePtr image_cache, size_t size = 512);
   
-    TexturePtr GetTexture(const QString& uri);
+    TexturePtr GetTexture(size_t url_hash, const std::string& url, bool& failed);
+    void AddTexture(const TexturePtr& texture);
     
   private:
-    QCache<QString, TexturePtr> cache_;
-    
-    QMutex cache_mutex_;
+    QCache<size_t, TexturePtr> cache_;
     
     ImageCachePtr image_cache_;
   };

@@ -30,6 +30,10 @@
 #ifndef TILE_MAP_IMAGE_CACHE_H_
 #define TILE_MAP_IMAGE_CACHE_H_
 
+#include <string>
+
+#include <boost/functional/hash.hpp>
+
 #include <boost/atomic.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -43,28 +47,39 @@
 
 namespace tile_map
 {
+  class CacheThread;
+
   class Image
   {
   public:
-    Image(const QString& uri, int32_t priority);
+    Image(const std::string& uri, size_t uri_hash, uint64_t priority = 0);
     ~Image();
+    
+    std::string Uri() const { return uri_; }
+    size_t UriHash() const { return uri_hash_; }
   
-    int32_t Priority() const { return priority_; }
-    void SetPriority(int32_t priority);
-  
+    boost::shared_ptr<QImage> GetImage() { return image_; }
+    
+    void InitializeImage();
+    void ClearImage();
+    
+    void AddFailure() { failures_++; }
+    int32_t Failures() const { return failures_; }
+
+    void SetPriority(uint64_t priority) { priority_ = priority; }
+    uint64_t Priority() const { return priority_; }
+
     bool Loading() const { return loading_; }
     void SetLoading(bool loading) { loading_ = loading; }
-    
-    QString Uri() const { return uri_; }
-  
-    boost::shared_ptr<const QImage> GetImage() const { return image_; }
-    boost::shared_ptr<QImage> GetImage() { return image_; }
 
   private:
-    QString uri_;
+    std::string uri_;
+    
+    size_t uri_hash_;
     
     boost::atomic<bool> loading_;
-    boost::atomic<int32_t> priority_;
+    boost::atomic<int32_t> failures_;
+    boost::atomic<uint64_t> priority_;
     
     mutable boost::shared_ptr<QImage> image_;
   };
@@ -75,41 +90,54 @@ namespace tile_map
     Q_OBJECT
     
   public:
-    ImageCache(const QString& cache_dir);
+    ImageCache(const QString& cache_dir, size_t size = 4096);
     ~ImageCache();
     
-    ImagePtr GetImage(const QString& uri, int32_t priority = 0);
+    ImagePtr GetImage(size_t uri_hash, const std::string& uri, int32_t priority = 0);
   
   public Q_SLOTS:
+    void ProcessRequest(QString uri);
     void ProcessReply(QNetworkReply* reply);
+    void NetworkError(QNetworkReply::NetworkError error);
   
   private:
+    QNetworkAccessManager network_manager_;
+    
     QString cache_dir_;
   
-    QCache<QString, ImagePtr> cache_;
-    QMap<QString, ImagePtr> unprocessed_;
+    boost::hash<std::string> hash_function_;
+    QCache<size_t, ImagePtr> cache_;
+    QMap<size_t, ImagePtr> unprocessed_;
     
     QMutex cache_mutex_;
     QMutex unprocessed_mutex_;
     boost::atomic<bool> exit_;
+    boost::atomic<int32_t> failures_;
     
     boost::atomic<int32_t> pending_;
+    boost::atomic<uint64_t> tick_;
     
-    class CacheThread : public QThread
-    {
+    CacheThread* cache_thread_;
+    
+    friend class CacheThread;
+  };
+  
+  class CacheThread : public QThread
+  {
+    Q_OBJECT
     public:
       CacheThread(ImageCache* parent) : p(parent) {}
       
       virtual void run();
 
+    Q_SIGNALS:
+      void RequestImage(QString);
+
     private:
       ImageCache* p;
- 
-    };
-    friend class CacheThread;
-    
-    CacheThread cache_thread_;
   };
+    
+  
   typedef boost::shared_ptr<ImageCache> ImageCachePtr;
 }
 
