@@ -51,6 +51,7 @@ namespace tile_map
     uri_(uri),
     uri_hash_(uri_hash),
     loading_(false),
+    failed_(false),
     priority_(priority),
     failures_(0)
   {
@@ -68,6 +69,12 @@ namespace tile_map
   void Image::ClearImage()
   {
     image_.reset();
+  }
+
+  void Image::AddFailure()
+  {
+    failures_++;
+    failed_ = failures_ > 2;
   }
 
   ImageCache::ImageCache(const QString& cache_dir, size_t size) :
@@ -128,7 +135,7 @@ namespace tile_map
     unprocessed_mutex_.lock();
     if (image && !image->GetImage())
     {
-      if (image->Failures() < 3)
+      if (!image->Failed())
       {
         if (!unprocessed_.contains(uri_hash))
         {
@@ -196,13 +203,13 @@ namespace tile_map
     }
     
     pending_--;
-
+    
     unprocessed_mutex_.unlock();
     
     reply->deleteLater();
     
     
-
+    
     // Condition variable?
   }
   
@@ -230,6 +237,7 @@ namespace tile_map
       while (p->pending_ < 6 && !images.empty() && count < 12)
       {
         ImagePtr image = images.front();
+        p->unprocessed_mutex_.lock();
         if (!image->Loading())
         {
           image->SetLoading(true);
@@ -237,16 +245,14 @@ namespace tile_map
         
           Q_EMIT RequestImage(QString::fromStdString(image->Uri()));
         
-          p->unprocessed_mutex_.lock();
           p->pending_++;
-          p->unprocessed_mutex_.unlock();
-
           count++;
         }
         else
         {
           images.pop_front();
         }
+        p->unprocessed_mutex_.unlock();
       }
       
       p->unprocessed_mutex_.lock();

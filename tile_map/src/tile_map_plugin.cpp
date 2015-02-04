@@ -161,6 +161,8 @@ namespace tile_map
   {
     canvas_ = canvas;
 
+    SelectSource("MapQuest (satellite)");
+
     return true;
   }
 
@@ -184,6 +186,11 @@ namespace tile_map
     if (tf_manager_.GetTransform(target_frame_, source_frame_, to_target))
     {
       tile_map_.SetTransform(to_target);
+      PrintInfo("OK");
+    }
+    else
+    {
+      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
 

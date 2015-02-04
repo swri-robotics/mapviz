@@ -34,7 +34,6 @@
 
 #include <boost/functional/hash.hpp>
 
-//#include <boost/atomic.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <QCache>
@@ -63,8 +62,8 @@ namespace tile_map
     void InitializeImage();
     void ClearImage();
     
-    void AddFailure() { failures_++; }
-    int32_t Failures() const { return failures_; }
+    void AddFailure();
+    bool Failed() const { return failed_; }
 
     void SetPriority(uint64_t priority) { priority_ = priority; }
     uint64_t Priority() const { return priority_; }
@@ -79,6 +78,7 @@ namespace tile_map
     
     bool loading_;
     int32_t failures_;
+    bool failed_;
     uint64_t priority_;
     
     mutable boost::shared_ptr<QImage> image_;
