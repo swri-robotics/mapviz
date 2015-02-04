@@ -140,7 +140,7 @@ namespace mapviz_plugins
       tf::Point point(
         path->poses[i].pose.position.x,
         path->poses[i].pose.position.y,
-        path->poses[i].pose.position.z);
+        0);
 
       points_.push_back(point);
       transformed_points_.push_back(point);
