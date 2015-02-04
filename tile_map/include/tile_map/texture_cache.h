@@ -31,7 +31,6 @@
 #define TILE_MAP_TEXTURE_CACHE_H_
 
 #include <QCache>
-#include <QMutex>
 
 #include <tile_map/image_cache.h>
 

@@ -88,7 +88,7 @@ namespace tile_map
       
       if (image)
       {
-        failed = image->Failures() > 2;
+        failed = image->Failed();
         boost::shared_ptr<QImage> image_ptr = image->GetImage();
         if (image_ptr)
         {
