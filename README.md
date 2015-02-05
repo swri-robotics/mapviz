@@ -145,11 +145,11 @@ Textured markers follow the same general approach as traditional markers, but ca
 ## Tile Map
 Projects a geo-referenced multi-resolution image tile map into the scene.  Data is automatically streamed from [OpenMapQuest](http://open.mapquest.com/) (satellite and roads) or [Stamen Design] (http://maps.stamen.com/) (terrain, watercolor, and toner).  Custom or local map servers can also be specified.  Map data is cached to disk which enables some limited use completely offline.
 
-<img src="https://github.com/swri-robotics/mapviz/wiki/satellite.png" width="150" height="150" />
-<img src="https://github.com/swri-robotics/mapviz/wiki/roads.png" width="150" height="150" />
-<img src="https://github.com/swri-robotics/mapviz/wiki/terrain.png" width="150" height="150" />
-<img src="https://github.com/swri-robotics/mapviz/wiki/watercolor.png" width="150" height="150" />
-<img src="https://github.com/swri-robotics/mapviz/wiki/toner.png" width="150" height="150" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/satellite.png" width="200" height="200" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/roads.png" width="200" height="200" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/terrain.png" width="200" height="200" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/watercolor.png" width="200" height="200" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/toner.png" width="200" height="200" />
 
 **Parameters**
  * Source: The source of the tile data.
