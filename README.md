@@ -5,7 +5,20 @@ Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in s
 
 ![](https://github.com/swri-robotics/mapviz/wiki/mapviz_features.png)
 
-Mapviz currently depends on the [marti_common](https://github.com/swri-robotics/marti_common) and [marti_messages](https://github.com/swri-robotics/marti_messages) repositories for some utility functions and message definitions.
+Mapviz currently depends on the [marti_common](https://github.com/swri-robotics/marti_common), [marti_messages](https://github.com/swri-robotics/marti_messages), and [lapackpp](https://github.com/swri-robotics/lapackpp) repositories for some utility functions and message definitions.
+
+Mapviz should be compatible with Ubuntu 12.04 through Ubuntu 14.04 and ROS Fuerte, Groovy, Hydro, and Indigo.  The *master* branch uses the [rosbuild](http://wiki.ros.org/rosbuild) make system and the *catkin* branch uses [catkin](http://wiki.ros.org/catkin).
+
+Installing ROS [Fuerte](http://wiki.ros.org/fuerte/Installation/Ubuntu), [Groovy](http://wiki.ros.org/groovy/Installation/Ubuntu), [Hydro](http://wiki.ros.org/hydro/Installation/Ubuntu), or [Indigo](http://wiki.ros.org/indigo/Installation/Ubuntu)
+
+Additional Ubuntu dependencies beyond ROS base for mapviz:
+
+    $ sudo apt-get install ros-XXXX-tf ros-XXXX-common-msgs ros-XXXX-plugin-lib ros-XXXX-gps-umd \
+        ros-XXXX-nodelet ros-XXXX-cv-bridge ros-XXXX-image-geometry ros-XXXX-angles \
+        ros-XXXX-camera-calibration-parsers ros-XXXX-image-transport
+
+    $ sudo apt-get install yaml-cpp libboost-random-dev libblas-dev liblapack-dev libproj-dev \
+        libglew-dev freeglut3-dev libxmu-dev libgeos++-dev qt4-dev-tools
 
 Plug-ins
 --------
