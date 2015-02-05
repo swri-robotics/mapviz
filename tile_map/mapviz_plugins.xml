@@ -1,0 +1,6 @@
+<library path="lib/libtile_map_plugin">
+  <class name="mapviz_plugins/tile_map" type="tile_map::TileMapPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Plugin for viewing slippy maps from a map server.</description>
+  </class>
+</library>
+
