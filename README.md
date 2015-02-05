@@ -142,6 +142,18 @@ Textured markers follow the same general approach as traditional markers, but ca
 **Parameters**
  * Topic: The textured marker topic
 
+## Tile Map
+Projects a geo-referenced multi-resolution image tile map into the scene.  Data is automatically streamed from [OpenMapQuest](http://open.mapquest.com/) (satellite and roads) or [Stamen Design] (http://maps.stamen.com/) (terrain, watercolor, and toner).  Custom or local map servers can also be specified.  Map data is cached to disk which enables some limited use completely offline.
+
+<img src="https://github.com/swri-robotics/mapviz/wiki/satellite.png" width="150" height="150" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/roads.png" width="150" height="150" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/terrain.png" width="150" height="150" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/watercolor.png" width="150" height="150" />
+<img src="https://github.com/swri-robotics/mapviz/wiki/toner.png" width="150" height="150" />
+
+**Parameters**
+ * Source: The source of the tile data.
+
 ## TF Frame
 
 Projects [Tf](http://wiki.ros.org/tf) data into the scene similar to the Odometry plug-in.
