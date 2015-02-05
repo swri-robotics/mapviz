@@ -11,6 +11,7 @@
 
   <depend package="roscpp"/>
   <depend package="tf"/>
+  <depend package="pluginlib"/>
   <depend package="std_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="sensor_msgs"/>
