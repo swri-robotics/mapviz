@@ -79,9 +79,13 @@ namespace tile_map
   
   void TileMapView::SetTransform(const transform_util::Transform& transform)
   {
+    if (transform.GetOrigin() == transform_.GetOrigin() &&
+        transform.GetOrientation() == transform_.GetOrientation())
+    {
+      return;
+    }
+  
     transform_ = transform;
-    
-    // TODO: check if modified.
     
     for (size_t i = 0; i < tiles_.size(); i++)
     {
