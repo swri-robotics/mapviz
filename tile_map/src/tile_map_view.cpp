@@ -89,18 +89,18 @@ namespace tile_map
     
     for (size_t i = 0; i < tiles_.size(); i++)
     {
-      tiles_[i].top_left_t = transform_ * tiles_[i].top_left;
-      tiles_[i].top_right_t = transform_ * tiles_[i].top_right;
-      tiles_[i].bottom_right_t = transform_ * tiles_[i].bottom_right;
-      tiles_[i].bottom_left_t = transform_ * tiles_[i].bottom_left;
+      for (size_t j = 0; j < tiles_[i].points_t.size(); j++)
+      {
+        tiles_[i].points_t[j] = transform_ * tiles_[i].points[j];
+      }
     }
     
-    for (size_t i = 0; i < precache_above_.size(); i++)
+    for (size_t i = 0; i < precache_.size(); i++)
     {
-      precache_above_[i].top_left_t = transform_ * precache_above_[i].top_left;
-      precache_above_[i].top_right_t = transform_ * precache_above_[i].top_right;
-      precache_above_[i].bottom_right_t = transform_ * precache_above_[i].bottom_right;
-      precache_above_[i].bottom_left_t = transform_ * precache_above_[i].bottom_left;
+      for (size_t j = 0; j < precache_[i].points_t.size(); j++)
+      {
+        precache_[i].points_t[j] = transform_ * precache_[i].points[j];
+      }
     }
   }
   
@@ -178,32 +178,32 @@ namespace tile_map
         }
       }
       
-      for (size_t i = 0; i < precache_above_.size(); i++)
+      for (size_t i = 0; i < precache_.size(); i++)
       {
-        tile_cache_->AddTexture(precache_above_[i].texture);
+        tile_cache_->AddTexture(precache_[i].texture);
       }
-      precache_above_.clear();
+      precache_.clear();
 
       if (level_ > 0)
       {
-        int64_t above_x = std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level - 1));
-        int64_t above_y = std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / math_util::_pi) / 2.0 * std::pow(2.0, level - 1)); 
+        int64_t precache_x = std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level - 1));
+        int64_t precache_y = std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / math_util::_pi) / 2.0 * std::pow(2.0, level - 1)); 
         
-        int64_t above_max_size = std::pow(2, level - 1);
+        int64_t precache_max_size = std::pow(2, level - 1);
         
-        int64_t above_top = std::max(0L, above_y - (size_ - 1) / 2);
-        int64_t above_left = std::max(0L, above_x - (size_ - 1) / 2);
+        int64_t precache_top = std::max(0L, precache_y - (size_ - 1) / 2);
+        int64_t precache_left = std::max(0L, precache_x - (size_ - 1) / 2);
       
-        int64_t above_right = std::min(above_max_size, above_left + size_);
-        int64_t above_bottom = std::min(above_max_size, above_top + size_);
+        int64_t precache_right = std::min(precache_max_size, precache_left + size_);
+        int64_t precache_bottom = std::min(precache_max_size, precache_top + size_);
         
-        for (int64_t i = above_top; i < above_bottom; i++)
+        for (int64_t i = precache_top; i < precache_bottom; i++)
         {
-          for (int64_t j = above_left; j < above_right; j++)
+          for (int64_t j = precache_left; j < precache_right; j++)
           {
             Tile tile;
             InitializeTile(level_ - 1, j, i, tile);
-            precache_above_.push_back(tile);
+            precache_.push_back(tile);
           }
         }
       }
@@ -214,17 +214,17 @@ namespace tile_map
   {
     glEnable(GL_TEXTURE_2D);
     
-    for (size_t i = 0; i < precache_above_.size(); i++)
+    for (size_t i = 0; i < precache_.size(); i++)
     {
-      TexturePtr texture = precache_above_[i].texture;
+      TexturePtr texture = precache_[i].texture;
       
       if (!texture)
       {
         bool failed;
-        texture = tile_cache_->GetTexture(precache_above_[i].url_hash, precache_above_[i].url, failed);
+        texture = tile_cache_->GetTexture(precache_[i].url_hash, precache_[i].url, failed);
         if (failed)
         {
-          max_level_ = std::min(max_level_, precache_above_[i].level - 1);
+          max_level_ = std::min(max_level_, precache_[i].level - 1);
           ROS_WARN("===== SETTING MAX LEVEL TO %d =====", max_level_);
         }
       }
@@ -237,13 +237,31 @@ namespace tile_map
                 
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-        glTexCoord2f(0, 1); glVertex2d(precache_above_[i].top_left_t.x(), precache_above_[i].top_left_t.y());
-        glTexCoord2f(1, 1); glVertex2d(precache_above_[i].top_right_t.x(), precache_above_[i].top_right_t.y());
-        glTexCoord2f(1, 0); glVertex2d(precache_above_[i].bottom_right_t.x(), precache_above_[i].bottom_right_t.y());
-          
-        glTexCoord2f(0, 1); glVertex2d(precache_above_[i].top_left_t.x(), precache_above_[i].top_left_t.y());
-        glTexCoord2f(1, 0); glVertex2d(precache_above_[i].bottom_right_t.x(), precache_above_[i].bottom_right_t.y());
-        glTexCoord2f(0, 0); glVertex2d(precache_above_[i].bottom_left_t.x(), precache_above_[i].bottom_left_t.y());
+        for (int32_t row = 0; row < precache_[i].subdiv_count; row++)
+        {
+          for (int32_t col = 0; col < precache_[i].subdiv_count; col++)
+          {
+            double u_0 = col * precache_[i].subwidth;
+            double v_0 = 1.0 - row * precache_[i].subwidth;
+            double u_1 = (col + 1.0) * precache_[i].subwidth;
+            double v_1 = 1.0 - (row + 1.0) * precache_[i].subwidth;
+            
+            const tf::Vector3& tl = precache_[i].points_t[row * (precache_[i].subdiv_count + 1) + col];
+            const tf::Vector3& tr = precache_[i].points_t[row * (precache_[i].subdiv_count + 1) + col + 1];
+            const tf::Vector3& br = precache_[i].points_t[(row + 1) * (precache_[i].subdiv_count + 1) + col + 1];
+            const tf::Vector3& bl = precache_[i].points_t[(row + 1) * (precache_[i].subdiv_count + 1) + col];
+            
+            // Triangle 1
+            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
+            glTexCoord2f(u_1, v_0); glVertex2d(tr.x(), tr.y());
+            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
+              
+            // Triangle 2
+            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
+            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
+            glTexCoord2f(u_0, v_1); glVertex2d(bl.x(), bl.y());
+          }
+        }
       
         glEnd();
       
@@ -272,15 +290,33 @@ namespace tile_map
 
         glBegin(GL_TRIANGLES);
                 
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-        glTexCoord2f(0, 1); glVertex2d(tiles_[i].top_left_t.x(), tiles_[i].top_left_t.y());
-        glTexCoord2f(1, 1); glVertex2d(tiles_[i].top_right_t.x(), tiles_[i].top_right_t.y());
-        glTexCoord2f(1, 0); glVertex2d(tiles_[i].bottom_right_t.x(), tiles_[i].bottom_right_t.y());
-          
-        glTexCoord2f(0, 1); glVertex2d(tiles_[i].top_left_t.x(), tiles_[i].top_left_t.y());
-        glTexCoord2f(1, 0); glVertex2d(tiles_[i].bottom_right_t.x(), tiles_[i].bottom_right_t.y());
-        glTexCoord2f(0, 0); glVertex2d(tiles_[i].bottom_left_t.x(), tiles_[i].bottom_left_t.y());
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);      
+      
+        for (int32_t row = 0; row < tiles_[i].subdiv_count; row++)
+        {
+          for (int32_t col = 0; col < tiles_[i].subdiv_count; col++)
+          {
+            double u_0 = col * tiles_[i].subwidth;
+            double v_0 = 1.0 - row * tiles_[i].subwidth;
+            double u_1 = (col + 1.0) * tiles_[i].subwidth;
+            double v_1 = 1.0 - (row + 1.0) * tiles_[i].subwidth;
+            
+            const tf::Vector3& tl = tiles_[i].points_t[row * (tiles_[i].subdiv_count + 1) + col];
+            const tf::Vector3& tr = tiles_[i].points_t[row * (tiles_[i].subdiv_count + 1) + col + 1];
+            const tf::Vector3& br = tiles_[i].points_t[(row + 1) * (tiles_[i].subdiv_count + 1) + col + 1];
+            const tf::Vector3& bl = tiles_[i].points_t[(row + 1) * (tiles_[i].subdiv_count + 1) + col];
+            
+            // Triangle 1
+            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
+            glTexCoord2f(u_1, v_0); glVertex2d(tr.x(), tr.y());
+            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
+              
+            // Triangle 2
+            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
+            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
+            glTexCoord2f(u_0, v_1); glVertex2d(bl.x(), bl.y());
+          }
+        }
       
         glEnd();
       
@@ -291,12 +327,12 @@ namespace tile_map
     glDisable(GL_TEXTURE_2D);
   }
   
-  void TileMapView::ToLatLon(int32_t level, int32_t x, int32_t y, double& latitude, double& longitude)
+  void TileMapView::ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude)
   {
     double n = std::pow(2, level);
-    longitude = (double)x / n * 360.0 - 180.0;
+    longitude = x / n * 360.0 - 180.0;
     
-    double r = math_util::_pi - math_util::_2pi * (double)y / n;
+    double r = math_util::_pi - math_util::_2pi * y / n;
     latitude = math_util::_rad_2_deg * std::atan(0.5 * (std::exp(r) - std::exp(-r)));
   }
   
@@ -320,21 +356,23 @@ namespace tile_map
       ROS_WARN("===== SETTING MAX LEVEL TO %d =====", max_level_);
     }
   
-    double t_lat, t_lon;
-    ToLatLon(level, x, y, t_lat, t_lon);
-    tile.top_left = tf::Vector3(t_lon, t_lat, 0);
-    tile.top_left_t = transform_ * tile.top_left;
-      
-    ToLatLon(level, x + 1, y, t_lat, t_lon);
-    tile.top_right = tf::Vector3(t_lon, t_lat, 0);
-    tile.top_right_t = transform_ * tile.top_right;
-      
-    ToLatLon(level, x + 1, y + 1, t_lat, t_lon);
-    tile.bottom_right = tf::Vector3(t_lon, t_lat, 0);
-    tile.bottom_right_t = transform_ * tile.bottom_right;
-      
-    ToLatLon(level, x, y + 1, t_lat, t_lon);
-    tile.bottom_left = tf::Vector3(t_lon, t_lat, 0);
-    tile.bottom_left_t = transform_ * tile.bottom_left;
+    int32_t subdivs = std::max(0, 4 - level);
+    tile.subwidth = 1.0 / (subdivs + 1.0);
+    tile.subdiv_count = std::pow(2, subdivs);
+    for (int32_t row = 0; row <= tile.subdiv_count; row++)
+    {
+      for (int32_t col = 0; col <= tile.subdiv_count; col++)
+      {
+        double t_lat, t_lon;
+        ToLatLon(level, x + col * tile.subwidth, y + row * tile.subwidth, t_lat, t_lon);
+        tile.points.push_back(tf::Vector3(t_lon, t_lat, 0));
+      }
+    }
+    
+    tile.points_t = tile.points;
+    for (size_t i = 0; i < tile.points_t.size(); i++)
+    {
+      tile.points_t[i] = transform_ * tile.points_t[i];
+    }
   }
 }
