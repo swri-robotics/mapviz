@@ -46,18 +46,13 @@ namespace tile_map
     std::string url;
     size_t url_hash;
     int32_t level;
+    int32_t subdiv_count;
+    double subwidth;
     
     TexturePtr texture;
     
-    tf::Vector3 top_left;
-    tf::Vector3 top_right;
-    tf::Vector3 bottom_left;
-    tf::Vector3 bottom_right;
-    
-    tf::Vector3 top_left_t;
-    tf::Vector3 top_right_t;
-    tf::Vector3 bottom_left_t;
-    tf::Vector3 bottom_right_t;
+    std::vector<tf::Vector3> points;
+    std::vector<tf::Vector3> points_t;
   };
 
   class TileMapView
@@ -102,13 +97,12 @@ namespace tile_map
     int32_t height_;
     
     std::vector<Tile> tiles_;
-    std::vector<Tile> precache_below_;
-    std::vector<Tile> precache_above_;
+    std::vector<Tile> precache_;
     
     boost::hash<std::string> hash_function_;
     TextureCachePtr tile_cache_;
     
-    void ToLatLon(int32_t level, int32_t x, int32_t y, double& latitude, double& longitude);
+    void ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude);
     
     void InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile);
   };
