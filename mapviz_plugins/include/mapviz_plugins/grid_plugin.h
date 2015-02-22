@@ -122,6 +122,7 @@ namespace mapviz_plugins
 
     void RecalculateGrid();
     void Transform(std::list<tf::Point>& src, std::list<tf::Point>& dst);
+    void DrawIcon();
   };
 }
 

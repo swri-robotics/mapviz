@@ -50,6 +50,8 @@
 #include <transform_util/transform_manager.h>
 #include <yaml-cpp/yaml.h>
 
+#include <mapviz/widgets.h>
+
 namespace mapviz
 {
   class MapvizPlugin : public QObject
@@ -200,15 +202,20 @@ namespace mapviz
 
     virtual QWidget* GetConfigWidget(QWidget* parent) { return NULL; }
 
+    virtual void DrawIcon() {}
+
     virtual void PrintError(const std::string& message) = 0;
     virtual void PrintInfo(const std::string& message) = 0;
     virtual void PrintWarning(const std::string& message) = 0;
+
+    void SetIcon(IconWidget* icon) { icon_ = icon; }
 
   protected:
     bool initialized_;
     bool visible_;
 
     QGLWidget* canvas_;
+    IconWidget* icon_;
 
     ros::NodeHandle node_;
 
@@ -230,6 +237,7 @@ namespace mapviz
       initialized_(false),
       visible_(true),
       canvas_(NULL),
+      icon_(NULL),
       tf_(),
       target_frame_(""),
       source_frame_(""),
