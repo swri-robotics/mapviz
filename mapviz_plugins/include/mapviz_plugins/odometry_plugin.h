@@ -111,6 +111,7 @@ namespace mapviz_plugins
     void DrawCovariance();
     bool DrawArrows();
     bool TransformPoint(StampedPoint& point);
+    void DrawIcon();
 
     Ui::odometry_config ui_;
     QWidget* config_widget_;
