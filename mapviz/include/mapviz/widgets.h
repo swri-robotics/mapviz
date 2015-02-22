@@ -36,6 +36,8 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QDropEvent>
+#include <QPainter>
+#include <QPixmap>
 
 namespace mapviz
 {
@@ -109,6 +111,41 @@ namespace mapviz
         Q_EMIT RightClicked();
       }
     }
+  };
+  
+  class IconWidget : public QWidget
+  {
+    Q_OBJECT
+
+  public:
+    IconWidget(QWidget *parent = 0, Qt::WFlags flags = 0) :
+      QWidget(parent, flags)
+    {
+      pixmap_ = QPixmap(16, 16);
+      pixmap_.fill(Qt::transparent);
+    }
+
+    ~IconWidget() {}
+    
+    void SetPixmap(QPixmap pixmap)
+    {
+      pixmap_ = pixmap;
+      update();
+    }
+
+  protected:
+    virtual void paintEvent(QPaintEvent* e)
+    {
+      QPainter painter(this);
+      painter.fillRect(0, 0, width(), height(), palette().color(QPalette::Button));
+      
+      int x_offset = (width() - pixmap_.width()) / 2.0;
+      int y_offset = (height() - pixmap_.height()) / 2.0;
+      
+      painter.drawPixmap(x_offset, y_offset, pixmap_);
+    }
+    
+    QPixmap pixmap_;
   };
 }
 

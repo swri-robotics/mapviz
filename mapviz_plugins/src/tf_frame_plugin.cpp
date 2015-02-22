@@ -87,6 +87,46 @@ namespace mapviz_plugins
   {
   }
 
+  void TfFramePlugin::DrawIcon()
+  {
+    if (icon_)
+    {
+      QPixmap icon(16, 16);
+      icon.fill(Qt::transparent);
+      
+      QPainter painter(&icon);
+      painter.setRenderHint(QPainter::Antialiasing, true);
+      
+      QPen pen(color_);
+      
+      if (draw_style_ == POINTS)
+      {
+        pen.setWidth(7);
+        pen.setCapStyle(Qt::RoundCap);
+        painter.setPen(pen);
+        painter.drawPoint(8, 8);
+      }
+      else if (draw_style_ == LINES)
+      {
+        pen.setWidth(3);
+        pen.setCapStyle(Qt::FlatCap);
+        painter.setPen(pen);
+        painter.drawLine(1, 14, 14, 1);
+      }
+      else if (draw_style_ == ARROWS)
+      {
+        pen.setWidth(2);
+        pen.setCapStyle(Qt::SquareCap);
+        painter.setPen(pen);
+        painter.drawLine(2, 13, 13, 2);
+        painter.drawLine(13, 2, 13, 8);
+        painter.drawLine(13, 2, 7, 2);
+      }
+      
+      icon_->SetPixmap(icon);
+    }
+  }
+
   void TfFramePlugin::SelectFrame()
   {
     QDialog dialog;
@@ -138,6 +178,7 @@ namespace mapviz_plugins
       draw_style_ = ARROWS;
     }
 
+    DrawIcon();
     canvas_->update();
   }
   
@@ -150,6 +191,7 @@ namespace mapviz_plugins
     {
       color_ = dialog.selectedColor();
       ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
+      DrawIcon();
       canvas_->update();
     }
   }
@@ -255,6 +297,8 @@ namespace mapviz_plugins
     canvas_ = canvas;
 
     timer_ = node_.createTimer(ros::Duration(0.1), &TfFramePlugin::TimerCallback, this);
+
+    DrawIcon();
 
     return true;
   }
