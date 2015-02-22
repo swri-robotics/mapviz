@@ -61,6 +61,8 @@ namespace mapviz
     bool Collapsed() const { return ui_.content->isHidden(); }
     QString Name() const { return name_; }
 
+    Ui::configitem ui_;
+
   Q_SIGNALS:
     void UpdateSizeHint();
     void ToggledDraw(QListWidgetItem* plugin, bool visible);
@@ -71,8 +73,6 @@ namespace mapviz
     void Draw(bool on) { Q_EMIT ToggledDraw(item_, on); }
 
   protected:
-    Ui::configitem ui_;
-
     QListWidgetItem* item_;
     QString name_;
     QString type_;
