@@ -189,13 +189,6 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="2">
-         <widget class="QPushButton" name="blackbox_trigger_btn">
-          <property name="text">
-           <string>BlackBox</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="1" rowspan="2" colspan="2">
          <widget class="QComboBox" name="targetframe">
           <property name="sizePolicy">
@@ -459,7 +452,6 @@
   <tabstop>targetframe</tabstop>
   <tabstop>uselatesttransforms</tabstop>
   <tabstop>bg_color</tabstop>
-  <tabstop>blackbox_trigger_btn</tabstop>
   <tabstop>configs</tabstop>
   <tabstop>addbutton</tabstop>
   <tabstop>removebutton</tabstop>

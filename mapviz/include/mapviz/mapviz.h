@@ -107,7 +107,6 @@ namespace mapviz
     void Force480p(bool on);
     void SetResizable(bool on);
     void SelectBackgroundColor();
-    void BlackBoxTrigger();
     void SetCaptureDirectory();
     void Hover(double x, double y, double scale);
 
@@ -147,10 +146,6 @@ namespace mapviz
     ros::NodeHandle* node_;
     boost::shared_ptr<tf::TransformListener> tf_;
     transform_util::TransformManager tf_manager_;
-
-    ros::Timer blackbox_monitor_timer_;
-    ros::ServiceClient blackbox_trigger_srv_;
-    void BlackBoxTimer(const ros::TimerEvent &event);
 
     pluginlib::ClassLoader<MapvizPlugin>* loader_;
     MapCanvas* canvas_;
