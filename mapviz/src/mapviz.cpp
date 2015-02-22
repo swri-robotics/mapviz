@@ -404,6 +404,21 @@ void Mapviz::Open(const std::string& filename)
 {
   ROS_INFO("Loading configuration from: %s", filename.c_str());
 
+  std::string title;
+  size_t last_slash = filename.find_last_of('/');
+  if (last_slash != std::string::npos && last_slash != filename.size() - 1)
+  {
+    title = filename.substr(last_slash + 1) + " (" +
+            filename.substr(0, last_slash + 1) + ")";
+  }
+  else
+  {
+    title = filename;
+  }
+
+  title += " - mapviz";
+  setWindowTitle(QString::fromStdString(title));
+
   YAML::Node doc;
   if (!yaml_util::LoadFile(filename, doc))
   {
@@ -685,6 +700,22 @@ void Mapviz::SaveConfig()
   if (dialog.result() == QDialog::Accepted && dialog.selectedFiles().count() == 1)
   {
     std::string path = dialog.selectedFiles().first().toStdString();
+    
+    std::string title;
+    size_t last_slash = path.find_last_of('/');
+    if (last_slash != std::string::npos && last_slash != path.size() - 1)
+    {
+      title = path.substr(last_slash + 1) + " (" +
+              path.substr(0, last_slash + 1) + ")";
+    }
+    else
+    {
+      title = path;
+    }
+
+    title += " - mapviz";
+    
+    setWindowTitle(QString::fromStdString(title));
 
     Save(path);
   }
