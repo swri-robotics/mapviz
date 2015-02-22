@@ -566,6 +566,7 @@ void Mapviz::Open(const std::string& filename)
         MapvizPluginPtr plugin =
             CreateNewDisplay(name, type, visible, collapsed);
         plugin->LoadConfig(config, config_path);
+        plugin->DrawIcon();
       }
     }
   }
@@ -807,15 +808,17 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   ROS_INFO("creating: %s", type.c_str());
   MapvizPluginPtr plugin = loader_->createInstance(type.c_str());
+  
+  // Setup configure widget
+  config_item->SetWidget(plugin->GetConfigWidget(this));
+  plugin->SetIcon(config_item->ui_.icon);
+  
   plugin->Initialize(tf_, canvas_);
   plugin->SetType(type.c_str());
   plugin->SetName(name);
   plugin->SetNode(*node_);
   plugin->SetVisible(visible);
   plugin->SetDrawOrder(ui_.configs->count());
-
-  // Setup configure widget
-  config_item->SetWidget(plugin->GetConfigWidget(this));
 
   QString pretty_type(type.c_str());
   pretty_type = pretty_type.split('/').last();

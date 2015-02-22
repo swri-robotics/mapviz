@@ -98,11 +98,38 @@ namespace mapviz_plugins
     frame_timer_.stop();
   }
 
+  void GridPlugin::DrawIcon()
+  {
+    if (icon_)
+    {
+      QPixmap icon(16, 16);
+      icon.fill(Qt::transparent);
+      
+      QPainter painter(&icon);
+      painter.setRenderHint(QPainter::Antialiasing, true);
+      
+      QPen pen(QColor(color_.rgb()));
+      
+      pen.setWidth(2);
+      pen.setCapStyle(Qt::SquareCap);
+      painter.setPen(pen);
+
+      painter.drawLine(2, 2, 14, 2);
+      painter.drawLine(2, 2, 2, 14);
+      painter.drawLine(14, 2, 14, 14);
+      painter.drawLine(2, 14, 14, 14);
+      painter.drawLine(8, 2, 8, 14);
+      painter.drawLine(2, 8, 14, 8);
+      
+      icon_->SetPixmap(icon);
+    }
+  }
+
   void GridPlugin::SetAlpha(double alpha)
   {
     alpha_ = alpha;
     color_.setAlpha(alpha_);
-
+    DrawIcon();
     if (canvas_)
     canvas_->update();
   }
@@ -211,6 +238,8 @@ namespace mapviz_plugins
       color_.setAlpha(alpha_);
       ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
 
+      DrawIcon();
+
       if (canvas_)
       canvas_->update();
     }
@@ -266,6 +295,8 @@ namespace mapviz_plugins
     QObject::connect(&frame_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrames()));
 
     frame_timer_.start(1000);
+    
+    DrawIcon();
 
     return true;
   }
