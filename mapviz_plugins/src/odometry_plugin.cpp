@@ -34,9 +34,10 @@
 #include <vector>
 
 // QT libraries
-#include <QDialog>
 #include <QColorDialog>
+#include <QDialog>
 #include <QGLWidget>
+#include <QPainter>
 #include <QPalette>
 
 #include <opencv2/core/core.hpp>
@@ -90,6 +91,46 @@ namespace mapviz_plugins
   {
   }
 
+  void OdometryPlugin::DrawIcon()
+  {
+    if (icon_)
+    {
+      QPixmap icon(16, 16);
+      icon.fill(Qt::transparent);
+      
+      QPainter painter(&icon);
+      painter.setRenderHint(QPainter::Antialiasing, true);
+      
+      QPen pen(color_);
+      
+      if (draw_style_ == POINTS)
+      {
+        pen.setWidth(7);
+        pen.setCapStyle(Qt::RoundCap);
+        painter.setPen(pen);
+        painter.drawPoint(8, 8);
+      }
+      else if (draw_style_ == LINES)
+      {
+        pen.setWidth(3);
+        pen.setCapStyle(Qt::FlatCap);
+        painter.setPen(pen);
+        painter.drawLine(1, 14, 14, 1);
+      }
+      else if (draw_style_ == ARROWS)
+      {
+        pen.setWidth(2);
+        pen.setCapStyle(Qt::SquareCap);
+        painter.setPen(pen);
+        painter.drawLine(2, 13, 13, 2);
+        painter.drawLine(13, 2, 13, 8);
+        painter.drawLine(13, 2, 7, 2);
+      }
+      
+      icon_->SetPixmap(icon);
+    }
+  }
+
   void OdometryPlugin::SetDrawStyle(QString style)
   {
     if (style == "lines")
@@ -105,6 +146,7 @@ namespace mapviz_plugins
       draw_style_ = ARROWS;
     }
 
+    DrawIcon();
     canvas_->update();
   }
 
@@ -144,6 +186,7 @@ namespace mapviz_plugins
     {
       color_ = dialog.selectedColor();
       ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
+      DrawIcon();
       canvas_->update();
     }
   }
@@ -304,6 +347,8 @@ namespace mapviz_plugins
   bool OdometryPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
+    
+    DrawIcon();
 
     return true;
   }

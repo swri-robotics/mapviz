@@ -109,6 +109,7 @@ namespace mapviz_plugins
   private:
     bool DrawArrows();
     bool TransformPoint(StampedPoint& point);
+    void DrawIcon();
 
     Ui::tf_frame_config ui_;
     QWidget* config_widget_;
