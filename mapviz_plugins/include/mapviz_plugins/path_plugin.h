@@ -81,6 +81,7 @@ namespace mapviz_plugins
     void PrintWarning(const std::string& message);
 
   protected Q_SLOTS:
+    void SelectColor();
     void SelectTopic();
     void TopicEdited();
 
@@ -104,6 +105,7 @@ namespace mapviz_plugins
     float line_width_;
 
     void pathCallback(const nav_msgs::PathConstPtr path);
+    void DrawIcon();
   };
 }
 
