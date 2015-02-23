@@ -36,6 +36,7 @@
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
+#include <QColorDialog>
 
 // ROS libraries
 #include <ros/master.h>
@@ -66,12 +67,60 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
+    QObject::connect(ui_.selectColor, SIGNAL(clicked()), this, SLOT(SelectColor()));
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
   }
 
   PathPlugin::~PathPlugin()
   {
+  }
+
+  void PathPlugin::DrawIcon()
+  {
+    if (icon_)
+    {
+      QPixmap icon(16, 16);
+      icon.fill(Qt::transparent);
+
+      QPainter painter(&icon);
+      painter.setRenderHint(QPainter::Antialiasing, true);
+
+      QPen pen(QColor(color_.rgb()));
+
+      pen.setWidth(2);
+      pen.setCapStyle(Qt::SquareCap);
+      painter.setPen(pen);
+      painter.drawLine(2, 13, 5, 5);
+      painter.drawLine(5, 5, 13, 2);
+
+      pen.setColor(pen.color().darker(200));
+      pen.setWidth(4);
+      pen.setCapStyle(Qt::RoundCap);
+      painter.setPen(pen);
+      painter.drawPoint(2, 13);
+      painter.drawPoint(5, 5);
+      painter.drawPoint(13, 2);
+
+      icon_->SetPixmap(icon);
+    }
+  }
+
+  void PathPlugin::SelectColor()
+  {
+    QColorDialog dialog(color_, config_widget_);
+    dialog.exec();
+
+    if (dialog.result() == QDialog::Accepted)
+    {
+      color_ = dialog.selectedColor();
+      ui_.selectColor->setStyleSheet("background: " + color_.name() + ";");
+
+      DrawIcon();
+
+      if (canvas_)
+      canvas_->update();
+    }
   }
 
   void PathPlugin::SelectTopic()
@@ -196,6 +245,8 @@ namespace mapviz_plugins
   {
     canvas_ = canvas;
 
+    DrawIcon();
+
     return true;
   }
 
@@ -264,6 +315,15 @@ namespace mapviz_plugins
     node["topic"] >> topic;
     ui_.topic->setText(topic.c_str());
 
+    if (yaml_util::FindValue(node, "color"))
+    {
+      std::string color;
+      node["color"] >> color;
+      color_ = QColor(color.c_str());
+    }
+
+    ui_.selectColor->setStyleSheet("background: " + color_.name() + ";");
+
     TopicEdited();
   }
 
@@ -271,6 +331,9 @@ namespace mapviz_plugins
   {
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;
+
+    std::string color = color_.name().toStdString();
+    emitter << YAML::Key << "color" << YAML::Value << color;
   }
 }
 
