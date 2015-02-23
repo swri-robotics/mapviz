@@ -70,5 +70,21 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>displaylist</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>pluginselect</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>162</x>
+     <y>114</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>209</x>
+     <y>294</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>
