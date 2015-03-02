@@ -19,6 +19,9 @@ add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
 
+# Fix conflict between Boost signals used by tf and QT signals used by mapviz
+add_definitions(-DQT_NO_KEYWORDS)
+
 rosbuild_add_boost_directories()
 
 file (GLOB TILE_SRC_FILES 
