@@ -111,6 +111,8 @@ namespace mapviz_plugins
       float scale_y;
       float scale_z;
 
+      transform_util::Transform local_transform;
+      
       bool transformed;
     };
 
