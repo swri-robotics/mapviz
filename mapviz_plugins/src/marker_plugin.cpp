@@ -167,6 +167,29 @@ namespace mapviz_plugins
       markerData.scale_z = marker->scale.z;
       markerData.transformed = true;
 
+
+      // Since orientation was not implemented, many markers publish
+      // invalid all-zero orientations, so we need to check for this
+      // and provide a default identity transform.
+      tf::Quaternion orientation(0.0, 0.0, 0.0, 1.0);      
+      if (marker->pose.orientation.x ||
+          marker->pose.orientation.y ||
+          marker->pose.orientation.z ||
+          marker->pose.orientation.w)
+      {
+        orientation = tf::Quaternion(marker->pose.orientation.x,
+                                     marker->pose.orientation.y,
+                                     marker->pose.orientation.z,
+                                     marker->pose.orientation.w);
+      }
+      
+      markerData.local_transform =  transform_util::Transform(
+        tf::Transform(
+          orientation,
+          tf::Vector3(marker->pose.position.x,
+                      marker->pose.position.y,
+                      marker->pose.position.z)));
+
       markerData.points.clear();
       markerData.text = std::string();
 
@@ -189,17 +212,12 @@ namespace mapviz_plugins
         markerData.expire_time = ros::Time::now() + lifetime + ros::Duration(5);
       }
 
-      // TODO(malban): correctly transform points based on the pose
-      double x = marker->pose.position.x;
-      double y = marker->pose.position.y;
-      double z = marker->pose.position.z;
-
       if (markerData.display_type == visualization_msgs::Marker::CYLINDER ||
           markerData.display_type == visualization_msgs::Marker::CUBE)
       {
         StampedPoint point;
-        point.point = tf::Point(x, y, z);
-        point.transformed_point = transform * point.point;
+        point.point = tf::Point(0.0, 0.0, 0.0);
+        point.transformed_point = transform * (markerData.local_transform * point.point);
         point.color = markerData.color;
 
         markerData.points.push_back(point);
@@ -207,8 +225,8 @@ namespace mapviz_plugins
       else if (markerData.display_type == visualization_msgs::Marker::TEXT_VIEW_FACING)
       {
         StampedPoint point;
-        point.point = tf::Point(x, y, z);
-        point.transformed_point = transform * point.point;
+        point.point = tf::Point(0.0, 0.0, 0.0);
+        point.transformed_point = transform * (markerData.local_transform * point.point);
         point.color = markerData.color;
 
         markerData.points.push_back(point);
@@ -219,8 +237,8 @@ namespace mapviz_plugins
         for (unsigned int i = 0; i < marker->points.size(); i++)
         {
           StampedPoint point;
-          point.point = tf::Point(marker->points[i].x + x, marker->points[i].y + y, marker->points[i].z + z);
-          point.transformed_point = transform * point.point;
+          point.point = tf::Point(marker->points[i].x, marker->points[i].y, marker->points[i].z);
+          point.transformed_point = transform * (markerData.local_transform * point.point);
 
           if (i < marker->colors.size())
           {
@@ -520,7 +538,7 @@ namespace mapviz_plugins
           std::list<StampedPoint>::iterator point_it = marker.points.begin();
           for (; point_it != marker.points.end(); ++point_it)
           {
-            point_it->transformed_point = transform * point_it->point;
+            point_it->transformed_point = transform * (marker.local_transform * point_it->point);
           }
         }
         else
