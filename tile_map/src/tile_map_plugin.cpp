@@ -243,4 +243,3 @@ namespace tile_map
     emitter << YAML::Key << "source" << YAML::Value << boost::trim_copy(ui_.source_combo->currentText().toStdString());
   }
 }
-
