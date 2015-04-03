@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+
+"""
+This is a ROS node that publishes visualization_msgs/Marker messages
+for Mapviz development and testing.
+"""
+import roslib
+roslib.load_manifest('mapviz_plugins')
+import rospy
+
+import geometry_msgs as gm
+import geometry_msgs.msg 
+import visualization_msgs as vm
+import visualization_msgs.msg
+
+
+class MarkerGenerator(object):
+    def __init__(self):
+        rospy.init_node('marker_generator')
+
+        self.marker_pub = rospy.Publisher('marker', vm.msg.Marker)
+
+        self.update_timer = rospy.Timer(rospy.Duration(0.1),
+                                        self.timer_callback)
+
+    def run(self):
+        rospy.spin()
+
+    def timer_callback(self, event):
+        self.marker_pub.publish(self.make_square_marker('item A', (1.0, 1.0)))
+        self.marker_pub.publish(self.make_square_marker('item B', (3.0, 1.0)))
+        self.marker_pub.publish(self.make_square_marker('item C', (5.0, 1.0)))
+        self.marker_pub.publish(self.make_square_marker('item D', (1.0, 3.0)))
+        self.marker_pub.publish(self.make_square_marker('item E', (3.0, 3.0)))
+        self.marker_pub.publish(self.make_square_marker('item F', (5.0, 3.0)))
+        self.marker_pub.publish(self.make_square_marker('item G', (1.0, 5.0)))
+        self.marker_pub.publish(self.make_square_marker('item H', (3.0, 5.0)))
+        self.marker_pub.publish(self.make_square_marker('item I', (5.0, 5.0)))
+
+    def make_square_marker(self, name, position):
+        msg = vm.msg.Marker()
+        msg.header.stamp = rospy.Time.now()
+        msg.header.frame_id = '/map'
+        msg.ns = name
+        msg.id = 0
+        msg.action = vm.msg.Marker.ADD
+        
+        msg.pose.position.x = position[0]
+        msg.pose.position.y = position[1]
+        msg.pose.position.z = 0.0
+
+        msg.pose.orientation.x = 0.0
+        msg.pose.orientation.y = 0.0
+        msg.pose.orientation.z = 0.0
+        msg.pose.orientation.w = 1.0
+
+        msg.scale.x = 1.0
+        msg.scale.y = 1.0
+        msg.scale.z = 1.0
+
+        msg.color.r = 0.0
+        msg.color.g = 0.0
+        msg.color.b = 0.0
+        msg.color.a = 1.0
+
+        msg.lifetime = rospy.Duration(0)
+
+        msg.frame_locked = False
+
+        msg.type = vm.msg.Marker.LINE_STRIP
+
+        msg.points.extend([
+            gm.msg.Point(0.0, 0.0, 0.0),
+            gm.msg.Point(1.0, 0.0, 0.0),
+            gm.msg.Point(1.0, 1.0, 0.0),
+            gm.msg.Point(0.0, 1.0, 0.0),
+            gm.msg.Point(0.0, 0.0, 0.0),
+            ])
+        return msg
+
+
+if __name__ == '__main__':
+    node = MarkerGenerator()
+    node.run()
+    

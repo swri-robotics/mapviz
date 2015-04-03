@@ -238,10 +238,45 @@ namespace mapviz_plugins
           markerData.points.push_back(point);
         }
       }
+
+      if (!visibility_.count(marker->ns)) {
+        visibility_[marker->ns].visible = true;
+        visibility_[marker->ns].item = NULL;
+      }
+
+      if (!visibility_[marker->ns].item) {
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setText(QString::fromStdString(marker->ns));
+        if (visibility_[marker->ns].visible) {
+          item->setCheckState(Qt::Checked);
+        } else {
+          item->setCheckState(Qt::Unchecked);
+        }
+        QObject::connect(ui_.markerList,
+                         SIGNAL(itemChanged(QListWidgetItem*)), this,
+                         SLOT(MarkerEdited(QListWidgetItem*)));
+
+        visibility_[marker->ns].item = item;
+        ui_.markerList->addItem(item);
+      }
     }
     else
     {
       markers_[marker->ns].erase(marker->id);
+
+      if (visibility_.count(marker->ns) && visibility_[marker->ns].item) {
+        int row = ui_.markerList->row(visibility_[marker->ns].item);
+        QListWidgetItem *item = ui_.markerList->takeItem(row);
+        if (!item || item != visibility_[marker->ns].item) {
+          ROS_ERROR("Invalid row %d for marker list item.", row);
+        } else {
+          delete visibility_[marker->ns].item;
+          visibility_[marker->ns].item = NULL;
+        }
+        // Note: We do not delete the namespace from the visibility
+        // list because we want the user's choice to persist between
+        // DEL/ADD cycles and between mapviz sessions.
+      }
     }
 
     canvas_->update();
@@ -312,6 +347,12 @@ namespace mapviz_plugins
     std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
+      if (!visibility_.count(nsIter->first)) {
+        ROS_WARN("Namespace %s not in visiblity list!", nsIter->first.c_str());
+      } else if (!visibility_[nsIter->first].visible) {
+        continue;
+      }
+
       std::map<int, MarkerData>::iterator markerIter;
       for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
@@ -539,6 +580,8 @@ namespace mapviz_plugins
 
     node["is_marker_array"] >> is_marker_array_;
 
+    LoadVisibilityConfig(node);
+
     TopicEdited();
   }
 
@@ -546,6 +589,58 @@ namespace mapviz_plugins
   {
     emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
     emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;
+
+    SaveVisibilityConfig(emitter);
+  }
+
+  void MarkerPlugin::MarkerEdited(QListWidgetItem *item)
+  {
+    std::string ns = item->text().toStdString();
+    if (!visibility_.count(ns)) {
+      ROS_ERROR("Could not find visibility entry for '%s'", ns.c_str());
+      return;
+    }
+
+    visibility_[ns].visible = (item->checkState() == Qt::Checked);
+  }
+
+  void MarkerPlugin::LoadVisibilityConfig(const YAML::Node& top_node)
+  {
+    if (!top_node.FindValue("visible_items")) {
+      return;
+    }
+
+    const YAML::Node& node = top_node["visible_items"];
+
+    if (node.Type() != YAML::NodeType::Map) {
+      ROS_WARN("Unexpected YAML type for visible items: %d", node.Type());
+      return;
+    }
+
+    for (YAML::Iterator it = node.begin(); it != node.end(); ++it) {
+      visibility_[it.first().to<std::string>()].visible = it.second().to<bool>();
+      visibility_[it.first().to<std::string>()].item = NULL;
+    }
+  }
+
+  void MarkerPlugin::SaveVisibilityConfig(YAML::Emitter& emitter)
+  {
+    emitter << YAML::Key << "visible_items";
+    emitter << YAML::Value << YAML::BeginMap;
+
+    for (std::map<std::string, MarkerListItem>::iterator it = visibility_.begin();
+         it != visibility_.end();
+         ++it)
+    {
+      if (!it->second.visible) {
+        // Since the plugin will make new markers by default, we can
+        // keep the config file from getting too cluttered by only
+        // saving the hidden items.
+        emitter << YAML::Key << it->first << YAML::Value << it->second.visible;
+      }
+    }
+
+    emitter << YAML::EndMap;
   }
 }
 
