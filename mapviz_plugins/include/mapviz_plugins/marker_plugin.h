@@ -87,6 +87,7 @@ namespace mapviz_plugins
   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
+    void MarkerEdited(QListWidgetItem *item);
 
   private:
     struct StampedPoint
@@ -126,12 +127,28 @@ namespace mapviz_plugins
 
     std::map<std::string, std::map<int, MarkerData> > markers_;
 
+    struct MarkerListItem
+    {
+      bool visible;
+      QListWidgetItem *item;
+
+      MarkerListItem() :
+        visible(true),
+        item(NULL)
+      {}
+    };
+    std::map<std::string, MarkerListItem> visibility_;
+
     bool is_marker_array_;
 
     void markerCallback(const visualization_msgs::MarkerConstPtr odometry);
 
     void markerArrayCallback(
       const visualization_msgs::MarkerArrayConstPtr markers);
+
+    void LoadVisibilityConfig(const YAML::Node& top_node);
+    void SaveVisibilityConfig(YAML::Emitter& emitter);
+    void ResetVisibility();
   };
 }
 
