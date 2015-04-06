@@ -146,6 +146,7 @@ namespace mapviz_plugins
 
     void LoadVisibilityConfig(const YAML::Node& top_node);
     void SaveVisibilityConfig(YAML::Emitter& emitter);
+    void ResetVisibility();
   };
 }
 

@@ -143,6 +143,8 @@ namespace mapviz_plugins
         marker_sub_ = node_.subscribe(topic_, 100, &MarkerPlugin::markerCallback, this);
       }
 
+      ResetVisibility();
+
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
@@ -641,6 +643,12 @@ namespace mapviz_plugins
     }
 
     emitter << YAML::EndMap;
+  }
+
+  void MarkerPlugin::ResetVisibility()
+  {
+    ui_.markerList->clear();
+    visibility_.clear();
   }
 }
 
