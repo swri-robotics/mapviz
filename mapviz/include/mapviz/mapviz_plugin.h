@@ -70,7 +70,17 @@ namespace mapviz
 
     virtual void Shutdown() = 0;
 
+    /**
+     * Draws on a surface using native OpenGL commands.
+     */
+
     virtual void Draw(double x, double y, double scale) = 0;
+
+    /**
+     * Draws on a surface using a QPainter; this occurs after all
+     * OpenGL drawing is done.
+     */
+    virtual void Paint(QPainter* painter, double x, double y, double scale) {};
 
     void SetUseLatestTransforms(bool value)
     {
@@ -104,6 +114,16 @@ namespace mapviz
         Transform();
 
         Draw(x, y, scale);
+      }
+    }
+
+    void PaintPlugin(QPainter* painter, double x, double y, double scale)
+    {
+      if( visible_ && initialized_)
+      {
+        Transform();
+
+        Paint(painter, x, y, scale);
       }
     }
 
