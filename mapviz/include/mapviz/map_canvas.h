@@ -75,7 +75,6 @@ namespace mapviz
     void ToggleUseLatestTransforms(bool on);
     void UpdateView();
     void ReorderDisplays();
-    QPointF MapScreenToGlPoint(const QPointF& screenPoint) const;
 
     float ViewScale() const { return view_scale_; }
     float OffsetX() const { return offset_x_; }
@@ -104,13 +103,13 @@ namespace mapviz
       bg_color_ = color;
       update();
     }
-    
+
     void CaptureFrames(bool enabled)
     {
       capture_frames_ = enabled;
       update();
     }
-    
+
     bool CopyCaptureBuffer(std::vector<uint8_t>& buffer)
     {
       buffer.clear();
@@ -118,15 +117,32 @@ namespace mapviz
       {
         buffer.resize(capture_buffer_.size());
         memcpy(&buffer[0], &capture_buffer_[0], buffer.size());
-        
+
         return true;
       }
-      
+
       return false;
     }
 
     void CaptureFrame(bool force = false);
-    
+
+    /**
+     * Maps the location of a pixel in the GUI to a coordinate in the GL scene.
+     * Note that it's important for this to be defined in the header rather than
+     * in the CPP file; that makes it possible to create a library that provides
+     * a Mapviz plugin that uses this, and it will be possible to also link that
+     * library into applications other than Mapviz.
+     */
+    QPointF MapScreenToGlPoint(const QPointF& screenPoint) const{
+      bool transformable = false;
+      QPointF tfPoint = qtransform_.inverted(&transformable).map(screenPoint);
+      if (!transformable)
+      {
+        qWarning("Matrix was not transformable.");
+      }
+      return tfPoint;
+    };
+
   Q_SIGNALS:
     void Hover(double x, double y, double scale);
 

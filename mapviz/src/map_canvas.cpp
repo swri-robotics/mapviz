@@ -447,17 +447,4 @@ void MapCanvas::Recenter()
   view_right_ = (width() * view_scale_ * 0.5);
   view_bottom_ = (height() * view_scale_ * 0.5);
 }
-
-QPointF MapCanvas::MapScreenToGlPoint(const QPointF& screenPoint) const
-{
-  {
-    bool transformable = false;
-    QPointF tfPoint = qtransform_.inverted(&transformable).map(screenPoint);
-    if (!transformable)
-    {
-      qWarning("Matrix was not transformable.");
-    }
-    return tfPoint;
-  }
-}
 }
