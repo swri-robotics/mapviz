@@ -17,8 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   transform_util
   math_util
   image_util
-  yaml_util
-  build_tools)
+  yaml_util)
 
 find_package(Qt4 REQUIRED)
 
@@ -46,13 +45,6 @@ catkin_package(
     image_util
     yaml_util
 )
-
-execute_process(
-  COMMAND rospack find build_tools
-  ERROR_VARIABLE __null
-  OUTPUT_VARIABLE build_tools_PACKAGE_PATH
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
-include(${build_tools_PACKAGE_PATH}/scripts/build_common.cmake)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
