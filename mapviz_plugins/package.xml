@@ -29,7 +29,6 @@
   <depend>image_util</depend>
   <depend>transform_util</depend>
   <depend>yaml_util</depend>
-  <depend>build_tools</depend>
   <depend>libqt4-dev</depend>
   <depend>qt4-qmake</depend>
 

@@ -19,7 +19,6 @@
   <depend>transform_util</depend>
   <depend>math_util</depend>
   <depend>yaml_util</depend>
-  <depend>build_tools</depend>
   <depend>opencv2</depend>
 
 </package>
