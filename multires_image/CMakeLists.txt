@@ -6,8 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib 
   tf 
   transform_util 
-  math_util 
-  build_tools)
+  math_util)
 
 find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
@@ -19,13 +18,6 @@ catkin_package(
   DEPENDS libqt4
   CATKIN_DEPENDS roscpp pluginlib tf transform_util yaml_util
 )
-
-execute_process(
-  COMMAND rospack find build_tools
-  ERROR_VARIABLE __null
-  OUTPUT_VARIABLE build_tools_PACKAGE_PATH
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
-include(${build_tools_PACKAGE_PATH}/scripts/build_common.cmake)
 
 include(${QT_USE_FILE})
 include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
