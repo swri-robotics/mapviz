@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>multires_image</name>
   <version>0.0.1</version>
   <description>
@@ -13,23 +13,15 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
-  <build_depend>pluginlib</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>transform_util</build_depend>
-  <build_depend>math_util</build_depend>
-  <build_depend>yaml_util</build_depend>
-  <build_depend>build_tools</build_depend>
-  <build_depend>opencv2</build_depend>
-  
-  <run_depend>roscpp</run_depend>
-  <run_depend>pluginlib</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>transform_util</run_depend>
-  <run_depend>math_util</run_depend>
-  <run_depend>yaml_util</run_depend>
-  <run_depend>opencv2</run_depend>
-  
+  <depend>roscpp</depend>
+  <depend>pluginlib</depend>
+  <depend>tf</depend>
+  <depend>transform_util</depend>
+  <depend>math_util</depend>
+  <depend>yaml_util</depend>
+  <depend>build_tools</depend>
+  <depend>opencv2</depend>
+
 </package>
 
 
