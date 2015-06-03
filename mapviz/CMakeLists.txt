@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.4.6)
 project(mapviz)
 
-find_package(catkin REQUIRED COMPONENTS roscpp pluginlib tf transform_util yaml_util build_tools)
+find_package(catkin REQUIRED COMPONENTS roscpp pluginlib tf transform_util yaml_util)
 
 find_package(Boost REQUIRED system filesystem)
 find_package(OpenCV REQUIRED)
@@ -20,13 +20,6 @@ catkin_package(
   DEPENDS libqt4
   CATKIN_DEPENDS roscpp pluginlib tf transform_util yaml_util
 )
-
-execute_process(
-  COMMAND rospack find build_tools
-  ERROR_VARIABLE __null
-  OUTPUT_VARIABLE build_tools_PACKAGE_PATH
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
-include(${build_tools_PACKAGE_PATH}/scripts/build_common.cmake)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
