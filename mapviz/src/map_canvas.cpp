@@ -344,14 +344,16 @@ void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
 void MapCanvas::TransformTarget(QPainter* painter)
 {
   glTranslatef(offset_x_ + drag_x_, offset_y_ + drag_y_, 0);
-  QTransform qTransform = qtransform_.translate(offset_x_ + drag_x_,
-                                                -(offset_y_ + drag_y_));
+  // The y-axis on QPainter is inverted from a GL drawing surface, so take that into account.
+  qtransform_ = qtransform_.translate(offset_x_ + drag_x_, -(offset_y_ + drag_y_ ));
 
   view_center_x_ = -offset_x_ - drag_x_;
   view_center_y_ = -offset_y_ - drag_y_;
 
   if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
+  {
     return;
+  }
 
   try
   {
@@ -363,11 +365,11 @@ void MapCanvas::TransformTarget(QPainter* painter)
     if (!fix_orientation_)
     {
       glRotatef(-yaw * 57.2957795, 0, 0, 1);
-      qTransform = qTransform.rotateRadians(yaw);
+      qtransform_ = qtransform_.rotateRadians(yaw);
     }
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
-    qTransform = qTransform.translate(-transform_.getOrigin().getX(), transform_.getOrigin().getY());
+    qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(), transform_.getOrigin().getY());
 
     tf::Point point(view_center_x_, view_center_y_, 0);
 
@@ -382,9 +384,11 @@ void MapCanvas::TransformTarget(QPainter* painter)
     view_center_x_ = center.getX();
     view_center_y_ = center.getY();
 
-    painter->setWorldTransform(qTransform, false);
-    qtransform_ = painter->worldTransform();
-    
+    // After we've mimicked all of the GL transformations, flip the QPainter vertically
+    // so the coordinate systems match.
+    qtransform_ = qtransform_.scale(1, -1);
+    painter->setWorldTransform(qtransform_, false);
+
     if (mouse_hovering_)
     {
       double center_x = -offset_x_ - drag_x_;
