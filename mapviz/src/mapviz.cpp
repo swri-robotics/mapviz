@@ -241,7 +241,6 @@ void Mapviz::UpdateFrames()
   }
 
   updating_frames_ = true;
-  ROS_INFO("Updating frames...");
 
   std::string current_fixed = ui_.fixedframe->currentText().toStdString();
 
@@ -589,7 +588,6 @@ void Mapviz::Open(const std::string& filename)
 
 void Mapviz::Save(const std::string& filename)
 {
-  ROS_INFO("Saving configuration to: %s", filename.c_str());
   std::ofstream fout(filename.c_str());
   if (fout.fail())
   {
