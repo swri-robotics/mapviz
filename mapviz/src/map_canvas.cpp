@@ -378,19 +378,19 @@ void MapCanvas::TransformTarget()
   }
   catch (const tf::LookupException& e)
   {
-    ROS_ERROR("%s", e.what());
+    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
   }
   catch (const tf::ConnectivityException& e)
   {
-    ROS_ERROR("%s", e.what());
+    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
   }
   catch (const tf::ExtrapolationException& e)
   {
-    ROS_ERROR("%s", e.what());
+    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
   }
   catch (...)
   {
-    ROS_ERROR("Error looking up transform");
+    ROS_ERROR_THROTTLE(2.0, "Error looking up transform");
   }
 }
 
