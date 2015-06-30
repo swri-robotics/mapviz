@@ -71,6 +71,7 @@ namespace mapviz
     void SetFixedFrame(const std::string& frame);
     void SetTargetFrame(const std::string& frame);
     void ToggleFixOrientation(bool on);
+    void ToggleRotate90(bool on);
     void ToggleUseLatestTransforms(bool on);
     void UpdateView();
     void ReorderDisplays();
@@ -151,6 +152,7 @@ namespace mapviz
 
     bool initialized_;
     bool fix_orientation_;
+    bool rotate_90_;
 
     QColor bg_color_;
 
