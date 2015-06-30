@@ -54,6 +54,7 @@
      <string>&amp;View</string>
     </property>
     <addaction name="actionFix_Orientation"/>
+    <addaction name="actionRotate_90"/>
     <addaction name="separator"/>
     <addaction name="actionForce_720p"/>
     <addaction name="actionForce_480p"/>
@@ -437,6 +438,17 @@
    </property>
    <property name="statusTip">
     <string>Show the capture tools on the status bar</string>
+   </property>
+  </action>
+  <action name="actionRotate_90">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Rotate 90°</string>
+   </property>
+   <property name="statusTip">
+    <string>Rotate the camera by 90 degrees</string>
    </property>
   </action>
  </widget>
