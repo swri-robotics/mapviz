@@ -183,18 +183,25 @@ void MapCanvas::CaptureFrame(bool force)
   }
 }
 
-void MapCanvas::paintGL()
+void MapCanvas::paintEvent(QPaintEvent* event)
 {
   if (capture_frames_)
   {
     CaptureFrame();
   }
-  
+
+  QPainter p(this);
+  p.beginNativePainting();
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+
   glClearColor(bg_color_.redF(), bg_color_.greenF(), bg_color_.blueF(), 1.0f);
+
+  UpdateView();
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glPushMatrix();
-  TransformTarget();
+  TransformTarget(&p);
 
   // Draw test pattern
   glLineWidth(3);
@@ -216,7 +223,15 @@ void MapCanvas::paintGL()
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
   }
 
+  glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
+  p.endNativePainting();
+
+  // Now we can paint over the OpenGL layer
+  for (it = plugins_.begin(); it != plugins_.end(); ++it)
+  {
+    (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
+  }
 }
 
 void MapCanvas::wheelEvent(QWheelEvent* e)
@@ -332,15 +347,22 @@ void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
   update();
 }
 
-void MapCanvas::TransformTarget()
+void MapCanvas::TransformTarget(QPainter* painter)
 {
   glTranslatef(offset_x_ + drag_x_, offset_y_ + drag_y_, 0);
+  // In order to ensure that objects drawn using a QPainter are transformed in the
+  // same way as object drawn using OpenGL commands, we have to mimic the
+  // transformations.
+  // The y-axis on QPainter is inverted from a GL drawing surface, so take that into account.
+  qtransform_ = qtransform_.translate(offset_x_ + drag_x_, -(offset_y_ + drag_y_ ));
 
   view_center_x_ = -offset_x_ - drag_x_;
   view_center_y_ = -offset_y_ - drag_y_;
 
   if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
+  {
     return;
+  }
 
   try
   {
@@ -352,14 +374,18 @@ void MapCanvas::TransformTarget()
     if (!fix_orientation_)
     {
       glRotatef(-yaw * 57.2957795, 0, 0, 1);
+      // Rotations in Qt transforms go the opposite direction from OpenGL.
+      qtransform_ = qtransform_.rotateRadians(yaw);
     }
-    
+
     if (rotate_90_)
     {
       glRotatef(90, 0, 0, 1);
+      qtransform_ = qtransform_.rotate(-90);
     }
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
+    qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(), transform_.getOrigin().getY());
 
     tf::Point point(view_center_x_, view_center_y_, 0);
 
@@ -373,7 +399,12 @@ void MapCanvas::TransformTarget()
 
     view_center_x_ = center.getX();
     view_center_y_ = center.getY();
-    
+
+    // After we've mimicked all of the GL transformations, flip the QPainter vertically
+    // so the coordinate systems match.
+    qtransform_ = qtransform_.scale(1, -1);
+    painter->setWorldTransform(qtransform_, false);
+
     if (mouse_hovering_)
     {
       double center_x = -offset_x_ - drag_x_;
@@ -415,6 +446,9 @@ void MapCanvas::UpdateView()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(view_left_, view_right_, view_top_, view_bottom_, -0.5f, 0.5f);
+
+    qtransform_ = QTransform::fromTranslate(width() / 2.0, height() / 2.0).
+          scale(1.0 / view_scale_, 1.0 / view_scale_);
 
     update();
   }
