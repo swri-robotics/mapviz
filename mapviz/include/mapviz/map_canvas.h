@@ -46,6 +46,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QColor>
+#include <QTransform>
 
 // ROS libraries
 #include <ros/ros.h>
@@ -103,13 +104,13 @@ namespace mapviz
       bg_color_ = color;
       update();
     }
-    
+
     void CaptureFrames(bool enabled)
     {
       capture_frames_ = enabled;
       update();
     }
-    
+
     bool CopyCaptureBuffer(std::vector<uint8_t>& buffer)
     {
       buffer.clear();
@@ -117,22 +118,39 @@ namespace mapviz
       {
         buffer.resize(capture_buffer_.size());
         memcpy(&buffer[0], &capture_buffer_[0], buffer.size());
-        
+
         return true;
       }
-      
+
       return false;
     }
-    
+
     void CaptureFrame(bool force = false);
-    
+
+    /**
+     * Maps the location of a pixel in the GUI to a coordinate in the GL scene.
+     * Note that it's important for this to be defined in the header rather than
+     * in the CPP file; that makes it possible to create a library that provides
+     * a Mapviz plugin that uses this, and it will be possible to also link that
+     * library into applications other than Mapviz.
+     */
+    QPointF MapScreenToGlPoint(const QPointF& screenPoint) const{
+      bool transformable = false;
+      QPointF tfPoint = qtransform_.inverted(&transformable).map(screenPoint);
+      if (!transformable)
+      {
+        qWarning("Matrix was not transformable.");
+      }
+      return tfPoint;
+    };
+
   Q_SIGNALS:
     void Hover(double x, double y, double scale);
 
   protected:
     void initializeGL();
     void resizeGL(int w, int h);
-    void paintGL();
+    void paintEvent(QPaintEvent* event);
     void wheelEvent(QWheelEvent* e);
     void mousePressEvent(QMouseEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
@@ -140,7 +158,7 @@ namespace mapviz
     void leaveEvent(QEvent* e);
 
     void Recenter();
-    void TransformTarget();
+    void TransformTarget(QPainter* painter);
 
     void InitializePixelBuffers();
 
@@ -196,6 +214,7 @@ namespace mapviz
 
     boost::shared_ptr<tf::TransformListener> tf_;
     tf::StampedTransform transform_;
+    QTransform qtransform_;
     std::list<MapvizPluginPtr> plugins_;
     
     std::vector<uint8_t> capture_buffer_;
