@@ -5,7 +5,7 @@ Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in s
 
 ![](https://github.com/swri-robotics/mapviz/wiki/mapviz_features.png)
 
-Mapviz currently depends on the [marti_common](https://github.com/swri-robotics/marti_common), [marti_messages](https://github.com/swri-robotics/marti_messages), and [lapackpp](https://github.com/swri-robotics/lapackpp) repositories for some utility functions and message definitions.
+Mapviz currently depends on the [marti_common](https://github.com/swri-robotics/marti_common) and  [marti_messages](https://github.com/swri-robotics/marti_messages) repositories for some utility functions and message definitions.
 
 Mapviz should be compatible with Ubuntu 12.04 through Ubuntu 14.04 and ROS Fuerte, Groovy, Hydro, and Indigo.  The *master* branch uses the [rosbuild](http://wiki.ros.org/rosbuild) make system and the *catkin* branch uses [catkin](http://wiki.ros.org/catkin).
 
