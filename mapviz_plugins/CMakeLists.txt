@@ -42,33 +42,33 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 file (GLOB UI_FILES src/*.ui)
 
 file (GLOB SRC_FILES 
-	src/multires_image_plugin.cpp 
-	src/image_plugin.cpp
-	src/disparity_plugin.cpp 
-	src/multires_view.cpp 
-	src/odometry_plugin.cpp 
-	src/marker_plugin.cpp 
-	src/grid_plugin.cpp
-	src/path_plugin.cpp
-	src/textured_marker_plugin.cpp
-	src/tf_frame_plugin.cpp
-	src/robot_image_plugin.cpp
+    src/multires_image_plugin.cpp 
+    src/image_plugin.cpp
+    src/disparity_plugin.cpp 
+    src/multires_view.cpp 
+    src/odometry_plugin.cpp 
+    src/marker_plugin.cpp 
+    src/grid_plugin.cpp
+    src/path_plugin.cpp
+    src/textured_marker_plugin.cpp
+    src/tf_frame_plugin.cpp
+    src/robot_image_plugin.cpp
     src/gps_plugin.cpp)
-	
+    
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 
 QT4_WRAP_CPP(SRC_FILES 
-	include/mapviz_plugins/multires_image_plugin.h 
-	include/mapviz_plugins/image_plugin.h
-	include/mapviz_plugins/disparity_plugin.h
-	include/mapviz_plugins/odometry_plugin.h 
-	include/mapviz_plugins/marker_plugin.h 
-	include/mapviz_plugins/grid_plugin.h
-	include/mapviz_plugins/path_plugin.h
-	include/mapviz_plugins/textured_marker_plugin.h
-	include/mapviz_plugins/tf_frame_plugin.h
-	include/mapviz_plugins/robot_image_plugin.h
-	include/mapviz_plugins/gps_plugin.h)
+    include/mapviz_plugins/multires_image_plugin.h 
+    include/mapviz_plugins/image_plugin.h
+    include/mapviz_plugins/disparity_plugin.h
+    include/mapviz_plugins/odometry_plugin.h 
+    include/mapviz_plugins/marker_plugin.h 
+    include/mapviz_plugins/grid_plugin.h
+    include/mapviz_plugins/path_plugin.h
+    include/mapviz_plugins/textured_marker_plugin.h
+    include/mapviz_plugins/tf_frame_plugin.h
+    include/mapviz_plugins/robot_image_plugin.h
+    include/mapviz_plugins/gps_plugin.h)
 
 rosbuild_add_library(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY})
