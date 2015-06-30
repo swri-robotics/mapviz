@@ -728,6 +728,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionRotate_90</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleRotate90(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectNewDisplay()</slot>
@@ -747,5 +763,6 @@
   <slot>SetCaptureDirectory()</slot>
   <slot>ToggleStatusBar(bool)</slot>
   <slot>ToggleCaptureTools(bool)</slot>
+  <slot>ToggleRotate90(bool)</slot>
  </slots>
 </ui>
