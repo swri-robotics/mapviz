@@ -303,6 +303,12 @@ void MapCanvas::ToggleFixOrientation(bool on)
   update();
 }
 
+void MapCanvas::ToggleRotate90(bool on)
+{
+  rotate_90_ = on;
+  update();
+}
+
 void MapCanvas::ToggleUseLatestTransforms(bool on)
 {
   std::list<MapvizPluginPtr>::iterator it;
@@ -346,6 +352,11 @@ void MapCanvas::TransformTarget()
     if (!fix_orientation_)
     {
       glRotatef(-yaw * 57.2957795, 0, 0, 1);
+    }
+    
+    if (rotate_90_)
+    {
+      glRotatef(90, 0, 0, 1);
     }
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);

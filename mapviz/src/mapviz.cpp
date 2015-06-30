@@ -447,6 +447,13 @@ void Mapviz::Open(const std::string& filename)
       doc["fix_orientation"] >> fix_orientation;
       ui_.actionFix_Orientation->setChecked(fix_orientation);
     }
+    
+    if (yaml_util::FindValue(doc, "rotate_90"))
+    {
+      bool rotate_90 = false;
+      doc["rotate_90"] >> rotate_90;
+      ui_.actionRotate_90->setChecked(rotate_90);
+    }
 
     if (yaml_util::FindValue(doc, "show_displays"))
     {
@@ -605,6 +612,7 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "fixed_frame" << YAML::Value << ui_.fixedframe->currentText().toStdString();
   out << YAML::Key << "target_frame" << YAML::Value << ui_.targetframe->currentText().toStdString();
   out << YAML::Key << "fix_orientation" << YAML::Value << ui_.actionFix_Orientation->isChecked();
+  out << YAML::Key << "rotate_90" << YAML::Value << ui_.actionRotate_90->isChecked();
   out << YAML::Key << "show_displays" << YAML::Value << ui_.actionConfig_Dock->isChecked();
   out << YAML::Key << "show_status_bar" << YAML::Value << ui_.actionShow_Status_Bar->isChecked();
   out << YAML::Key << "show_capture_tools" << YAML::Value << ui_.actionShow_Capture_Tools->isChecked();
@@ -909,6 +917,11 @@ void Mapviz::ToggleUseLatestTransforms(bool on)
 void Mapviz::ToggleFixOrientation(bool on)
 {
   canvas_->ToggleFixOrientation(on);
+}
+
+void Mapviz::ToggleRotate90(bool on)
+{
+  canvas_->ToggleRotate90(on);
 }
 
 void Mapviz::ToggleConfigPanel(bool on)
