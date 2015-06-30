@@ -54,6 +54,7 @@
      <string>&amp;View</string>
     </property>
     <addaction name="actionFix_Orientation"/>
+    <addaction name="actionRotate_90"/>
     <addaction name="separator"/>
     <addaction name="actionForce_720p"/>
     <addaction name="actionForce_480p"/>
@@ -439,6 +440,17 @@
     <string>Show the capture tools on the status bar</string>
    </property>
   </action>
+  <action name="actionRotate_90">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Rotate 90°</string>
+   </property>
+   <property name="statusTip">
+    <string>Rotate the camera by 90 degrees</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -716,6 +728,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionRotate_90</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleRotate90(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>354</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectNewDisplay()</slot>
@@ -735,5 +763,6 @@
   <slot>SetCaptureDirectory()</slot>
   <slot>ToggleStatusBar(bool)</slot>
   <slot>ToggleCaptureTools(bool)</slot>
+  <slot>ToggleRotate90(bool)</slot>
  </slots>
 </ui>

@@ -98,6 +98,7 @@ namespace mapviz
     void ToggleStatusBar(bool on);
     void ToggleCaptureTools(bool on);
     void ToggleFixOrientation(bool on);
+    void ToggleRotate90(bool on);
     void ToggleShowPlugin(QListWidgetItem* item, bool visible);
     void ToggleRecord(bool on);
     void CaptureVideoFrame();
