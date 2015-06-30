@@ -158,7 +158,6 @@ namespace mapviz_plugins
   {
     if (!has_message_)
     {
-      source_frame_ = gps->header.frame_id;
       initialized_ = true;
       has_message_ = true;
     }
@@ -394,6 +393,14 @@ namespace mapviz_plugins
 
   void GpsPlugin::Transform()
   {
+    if (source_frame_.empty())
+    {
+      if (!local_xy_util_.Initialized())
+      {
+        return;
+      }
+      source_frame_ = local_xy_util_.Frame();
+    }
     bool transformed = false;
 
     std::list<StampedPoint>::iterator points_it = points_.begin();
