@@ -357,7 +357,7 @@ void MapCanvas::TransformTarget()
     if (rotate_90_)
     {
       transform_.setRotation(
-          transform_.getRotation() + tf::createQuaternionFromYaw(math_util::_half_pi));
+          tf::createQuaternionFromYaw(-math_util::_half_pi) * transform_.getRotation());
     }
 
     double roll, pitch, yaw;
