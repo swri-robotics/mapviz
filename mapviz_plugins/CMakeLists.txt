@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.4.6)
+cmake_minimum_required(VERSION 2.8.3)
 project(mapviz_plugins)
 
 find_package(catkin REQUIRED COMPONENTS 
