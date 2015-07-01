@@ -156,6 +156,10 @@ namespace mapviz_plugins
 
   void GpsPlugin::GPSFixCallback(const gps_common::GPSFixConstPtr gps)
   {
+    if (!local_xy_util_.Initialized())
+    {
+      return;
+    }
     if (!has_message_)
     {
       initialized_ = true;
@@ -165,10 +169,11 @@ namespace mapviz_plugins
     StampedPoint stamped_point;
     stamped_point.stamp = gps->header.stamp;
 
-    stamped_point.point = tf::Point(
-        gps->longitude,
-        gps->latitude,
-        gps->altitude);
+    double x;
+    double y;
+    local_xy_util_.ToLocalXy(gps->latitude, gps->longitude, x, y);
+
+    stamped_point.point = tf::Point(x, y, gps->altitude);
 
     stamped_point.orientation = tf::Quaternion(
         0.0, 0.0, 0.0, 1.0);
@@ -304,6 +309,12 @@ namespace mapviz_plugins
           cur_point_.transformed_point.getY());
 
         transformed = true;
+
+        transform_util::Transform tf;
+        if (tf_manager_.GetTransform(transform_util::_wgs84_frame, target_frame_, tf))
+        {
+          tf::Point wgs84Point = tf * cur_point_.transformed_point;
+        }
       }
 
       glEnd();
