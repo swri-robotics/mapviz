@@ -1,5 +1,5 @@
 <library path="lib/libmapviz_plugins">
-  <class name="mapviz_plugins/mutlires_image" type="mapviz_plugins::MultiresImagePlugin" base_class_type="mapviz::MapvizPlugin">
+  <class name="mapviz_plugins/multires_image" type="mapviz_plugins::MultiresImagePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Multires image mapviz plugin.</description>
   </class>
   <class name="mapviz_plugins/odometry" type="mapviz_plugins::OdometryPlugin" base_class_type="mapviz::MapvizPlugin">
