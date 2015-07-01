@@ -175,8 +175,10 @@ namespace mapviz_plugins
 
     stamped_point.point = tf::Point(x, y, gps->altitude);
 
-    stamped_point.orientation = tf::Quaternion(
-        0.0, 0.0, 0.0, 1.0);
+    // The GPS "track" is in degrees, but createQuaternionFromYaw expects radians.
+    // Furthermore, the track rotates in the opposite direction and is also
+    // offset by 90 degrees, so all of that has to be compensated for.
+    stamped_point.orientation = tf::createQuaternionFromYaw((-gps->track * (M_PI / 180.0)) + M_PI_2);
 
     if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
     {
@@ -311,10 +313,6 @@ namespace mapviz_plugins
         transformed = true;
 
         transform_util::Transform tf;
-        if (tf_manager_.GetTransform(transform_util::_wgs84_frame, target_frame_, tf))
-        {
-          tf::Point wgs84Point = tf * cur_point_.transformed_point;
-        }
       }
 
       glEnd();
