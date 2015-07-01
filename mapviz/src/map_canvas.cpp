@@ -31,6 +31,7 @@
 
 // C++ standard libraries
 #include <cmath>
+#include <math_util/constants.h>
 
 namespace mapviz
 {
@@ -47,6 +48,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
   capture_frames_(false),
   initialized_(false),
   fix_orientation_(false),
+  rotate_90_(false),
   mouse_pressed_(false),
   mouse_x_(0),
   mouse_y_(0),
@@ -371,29 +373,27 @@ void MapCanvas::TransformTarget(QPainter* painter)
     double roll, pitch, yaw;
     transform_.getBasis().getRPY(roll, pitch, yaw);
 
-    if (!fix_orientation_)
+    // If the viewer orientation is fixed don't rotate the center point.
+    if (fix_orientation_)
     {
       glRotatef(-yaw * 57.2957795, 0, 0, 1);
       // Rotations in Qt transforms go the opposite direction from OpenGL.
       qtransform_ = qtransform_.rotateRadians(yaw);
+      transform_.setRotation(tf::Transform::getIdentity().getRotation());
     }
 
     if (rotate_90_)
     {
       glRotatef(90, 0, 0, 1);
       qtransform_ = qtransform_.rotate(-90);
+      transform_.setRotation(
+          transform_.getRotation() + tf::createQuaternionFromYaw(math_util::_half_pi));
     }
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
     qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(), transform_.getOrigin().getY());
 
     tf::Point point(view_center_x_, view_center_y_, 0);
-
-    // If the viewer orientation is fixed don't rotate the center point.
-    if (fix_orientation_)
-    {
-      transform_.setRotation(tf::Transform::getIdentity().getRotation());
-    }
 
     tf::Point center = transform_ * point;
 
