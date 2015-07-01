@@ -48,11 +48,33 @@ set(QT_USE_QTGUI TRUE)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(src)
-file (GLOB UI_FILES src/*.ui)
-file (GLOB SRC_FILES src/mapviz.cpp src/config_item.cpp src/map_canvas.cpp)
+file (GLOB UI_FILES
+  src/configitem.ui
+  src/mapviz.ui
+  src/pluginselect.ui
+  src/rqt_mapviz.ui)
+file (GLOB HEADER_FILES
+  include/mapviz/config_item.h
+  include/mapviz/map_canvas.h
+  include/mapviz/mapviz.h
+  include/mapviz/mapviz_plugin.h
+  include/mapviz/rqt_mapviz.h
+  include/mapviz/widgets.h)
+file (GLOB SRC_FILES
+  src/mapviz.cpp
+  src/config_item.cpp
+  src/map_canvas.cpp
+  src/rqt_mapviz.cpp)
 QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
-QT4_WRAP_CPP(SRC_FILES include/mapviz/mapviz.h include/mapviz/config_item.h include/mapviz/widgets.h include/mapviz/map_canvas.h)
-rosbuild_add_executable(${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
+QT4_WRAP_CPP(SRC_FILES ${HEADER_FILES})
+
+rosbuild_add_library(rqt_${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
+target_link_libraries(rqt_${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} yaml-cpp)
+rosbuild_link_boost(rqt_${PROJECT_NAME} system filesystem)
+
+rosbuild_add_executable(${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS} src/mapviz_main.cpp)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} yaml-cpp)
 rosbuild_link_boost(${PROJECT_NAME} system filesystem)
+
+add_custom_target(clion_target SOURCES ${HEADER_FILES})
