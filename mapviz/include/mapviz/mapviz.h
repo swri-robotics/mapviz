@@ -43,7 +43,6 @@
 
 // QT libraries
 #include <QtGui/QtGui>
-#include <QtGui/QMainWindow>
 #include <QDialog>
 #include <QTimer>
 #include <QString>
@@ -52,6 +51,9 @@
 #include <QListWidgetItem>
 #include <QModelIndex>
 #include <QColor>
+#include <QWidget>
+#include <QStringList>
+#include <QMainWindow>
 
 // ROS libraries
 #include <ros/ros.h>
@@ -76,7 +78,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    Mapviz(int argc, char **argv, QWidget *parent = 0, Qt::WFlags flags = 0);
+    Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent = 0, Qt::WFlags flags = 0);
     ~Mapviz();
 
     void Initialize();
@@ -134,6 +136,7 @@ namespace mapviz
     int    argc_;
     char** argv_;
 
+    bool is_standalone_;
     bool initialized_;
     bool force_720p_;
     bool force_480p_;
