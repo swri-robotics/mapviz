@@ -60,12 +60,13 @@
 
 namespace mapviz
 {
-Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
+Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::WFlags flags) :
     QMainWindow(parent, flags),
     xy_pos_label_(new QLabel("fixed: 0.0,0.0")),
     lat_lon_pos_label_(new QLabel("lat/lon: 0.0,0.0")),
     argc_(argc),
     argv_(argv),
+    is_standalone_(is_standalone),
     initialized_(false),
     force_720p_(false),
     force_480p_(false),
@@ -166,12 +167,18 @@ void Mapviz::Initialize()
 {
   if (!initialized_)
   {
-    ros::init(argc_, argv_, "mapviz");
+    if (is_standalone_)
+    {
+      // If this Mapviz is running as a standalone application, it needs to init
+      // ROS and start spinning.  If it's running as an rqt plugin, rqt will
+      // take care of that.
+      ros::init(argc_, argv_, "mapviz");
 
-    spin_timer_.start(30);
-    connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
+      spin_timer_.start(30);
+      connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
+    }
 
-    node_ = new ros::NodeHandle();
+    node_ = new ros::NodeHandle("mapviz");
     tf_ = boost::make_shared<tf::TransformListener>();
     tf_manager_.Initialize(tf_);
 
@@ -1149,18 +1156,4 @@ void Mapviz::SetCaptureDirectory()
     capture_directory_ = dialog.selectedFiles().first().toStdString();
   }
 }
-}
-
-int main(int argc, char **argv)
-{
-  // Initialize QT
-  QApplication app(argc, argv);
-
-  // Initialize glut (for displaying text)
-  glutInit(&argc, argv);
-
-  mapviz::Mapviz mapviz(argc, argv);
-  mapviz.show();
-
-  return app.exec();
 }
