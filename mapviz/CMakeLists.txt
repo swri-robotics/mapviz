@@ -77,4 +77,3 @@ rosbuild_add_executable(${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS} src/mapviz_main
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} yaml-cpp)
 rosbuild_link_boost(${PROJECT_NAME} system filesystem)
 
-add_custom_target(clion_target SOURCES ${HEADER_FILES})
