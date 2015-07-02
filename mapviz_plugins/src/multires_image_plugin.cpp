@@ -45,7 +45,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, mutlires_image, mapviz_plugins::MultiresImagePlugin, mapviz::MapvizPlugin)
+PLUGINLIB_DECLARE_CLASS(mapviz_plugins, multires_image, mapviz_plugins::MultiresImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
