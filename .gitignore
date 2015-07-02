@@ -7,6 +7,7 @@
 *.orig
 *.bag
 *~
+.idea
 lib/
 _gtest_from_src/
 bin/
