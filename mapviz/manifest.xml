@@ -14,11 +14,14 @@
   <depend package="tf"/>
   <depend package="transform_util"/>
   <depend package="yaml_util"/>
+  <depend package="rqt_gui"/>
+  <depend package="rqt_gui_cpp"/>
 
   <rosdep name="yaml-cpp"/>
 
   <export>
     <cpp cflags="-I${prefix}/include"/>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
 
   <depend package="build_tools"/>
