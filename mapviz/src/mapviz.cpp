@@ -840,21 +840,31 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   config_item->SetName(name.c_str());
 
-  ROS_INFO("creating: %s", type.c_str());
-  MapvizPluginPtr plugin = loader_->createInstance(type.c_str());
+  std::string real_type = type;
+  if (real_type == "mapviz_plugins/mutlires_image")
+  {
+    // The "multires_image" plugin was originally accidentally named "mutlires_image".
+    // Loading a mapviz config file that still has the old name would normally cause it
+    // to crash, so this will check for and correct it.
+    real_type = "mapviz_plugins/multires_image";
+  }
+
+
+  ROS_INFO("creating: %s", real_type.c_str());
+  MapvizPluginPtr plugin = loader_->createInstance(real_type.c_str());
   
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
   plugin->SetIcon(config_item->ui_.icon);
   
   plugin->Initialize(tf_, canvas_);
-  plugin->SetType(type.c_str());
+  plugin->SetType(real_type.c_str());
   plugin->SetName(name);
   plugin->SetNode(*node_);
   plugin->SetVisible(visible);
   plugin->SetDrawOrder(ui_.configs->count());
 
-  QString pretty_type(type.c_str());
+  QString pretty_type(real_type.c_str());
   pretty_type = pretty_type.split('/').last();
   config_item->SetType(pretty_type);
   QListWidgetItem* item = new QListWidgetItem();
