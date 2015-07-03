@@ -48,7 +48,7 @@
 #include <tf/transform_datatypes.h>
 #include <transform_util/transform.h>
 #include <transform_util/transform_manager.h>
-#include <yaml-cpp/yaml.h>
+#include <yaml_util/yaml_util.h>
 
 #include <mapviz/widgets.h>
 
