@@ -456,12 +456,42 @@ namespace mapviz_plugins
     node["topic"] >> topic;
     ui_.topic->setText(boost::trim_copy(topic).c_str());
 
+    std::string min_color;
+    node["min_color"] >> min_color;
+    min_color_ = QColor(min_color.c_str());
+    ui_.selectMinColor->setStyleSheet("background: " + min_color_.name() + ";");
+
+    std::string max_color;
+    node["max_color"] >> max_color;
+    max_color_ = QColor(max_color.c_str());
+    ui_.selectMaxColor->setStyleSheet("background: " + max_color_.name() + ";");
+
+    node["min_intensity"] >> min_intensity_;
+    ui_.minIntensity->setValue(min_intensity_);
+
+    node["max_intensity"] >> max_intensity_;
+    ui_.maxIntensity->setValue(max_intensity_);
+
+    node["point_size"] >> point_size_;
+    ui_.pointSize->setValue(point_size_);
+
+    node["buffer_size"] >> buffer_size_;
+    ui_.bufferSize->setValue(buffer_size_);
+
     TopicEdited();
   }
 
   void LaserScanPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
+    std::string min_color = min_color_.name().toStdString();
+    emitter << YAML::Key << "min_color" << YAML::Value << min_color;
+    std::string max_color = max_color_.name().toStdString();
+    emitter << YAML::Key << "max_color" << YAML::Value << max_color;
+    emitter << YAML::Key << "min_intensity" << YAML::Value << min_intensity_;
+    emitter << YAML::Key << "max_intensity" << YAML::Value << max_intensity_;
+    emitter << YAML::Key << "point_size" << YAML::Value << point_size_;
+    emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
   }
 }
 
