@@ -31,9 +31,9 @@
 #define MAPVIZ_PLUGINS_LASERSCAN_PLUGIN_H_
 
 // C++ standard libraries
+#include <deque>
 #include <string>
-#include <list>
-#include <map>
+#include <vector>
 
 #include <mapviz/mapviz_plugin.h>
 #include <GL/glut.h>
@@ -86,6 +86,12 @@ namespace mapviz_plugins
   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
+    void SelectMinColor();
+    void SelectMaxColor();
+    void MinIntensityChanged(double value);
+    void MaxIntensityChanged(double value);
+    void PointSizeChanged(int value);
+    void BufferSizeChanged(int value);
 
   private:
     struct StampedPoint
@@ -93,27 +99,38 @@ namespace mapviz_plugins
       tf::Point point;
       tf::Point transformed_point;
       QColor color;
+      float intensity;
     };
 
     struct Scan
     {
       ros::Time stamp;
-      QColor color;
-      std::list<StampedPoint> points;
+      std::vector<StampedPoint> points;
       bool transformed;
+      bool has_intensity;
     };
 
     Ui::laserscan_config ui_;
     QWidget* config_widget_;
 
     std::string topic_;
+    QColor min_color_;
+    QColor max_color_;
+    double min_intensity_;
+    double max_intensity_;
+    int32_t point_size_;
+    int32_t buffer_size_;
 
     ros::Subscriber laserscan_sub_;
     bool has_message_;
 
-    Scan scan_;
+    std::deque<Scan> scans_;
 
     void laserScanCallback(const sensor_msgs::LaserScanConstPtr scan);
+    
+    void UpdateColors();
+    void DrawIcon();
+    QColor InterpolateColors(const QColor& c1, const QColor& c2, double weight) const;
   };
 }
 
