@@ -41,8 +41,6 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include <yaml_util/yaml_util.h>
-
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(mapviz_plugins, path, mapviz_plugins::PathPlugin, mapviz::MapvizPlugin)

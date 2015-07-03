@@ -45,7 +45,6 @@
 #include <ros/master.h>
 
 #include <math_util/constants.h>
-#include <yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>

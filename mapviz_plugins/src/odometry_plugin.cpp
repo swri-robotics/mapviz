@@ -47,7 +47,6 @@
 
 #include <image_util/geometry_util.h>
 #include <transform_util/transform_util.h>
-#include <yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
