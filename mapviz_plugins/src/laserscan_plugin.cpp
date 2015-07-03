@@ -78,6 +78,10 @@ namespace mapviz_plugins
     QPalette p3(ui_.status->palette());
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
+    
+    // Initialize color selector colors
+    ui_.selectMinColor->setStyleSheet("background: " + min_color_.name() + ";");
+    ui_.selectMaxColor->setStyleSheet("background: " + max_color_.name() + ";");
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
@@ -100,11 +104,11 @@ namespace mapviz_plugins
   {
     QColor color;
     
-    double hue = c1.hueF() * weight + c2.hueF() * (1.0 - weight);
-    double saturation = c1.saturationF() * weight + c2.saturationF() * (1.0 - weight);
-    double value = c1.valueF() * weight + c2.valueF() * (1.0 - weight);
+    double r = c1.redF() * weight + c2.redF() * (1.0 - weight);
+    double g = c1.greenF() * weight + c2.greenF() * (1.0 - weight);
+    double b = c1.blueF() * weight + c2.blueF() * (1.0 - weight);
     
-    color.setHsvF(hue, saturation, value);
+    color.setRgbF(r, g, b);
     
     return color;
   }
@@ -134,7 +138,7 @@ namespace mapviz_plugins
       painter.setRenderHint(QPainter::Antialiasing, true);
 
       QPen pen;
-      pen.setWidth(3);
+      pen.setWidth(4);
       pen.setCapStyle(Qt::RoundCap);
       
       pen.setColor(InterpolateColors(min_color_, max_color_, 0.2));
@@ -147,7 +151,7 @@ namespace mapviz_plugins
       
       pen.setColor(InterpolateColors(min_color_, max_color_, 0.4));
       painter.setPen(pen);
-      painter.drawPoint(9, 7);
+      painter.drawPoint(12, 9);
       
       pen.setColor(InterpolateColors(min_color_, max_color_, 0.8));
       painter.setPen(pen);
@@ -385,6 +389,8 @@ namespace mapviz_plugins
   bool LaserScanPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
+
+    DrawIcon();
 
     return true;
   }
