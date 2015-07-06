@@ -94,6 +94,7 @@ QT4_WRAP_CPP(SRC_FILES
 
 add_library(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME} marti_visualization_msgs_generate_messages_cpp)
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
