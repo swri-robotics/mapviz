@@ -75,6 +75,18 @@ Overlays a [sensor_msgs::Image](http://docs.ros.org/api/sensor_msgs/html/msg/Ima
 * Height: Display height
 * Units: (pixels | percent of window)
 
+### LaserScan 
+
+Projects a [sensor_msgs::LaserScan](http://docs.ros.org/api/sensor_msgs/html/msg/LaserScan.html) message into the scene.
+
+* Topic: The laser scan topic name
+* Min Color: The color associated with minimum return intensity
+* Max Color: The color associated with maximum return intensity
+* Min Intesity: Minimum intensity value
+* Max Intensity: Maximum intensity value
+* Point Size: Display size of laser scan points in pixels
+* Buffer Size: Size of circular buffer of laser scan messages points
+
 ### Marker
 Projects a [visualization_msgs::Marker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) or [visualization_msgs::MarkerArray](http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html) into the scene.
 
