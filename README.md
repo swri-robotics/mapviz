@@ -86,7 +86,7 @@ Projects a [visualization_msgs::Marker](http://docs.ros.org/api/visualization_ms
 ### Multi-res Image
 Projects a geo-referenced multi-resolution image tile map into the scene.  The concept is the same as the Google Maps style pan/zoom satellite imagery. 
 
-![](https://github.com/swri-robotics/mapviz/wiki/multires.png)
+![](https://github.com/swri-robotics/mapviz/wiki/multires2.png)
 
 **Parameters**
 * Geo File: Path to the geo-referenced map tiles.
