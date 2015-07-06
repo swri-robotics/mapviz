@@ -38,6 +38,7 @@
 // Boost libraries
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
@@ -51,6 +52,7 @@
 #include <QActionGroup>
 #include <QColorDialog>
 #include <QLabel>
+#include <QMessageBox>
 
 #include <math_util/constants.h>
 #include <transform_util/frames.h>
@@ -422,6 +424,8 @@ void Mapviz::Open(const std::string& filename)
     return;
   }
 
+  std::vector<std::string> failed_plugins;
+
   try
   {
     boost::filesystem::path filepath(filename);
@@ -581,10 +585,18 @@ void Mapviz::Open(const std::string& filename)
         bool collapsed = false;
         config["collapsed"] >> collapsed;
 
-        MapvizPluginPtr plugin =
-            CreateNewDisplay(name, type, visible, collapsed);
-        plugin->LoadConfig(config, config_path);
-        plugin->DrawIcon();
+        try
+        {
+          MapvizPluginPtr plugin =
+              CreateNewDisplay(name, type, visible, collapsed);
+          plugin->LoadConfig(config, config_path);
+          plugin->DrawIcon();
+        }
+        catch (const pluginlib::LibraryLoadException& e)
+        {
+          failed_plugins.push_back(type);
+          ROS_ERROR("%s", e.what());
+        }
       }
     }
   }
@@ -597,6 +609,16 @@ void Mapviz::Open(const std::string& filename)
   {
     ROS_ERROR("%s", e.what());
     return;
+  }
+
+  if (!failed_plugins.empty())
+  {
+    std::stringstream message;
+    message << "The following plugin(s) failed to load:" << std::endl;
+    std::string failures = boost::algorithm::join(failed_plugins, "\n");
+    message << failures << std::endl << std::endl << "Check the ROS log for more details.";
+
+    QMessageBox::warning(this, "Failed to load plugins", QString::fromStdString(message.str()));
   }
 }
 
@@ -747,7 +769,17 @@ void Mapviz::SelectNewDisplay()
     int row =ui.displaylist->currentRow();
     std::string type = plugins[row].c_str();
     std::string name = "new display";
-    CreateNewDisplay(name, type, true, false);
+    try
+    {
+      CreateNewDisplay(name, type, true, false);
+    }
+    catch (const pluginlib::LibraryLoadException& e)
+    {
+      std::stringstream message;
+      message << "Unable to load " << type << "." << std::endl << "Check the ROS log for more details.";
+      QMessageBox::warning(this, "Plugin failed to load", QString::fromStdString(message.str()));
+      ROS_ERROR("%s", e.what());
+    }
   }
 }
 
