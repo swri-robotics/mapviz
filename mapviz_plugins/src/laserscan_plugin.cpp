@@ -439,7 +439,7 @@ namespace mapviz_plugins
       Scan& scan = scans_[i];
       
       transform_util::Transform transform;
-      if (GetTransform(scan.stamp, transform))
+      if (GetTransform(scan.stamp, transform, false))
       {
         scan.transformed = true;
 

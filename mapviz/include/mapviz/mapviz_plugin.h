@@ -123,14 +123,14 @@ namespace mapviz
       visible_ = visible;
     }
 
-    bool GetTransform(const ros::Time& stamp, transform_util::Transform& transform)
+    bool GetTransform(const ros::Time& stamp, transform_util::Transform& transform, bool use_latest_transforms = true)
     {
       if (!initialized_)
         return false;
 
       ros::Time time = stamp;
 
-      if (use_latest_transforms_)
+      if (use_latest_transforms_ && use_latest_transforms)
       {
         time = ros::Time();
       }
