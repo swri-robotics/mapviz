@@ -163,7 +163,7 @@ void MapCanvas::CaptureFrame(bool force)
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[pixel_buffer_index_]);
     glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[next_index]);
-    GLubyte* data = (GLubyte*)glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB);
+    GLubyte* data = reinterpret_cast<GLubyte*>(glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
     if(data)
     {
       capture_buffer_.clear();
@@ -387,7 +387,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
       glRotatef(90, 0, 0, 1);
       qtransform_ = qtransform_.rotate(-90);
       transform_.setRotation(
-          transform_.getRotation() + tf::createQuaternionFromYaw(math_util::_half_pi));
+          tf::createQuaternionFromYaw(-math_util::_half_pi) * transform_.getRotation());
     }
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);

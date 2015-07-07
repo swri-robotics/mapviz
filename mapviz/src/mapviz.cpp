@@ -38,6 +38,7 @@
 // Boost libraries
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
@@ -51,6 +52,9 @@
 #include <QActionGroup>
 #include <QColorDialog>
 #include <QLabel>
+#include <QMessageBox>
+#include <QProcessEnvironment>
+#include <QFileInfo>
 
 #include <math_util/constants.h>
 #include <transform_util/frames.h>
@@ -60,12 +64,16 @@
 
 namespace mapviz
 {
-Mapviz::Mapviz(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
+const QString Mapviz::ROS_WORKSPACE_VAR = "ROS_WORKSPACE";
+const QString Mapviz::MAPVIZ_CONFIG_FILE = "/.mapviz_config";
+
+Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::WFlags flags) :
     QMainWindow(parent, flags),
     xy_pos_label_(new QLabel("fixed: 0.0,0.0")),
     lat_lon_pos_label_(new QLabel("lat/lon: 0.0,0.0")),
     argc_(argc),
     argv_(argv),
+    is_standalone_(is_standalone),
     initialized_(false),
     force_720p_(false),
     force_480p_(false),
@@ -166,12 +174,18 @@ void Mapviz::Initialize()
 {
   if (!initialized_)
   {
-    ros::init(argc_, argv_, "mapviz");
+    if (is_standalone_)
+    {
+      // If this Mapviz is running as a standalone application, it needs to init
+      // ROS and start spinning.  If it's running as an rqt plugin, rqt will
+      // take care of that.
+      ros::init(argc_, argv_, "mapviz");
 
-    spin_timer_.start(30);
-    connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
+      spin_timer_.start(30);
+      connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
+    }
 
-    node_ = new ros::NodeHandle();
+    node_ = new ros::NodeHandle("mapviz");
     tf_ = boost::make_shared<tf::TransformListener>();
     tf_manager_.Initialize(tf_);
 
@@ -190,8 +204,29 @@ void Mapviz::Initialize()
 
     ros::NodeHandle priv("~");
 
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    QString default_path = QDir::homePath();
+    if (env.contains(ROS_WORKSPACE_VAR))
+    {
+      // If the ROS_WORKSPACE environment variable is defined, try to read our
+      // config file out of that.  If we can't read it, fall back to trying to
+      // read one from the user's home directory.
+      QString ws_path = env.value(ROS_WORKSPACE_VAR, default_path);
+      if (QFileInfo(ws_path + MAPVIZ_CONFIG_FILE).isReadable())
+      {
+        default_path = ws_path;
+      }
+      else
+      {
+        ROS_WARN("Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
+                 ws_path.toStdString().c_str());
+      }
+    }
+    default_path += MAPVIZ_CONFIG_FILE;
+
+
     std::string config;
-    priv.param("config", config, QDir::homePath().toStdString() + "/.mapviz_config");
+    priv.param("config", config, default_path.toStdString());
 
     Open(config);
 
@@ -225,10 +260,11 @@ void Mapviz::UpdateFrames()
   std::vector<std::string> frames;
   tf_->getFrameStrings(frames);
 
-  if ((int)frames.size() == ui_.fixedframe->count())
+  if (ui_.fixedframe->count() >= 0 && 
+      static_cast<size_t>(ui_.fixedframe->count()) == frames.size())
   {
     bool changed = false;
-    for (unsigned int i = 0; i < frames.size(); i++)
+    for (size_t i = 0; i < frames.size(); i++)
     {
       if (frames[i] != ui_.fixedframe->itemText(i).toStdString())
       {
@@ -245,7 +281,7 @@ void Mapviz::UpdateFrames()
   std::string current_fixed = ui_.fixedframe->currentText().toStdString();
 
   ui_.fixedframe->clear();
-  for (unsigned int i = 0; i < frames.size(); i++)
+  for (size_t i = 0; i < frames.size(); i++)
   {
     ui_.fixedframe->addItem(frames[i].c_str());
   }
@@ -266,7 +302,7 @@ void Mapviz::UpdateFrames()
 
   ui_.targetframe->clear();
   ui_.targetframe->addItem("<none>");
-  for (unsigned int i = 0; i < frames.size(); i++)
+  for (size_t i = 0; i < frames.size(); i++)
   {
     ui_.targetframe->addItem(frames[i].c_str());
   }
@@ -414,6 +450,8 @@ void Mapviz::Open(const std::string& filename)
     ROS_ERROR("Failed to load file: %s", filename.c_str());
     return;
   }
+
+  std::vector<std::string> failed_plugins;
 
   try
   {
@@ -574,10 +612,18 @@ void Mapviz::Open(const std::string& filename)
         bool collapsed = false;
         config["collapsed"] >> collapsed;
 
-        MapvizPluginPtr plugin =
-            CreateNewDisplay(name, type, visible, collapsed);
-        plugin->LoadConfig(config, config_path);
-        plugin->DrawIcon();
+        try
+        {
+          MapvizPluginPtr plugin =
+              CreateNewDisplay(name, type, visible, collapsed);
+          plugin->LoadConfig(config, config_path);
+          plugin->DrawIcon();
+        }
+        catch (const pluginlib::LibraryLoadException& e)
+        {
+          failed_plugins.push_back(type);
+          ROS_ERROR("%s", e.what());
+        }
       }
     }
   }
@@ -590,6 +636,16 @@ void Mapviz::Open(const std::string& filename)
   {
     ROS_ERROR("%s", e.what());
     return;
+  }
+
+  if (!failed_plugins.empty())
+  {
+    std::stringstream message;
+    message << "The following plugin(s) failed to load:" << std::endl;
+    std::string failures = boost::algorithm::join(failed_plugins, "\n");
+    message << failures << std::endl << std::endl << "Check the ROS log for more details.";
+
+    QMessageBox::warning(this, "Failed to load plugins", QString::fromStdString(message.str()));
   }
 }
 
@@ -666,7 +722,36 @@ void Mapviz::Save(const std::string& filename)
 
 void Mapviz::AutoSave()
 {
-  Save(QDir::homePath().toStdString() + "/.mapviz_config");
+  QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+  QString default_path = QDir::homePath();
+
+  if (env.contains(ROS_WORKSPACE_VAR))
+  {
+    // Try to save our config in the ROS_WORKSPACE directory, but if we can't write
+    // to that -- probably because it is read-only -- try to use the home directory
+    // instead.
+    QString ws_path = env.value(ROS_WORKSPACE_VAR, default_path);
+    QString ws_file = ws_path + MAPVIZ_CONFIG_FILE;
+    QFileInfo file_info(ws_file);
+    QFileInfo dir_info(ws_path);
+    if ((!file_info.exists() && dir_info.isWritable()) ||
+        file_info.isWritable())
+    {
+      // Note that FileInfo::isWritable will return false if a file does not exist, so
+      // we need to check both if the target file is writable and if the target dir is
+      // writable if the file doesn't exist.
+      default_path = ws_path;
+    }
+    else
+    {
+      ROS_WARN("Could not write config file to %s.  Trying home directory.",
+               (ws_path + MAPVIZ_CONFIG_FILE).toStdString().c_str());
+    }
+  }
+  default_path += MAPVIZ_CONFIG_FILE;
+
+
+  Save(default_path.toStdString());
 }
 
 void Mapviz::OpenConfig()
@@ -740,7 +825,17 @@ void Mapviz::SelectNewDisplay()
     int row =ui.displaylist->currentRow();
     std::string type = plugins[row].c_str();
     std::string name = "new display";
-    CreateNewDisplay(name, type, true, false);
+    try
+    {
+      CreateNewDisplay(name, type, true, false);
+    }
+    catch (const pluginlib::LibraryLoadException& e)
+    {
+      std::stringstream message;
+      message << "Unable to load " << type << "." << std::endl << "Check the ROS log for more details.";
+      QMessageBox::warning(this, "Plugin failed to load", QString::fromStdString(message.str()));
+      ROS_ERROR("%s", e.what());
+    }
   }
 }
 
@@ -833,21 +928,31 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   config_item->SetName(name.c_str());
 
-  ROS_INFO("creating: %s", type.c_str());
-  MapvizPluginPtr plugin = loader_->createInstance(type.c_str());
+  std::string real_type = type;
+  if (real_type == "mapviz_plugins/mutlires_image")
+  {
+    // The "multires_image" plugin was originally accidentally named "mutlires_image".
+    // Loading a mapviz config file that still has the old name would normally cause it
+    // to crash, so this will check for and correct it.
+    real_type = "mapviz_plugins/multires_image";
+  }
+
+
+  ROS_INFO("creating: %s", real_type.c_str());
+  MapvizPluginPtr plugin = loader_->createInstance(real_type.c_str());
   
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
   plugin->SetIcon(config_item->ui_.icon);
   
   plugin->Initialize(tf_, canvas_);
-  plugin->SetType(type.c_str());
+  plugin->SetType(real_type.c_str());
   plugin->SetName(name);
   plugin->SetNode(*node_);
   plugin->SetVisible(visible);
   plugin->SetDrawOrder(ui_.configs->count());
 
-  QString pretty_type(type.c_str());
+  QString pretty_type(real_type.c_str());
   pretty_type = pretty_type.split('/').last();
   config_item->SetType(pretty_type);
   QListWidgetItem* item = new QListWidgetItem();
@@ -1149,18 +1254,4 @@ void Mapviz::SetCaptureDirectory()
     capture_directory_ = dialog.selectedFiles().first().toStdString();
   }
 }
-}
-
-int main(int argc, char **argv)
-{
-  // Initialize QT
-  QApplication app(argc, argv);
-
-  // Initialize glut (for displaying text)
-  glutInit(&argc, argv);
-
-  mapviz::Mapviz mapviz(argc, argv);
-  mapviz.show();
-
-  return app.exec();
 }

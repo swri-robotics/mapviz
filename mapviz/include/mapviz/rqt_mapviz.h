@@ -27,42 +27,38 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_TEXTURE_CACHE_H_
-#define TILE_MAP_TEXTURE_CACHE_H_
+#ifndef MAPVIZ_RQT_MAPVIZ_H
+#define MAPVIZ_RQT_MAPVIZ_H
 
-#include <QCache>
+/*
+ * The RQT GUI CPP files use the Qt macros "slots" and "signals".  These conflict
+ * with Boost macros of the same name; normally we fix this by adding "-DQT_NO_KEYWORDS"
+ * in our CMakeLists file, then using Q_SLOTS and Q_SIGNALS in our source code instead.
+ * Since we can't edit the ROS source code, though, we need to define those macros before
+ * we include the ROS headers and then undefine them afterwards.
+ */
+#define slots
+#define signals
+#include <rqt_gui_cpp/plugin.h>
+#undef slots
+#undef signals
 
-#include <tile_map/image_cache.h>
+#include "mapviz.h"
 
-namespace tile_map
+namespace mapviz
 {
-  class Texture
+  class RqtMapviz : public rqt_gui_cpp::Plugin
   {
+  Q_OBJECT
   public:
-    Texture(int32_t texture_id, size_t hash);
-    ~Texture();
-
-    const int32_t id;
-    const size_t url_hash;
-
-    bool failed;
-  };
-  typedef boost::shared_ptr<Texture> TexturePtr;
-
-  class TextureCache
-  {
-  public:
-    TextureCache(ImageCachePtr image_cache, size_t size = 512);
-
-    TexturePtr GetTexture(size_t url_hash, const std::string& url, bool& failed);
-    void AddTexture(const TexturePtr& texture);
-    
+    RqtMapviz();
+    virtual void initPlugin(qt_gui_cpp::PluginContext& context);
+    virtual void shutdownPlugin();
+    virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const;
+    virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
   private:
-    QCache<size_t, TexturePtr> cache_;
-
-    ImageCachePtr image_cache_;
+    Mapviz* widget_;
   };
-  typedef boost::shared_ptr<TextureCache> TextureCachePtr;
 }
 
-#endif  // TILE_MAP_TEXTURE_CACHE_H_
+#endif //MAPVIZ_RQT_MAPVIZ_H

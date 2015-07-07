@@ -3,7 +3,7 @@ mapviz
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RVIZ](http://wiki.ros.org/rviz) focused on visualizing 2D data.
 
-![](https://github.com/swri-robotics/mapviz/wiki/mapviz_features.png)
+![](https://github.com/swri-robotics/mapviz/wiki/mapviz.png)
 
 Mapviz currently depends on the [marti_common](https://github.com/swri-robotics/marti_common) and  [marti_messages](https://github.com/swri-robotics/marti_messages) repositories for some utility functions and message definitions.
 
@@ -38,6 +38,17 @@ Overlays a [sensor_msgs::DisparityImage](http://docs.ros.org/api/stereo_msgs/htm
 * Height: Display height
 * Units: (pixels | percent of window)
 
+### GPS
+
+Projects [gps_common::GPSFix](http://docs.ros.org/hydro/api/gps_common/html/msg/GPSFix.html) message data into the scene.
+
+**Parameters**
+ * Topic: The GPS topic
+ * Color: The color of the GPS data
+ * Draw Style: (lines | points | arrows)
+ * Position Tolerance: Distance threshold for adding new GPS points to visualization
+ * Buffer Size: Size of circular buffer of GPS points
+
 ### Grid
 Projects a 2D grid into the scene.
 
@@ -64,6 +75,18 @@ Overlays a [sensor_msgs::Image](http://docs.ros.org/api/sensor_msgs/html/msg/Ima
 * Height: Display height
 * Units: (pixels | percent of window)
 
+### LaserScan 
+
+Projects a [sensor_msgs::LaserScan](http://docs.ros.org/api/sensor_msgs/html/msg/LaserScan.html) message into the scene.
+
+* Topic: The laser scan topic name
+* Min Color: The color associated with minimum return intensity
+* Max Color: The color associated with maximum return intensity
+* Min Intesity: Minimum intensity value
+* Max Intensity: Maximum intensity value
+* Point Size: Display size of laser scan points in pixels
+* Buffer Size: Size of circular buffer of laser scan messages points
+
 ### Marker
 Projects a [visualization_msgs::Marker](http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html) or [visualization_msgs::MarkerArray](http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html) into the scene.
 
@@ -75,7 +98,7 @@ Projects a [visualization_msgs::Marker](http://docs.ros.org/api/visualization_ms
 ### Multi-res Image
 Projects a geo-referenced multi-resolution image tile map into the scene.  The concept is the same as the Google Maps style pan/zoom satellite imagery. 
 
-![](https://github.com/swri-robotics/mapviz/wiki/multires.png)
+![](https://github.com/swri-robotics/mapviz/wiki/multires2.png)
 
 **Parameters**
 * Geo File: Path to the geo-referenced map tiles.
@@ -104,7 +127,7 @@ Tiles are named using the following format:
 
     tile%05dx%05d.png % (row, column)
 
-## Odometry
+### Odometry
 
 Projects [nav_msgs::Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) message data into the scene.
 
@@ -116,14 +139,14 @@ Projects [nav_msgs::Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry
  * Position Tolerance: Distance threshold for adding new odometry points to visualization
  * Buffer Size: Size of circular buffer of odometry points
 
-## Path
+### Path
 
 Projects [nav_msgs::Path](http://docs.ros.org/api/nav_msgs/html/msg/Path.html) message data into the scene.
 
 **Parameters**
  * Topic: The path topic
 
-## Robot Image
+### Robot Image
 
 Projects an image loaded from file into the scene to represent the robot platform.
 
@@ -133,7 +156,7 @@ Projects an image loaded from file into the scene to represent the robot platfor
  * Width: The physical width represented by the image
  * Height: The physical height represented by the image
 
-## Textured Marker
+### Textured Marker
 
 Projects marti_visualization_msgs::TexturedMarker and marti_visualization_msgs::TexturedMarkerArray message data into the scene.
 
@@ -142,7 +165,7 @@ Textured markers follow the same general approach as traditional markers, but ca
 **Parameters**
  * Topic: The textured marker topic
 
-## Tile Map
+### Tile Map
 Projects a geo-referenced multi-resolution image tile map into the scene.  Data is automatically streamed from [OpenMapQuest](http://open.mapquest.com/) (satellite and roads) or [Stamen Design] (http://maps.stamen.com/) (terrain, watercolor, and toner).  Custom or local map servers can also be specified.  Map data is cached to disk which enables some limited use completely offline.
 
 <img src="https://github.com/swri-robotics/mapviz/wiki/satellite.png" width="200" height="200" />
@@ -154,7 +177,7 @@ Projects a geo-referenced multi-resolution image tile map into the scene.  Data 
 **Parameters**
  * Source: The source of the tile data.
 
-## TF Frame
+### TF Frame
 
 Projects [Tf](http://wiki.ros.org/tf) data into the scene similar to the Odometry plug-in.
 

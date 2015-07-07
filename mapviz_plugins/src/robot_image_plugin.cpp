@@ -44,8 +44,6 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include <yaml_util/yaml_util.h>
-
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
@@ -282,8 +280,8 @@ namespace mapviz_plugins
         int width = image_.width();
         int height = image_.height();
 
-        int maxDimension = std::max(width, height);
-        dimension_ = static_cast<int>(pow(2, ceil(log((float)maxDimension)/log(2.0f))));
+        float max_dim = std::max(width, height);
+        dimension_ = std::pow(2, std::ceil(std::log(max_dim) / std::log(2.0f)));
 
         if (width != dimension_ || height != dimension_)
         {

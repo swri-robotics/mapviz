@@ -38,8 +38,6 @@
 #include <QGLWidget>
 #include <QPalette>
 
-#include <yaml_util/yaml_util.h>
-
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
@@ -189,10 +187,11 @@ namespace mapviz_plugins
     std::vector<std::string> frames;
     tf_->getFrameStrings(frames);
 
-    if ((int)frames.size() == ui_.frame->count())
+    if (ui_.frame->count() >= 0 && 
+        static_cast<size_t>(ui_.frame->count()) == frames.size())
     {
       bool changed = false;
-      for (unsigned int i = 0; i < frames.size(); i++)
+      for (size_t i = 0; i < frames.size(); i++)
       {
         if (frames[i] != ui_.frame->itemText(i).toStdString())
         {
@@ -209,7 +208,7 @@ namespace mapviz_plugins
     std::string current = ui_.frame->currentText().toStdString();
 
     ui_.frame->clear();
-    for (unsigned int i = 0; i < frames.size(); i++)
+    for (size_t i = 0; i < frames.size(); i++)
     {
       ui_.frame->addItem(frames[i].c_str());
     }

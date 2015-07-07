@@ -1,59 +1,53 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
-// All rights reserved.
+// Copyright (C) 2013 All Right Reserved, Southwest Research Institute® (SwRI®)
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Southwest Research Institute® (SwRI®) nor the
-//       names of its contributors may be used to endorse or promote products
-//       derived from this software without specific prior written permission.
+// Contract No.  10-58058A
+// Contractor    Southwest Research Institute® (SwRI®)
+// Address       6220 Culebra Road, San Antonio, Texas 78228-0510
+// Contact       Steve Dellenback <sdellenback@swri.org> (210) 522-3914
 //
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// This code was developed as part of an internal research project fully funded
+// by Southwest Research Institute®.
+//
+// THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
+// KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
+// PARTICULAR PURPOSE.
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/tf_frame_plugin.h>
+#include <mapviz_plugins/gps_plugin.h>
 
 // C++ standard libraries
 #include <cstdio>
-#include <algorithm>
 #include <vector>
 
 // QT libraries
-#include <QColorDialog>
 #include <QDialog>
+#include <QColorDialog>
 #include <QGLWidget>
 #include <QPalette>
 
+#include <opencv2/core/core.hpp>
+
 // ROS libraries
 #include <ros/master.h>
+
+#include <image_util/geometry_util.h>
+#include <transform_util/transform_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
     mapviz_plugins,
-    tf_frame,
-    mapviz_plugins::TfFramePlugin,
+    gps,
+    mapviz_plugins::GpsPlugin,
     mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
-  TfFramePlugin::TfFramePlugin() :
+  GpsPlugin::GpsPlugin() :
     config_widget_(new QWidget()),
     color_(Qt::green),
     draw_style_(LINES)
@@ -74,18 +68,18 @@ namespace mapviz_plugins
     ui_.status->setPalette(p3);
 
     QObject::connect(ui_.selectcolor, SIGNAL(clicked()), this, SLOT(SelectColor()));
-    QObject::connect(ui_.selectframe, SIGNAL(clicked()), this, SLOT(SelectFrame()));
-    QObject::connect(ui_.frame, SIGNAL(editingFinished()), this, SLOT(FrameEdited()));
+    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
+    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this, SLOT(PositionToleranceChanged(double)));
     QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this, SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this, SLOT(SetDrawStyle(QString)));
   }
 
-  TfFramePlugin::~TfFramePlugin()
+  GpsPlugin::~GpsPlugin()
   {
   }
 
-  void TfFramePlugin::DrawIcon()
+  void GpsPlugin::DrawIcon()
   {
     if (icon_)
     {
@@ -125,43 +119,7 @@ namespace mapviz_plugins
     }
   }
 
-  void TfFramePlugin::SelectFrame()
-  {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
-
-    std::vector<std::string> frames;
-    tf_->getFrameStrings(frames);
-
-    for (unsigned int i = 0; i < frames.size(); i++)
-    {
-      ui.displaylist->addItem(frames[i].c_str());
-    }
-    ui.displaylist->setCurrentRow(0);
-
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.frame->setText(ui.displaylist->selectedItems().first()->text());
-      FrameEdited();
-    }
-  }
-
-  void TfFramePlugin::FrameEdited()
-  {
-    source_frame_ = ui_.frame->text().toStdString();
-    PrintWarning("Waiting for transform.");
-
-    ROS_INFO("Setting target frame to to %s", source_frame_.c_str());
-
-    initialized_ = true;
-
-    canvas_->update();
-  }
-  
-  void TfFramePlugin::SetDrawStyle(QString style)
+  void GpsPlugin::SetDrawStyle(QString style)
   {
     if (style == "lines")
     {
@@ -179,8 +137,35 @@ namespace mapviz_plugins
     DrawIcon();
     canvas_->update();
   }
-  
-  void TfFramePlugin::SelectColor()
+
+  void GpsPlugin::SelectTopic()
+  {
+    QDialog dialog;
+    Ui::topicselect ui;
+    ui.setupUi(&dialog);
+
+    std::vector<ros::master::TopicInfo> topics;
+    ros::master::getTopics(topics);
+
+    for (unsigned int i = 0; i < topics.size(); i++)
+    {
+      if (topics[i].datatype == "gps_common/GPSFix")
+      {
+        ui.displaylist->addItem(topics[i].name.c_str());
+      }
+    }
+    ui.displaylist->setCurrentRow(0);
+
+    dialog.exec();
+
+    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
+    {
+      ui_.topic->setText(ui.displaylist->selectedItems().first()->text());
+      TopicEdited();
+    }
+  }
+
+  void GpsPlugin::SelectColor()
   {
     QColorDialog dialog(color_, config_widget_);
     dialog.exec();
@@ -193,13 +178,74 @@ namespace mapviz_plugins
       canvas_->update();
     }
   }
-  
-  void TfFramePlugin::PositionToleranceChanged(double value)
+
+  void GpsPlugin::TopicEdited()
+  {
+    if (ui_.topic->text().toStdString() != topic_)
+    {
+      initialized_ = false;
+      points_.clear();
+      has_message_ = false;
+      topic_ = ui_.topic->text().toStdString();
+      PrintWarning("No messages received.");
+
+      gps_sub_.shutdown();
+      gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::GPSFixCallback, this);
+
+      ROS_INFO("Subscribing to %s", topic_.c_str());
+    }
+  }
+
+  void GpsPlugin::GPSFixCallback(const gps_common::GPSFixConstPtr gps)
+  {
+    if (!local_xy_util_.Initialized())
+    {
+      return;
+    }
+    if (!has_message_)
+    {
+      initialized_ = true;
+      has_message_ = true;
+    }
+
+    StampedPoint stamped_point;
+    stamped_point.stamp = gps->header.stamp;
+
+    double x;
+    double y;
+    local_xy_util_.ToLocalXy(gps->latitude, gps->longitude, x, y);
+
+    stamped_point.point = tf::Point(x, y, gps->altitude);
+
+    // The GPS "track" is in degrees, but createQuaternionFromYaw expects radians.
+    // Furthermore, the track rotates in the opposite direction and is also
+    // offset by 90 degrees, so all of that has to be compensated for.
+    stamped_point.orientation = tf::createQuaternionFromYaw((-gps->track * (M_PI / 180.0)) + M_PI_2);
+
+    if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
+    {
+      points_.push_back(stamped_point);
+    }
+
+    if (buffer_size_ > 0)
+    {
+      while (static_cast<int>(points_.size()) > buffer_size_)
+      {
+        points_.pop_front();
+      }
+    }
+
+    cur_point_ = stamped_point;
+
+    canvas_->update();
+  }
+
+  void GpsPlugin::PositionToleranceChanged(double value)
   {
     position_tolerance_ = value;
   }
 
-  void TfFramePlugin::BufferSizeChanged(int value)
+  void GpsPlugin::BufferSizeChanged(int value)
   {
     buffer_size_ = value;
 
@@ -213,41 +259,8 @@ namespace mapviz_plugins
 
     canvas_->update();
   }
-  
-  void TfFramePlugin::TimerCallback(const ros::TimerEvent& event)
-  {
-    transform_util::Transform transform;
-    if (GetTransform(ros::Time(), transform))
-    {
-      StampedPoint stamped_point;
-      stamped_point.point = transform.GetOrigin();
-      stamped_point.orientation = transform.GetOrientation();
-      stamped_point.frame = target_frame_;
-      stamped_point.stamp = transform.GetStamp();
-      stamped_point.transformed = false;
 
-      double distance = std::sqrt(
-        std::pow(stamped_point.point.x() - points_.back().point.x(), 2) + 
-        std::pow(stamped_point.point.y() - points_.back().point.y(), 2));
-
-      if (points_.empty() || distance >= position_tolerance_)
-      {
-        points_.push_back(stamped_point);
-      }
-
-      if (buffer_size_ > 0)
-      {
-        while (static_cast<int>(points_.size()) > buffer_size_)
-        {
-          points_.pop_front();
-        }
-      }
-    
-      cur_point_ = stamped_point;
-    }
-  }
-
-  void TfFramePlugin::PrintError(const std::string& message)
+  void GpsPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -259,7 +272,7 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  void TfFramePlugin::PrintInfo(const std::string& message)
+  void GpsPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -271,7 +284,7 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  void TfFramePlugin::PrintWarning(const std::string& message)
+  void GpsPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -283,25 +296,23 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  QWidget* TfFramePlugin::GetConfigWidget(QWidget* parent)
+  QWidget* GpsPlugin::GetConfigWidget(QWidget* parent)
   {
     config_widget_->setParent(parent);
 
     return config_widget_;
   }
 
-  bool TfFramePlugin::Initialize(QGLWidget* canvas)
+  bool GpsPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
-
-    timer_ = node_.createTimer(ros::Duration(0.1), &TfFramePlugin::TimerCallback, this);
 
     DrawIcon();
 
     return true;
   }
 
-  void TfFramePlugin::Draw(double x, double y, double scale)
+  void GpsPlugin::Draw(double x, double y, double scale)
   {
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
 
@@ -344,6 +355,8 @@ namespace mapviz_plugins
           cur_point_.transformed_point.getY());
 
         transformed = true;
+
+        transform_util::Transform tf;
       }
 
       glEnd();
@@ -354,8 +367,8 @@ namespace mapviz_plugins
       PrintInfo("OK");
     }
   }
-  
-  bool TfFramePlugin::DrawArrows()
+
+  bool GpsPlugin::DrawArrows()
   {
     bool transformed = false;
     glLineWidth(2);
@@ -411,10 +424,10 @@ namespace mapviz_plugins
     return transformed;
   }
 
-  bool TfFramePlugin::TransformPoint(StampedPoint& point)
+  bool GpsPlugin::TransformPoint(StampedPoint& point)
   {
     transform_util::Transform transform;
-    if (GetTransform(point.frame, point.stamp, transform))
+    if (GetTransform(point.stamp, transform))
     {
       point.transformed_point = transform * point.point;
 
@@ -431,8 +444,16 @@ namespace mapviz_plugins
      return false;
   }
 
-  void TfFramePlugin::Transform()
+  void GpsPlugin::Transform()
   {
+    if (source_frame_.empty())
+    {
+      if (!local_xy_util_.Initialized())
+      {
+        return;
+      }
+      source_frame_ = local_xy_util_.Frame();
+    }
     bool transformed = false;
 
     std::list<StampedPoint>::iterator points_it = points_.begin();
@@ -445,14 +466,15 @@ namespace mapviz_plugins
 
     if (!points_.empty() && !transformed)
     {
-      PrintError("No transform error.");
+      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
 
-  void TfFramePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void GpsPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    node["frame"] >> source_frame_;
-    ui_.frame->setText(source_frame_.c_str());
+    std::string topic;
+    node["topic"] >> topic;
+    ui_.topic->setText(topic.c_str());
 
     std::string color;
     node["color"] >> color;
@@ -472,6 +494,11 @@ namespace mapviz_plugins
       draw_style_ = POINTS;
       ui_.drawstyle->setCurrentIndex(1);
     }
+    else if (draw_style == "arrows")
+    {
+      draw_style_ = ARROWS;
+      ui_.drawstyle->setCurrentIndex(2);
+    }
 
     node["position_tolerance"] >> position_tolerance_;
     ui_.positiontolerance->setValue(position_tolerance_);
@@ -479,13 +506,14 @@ namespace mapviz_plugins
     node["buffer_size"] >> buffer_size_;
     ui_.buffersize->setValue(buffer_size_);
 
-    FrameEdited();
+    TopicEdited();
   }
 
-  void TfFramePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void GpsPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->text().toStdString();
-    
+    std::string topic = ui_.topic->text().toStdString();
+    emitter << YAML::Key << "topic" << YAML::Value << topic;
+
     std::string color = color_.name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;
 

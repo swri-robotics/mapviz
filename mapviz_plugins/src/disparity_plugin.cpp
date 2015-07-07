@@ -43,7 +43,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <yaml_util/yaml_util.h>
+#include <cv_bridge/cv_bridge.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -247,18 +247,15 @@ namespace mapviz_plugins
     float max_disparity = disparity->max_disparity;
     float multiplier = 255.0f / (max_disparity - min_disparity);
 
-    const cv::Mat_<float> dmat(
-        disparity->image.height,
-        disparity->image.width,
-        (float*)&disparity->image.data[0],
-        disparity->image.step);
+    cv_bridge::CvImageConstPtr cv_disparity = 
+      cv_bridge::toCvShare(disparity->image, disparity);
 
     disparity_color_.create(disparity->image.height, disparity->image.width);
 
-    for (int row = 0; row < disparity_color_.rows; ++row)
+    for (int row = 0; row < disparity_color_.rows; row++)
     {
-      const float* d = dmat[row];
-      for (int col = 0; col < disparity_color_.cols; ++col)
+      const float* d = cv_disparity->image.ptr<float>(row);
+      for (int col = 0; col < disparity_color_.cols; col++)
       {
         int index = (d[col] - min_disparity) * multiplier + 0.5;
         index = std::min(255, std::max(0, index));

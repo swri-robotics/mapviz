@@ -27,42 +27,40 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_TEXTURE_CACHE_H_
-#define TILE_MAP_TEXTURE_CACHE_H_
+#include "include/mapviz/rqt_mapviz.h"
+#include <pluginlib/class_list_macros.h>
 
-#include <QCache>
-
-#include <tile_map/image_cache.h>
-
-namespace tile_map
+namespace mapviz
 {
-  class Texture
+
+  RqtMapviz::RqtMapviz() :
+    widget_(NULL)
   {
-  public:
-    Texture(int32_t texture_id, size_t hash);
-    ~Texture();
+    setObjectName("RqtMapviz");
+  }
 
-    const int32_t id;
-    const size_t url_hash;
-
-    bool failed;
-  };
-  typedef boost::shared_ptr<Texture> TexturePtr;
-
-  class TextureCache
+  void RqtMapviz::initPlugin(qt_gui_cpp::PluginContext& context)
   {
-  public:
-    TextureCache(ImageCachePtr image_cache, size_t size = 512);
+    // The plugin class doesn't really do very much -- just start Mapviz
+    // and add it to the context.
+    widget_ = new Mapviz(false, 0, NULL);
+    widget_->setWindowFlags(Qt::Widget);
+    context.addWidget(widget_);
+  }
 
-    TexturePtr GetTexture(size_t url_hash, const std::string& url, bool& failed);
-    void AddTexture(const TexturePtr& texture);
-    
-  private:
-    QCache<size_t, TexturePtr> cache_;
+  void RqtMapviz::shutdownPlugin()
+  {
+  }
 
-    ImageCachePtr image_cache_;
-  };
-  typedef boost::shared_ptr<TextureCache> TextureCachePtr;
+  void RqtMapviz::saveSettings(qt_gui_cpp::Settings& plugin_settings,
+                               qt_gui_cpp::Settings& instance_settings) const
+  {
+  }
+
+  void RqtMapviz::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
+                                  const qt_gui_cpp::Settings& instance_settings)
+  {
+  }
 }
 
-#endif  // TILE_MAP_TEXTURE_CACHE_H_
+PLUGINLIB_DECLARE_CLASS(mapviz, rqt_mapviz, mapviz::RqtMapviz, rqt_gui_cpp::Plugin)

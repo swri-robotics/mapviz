@@ -48,7 +48,7 @@
 #include <tf/transform_datatypes.h>
 #include <transform_util/transform.h>
 #include <transform_util/transform_manager.h>
-#include <yaml-cpp/yaml.h>
+#include <yaml_util/yaml_util.h>
 
 #include <mapviz/widgets.h>
 
@@ -143,14 +143,14 @@ namespace mapviz
       visible_ = visible;
     }
 
-    bool GetTransform(const ros::Time& stamp, transform_util::Transform& transform)
+    bool GetTransform(const ros::Time& stamp, transform_util::Transform& transform, bool use_latest_transforms = true)
     {
       if (!initialized_)
         return false;
 
       ros::Time time = stamp;
 
-      if (use_latest_transforms_)
+      if (use_latest_transforms_ && use_latest_transforms)
       {
         time = ros::Time();
       }

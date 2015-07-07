@@ -27,42 +27,19 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_TEXTURE_CACHE_H_
-#define TILE_MAP_TEXTURE_CACHE_H_
+#include "include/mapviz/mapviz.h"
 
-#include <QCache>
-
-#include <tile_map/image_cache.h>
-
-namespace tile_map
+int main(int argc, char **argv)
 {
-  class Texture
-  {
-  public:
-    Texture(int32_t texture_id, size_t hash);
-    ~Texture();
+  // Initialize QT
+  QApplication app(argc, argv);
 
-    const int32_t id;
-    const size_t url_hash;
+  // Initialize glut (for displaying text)
+  glutInit(&argc, argv);
 
-    bool failed;
-  };
-  typedef boost::shared_ptr<Texture> TexturePtr;
+  // Start mapviz
+  mapviz::Mapviz mapviz(true, argc, argv);
+  mapviz.show();
 
-  class TextureCache
-  {
-  public:
-    TextureCache(ImageCachePtr image_cache, size_t size = 512);
-
-    TexturePtr GetTexture(size_t url_hash, const std::string& url, bool& failed);
-    void AddTexture(const TexturePtr& texture);
-    
-  private:
-    QCache<size_t, TexturePtr> cache_;
-
-    ImageCachePtr image_cache_;
-  };
-  typedef boost::shared_ptr<TextureCache> TextureCachePtr;
+  return app.exec();
 }
-
-#endif  // TILE_MAP_TEXTURE_CACHE_H_
