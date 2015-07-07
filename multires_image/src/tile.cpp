@@ -95,8 +95,9 @@ namespace multires_image
             int width = m_image.width();
             int height = m_image.height();
 
-            int maxDimension = std::max(width, height);
-            m_dimension = (int32_t)math_util::Round(pow(2, ceil(log((float)maxDimension)/log(2.0f))));
+            float max_dim = std::max(width, height);
+            m_dimension = math_util::Round(
+              std::pow(2.0f, std::ceil(std::log(max_dim)/std::log(2.0f))));
 
             if (width != m_dimension || height != m_dimension)
             {

@@ -95,7 +95,7 @@ namespace multires_image
     class CacheThread : public QThread
     {
     public:
-      CacheThread(TileCache* parent) : p(parent) {}
+      explicit CacheThread(TileCache* parent) : p(parent) {}
       virtual void run();
 
     private:
@@ -106,7 +106,7 @@ namespace multires_image
     class FreeThread : public QThread
     {
     public:
-      FreeThread(TileCache* parent) : p(parent) {}
+      explicit FreeThread(TileCache* parent) : p(parent) {}
       virtual void run();
 
     private:

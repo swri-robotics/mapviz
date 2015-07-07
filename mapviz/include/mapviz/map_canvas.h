@@ -61,7 +61,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    MapCanvas(QWidget *parent = 0);
+    explicit MapCanvas(QWidget *parent = 0);
     ~MapCanvas();
 
     void InitializeTf(boost::shared_ptr<tf::TransformListener> tf);

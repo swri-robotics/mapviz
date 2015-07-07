@@ -125,7 +125,7 @@ namespace tile_map
   {
     Q_OBJECT
     public:
-      CacheThread(ImageCache* parent) : p(parent) {}
+      explicit CacheThread(ImageCache* parent) : p(parent) {}
       
       virtual void run();
 
