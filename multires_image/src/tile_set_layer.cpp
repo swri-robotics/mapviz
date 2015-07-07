@@ -49,12 +49,12 @@ namespace multires_image
   m_expectTiles(true)
   {
     // Calculate the width and height in pixels of this layer
-    float width = ceil(m_geo.Width() / pow(2.0f, layer));
-    float height = ceil(m_geo.Height() / pow(2.0f, layer));
+    float width = std::ceil(m_geo.Width() / std::pow(2.0f, layer));
+    float height = std::ceil(m_geo.Height() / std::pow(2.0f, layer));
 
     // Calculate the number for tile rows and columns for this layer
-    m_columns = (int)ceil((float)width / tileSize);
-    m_rows = (int)ceil((float)height / tileSize);
+    m_columns = std::ceil(width / tileSize);
+    m_rows = std::ceil(height / tileSize);
 
     m_tiles.reserve(m_columns);
     for (int c = 0; c < m_columns; c++)
