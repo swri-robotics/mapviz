@@ -103,7 +103,7 @@ namespace multires_image
 
       if (tile_set_->Load())
       {
-        QGLMap* glMap = (QGLMap*)centralWidget();
+        QGLMap* glMap = reinterpret_cast<QGLMap*>(centralWidget());
         glMap->SetTiles(tile_set_);
         glMap->UpdateView();
       }

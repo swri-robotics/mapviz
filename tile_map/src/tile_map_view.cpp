@@ -126,12 +126,15 @@ namespace tile_map
     //
     double lat_circumference = 
       transform_util::_earth_equator_circumference * std::cos(lat) / scale;
-    int32_t level = std::min((double)max_level_, std::max(0.0, std::ceil(std::log(lat_circumference) / std::log(2) - 8)));
+    int32_t level = std::min(max_level_, std::max(0, static_cast<int32_t>(
+      std::ceil(std::log(lat_circumference) / std::log(2) - 8))));
     
     int64_t max_size = std::pow(2, level);
     
-    int64_t center_x = std::min((double)max_size - 1.0, std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level)));
-    int64_t center_y = std::min((long double)max_size - 1.0, std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / math_util::_pi) / 2.0 * std::pow(2.0, level))); 
+    int64_t center_x = std::min(max_size - 1, static_cast<int64_t>(
+      std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level))));
+    int64_t center_y = std::min(max_size - 1, static_cast<int64_t>(
+      std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / math_util::_pi) / 2.0 * std::pow(2.0, level)))); 
         
     width_ = width;
     height_ = height;
@@ -141,7 +144,8 @@ namespace tile_map
     double meters_per_pixel = transform_util::_earth_equator_circumference * std::cos(lat) / std::pow(2, level + 8);    
     double tile_size = 256.0 * (meters_per_pixel / scale);
     
-    int64_t size = std::max(1.0, std::min((double)max_size, std::ceil(0.5 * max_dimension / tile_size) * 2 + 1));
+    int64_t size = std::max(1L, std::min(max_size, static_cast<int64_t>(
+      std::ceil(0.5 * max_dimension / tile_size) * 2 + 1)));
     
     if (size > 50)
     {

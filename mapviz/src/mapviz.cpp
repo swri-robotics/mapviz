@@ -234,10 +234,11 @@ void Mapviz::UpdateFrames()
   std::vector<std::string> frames;
   tf_->getFrameStrings(frames);
 
-  if ((int)frames.size() == ui_.fixedframe->count())
+  if (ui_.fixedframe->count() >= 0 && 
+      static_cast<size_t>(ui_.fixedframe->count()) == frames.size())
   {
     bool changed = false;
-    for (unsigned int i = 0; i < frames.size(); i++)
+    for (size_t i = 0; i < frames.size(); i++)
     {
       if (frames[i] != ui_.fixedframe->itemText(i).toStdString())
       {
@@ -254,7 +255,7 @@ void Mapviz::UpdateFrames()
   std::string current_fixed = ui_.fixedframe->currentText().toStdString();
 
   ui_.fixedframe->clear();
-  for (unsigned int i = 0; i < frames.size(); i++)
+  for (size_t i = 0; i < frames.size(); i++)
   {
     ui_.fixedframe->addItem(frames[i].c_str());
   }
@@ -275,7 +276,7 @@ void Mapviz::UpdateFrames()
 
   ui_.targetframe->clear();
   ui_.targetframe->addItem("<none>");
-  for (unsigned int i = 0; i < frames.size(); i++)
+  for (size_t i = 0; i < frames.size(); i++)
   {
     ui_.targetframe->addItem(frames[i].c_str());
   }
