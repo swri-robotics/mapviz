@@ -41,10 +41,10 @@ namespace tile_map
   public:
     Texture(int32_t texture_id, size_t hash);
     ~Texture();
-    
-    const size_t url_hash;
+
     const int32_t id;
-    
+    const size_t url_hash;
+
     bool failed;
   };
   typedef boost::shared_ptr<Texture> TexturePtr;
@@ -53,13 +53,13 @@ namespace tile_map
   {
   public:
     TextureCache(ImageCachePtr image_cache, size_t size = 512);
-  
+
     TexturePtr GetTexture(size_t url_hash, const std::string& url, bool& failed);
     void AddTexture(const TexturePtr& texture);
     
   private:
     QCache<size_t, TexturePtr> cache_;
-    
+
     ImageCachePtr image_cache_;
   };
   typedef boost::shared_ptr<TextureCache> TextureCachePtr;
