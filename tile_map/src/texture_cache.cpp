@@ -98,7 +98,7 @@ namespace tile_map
           QImage qimage = *image_ptr;
         
           GLuint ids[1];
-          int32_t check = 9999999;
+          uint32_t check = 9999999;
           ids[0] = check;
           
           glGenTextures(1, &ids[0]);
@@ -109,16 +109,16 @@ namespace tile_map
             
             GLenum err = glGetError();
             const GLubyte *errString = gluErrorString(err);
-            ROS_ERROR("GL ERROR(%d): %s", (int)err, errString);
+            ROS_ERROR("GL ERROR(%u): %s", err, errString);
             return texture;
           }
         
           texture_ptr = new TexturePtr(boost::make_shared<Texture>(ids[0], url_hash));
           texture = *texture_ptr;
 
-          int32_t max_dimension = std::max(qimage.width(), qimage.height());
-          int32_t dimension = (int32_t)math_util::Round(
-            std::pow(2, std::ceil(std::log((float)max_dimension) / std::log(2.0f))));
+          float max_dim = std::max(qimage.width(), qimage.height());
+          int32_t dimension = math_util::Round(
+            std::pow(2, std::ceil(std::log(max_dim) / std::log(2.0f))));
 
           if (qimage.width() != dimension || qimage.height() != dimension)
           {

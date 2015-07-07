@@ -51,9 +51,9 @@ namespace tile_map
     uri_(uri),
     uri_hash_(uri_hash),
     loading_(false),
+    failures_(0),
     failed_(false),
-    priority_(priority),
-    failures_(0)
+    priority_(priority)
   {
   }
   
