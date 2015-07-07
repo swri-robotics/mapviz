@@ -224,8 +224,8 @@ namespace mapviz_plugins
         markerData.transformed_quad_.push_back(transform * markerData.quad_[i]);
       }
       
-      uint32_t max_dimension = std::max(marker.image.height, marker.image.width);
-      uint32_t new_size = 1;
+      int32_t max_dimension = std::max(marker.image.height, marker.image.width);
+      int32_t new_size = 1;
       while (new_size < max_dimension)
         new_size = new_size << 1;
       
