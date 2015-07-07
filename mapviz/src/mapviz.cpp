@@ -53,6 +53,8 @@
 #include <QColorDialog>
 #include <QLabel>
 #include <QMessageBox>
+#include <QProcessEnvironment>
+#include <QFileInfo>
 
 #include <math_util/constants.h>
 #include <transform_util/frames.h>
@@ -62,6 +64,9 @@
 
 namespace mapviz
 {
+const QString Mapviz::ROS_WORKSPACE_VAR = "ROS_WORKSPACE";
+const QString Mapviz::MAPVIZ_CONFIG_FILE = "/.mapviz_config";
+
 Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::WFlags flags) :
     QMainWindow(parent, flags),
     xy_pos_label_(new QLabel("fixed: 0.0,0.0")),
@@ -199,8 +204,29 @@ void Mapviz::Initialize()
 
     ros::NodeHandle priv("~");
 
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    QString default_path = QDir::homePath();
+    if (env.contains(ROS_WORKSPACE_VAR))
+    {
+      // If the ROS_WORKSPACE environment variable is defined, try to read our
+      // config file out of that.  If we can't read it, fall back to trying to
+      // read one from the user's home directory.
+      QString ws_path = env.value(ROS_WORKSPACE_VAR, default_path);
+      if (QFileInfo(ws_path + MAPVIZ_CONFIG_FILE).isReadable())
+      {
+        default_path = ws_path;
+      }
+      else
+      {
+        ROS_WARN("Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
+                 ws_path.toStdString().c_str());
+      }
+    }
+    default_path += MAPVIZ_CONFIG_FILE;
+
+
     std::string config;
-    priv.param("config", config, QDir::homePath().toStdString() + "/.mapviz_config");
+    priv.param("config", config, default_path.toStdString());
 
     Open(config);
 
@@ -696,7 +722,36 @@ void Mapviz::Save(const std::string& filename)
 
 void Mapviz::AutoSave()
 {
-  Save(QDir::homePath().toStdString() + "/.mapviz_config");
+  QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+  QString default_path = QDir::homePath();
+
+  if (env.contains(ROS_WORKSPACE_VAR))
+  {
+    // Try to save our config in the ROS_WORKSPACE directory, but if we can't write
+    // to that -- probably because it is read-only -- try to use the home directory
+    // instead.
+    QString ws_path = env.value(ROS_WORKSPACE_VAR, default_path);
+    QString ws_file = ws_path + MAPVIZ_CONFIG_FILE;
+    QFileInfo file_info(ws_file);
+    QFileInfo dir_info(ws_path);
+    if ((!file_info.exists() && dir_info.isWritable()) ||
+        file_info.isWritable())
+    {
+      // Note that FileInfo::isWritable will return false if a file does not exist, so
+      // we need to check both if the target file is writable and if the target dir is
+      // writable if the file doesn't exist.
+      default_path = ws_path;
+    }
+    else
+    {
+      ROS_WARN("Could not write config file to %s.  Trying home directory.",
+               (ws_path + MAPVIZ_CONFIG_FILE).toStdString().c_str());
+    }
+  }
+  default_path += MAPVIZ_CONFIG_FILE;
+
+
+  Save(default_path.toStdString());
 }
 
 void Mapviz::OpenConfig()
