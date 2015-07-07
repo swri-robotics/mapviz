@@ -55,8 +55,8 @@ namespace mapviz_plugins
       right,
       bottom);
 
-    double scale_x = std::fabs(right - left) / (double)tiles->GeoReference().Width();
-    double scale_y = std::fabs(top - bottom) / (double)tiles->GeoReference().Height();
+    double scale_x = std::fabs(right - left) / tiles->GeoReference().Width();
+    double scale_y = std::fabs(top - bottom) / tiles->GeoReference().Height();
 
     min_scale_ = scale_x;
     if (scale_y > scale_x)
