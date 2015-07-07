@@ -169,6 +169,9 @@ namespace mapviz
 
     virtual void showEvent(QShowEvent* event);
     virtual void closeEvent(QCloseEvent* event);
+
+    static const QString ROS_WORKSPACE_VAR;
+    static const QString MAPVIZ_CONFIG_FILE;
   };
 }
 
