@@ -207,7 +207,7 @@ namespace mapviz_plugins
     }
     else if (color_transformer == COLOR_Z)
     {
-      val = point.point.z();
+      val = point.transformed_point.z();
     }
     else  // No intensity or  (color_transformer == COLOR_FLAT)
     {
@@ -235,10 +235,10 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::UpdateColors()
   {
-    std::list<Scan>::iterator scan_it = scans_.begin();
+    std::deque<Scan>::iterator scan_it = scans_.begin();
     for (; scan_it != scans_.end(); ++scan_it)
     {
-      std::list<StampedPoint>::iterator point_it = scan_it->points.begin();
+      std::vector<StampedPoint>::iterator point_it = scan_it->points.begin();
       for (; point_it != scan_it->points.end(); point_it++)
       {
         point_it->color = CalculateColor(*point_it, scan_it->has_intensity);
@@ -479,28 +479,12 @@ namespace mapviz_plugins
     glPointSize(point_size_);
     glBegin(GL_POINTS);
 
-    std::list<Scan>::const_iterator scan_it = scans_.begin();
+    std::deque<Scan>::const_iterator scan_it = scans_.begin();
     while (scan_it != scans_.end())
     {
-      /* This code was for implementing time-based scan decay (rather than
-       * queue-based). It is disabled for now. The iterator
-       * will have to be changed from a const iterator to a non-const iterator
-       * if this is re-implemented. (evenator)
-      // Remove expired scan
-      if ((now - scan_it->stamp).toSec() > decay_time_)
-      {
-        // Special case: If decay time is zero, don't erase
-        // the last scan
-        if (decay_time_ > 0.0f || scans_.size() > 1)
-        {
-          scan_it = scans_.erase(scan_it);
-          continue;
-        }
-      }
-      */
       if (scan_it->transformed)
       {
-        std::list<StampedPoint>::const_iterator point_it = scan_it->points.begin();
+        std::vector<StampedPoint>::const_iterator point_it = scan_it->points.begin();
         for (; point_it != scan_it->points.end(); ++point_it)
         {
           glColor4f(
@@ -543,7 +527,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::Transform()
   {
-    std::list<Scan>::iterator scan_it = scans_.begin();
+    std::deque<Scan>::iterator scan_it = scans_.begin();
     for (; scan_it != scans_.end(); ++scan_it)
     {
       Scan& scan = *scan_it;
@@ -552,7 +536,7 @@ namespace mapviz_plugins
       if (GetTransform(scan.stamp, transform, false))
       {
         scan.transformed = true;
-        std::list<StampedPoint>::iterator point_it = scan.points.begin();
+        std::vector<StampedPoint>::iterator point_it = scan.points.begin();
         for (; point_it != scan.points.end(); ++point_it)
         {
           point_it->transformed_point = transform * point_it->point;
@@ -634,6 +618,7 @@ namespace mapviz_plugins
     switch (index)
     {
       case COLOR_FLAT:
+        ui_.selectMinColor->setVisible(true);
         ui_.selectMaxColor->setVisible(false);
         ui_.maxColorLabel->setVisible(false);
         ui_.minColorLabel->setVisible(false);

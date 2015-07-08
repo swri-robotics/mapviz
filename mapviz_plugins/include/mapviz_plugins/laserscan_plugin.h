@@ -32,7 +32,8 @@
 
 // C++ standard libraries
 #include <string>
-#include <list>
+#include <deque>
+#include <vector>
 
 #include <mapviz/mapviz_plugin.h>
 
@@ -111,7 +112,7 @@ namespace mapviz_plugins
       {
           ros::Time stamp;
           QColor color;
-          std::list<StampedPoint> points;
+          std::vector<StampedPoint> points;
           bool transformed;
           bool has_intensity;
       };
@@ -136,7 +137,7 @@ namespace mapviz_plugins
       // Use a list instead of a deque for scans to facilitate removing
       // timed-out scans in the middle of the list in case I ever re-implement
       // decay time (evenator)
-      std::list<Scan> scans_;
+      std::deque<Scan> scans_;
       ros::Subscriber laserscan_sub_;
   };
 }
