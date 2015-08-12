@@ -21,6 +21,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 # Require glu
 FIND_PACKAGE(GLU REQUIRED)
 FIND_PACKAGE(GLUT REQUIRED)
+find_package(OpenCV REQUIRED)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
@@ -28,7 +29,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 find_package(Qt4 REQUIRED)
 
 include(${QT_USE_FILE})
-include_directories(${QT_INCLUDE_DIR}  ${QT_QTOPENGL_INCLUDE_DIR})
+include_directories(${QT_INCLUDE_DIR}  ${QT_QTOPENGL_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
@@ -73,4 +74,4 @@ QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/gps_plugin.h)
 
 rosbuild_add_library(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${OpenCV_LIBRARY})
