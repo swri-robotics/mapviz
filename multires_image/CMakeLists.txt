@@ -33,11 +33,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # Require glu
 FIND_PACKAGE(GLU REQUIRED)
-
+find_package(OpenCV REQUIRED)
 find_package(Qt4 REQUIRED)
 
 include(${QT_USE_FILE})
-include_directories(${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
+include_directories(${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
@@ -54,7 +54,7 @@ file (GLOB TILE_SRC_FILES
 QT4_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
 rosbuild_add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 rosbuild_link_boost(${PROJECT_NAME} thread)
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARY})
 
 # Build libmultires_widget
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
