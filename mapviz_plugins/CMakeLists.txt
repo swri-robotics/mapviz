@@ -21,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   yaml_util)
 
 find_package(Qt4 REQUIRED)
-
+find_package(OpenCV REQUIRED)
 find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
 
@@ -52,7 +52,7 @@ catkin_package(
 add_definitions(-DQT_NO_KEYWORDS)
 
 include(${QT_USE_FILE})
-include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
@@ -93,7 +93,7 @@ QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/gps_plugin.h)
 
 add_library(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} marti_visualization_msgs_generate_messages_cpp)
 
 install(DIRECTORY include/${PROJECT_NAME}/
