@@ -28,6 +28,7 @@
   <depend package="yaml_util"/>
 
   <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lmapviz_plugins -Wl,-rpath,${prefix}/lib"/>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
   </export>
 
