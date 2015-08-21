@@ -27,6 +27,7 @@ find_package(GLUT REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
   DEPENDS libqt4
   CATKIN_DEPENDS 
     roscpp 
