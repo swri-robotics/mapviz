@@ -16,13 +16,15 @@
   <depend>roscpp</depend>
   <depend>rqt_gui</depend>
   <depend>rqt_gui_cpp</depend>
-  <depend>opencv2</depend>
   <depend>pluginlib</depend>
   <depend>tf</depend>
   <depend>transform_util</depend>
   <depend>libqt4-dev</depend>
   <depend>qt4-qmake</depend>
   <depend>yaml_util</depend>
+  <depend>glut</depend>
+  <depend>libopencv-dev</depend>
+  <depend>libglew-dev</depend>
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
