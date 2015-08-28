@@ -14,12 +14,9 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>roscpp</depend>
-  <depend>pluginlib</depend>
   <depend>tf</depend>
   <depend>transform_util</depend>
   <depend>math_util</depend>
-  <depend>yaml_util</depend>
-  <depend>opencv2</depend>
 
 </package>
 

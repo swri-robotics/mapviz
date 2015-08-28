@@ -3,10 +3,10 @@ project(multires_image)
 
 find_package(catkin REQUIRED COMPONENTS 
   roscpp 
-  pluginlib 
   tf 
   transform_util 
-  math_util)
+  math_util
+)
 
 find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
@@ -17,7 +17,10 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} multires_widget
   DEPENDS libqt4
-  CATKIN_DEPENDS roscpp pluginlib tf transform_util yaml_util
+  CATKIN_DEPENDS
+    roscpp
+    tf
+    transform_util
 )
 
 include(${QT_USE_FILE})
