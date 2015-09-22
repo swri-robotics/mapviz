@@ -15,7 +15,7 @@ find_package(GLU REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
-  DEPENDS libqt4
+  DEPENDS Qt4
   CATKIN_DEPENDS 
     roscpp 
     pluginlib 

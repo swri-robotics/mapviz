@@ -13,18 +13,19 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>roscpp</depend>
-  <depend>rqt_gui</depend>
-  <depend>rqt_gui_cpp</depend>
+  <build_depend>libqt4-dev</build_depend>
+  <depend>glut</depend>
+  <depend>libglew-dev</depend>
+  <depend>libopencv-dev</depend>
   <depend>pluginlib</depend>
+  <depend>qt4-qmake</depend>
+  <depend>roscpp</depend>
+  <depend>rqt_gui_cpp</depend>
+  <depend>rqt_gui</depend>
   <depend>tf</depend>
   <depend>transform_util</depend>
-  <depend>libqt4-dev</depend>
-  <depend>qt4-qmake</depend>
   <depend>yaml_util</depend>
-  <depend>glut</depend>
-  <depend>libopencv-dev</depend>
-  <depend>libglew-dev</depend>
+  <exec_depend>libqt4</exec_depend>
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
