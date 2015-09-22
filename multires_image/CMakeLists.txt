@@ -6,7 +6,8 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib 
   tf 
   transform_util 
-  math_util)
+  math_util
+  yaml_util)
 
 find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
@@ -16,7 +17,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} multires_widget
-  DEPENDS libqt4
+  DEPENDS Qt4
   CATKIN_DEPENDS roscpp pluginlib tf transform_util yaml_util
 )
 
@@ -49,7 +50,6 @@ add_library(multires_widget ${WIDGET_SRC_FILES})
 target_link_libraries(multires_widget ${PROJECT_NAME})
 
 # Build nodes
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/nodes)
 include_directories(src)
 file (GLOB VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
 QT4_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)

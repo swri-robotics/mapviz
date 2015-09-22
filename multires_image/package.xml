@@ -13,13 +13,15 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>roscpp</depend>
+  <build_depend>libqt4-dev</build_depend>
+  <depend>math_util</depend>
+  <depend>libopencv-dev</depend>
   <depend>pluginlib</depend>
+  <depend>roscpp</depend>
   <depend>tf</depend>
   <depend>transform_util</depend>
-  <depend>math_util</depend>
   <depend>yaml_util</depend>
-  <depend>opencv2</depend>
+  <exec_depend>libqt4</exec_depend>
 
 </package>
 
