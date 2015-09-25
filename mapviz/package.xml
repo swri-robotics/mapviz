@@ -17,11 +17,13 @@
   <depend>glut</depend>
   <depend>libglew-dev</depend>
   <depend>libopencv-dev</depend>
+  <depend>libxmu-dev</depend>
   <depend>pluginlib</depend>
   <depend>qt4-qmake</depend>
   <depend>roscpp</depend>
   <depend>rqt_gui_cpp</depend>
   <depend>rqt_gui</depend>
+  <depend>std_srvs</depend>
   <depend>tf</depend>
   <depend>transform_util</depend>
   <depend>yaml_util</depend>
