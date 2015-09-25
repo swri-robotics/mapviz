@@ -216,7 +216,7 @@ namespace mapviz_plugins
   
   void TfFramePlugin::TimerCallback(const ros::TimerEvent& event)
   {
-    transform_util::Transform transform;
+    swri_transform_util::Transform transform;
     if (GetTransform(ros::Time(), transform))
     {
       StampedPoint stamped_point;
@@ -413,7 +413,7 @@ namespace mapviz_plugins
 
   bool TfFramePlugin::TransformPoint(StampedPoint& point)
   {
-    transform_util::Transform transform;
+    swri_transform_util::Transform transform;
     if (GetTransform(point.frame, point.stamp, transform))
     {
       point.transformed_point = transform * point.point;

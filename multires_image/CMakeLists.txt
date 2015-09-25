@@ -5,9 +5,9 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp 
   pluginlib 
   tf 
-  transform_util 
-  math_util
-  yaml_util)
+  swri_transform_util 
+  swri_math_util
+  swri_yaml_util)
 
 find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
@@ -18,7 +18,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} multires_widget
   DEPENDS Qt4
-  CATKIN_DEPENDS roscpp pluginlib tf transform_util yaml_util
+  CATKIN_DEPENDS roscpp pluginlib tf swri_transform_util swri_yaml_util
 )
 
 include(${QT_USE_FILE})

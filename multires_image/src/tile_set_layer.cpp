@@ -38,7 +38,7 @@
 
 namespace multires_image
 {
-  TileSetLayer::TileSetLayer(const transform_util::GeoReference& geo,
+  TileSetLayer::TileSetLayer(const swri_transform_util::GeoReference& geo,
                   const std::string& path,
                   int tileSize, int layer) :
   m_geo(geo),

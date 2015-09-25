@@ -45,8 +45,8 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include <image_util/geometry_util.h>
-#include <transform_util/transform_util.h>
+#include <swri_image_util/geometry_util.h>
+#include <swri_transform_util/transform_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -248,7 +248,7 @@ namespace mapviz_plugins
     if (ui_.show_covariance->isChecked())
     {
       tf::Matrix3x3 tf_cov =
-          transform_util::GetUpperLeft(odometry->pose.covariance);
+          swri_transform_util::GetUpperLeft(odometry->pose.covariance);
 
       if (tf_cov[0][0] < 100000 && tf_cov[1][1] < 100000)
       {
@@ -261,11 +261,11 @@ namespace mapviz_plugins
           }
         }
 
-        cv::Mat cov_matrix_2d = image_util::ProjectEllipsoid(cov_matrix_3d);
+        cv::Mat cov_matrix_2d = swri_image_util::ProjectEllipsoid(cov_matrix_3d);
 
         if (!cov_matrix_2d.empty())
         {
-          cur_point_.cov_points = image_util::GetEllipsePoints(
+          cur_point_.cov_points = swri_image_util::GetEllipsePoints(
               cov_matrix_2d, cur_point_.point, 3, 32);
 
           cur_point_.transformed_cov_points = cur_point_.cov_points;
@@ -492,7 +492,7 @@ namespace mapviz_plugins
 
   bool OdometryPlugin::TransformPoint(StampedPoint& point)
   {
-    transform_util::Transform transform;
+    swri_transform_util::Transform transform;
     if (GetTransform(point.stamp, transform))
     {
       point.transformed_point = transform * point.point;
@@ -572,7 +572,7 @@ namespace mapviz_plugins
     node["buffer_size"] >> buffer_size_;
     ui_.buffersize->setValue(buffer_size_);
 
-    if (yaml_util::FindValue(node, "show_covariance"))
+    if (swri_yaml_util::FindValue(node, "show_covariance"))
     {
       bool show_covariance = false;
       node["show_covariance"] >> show_covariance;

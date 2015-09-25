@@ -83,8 +83,8 @@ namespace tile_map
     Ui::tile_map_config ui_;
     QWidget* config_widget_;
 
-    transform_util::Transform transform_;
-    transform_util::Transform inverse_transform_;
+    swri_transform_util::Transform transform_;
+    swri_transform_util::Transform inverse_transform_;
 
     bool transformed_;
     

@@ -54,13 +54,13 @@ namespace multires_image
   {
   }
 
-  TileSet::TileSet(const transform_util::GeoReference& georeference) :
+  TileSet::TileSet(const swri_transform_util::GeoReference& georeference) :
     m_geo(georeference),
     m_extension("jpg")
   {
   }
 
-  TileSet::TileSet(const transform_util::GeoReference& georeference,
+  TileSet::TileSet(const swri_transform_util::GeoReference& georeference,
                    const std::string extension) :
     m_geo(georeference),
     m_extension(extension)

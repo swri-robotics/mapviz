@@ -15,10 +15,10 @@ find_package(catkin REQUIRED COMPONENTS
   mapviz
   multires_image
   cv_bridge
-  transform_util
-  math_util
-  image_util
-  yaml_util)
+  swri_transform_util
+  swri_math_util
+  swri_image_util
+  swri_yaml_util)
 
 find_package(Qt4 REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -43,10 +43,10 @@ catkin_package(
     mapviz
     multires_image
     cv_bridge
-    transform_util
-    math_util
-    image_util
-    yaml_util
+    swri_transform_util
+    swri_math_util
+    swri_image_util
+    swri_yaml_util
 )
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz

@@ -17,12 +17,13 @@
 
   <build_depend>libqt4-dev</build_depend>
   <depend>mapviz</depend>
-  <depend>math_util</depend>
   <depend>pluginlib</depend>
   <depend>qt4-qmake</depend>
   <depend>roscpp</depend>
+  <depend>swri_math_util</depend>
+  <depend>swri_transform_util</depend>
+  <depend>swri_yaml_util</depend>
   <depend>tf</depend>
-  <depend>transform_util</depend>
   <exec_depend>libqt4</exec_depend>
 
   <export>
