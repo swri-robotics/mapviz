@@ -34,8 +34,8 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include <image_util/geometry_util.h>
-#include <transform_util/transform_util.h>
+#include <swri_image_util/geometry_util.h>
+#include <swri_transform_util/transform_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -356,7 +356,7 @@ namespace mapviz_plugins
 
         transformed = true;
 
-        transform_util::Transform tf;
+        swri_transform_util::Transform tf;
       }
 
       glEnd();
@@ -426,7 +426,7 @@ namespace mapviz_plugins
 
   bool GpsPlugin::TransformPoint(StampedPoint& point)
   {
-    transform_util::Transform transform;
+    swri_transform_util::Transform transform;
     if (GetTransform(point.stamp, transform))
     {
       point.transformed_point = transform * point.point;

@@ -31,7 +31,7 @@
 
 // C++ standard libraries
 #include <cmath>
-#include <math_util/constants.h>
+#include <swri_math_util/constants.h>
 
 namespace mapviz
 {
@@ -357,7 +357,7 @@ void MapCanvas::TransformTarget()
     if (rotate_90_)
     {
       transform_.setRotation(
-          tf::createQuaternionFromYaw(-math_util::_half_pi) * transform_.getRotation());
+          tf::createQuaternionFromYaw(-swri_math_util::_half_pi) * transform_.getRotation());
     }
 
     double roll, pitch, yaw;

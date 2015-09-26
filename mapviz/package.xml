@@ -25,8 +25,8 @@
   <depend>rqt_gui</depend>
   <depend>std_srvs</depend>
   <depend>tf</depend>
-  <depend>transform_util</depend>
-  <depend>yaml_util</depend>
+  <depend>swri_transform_util</depend>
+  <depend>swri_yaml_util</depend>
   <exec_depend>libqt4</exec_depend>
 
   <export>

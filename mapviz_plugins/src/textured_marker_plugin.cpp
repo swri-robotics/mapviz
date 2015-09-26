@@ -45,7 +45,7 @@
 #include <ros/master.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <math_util/constants.h>
+#include <swri_math_util/constants.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -164,7 +164,7 @@ namespace mapviz_plugins
       markerData.transformed = true;
       markerData.alpha_ = marker.alpha;
 
-      transform_util::Transform transform;
+      swri_transform_util::Transform transform;
       if (!GetTransform(marker.header.stamp, transform))
       {
         markerData.transformed = false;
@@ -461,7 +461,7 @@ namespace mapviz_plugins
       std::map<int, MarkerData>::iterator markerIter;
       for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
-        transform_util::Transform transform;
+        swri_transform_util::Transform transform;
         if (GetTransform(markerIter->second.stamp, transform))
         {
           markerIter->second.transformed_quad_.clear();

@@ -16,10 +16,8 @@
   <build_depend>libqt4-dev</build_depend>
   <depend>cv_bridge</depend>
   <depend>gps_common</depend>
-  <depend>image_util</depend>
   <depend>mapviz</depend>
   <depend>marti_visualization_msgs</depend>
-  <depend>math_util</depend>
   <depend>multires_image</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
@@ -28,10 +26,12 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>stereo_msgs</depend>
+  <depend>swri_image_util</depend>
+  <depend>swri_math_util</depend>
+  <depend>swri_transform_util</depend>
+  <depend>swri_yaml_util</depend>
   <depend>tf</depend>
-  <depend>transform_util</depend>
   <depend>visualization_msgs</depend>
-  <depend>yaml_util</depend>
   <exec_depend>libqt4</exec_depend>
 
   <export>
