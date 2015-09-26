@@ -1,0 +1,36 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package mapviz
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Forthcoming
+-----------
+* Renames all marti_common packages that were renamed.
+  (See http://github.com/swri-robotics/marti_common/issues/231)
+* Adds missing dependencies in mapviz package.xml.
+* Fixes catkin_lint problems that could prevent installation.
+* Formats package files
+* Cleans up dependencies
+* Adds required rosdeps
+* Saving/loading config files to the ROS_WORKSPACE directory.
+* fixes lint issues
+* Makes mapviz show a warning dialog instead of crash when it fails to load a plugin.
+* includes yaml_util header in mapviz plug-in base class
+* Handles loading old config files that still reference "mutlires_image".
+* Adds an RQT plugin version of Mapviz.
+* updates cmake version to squash the CMP0003 warning
+* uses correct operator when combining quaternions
+* adds option for rotating camera 90 degrees
+* throttles log msgs
+* removes dependencies on build_tools
+* uses format 2 package definition
+* allows plug-in selection with double-clicks
+* displays file name in window title
+* displays preview icon next to plug-in names
+* fixes issue with coordinates displayed on status bar
+* fixes missing organization in license text
+* Adds tooltips describing the various mapviz widgets
+* fixes GLEW/GL include order
+* catkinizes mapviz
+* changes license to BSD
+* adds license and readme files
+* Contributors: Ed Venator, Edward Venator, Jerry Towler, Marc Alban, P. J. Reed
