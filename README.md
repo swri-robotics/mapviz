@@ -1,24 +1,64 @@
-mapviz
+apviz
 ======
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RVIZ](http://wiki.ros.org/rviz) focused on visualizing 2D data.
 
 ![](https://github.com/swri-robotics/mapviz/wiki/mapviz.png)
 
-Mapviz currently depends on the [marti_common](https://github.com/swri-robotics/marti_common) and [marti_messages](https://github.com/swri-robotics/marti_messages) repositories for some utility functions and message definitions.
+Build Status
+------------
 
-Mapviz should be compatible with Ubuntu 12.04 through Ubuntu 14.04 and ROS Fuerte, Groovy, Hydro, and Indigo.  The *master* branch uses the [rosbuild](http://wiki.ros.org/rosbuild) make system and the *catkin* branch uses [catkin](http://wiki.ros.org/catkin).
+Package        | Indigo | Jade
+-------------- | ------ | ----
+mapviz         | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-mapviz_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-mapviz_binarydeb_trusty_amd64/)                 | Coming soon
+mapviz_plugins | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-mapviz-plugins_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-mapviz-plugins_binarydeb_trusty_amd64/) | Coming soon
+multires_image | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-multires-image_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-multires-image_binarydeb_trusty_amd64/) | Coming soon
+tilemap        | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_trusty_amd64/)               | Coming soon
 
-Installing ROS [Fuerte](http://wiki.ros.org/fuerte/Installation/Ubuntu), [Groovy](http://wiki.ros.org/groovy/Installation/Ubuntu), [Hydro](http://wiki.ros.org/hydro/Installation/Ubuntu), or [Indigo](http://wiki.ros.org/indigo/Installation/Ubuntu)
+Installation (ROS Indigo)
+------------
 
-Additional Ubuntu dependencies beyond ROS base for mapviz:
+In ROS Indigo, you can install mapviz using apt-get from the ROS apt repository. This is the recommended installation method for ROS Indigo. ROS Jade builds are coming soon.
 
-    $ sudo apt-get install ros-XXXX-tf ros-XXXX-common-msgs ros-XXXX-plugin-lib ros-XXXX-gps-umd \
-        ros-XXXX-nodelet ros-XXXX-cv-bridge ros-XXXX-image-geometry ros-XXXX-angles \
-        ros-XXXX-camera-calibration-parsers ros-XXXX-image-transport
+    sudo apt-get install ros-indigo-mapviz
 
-    $ sudo apt-get install yaml-cpp libboost-random-dev libblas-dev liblapack-dev libproj-dev \
-        libglew-dev freeglut3-dev libxmu-dev libgeos++-dev qt4-dev-tools
+
+Building From Source (ROS Indigo, Jade)
+------------
+
+These directions assume you have already set up a catkin workspace. See [this tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) on the ROS Wiki for help setting up a catkin workspace.
+
+### Checking out the source code (wstool)
+
+If you're using wstool, add this repository to your wstool workspace:
+
+    wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v indigo-devel
+
+In ROS Jade, you must also build these dependencies from source, so you'll have to add them as well:
+
+    wstool set marti_messages --git https://github.com/swri-robotics/marti_messages.git -v indigo-devel
+    wstool set marti_common --git https://github.com/swri-robotics/marti_common.git -v indigo-devel
+
+### Checking out the source code (git)
+
+If you're not using wstool, you can check out the repositories with git:
+
+    git clone https://github.com/swri-robotics/mapviz.git --branch indigo-devel
+
+In ROS Jade, you must also build these dependencies from source, so you'll have to add them as well:
+
+    git clone https://github.com/swri-robotics/marti_messages.git --branch indigo-devel
+    git clone https://github.com/swri-robotics/marti_common.git --branch indigo-devel
+
+### Installing dependencies and building
+
+Install all of the dependencies using rosdep by running the following command from the root of your catkin workspace:
+
+    rosdep install --from-paths src --ignore-src
+
+Build the workspace with catkin_make:
+
+    catkin_make
 
 Plug-ins
 --------
