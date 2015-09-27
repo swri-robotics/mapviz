@@ -1,4 +1,4 @@
-apviz
+Mapviz
 ======
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RVIZ](http://wiki.ros.org/rviz) focused on visualizing 2D data.
