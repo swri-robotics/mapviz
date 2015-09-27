@@ -13,8 +13,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>libqt4-dev</build_depend>
   <depend>glut</depend>
+  <exec_depend>libqt4</exec_depend>
+  <build_depend>libqt4-dev</build_depend>
+  <exec_depend>libqt4-opengl</exec_depend>
+  <build_depend>libqt4-opengl-dev</build_depend>
   <depend>libglew-dev</depend>
   <depend>libopencv-dev</depend>
   <depend>libxmu-dev</depend>
@@ -27,7 +30,6 @@
   <depend>tf</depend>
   <depend>swri_transform_util</depend>
   <depend>swri_yaml_util</depend>
-  <exec_depend>libqt4</exec_depend>
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
