@@ -13,7 +13,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <exec_depend>libqt4</exec_depend>
   <build_depend>libqt4-dev</build_depend>
+  <exec_depend>libqt4-opengl</exec_depend>
+  <build_depend>libqt4-opengl-dev</build_depend>
   <depend>cv_bridge</depend>
   <depend>gps_common</depend>
   <depend>mapviz</depend>
@@ -32,7 +35,6 @@
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
   <depend>visualization_msgs</depend>
-  <exec_depend>libqt4</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

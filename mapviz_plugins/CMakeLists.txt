@@ -20,7 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
   swri_image_util
   swri_yaml_util)
 
-find_package(Qt4 REQUIRED)
+find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+set(QT_USE_QTOPENGL TRUE)
 find_package(OpenCV REQUIRED)
 find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
