@@ -4,6 +4,10 @@ Changelog for package mapviz
 
 Forthcoming
 -----------
+* Adds missing qt4_opengl dependency
+
+0.0.1 (2015-09-27)
+-----------
 * Renames all marti_common packages that were renamed.
   (See http://github.com/swri-robotics/marti_common/issues/231)
 * Adds missing dependencies in mapviz package.xml.

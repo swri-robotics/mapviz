@@ -4,6 +4,9 @@ Changelog for package tile_map
 
 Forthcoming
 -----------
+
+0.0.1 (2015-09-27)
+-----------
 * Adds missing qt-opengl dependency to tile_map.
 * Renames all marti_common packages that were renamed.
   (See http://github.com/swri-robotics/marti_common/issues/231)
