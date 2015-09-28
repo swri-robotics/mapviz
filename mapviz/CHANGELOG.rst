@@ -2,7 +2,7 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
+0.0.3 (2015-09-28)
 ------------------
 * Fixing casting issues that prevented compilation on 32-bit systems.
 * Contributors: P. J. Reed
