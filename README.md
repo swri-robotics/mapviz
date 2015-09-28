@@ -8,12 +8,12 @@ Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in s
 Build Status
 ------------
 
-Package        | Indigo | Jade
--------------- | ------ | ----
-mapviz         | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-mapviz_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-mapviz_binarydeb_trusty_amd64/)                 | Coming soon
-mapviz_plugins | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-mapviz-plugins_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-mapviz-plugins_binarydeb_trusty_amd64/) | Coming soon
-multires_image | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-multires-image_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-multires-image_binarydeb_trusty_amd64/) | Coming soon
-tilemap        | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_trusty_amd64/)               | Coming soon
+Package | Indigo (Saucy 64-bit) | Indigo (Trusty 64-bit) | Jade (Trusty) | Jade (Utopic) | Jade (Vivid)
+------- | -------------- | --------------- | ------------- | ------------- | ------------
+mapviz | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-mapviz_binarydeb_saucy_amd64)](http://jenkins.ros.org/job/ros-indigo-mapviz_binarydeb_saucy_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-mapviz_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-mapviz_binarydeb_trusty_amd64/) | Coming Soon | Coming Soon | Coming Soon
+mapviz_plugins | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-mapviz-plugins_binarydeb_saucy_amd64)](http://jenkins.ros.org/job/ros-indigo-mapviz-plugins_binarydeb_saucy_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-mapviz-plugins_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-mapviz-plugins_binarydeb_trusty_amd64/) | Coming soon | Coming soon | Coming soon
+multires_image | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-multires-image_binarydeb_saucy_amd64)](http://jenkins.ros.org/job/ros-indigo-multires-image_binarydeb_saucy_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-multires-image_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-multires-image_binarydeb_trusty_amd64/) | Coming soon | Coming soon | Coming soon
+tilemap | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_saucy_amd64)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_saucy_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_trusty_amd64/) | Coming soon | Coming soon | Coming soon
 
 Installation (ROS Indigo)
 ------------
