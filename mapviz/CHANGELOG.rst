@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+------------------
+* Fixing casting issues that prevented compilation on 32-bit systems.
+* Contributors: P. J. Reed
+
 0.0.2 (2015-09-27)
 ------------------
 * Adds missing qt4_opengl dependency
