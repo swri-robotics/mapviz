@@ -144,7 +144,7 @@ namespace tile_map
     double meters_per_pixel = swri_transform_util::_earth_equator_circumference * std::cos(lat) / std::pow(2, level + 8);    
     double tile_size = 256.0 * (meters_per_pixel / scale);
     
-    int64_t size = std::max(1L, std::min(max_size, static_cast<int64_t>(
+    int64_t size = std::max(static_cast<int64_t>(1L), std::min(max_size, static_cast<int64_t>(
       std::ceil(0.5 * max_dimension / tile_size) * 2 + 1)));
     
     if (size > 50)
@@ -160,8 +160,8 @@ namespace tile_map
       center_x_ = center_x;
       center_y_ = center_y;
       
-      int64_t top = std::max(0L, center_y_ - size_ / 2);
-      int64_t left = std::max(0L, center_x_ - size_ / 2);
+      int64_t top = std::max(static_cast<int64_t>(0L), center_y_ - size_ / 2);
+      int64_t left = std::max(static_cast<int64_t>(0L), center_x_ - size_ / 2);
       
       int64_t right = std::min(max_size, left + size_);
       int64_t bottom = std::min(max_size, top + size_);
@@ -195,8 +195,8 @@ namespace tile_map
         
         int64_t precache_max_size = std::pow(2, level - 1);
         
-        int64_t precache_top = std::max(0L, precache_y - (size_ - 1) / 2);
-        int64_t precache_left = std::max(0L, precache_x - (size_ - 1) / 2);
+        int64_t precache_top = std::max(static_cast<int64_t>(0L), precache_y - (size_ - 1) / 2);
+        int64_t precache_left = std::max(static_cast<int64_t>(0L), precache_x - (size_ - 1) / 2);
       
         int64_t precache_right = std::min(precache_max_size, precache_left + size_);
         int64_t precache_bottom = std::min(precache_max_size, precache_top + size_);
