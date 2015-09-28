@@ -2,6 +2,9 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.3 (2015-09-28)
+------------------
+
 0.0.2 (2015-09-27)
 ------------------
 * Adds missing qt4_opengl dependency
