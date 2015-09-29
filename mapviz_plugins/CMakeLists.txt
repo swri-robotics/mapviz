@@ -2,23 +2,23 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mapviz_plugins)
 
 find_package(catkin REQUIRED COMPONENTS 
+  cv_bridge
+  mapviz
+  marti_visualization_msgs
+  multires_image
+  nav_msgs
   roscpp 
   pluginlib 
-  tf 
-  std_msgs 
-  nav_msgs
   sensor_msgs
+  std_msgs 
   stereo_msgs
-  visualization_msgs
-  gps_common
-  marti_visualization_msgs
-  mapviz
-  multires_image
-  cv_bridge
-  swri_transform_util
-  swri_math_util
   swri_image_util
-  swri_yaml_util)
+  swri_math_util
+  swri_transform_util
+  swri_yaml_util
+  tf 
+  visualization_msgs
+)
 
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 set(QT_USE_QTOPENGL TRUE)
@@ -31,23 +31,22 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME}
   DEPENDS Qt4
   CATKIN_DEPENDS 
-    roscpp 
-    pluginlib 
-    tf 
-    std_msgs 
-    nav_msgs
-    sensor_msgs
-    stereo_msgs
-    visualization_msgs
-    gps_common
-    marti_visualization_msgs
-    mapviz
-    multires_image
     cv_bridge
-    swri_transform_util
-    swri_math_util
+    mapviz
+    marti_visualization_msgs
+    multires_image
+    nav_msgs
+    pluginlib 
+    roscpp 
+    sensor_msgs
+    std_msgs 
+    stereo_msgs
     swri_image_util
+    swri_math_util
+    swri_transform_util
     swri_yaml_util
+    tf 
+    visualization_msgs
 )
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
@@ -77,7 +76,7 @@ file (GLOB SRC_FILES
     src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
     src/robot_image_plugin.cpp
-    src/gps_plugin.cpp)
+)
     
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 
@@ -92,7 +91,7 @@ QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/textured_marker_plugin.h
     include/mapviz_plugins/tf_frame_plugin.h
     include/mapviz_plugins/robot_image_plugin.h
-    include/mapviz_plugins/gps_plugin.h)
+)
 
 add_library(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
