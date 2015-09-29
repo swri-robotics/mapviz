@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.0 (2015-09-29)
+------------------
 * Removes gps plugin, since gps_common is not in ROS Jade. See issue 
   `#238 <https://github.com/swri-robotics/mapviz/issues/238>`_.
 * Contributors: Edward Venator
