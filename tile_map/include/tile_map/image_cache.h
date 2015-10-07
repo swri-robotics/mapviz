@@ -90,7 +90,7 @@ namespace tile_map
     Q_OBJECT
     
   public:
-    ImageCache(const QString& cache_dir, size_t size = 4096);
+    explicit ImageCache(const QString& cache_dir, size_t size = 4096);
     ~ImageCache();
     
     ImagePtr GetImage(size_t uri_hash, const std::string& uri, int32_t priority = 0);

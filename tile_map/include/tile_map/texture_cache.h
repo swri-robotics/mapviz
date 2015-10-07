@@ -52,7 +52,7 @@ namespace tile_map
   class TextureCache
   {
   public:
-    TextureCache(ImageCachePtr image_cache, size_t size = 512);
+    explicit TextureCache(ImageCachePtr image_cache, size_t size = 512);
 
     TexturePtr GetTexture(size_t url_hash, const std::string& url, bool& failed);
     void AddTexture(const TexturePtr& texture);
