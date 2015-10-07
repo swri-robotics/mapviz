@@ -66,7 +66,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    SingleClickLabel(QWidget *parent = 0, Qt::WFlags flags = 0) :
+    explicit SingleClickLabel(QWidget *parent = 0, Qt::WFlags flags = 0) :
       QLabel(parent, flags) {}
 
     ~SingleClickLabel() {}
@@ -86,7 +86,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    DoubleClickWidget(QWidget *parent = 0, Qt::WFlags flags = 0) :
+    explicit DoubleClickWidget(QWidget *parent = 0, Qt::WFlags flags = 0) :
       QWidget(parent, flags) {}
 
     ~DoubleClickWidget() {}
@@ -118,7 +118,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    IconWidget(QWidget *parent = 0, Qt::WFlags flags = 0) :
+    explicit IconWidget(QWidget *parent = 0, Qt::WFlags flags = 0) :
       QWidget(parent, flags)
     {
       pixmap_ = QPixmap(16, 16);
