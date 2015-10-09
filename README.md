@@ -22,6 +22,8 @@ tile_map (64-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job
 Installation (ROS Indigo, Jade)
 ------------
 
+*At this time, Mapviz is only available from OSRF's prerelease apt repository (ros-shadow-fixed). Until the repository is synced over to the main ROS repository, the recommended installation method is to compile Mapviz from source code.*
+
 In ROS Indigo, you can install mapviz using apt-get from the ROS apt repository. This is the recommended installation method for ROS Indigo and Jade.
 
     sudo apt-get install ros-$ROS_DISTRO-mapviz
@@ -34,15 +36,19 @@ These directions assume you have already set up a catkin workspace. See [this tu
 
 ### Checking out the source code (wstool)
 
-If you're using wstool, add this repository to your wstool workspace:
+If you're using wstool, add these repositories to your wstool workspace:
 
     wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v $ROS_DISTRO-devel
+    wstool set marti_common --git https://github.com/swri-robotics/marti_common.git -v $ROS_DISTRO-devel
+    wstool set marti_messages --git https://github.com/swri-robotics/marti_messages.git -v indigo-devel
 
 ### Checking out the source code (git)
 
 If you're not using wstool, you can check out the repositories with git:
 
     git clone https://github.com/swri-robotics/mapviz.git --branch $ROS_DISTRO-devel
+    git clone https://github.com/swri-robotics/marti_common.git --branch $ROS_DISTRO-devel
+    git clone https://github.com/swri-robotics/marti_messages.git --branch indigo-devel
 
 ### Installing dependencies and building
 
