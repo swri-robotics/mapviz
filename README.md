@@ -107,7 +107,7 @@ Overlays a [sensor_msgs::DisparityImage](http://docs.ros.org/api/stereo_msgs/htm
 
 ### GPS
 
-Projects [gps_common::GPSFix](http://docs.ros.org/hydro/api/gps_common/html/msg/GPSFix.html) message data into the scene.
+Projects [sensor_msgs::NavSatFix](http://http://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene.
 
 **Parameters**
  * Topic: The GPS topic

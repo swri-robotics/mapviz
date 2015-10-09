@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   stereo_msgs
   visualization_msgs
-  gps_common
   marti_visualization_msgs
   mapviz
   multires_image
@@ -39,7 +38,6 @@ catkin_package(
     sensor_msgs
     stereo_msgs
     visualization_msgs
-    gps_common
     marti_visualization_msgs
     mapviz
     multires_image

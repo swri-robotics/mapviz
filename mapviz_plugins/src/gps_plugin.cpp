@@ -85,12 +85,12 @@ namespace mapviz_plugins
     {
       QPixmap icon(16, 16);
       icon.fill(Qt::transparent);
-      
+
       QPainter painter(&icon);
       painter.setRenderHint(QPainter::Antialiasing, true);
-      
+
       QPen pen(color_);
-      
+
       if (draw_style_ == POINTS)
       {
         pen.setWidth(7);
@@ -114,7 +114,7 @@ namespace mapviz_plugins
         painter.drawLine(13, 2, 13, 8);
         painter.drawLine(13, 2, 7, 2);
       }
-      
+
       icon_->SetPixmap(icon);
     }
   }
@@ -149,7 +149,7 @@ namespace mapviz_plugins
 
     for (unsigned int i = 0; i < topics.size(); i++)
     {
-      if (topics[i].datatype == "gps_common/GPSFix")
+      if (topics[i].datatype == "sensor_msgs/NavSatFix")
       {
         ui.displaylist->addItem(topics[i].name.c_str());
       }
@@ -190,13 +190,13 @@ namespace mapviz_plugins
       PrintWarning("No messages received.");
 
       gps_sub_.shutdown();
-      gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::GPSFixCallback, this);
+      gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::NavSatFixCallback, this);
 
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
 
-  void GpsPlugin::GPSFixCallback(const gps_common::GPSFixConstPtr gps)
+  void GpsPlugin::NavSatFixCallback(const sensor_msgs::NavSatFixConstPtr gps)
   {
     if (!local_xy_util_.Initialized())
     {
@@ -217,10 +217,7 @@ namespace mapviz_plugins
 
     stamped_point.point = tf::Point(x, y, gps->altitude);
 
-    // The GPS "track" is in degrees, but createQuaternionFromYaw expects radians.
-    // Furthermore, the track rotates in the opposite direction and is also
-    // offset by 90 degrees, so all of that has to be compensated for.
-    stamped_point.orientation = tf::createQuaternionFromYaw((-gps->track * (M_PI / 180.0)) + M_PI_2);
+    stamped_point.orientation = tf::createQuaternionFromYaw(0.0);
 
     if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
     {
