@@ -105,6 +105,17 @@ Overlays a [sensor_msgs::DisparityImage](http://docs.ros.org/api/stereo_msgs/htm
 * Height: Display height
 * Units: (pixels | percent of window)
 
+### GPS
+
+Projects [gps_common::GPSFix](http://docs.ros.org/hydro/api/gps_common/html/msg/GPSFix.html) message data into the scene.
+
+**Parameters**
+ * Topic: The GPS topic
+ * Color: The color of the GPS data
+ * Draw Style: (lines | points | arrows)
+ * Position Tolerance: Distance threshold for adding new GPS points to visualization
+ * Buffer Size: Size of circular buffer of GPS points
+
 ### Grid
 Projects a 2D grid into the scene.
 
