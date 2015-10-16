@@ -147,6 +147,14 @@ namespace mapviz_plugins {
     point_publisher_.publish(stamped);
   }
 
+  void PointClickPublisherPlugin::SetNode(const ros::NodeHandle& node)
+  {
+    mapviz::MapvizPlugin::SetNode(node);
+
+    // We override this method so that we can initialize our publisher after
+    // our node has been set, ensuring that it's in mapviz's namespace.
+    topicChanged(ui_.topic->text());
+  }
 
   void PointClickPublisherPlugin::PrintError(const std::string& message)
   {
