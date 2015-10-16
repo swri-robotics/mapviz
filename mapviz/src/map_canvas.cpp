@@ -239,6 +239,17 @@ void MapCanvas::mousePressEvent(QMouseEvent* e)
   mouse_pressed_ = true;
 }
 
+QPointF MapCanvas::MapGlCoordToFixedFrame(const QPointF& point)
+{
+  double center_x = -offset_x_ - drag_x_;
+  double center_y = -offset_y_ - drag_y_;
+  double x = center_x + (point.x() - width() / 2.0) * view_scale_;
+  double y = center_y + (height() / 2.0  - point.y()) * view_scale_;
+  tf::Point tfPoint(x, y, 0);
+  tfPoint = transform_ * tfPoint;
+  return QPointF(tfPoint.x(), tfPoint.y());
+}
+
 void MapCanvas::mouseReleaseEvent(QMouseEvent* e)
 {
   mouse_pressed_ = false;

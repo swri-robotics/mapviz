@@ -64,7 +64,24 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 file (GLOB UI_FILES src/*.ui)
 
-file (GLOB SRC_FILES 
+set (HEADER_FILES
+    include/mapviz_plugins/canvas_click_filter.h
+    include/mapviz_plugins/disparity_plugin.h
+    include/mapviz_plugins/gps_plugin.h
+    include/mapviz_plugins/grid_plugin.h
+    include/mapviz_plugins/image_plugin.h
+    include/mapviz_plugins/marker_plugin.h
+    include/mapviz_plugins/multires_image_plugin.h
+    include/mapviz_plugins/multires_view.h
+    include/mapviz_plugins/odometry_plugin.h
+    include/mapviz_plugins/path_plugin.h
+    include/mapviz_plugins/point_click_publisher_plugin.h
+    include/mapviz_plugins/robot_image_plugin.h
+    include/mapviz_plugins/textured_marker_plugin.h
+    include/mapviz_plugins/tf_frame_plugin.h)
+
+file (GLOB SRC_FILES
+    src/canvas_click_filter.cpp
     src/multires_image_plugin.cpp 
     src/image_plugin.cpp
     src/disparity_plugin.cpp 
@@ -73,6 +90,7 @@ file (GLOB SRC_FILES
     src/marker_plugin.cpp 
     src/grid_plugin.cpp
     src/path_plugin.cpp
+    src/point_click_publisher_plugin.cpp
     src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
     src/robot_image_plugin.cpp
@@ -80,14 +98,16 @@ file (GLOB SRC_FILES
     
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 
-QT4_WRAP_CPP(SRC_FILES 
-    include/mapviz_plugins/multires_image_plugin.h 
+QT4_WRAP_CPP(SRC_FILES
+    include/mapviz_plugins/canvas_click_filter.h
+    include/mapviz_plugins/multires_image_plugin.h
     include/mapviz_plugins/image_plugin.h
     include/mapviz_plugins/disparity_plugin.h
     include/mapviz_plugins/odometry_plugin.h 
     include/mapviz_plugins/marker_plugin.h 
     include/mapviz_plugins/grid_plugin.h
     include/mapviz_plugins/path_plugin.h
+    include/mapviz_plugins/point_click_publisher_plugin.h
     include/mapviz_plugins/textured_marker_plugin.h
     include/mapviz_plugins/tf_frame_plugin.h
     include/mapviz_plugins/robot_image_plugin.h
@@ -110,3 +130,5 @@ install(TARGETS ${PROJECT_NAME}
 
 install(FILES mapviz_plugins.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+add_custom_target(clion_target SOURCES ${HEADER_FILES} ${SRC_FILES})
