@@ -65,22 +65,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 file (GLOB UI_FILES src/*.ui)
 
-set (HEADER_FILES
-    include/mapviz_plugins/canvas_click_filter.h
-    include/mapviz_plugins/disparity_plugin.h
-    include/mapviz_plugins/gps_plugin.h
-    include/mapviz_plugins/grid_plugin.h
-    include/mapviz_plugins/image_plugin.h
-    include/mapviz_plugins/marker_plugin.h
-    include/mapviz_plugins/multires_image_plugin.h
-    include/mapviz_plugins/multires_view.h
-    include/mapviz_plugins/odometry_plugin.h
-    include/mapviz_plugins/path_plugin.h
-    include/mapviz_plugins/point_click_publisher_plugin.h
-    include/mapviz_plugins/robot_image_plugin.h
-    include/mapviz_plugins/textured_marker_plugin.h
-    include/mapviz_plugins/tf_frame_plugin.h)
-
 file (GLOB SRC_FILES
     src/canvas_click_filter.cpp
     src/multires_image_plugin.cpp 
@@ -136,4 +120,3 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES mapviz_plugins.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-add_custom_target(clion_target SOURCES ${HEADER_FILES} ${SRC_FILES})
