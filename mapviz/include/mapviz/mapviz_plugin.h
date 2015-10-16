@@ -92,7 +92,7 @@ namespace mapviz
       draw_order_ = order;
     }
 
-    void SetNode(const ros::NodeHandle& node)
+    virtual void SetNode(const ros::NodeHandle& node)
     {
       node_ = node;
     }
