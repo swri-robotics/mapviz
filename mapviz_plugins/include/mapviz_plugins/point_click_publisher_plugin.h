@@ -62,6 +62,7 @@ namespace mapviz_plugins
     bool Initialize(QGLWidget* canvas);
     void Shutdown() {}
 
+    virtual void SetNode(const ros::NodeHandle& node);
     virtual void PrintError(const std::string& message);
     virtual void PrintInfo(const std::string& message);
     virtual void PrintWarning(const std::string& message);
