@@ -17,7 +17,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/gps_plugin.h>
+#include <mapviz_plugins/navsat_plugin.h>
 
 // C++ standard libraries
 #include <cstdio>
@@ -41,13 +41,13 @@
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
     mapviz_plugins,
-    gps,
-    mapviz_plugins::GpsPlugin,
+    navsat,
+    mapviz_plugins::NavSatPlugin,
     mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
-  GpsPlugin::GpsPlugin() :
+  NavSatPlugin::NavSatPlugin() :
     config_widget_(new QWidget()),
     color_(Qt::green),
     draw_style_(LINES)
@@ -75,11 +75,11 @@ namespace mapviz_plugins
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this, SLOT(SetDrawStyle(QString)));
   }
 
-  GpsPlugin::~GpsPlugin()
+  NavSatPlugin::~NavSatPlugin()
   {
   }
 
-  void GpsPlugin::DrawIcon()
+  void NavSatPlugin::DrawIcon()
   {
     if (icon_)
     {
@@ -110,7 +110,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::SetDrawStyle(QString style)
+  void NavSatPlugin::SetDrawStyle(QString style)
   {
     if (style == "lines")
     {
@@ -125,7 +125,7 @@ namespace mapviz_plugins
     canvas_->update();
   }
 
-  void GpsPlugin::SelectTopic()
+  void NavSatPlugin::SelectTopic()
   {
     QDialog dialog;
     Ui::topicselect ui;
@@ -152,7 +152,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::SelectColor()
+  void NavSatPlugin::SelectColor()
   {
     QColorDialog dialog(color_, config_widget_);
     dialog.exec();
@@ -166,7 +166,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::TopicEdited()
+  void NavSatPlugin::TopicEdited()
   {
     if (ui_.topic->text().toStdString() != topic_)
     {
@@ -176,14 +176,14 @@ namespace mapviz_plugins
       topic_ = ui_.topic->text().toStdString();
       PrintWarning("No messages received.");
 
-      gps_sub_.shutdown();
-      gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::NavSatFixCallback, this);
+      navsat_sub_.shutdown();
+      navsat_sub_ = node_.subscribe(topic_, 1, &NavSatPlugin::NavSatFixCallback, this);
 
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
 
-  void GpsPlugin::NavSatFixCallback(const sensor_msgs::NavSatFixConstPtr gps)
+  void NavSatPlugin::NavSatFixCallback(const sensor_msgs::NavSatFixConstPtr navsat)
   {
     if (!local_xy_util_.Initialized())
     {
@@ -196,13 +196,13 @@ namespace mapviz_plugins
     }
 
     StampedPoint stamped_point;
-    stamped_point.stamp = gps->header.stamp;
+    stamped_point.stamp = navsat->header.stamp;
 
     double x;
     double y;
-    local_xy_util_.ToLocalXy(gps->latitude, gps->longitude, x, y);
+    local_xy_util_.ToLocalXy(navsat->latitude, navsat->longitude, x, y);
 
-    stamped_point.point = tf::Point(x, y, gps->altitude);
+    stamped_point.point = tf::Point(x, y, navsat->altitude);
 
     stamped_point.orientation = tf::createQuaternionFromYaw(0.0);
 
@@ -224,12 +224,12 @@ namespace mapviz_plugins
     canvas_->update();
   }
 
-  void GpsPlugin::PositionToleranceChanged(double value)
+  void NavSatPlugin::PositionToleranceChanged(double value)
   {
     position_tolerance_ = value;
   }
 
-  void GpsPlugin::BufferSizeChanged(int value)
+  void NavSatPlugin::BufferSizeChanged(int value)
   {
     buffer_size_ = value;
 
@@ -244,7 +244,7 @@ namespace mapviz_plugins
     canvas_->update();
   }
 
-  void GpsPlugin::PrintError(const std::string& message)
+  void NavSatPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -256,7 +256,7 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  void GpsPlugin::PrintInfo(const std::string& message)
+  void NavSatPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -268,7 +268,7 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  void GpsPlugin::PrintWarning(const std::string& message)
+  void NavSatPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
       return;
@@ -280,14 +280,14 @@ namespace mapviz_plugins
     ui_.status->setText(message.c_str());
   }
 
-  QWidget* GpsPlugin::GetConfigWidget(QWidget* parent)
+  QWidget* NavSatPlugin::GetConfigWidget(QWidget* parent)
   {
     config_widget_->setParent(parent);
 
     return config_widget_;
   }
 
-  bool GpsPlugin::Initialize(QGLWidget* canvas)
+  bool NavSatPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
 
@@ -296,7 +296,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void GpsPlugin::Draw(double x, double y, double scale)
+  void NavSatPlugin::Draw(double x, double y, double scale)
   {
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
 
@@ -345,7 +345,7 @@ namespace mapviz_plugins
     }
   }
 
-  bool GpsPlugin::TransformPoint(StampedPoint& point)
+  bool NavSatPlugin::TransformPoint(StampedPoint& point)
   {
     swri_transform_util::Transform transform;
     if (GetTransform(point.stamp, transform))
@@ -365,7 +365,7 @@ namespace mapviz_plugins
      return false;
   }
 
-  void GpsPlugin::Transform()
+  void NavSatPlugin::Transform()
   {
     if (source_frame_.empty())
     {
@@ -391,7 +391,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void NavSatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -425,7 +425,7 @@ namespace mapviz_plugins
     TopicEdited();
   }
 
-  void GpsPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void NavSatPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;

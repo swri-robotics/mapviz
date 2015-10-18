@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>gps_config</class>
- <widget class="QWidget" name="gps_config">
+ <class>navsat_config</class>
+ <widget class="QWidget" name="navsat_config">
   <property name="geometry">
    <rect>
     <x>0</x>
