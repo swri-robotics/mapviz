@@ -105,15 +105,6 @@ namespace mapviz_plugins
         painter.setPen(pen);
         painter.drawLine(1, 14, 14, 1);
       }
-      else if (draw_style_ == ARROWS)
-      {
-        pen.setWidth(2);
-        pen.setCapStyle(Qt::SquareCap);
-        painter.setPen(pen);
-        painter.drawLine(2, 13, 13, 2);
-        painter.drawLine(13, 2, 13, 8);
-        painter.drawLine(13, 2, 7, 2);
-      }
 
       icon_->SetPixmap(icon);
     }
@@ -128,10 +119,6 @@ namespace mapviz_plugins
     else if (style == "points")
     {
       draw_style_ = POINTS;
-    }
-    else if (style == "arrows")
-    {
-      draw_style_ = ARROWS;
     }
 
     DrawIcon();
@@ -317,59 +304,16 @@ namespace mapviz_plugins
 
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
 
-    if (draw_style_ == ARROWS)
+    if (draw_style_ == LINES)
     {
-      transformed = DrawArrows();
+      glLineWidth(3);
+      glBegin(GL_LINE_STRIP);
     }
     else
     {
-      if (draw_style_ == LINES)
-      {
-        glLineWidth(3);
-        glBegin(GL_LINE_STRIP);
-      }
-      else
-      {
-        glPointSize(6);
-        glBegin(GL_POINTS);
-      }
-
-      std::list<StampedPoint>::iterator it = points_.begin();
-      for (; it != points_.end(); ++it)
-      {
-        if (it->transformed)
-        {
-          glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-
-          transformed = true;
-        }
-      }
-
-      if (cur_point_.transformed)
-      {
-        glVertex2f(
-          cur_point_.transformed_point.getX(),
-          cur_point_.transformed_point.getY());
-
-        transformed = true;
-
-        swri_transform_util::Transform tf;
-      }
-
-      glEnd();
+      glPointSize(6);
+      glBegin(GL_POINTS);
     }
-
-    if (transformed)
-    {
-      PrintInfo("OK");
-    }
-  }
-
-  bool GpsPlugin::DrawArrows()
-  {
-    bool transformed = false;
-    glLineWidth(2);
-    glBegin(GL_LINES);
 
     std::list<StampedPoint>::iterator it = points_.begin();
     for (; it != points_.end(); ++it)
@@ -377,13 +321,6 @@ namespace mapviz_plugins
       if (it->transformed)
       {
         glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-        glVertex2f(it->transformed_arrow_left.getX(), it->transformed_arrow_left.getY());
-
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-        glVertex2f(it->transformed_arrow_right.getX(), it->transformed_arrow_right.getY());
 
         transformed = true;
       }
@@ -394,31 +331,18 @@ namespace mapviz_plugins
       glVertex2f(
         cur_point_.transformed_point.getX(),
         cur_point_.transformed_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_left.getX(),
-        cur_point_.transformed_arrow_left.getY());
-
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_right.getX(),
-        cur_point_.transformed_arrow_right.getY());
 
       transformed = true;
-    }
 
+      swri_transform_util::Transform tf;
+    }
 
     glEnd();
 
-    return transformed;
+    if (transformed)
+    {
+      PrintInfo("OK");
+    }
   }
 
   bool GpsPlugin::TransformPoint(StampedPoint& point)
@@ -490,11 +414,6 @@ namespace mapviz_plugins
     {
       draw_style_ = POINTS;
       ui_.drawstyle->setCurrentIndex(1);
-    }
-    else if (draw_style == "arrows")
-    {
-      draw_style_ = ARROWS;
-      ui_.drawstyle->setCurrentIndex(2);
     }
 
     node["position_tolerance"] >> position_tolerance_;

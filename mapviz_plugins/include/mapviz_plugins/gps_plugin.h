@@ -66,7 +66,7 @@ namespace mapviz_plugins
       std::vector<tf::Point> transformed_cov_points;
     };
 
-    enum DrawStyle { LINES = 0, POINTS, ARROWS };
+    enum DrawStyle { LINES = 0, POINTS};
 
     GpsPlugin();
     virtual ~GpsPlugin();
@@ -98,7 +98,6 @@ namespace mapviz_plugins
     void SetDrawStyle(QString style);
 
   private:
-    bool DrawArrows();
     bool TransformPoint(StampedPoint& point);
     void DrawIcon();
 
