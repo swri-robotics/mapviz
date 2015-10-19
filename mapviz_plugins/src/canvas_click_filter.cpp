@@ -29,13 +29,26 @@
 
 #include <QMouseEvent>
 #include <QLineF>
+#include <QDateTime>
 #include "include/mapviz_plugins/canvas_click_filter.h"
 
 namespace mapviz_plugins
 {
   CanvasClickFilter::CanvasClickFilter() :
-    is_mouse_down_(false)
+    is_mouse_down_(false),
+    max_ms_(Q_INT64_C(500)),
+    max_distance_(2.0)
   { }
+
+  void CanvasClickFilter::setMaxClickTime(qint64 max_ms)
+  {
+    max_ms_ = max_ms;
+  }
+
+  void CanvasClickFilter::setMaxClickMovement(qreal max_distance)
+  {
+    max_distance_ = max_distance;
+  }
 
   bool CanvasClickFilter::eventFilter(QObject* object, QEvent* event)
   {
@@ -43,6 +56,7 @@ namespace mapviz_plugins
       is_mouse_down_ = true;
       QMouseEvent* me = static_cast<QMouseEvent*>(event);
       mouse_down_pos_ = me->posF();
+      mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
     }
     else if (event->type() == QEvent::MouseButtonRelease) {
       if (is_mouse_down_)
@@ -50,10 +64,13 @@ namespace mapviz_plugins
         QMouseEvent* me = static_cast<QMouseEvent*>(event);
 
         qreal distance = QLineF(mouse_down_pos_, me->posF()).length();
+        qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
-        // Only fire the event if the mouse has move more than two pixels.  This prevents
-        // click events from being fired if the user is dragging the mouse across the map.
-        if (distance <= 2.0)
+        // Only fire the event if the mouse has moved less than the maximum distance
+        // and was held for shorter than the maximum time..  This prevents click
+        // events from being fired if the user is dragging the mouse across the map
+        // or just holding the cursor in place.
+        if (msecsDiff < max_ms_ && distance <= max_distance_)
         {
           Q_EMIT pointClicked(me->posF());
         }

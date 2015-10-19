@@ -36,6 +36,11 @@
 /**
  * This is a very simple event filter that listens for mouseReleased events;
  * when it sees one, it emits a signal with the given point.
+ *
+ * Click events are filtered by how long the mouse was held down and how far the
+ * cursor moved in order to prevent the user holding and dragging the map
+ * from firing a click event.  By default, "clicks" that take longer than 500ms
+ * or move longer than 2 pixels are ignored.
  */
 namespace mapviz_plugins
 {
@@ -46,6 +51,9 @@ namespace mapviz_plugins
   public:
     CanvasClickFilter();
 
+    void setMaxClickTime(qint64 max_ms);
+    void setMaxClickMovement(qreal max_distance);
+
   Q_SIGNALS:
     void pointClicked(const QPointF&);
 
@@ -55,6 +63,10 @@ namespace mapviz_plugins
   private:
     bool is_mouse_down_;
     QPointF mouse_down_pos_;
+    qint64 mouse_down_time_;
+
+    qint64 max_ms_;
+    qreal max_distance_;
   };
 }
 
