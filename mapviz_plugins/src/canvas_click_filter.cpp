@@ -28,16 +28,37 @@
 // *****************************************************************************
 
 #include <QMouseEvent>
+#include <QLineF>
 #include "include/mapviz_plugins/canvas_click_filter.h"
 
 namespace mapviz_plugins
 {
+  CanvasClickFilter::CanvasClickFilter() :
+    is_mouse_down_(false)
+  { }
 
   bool CanvasClickFilter::eventFilter(QObject* object, QEvent* event)
   {
-    if (event->type() == QEvent::MouseButtonRelease) {
+    if (event->type() == QEvent::MouseButtonPress) {
+      is_mouse_down_ = true;
       QMouseEvent* me = static_cast<QMouseEvent*>(event);
-      Q_EMIT pointClicked(me->posF());
+      mouse_down_pos_ = me->posF();
+    }
+    else if (event->type() == QEvent::MouseButtonRelease) {
+      if (is_mouse_down_)
+      {
+        QMouseEvent* me = static_cast<QMouseEvent*>(event);
+
+        qreal distance = QLineF(mouse_down_pos_, me->posF()).length();
+
+        // Only fire the event if the mouse has move more than two pixels.  This prevents
+        // click events from being fired if the user is dragging the mouse across the map.
+        if (distance <= 2.0)
+        {
+          Q_EMIT pointClicked(me->posF());
+        }
+      }
+      is_mouse_down_ = false;
     }
     return false;
   }

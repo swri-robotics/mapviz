@@ -42,11 +42,19 @@ namespace mapviz_plugins
   class CanvasClickFilter : public QObject
   {
     Q_OBJECT
+
+  public:
+    CanvasClickFilter();
+
   Q_SIGNALS:
     void pointClicked(const QPointF&);
 
   protected:
     bool eventFilter(QObject *object, QEvent* event);
+
+  private:
+    bool is_mouse_down_;
+    QPointF mouse_down_pos_;
   };
 }
 
