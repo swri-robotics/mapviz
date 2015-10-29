@@ -122,16 +122,18 @@ namespace mapviz_plugins
     // Always draw bottom layers
 
     multires_image::TileSetLayer* baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 1);
-      multires_image::Tile* tile = baseLayer->GetTile(0, 0);
-      if (tile->TextureLoaded())
-      {
-        tile->Draw();
-      }
-      else
-      {
-        m_cache.Load(tile);
-      }
+    multires_image::Tile* tile = baseLayer->GetTile(0, 0);
+    if (tile->TextureLoaded())
+    {
+      tile->Draw();
+    }
+    else
+    {
+      m_cache.Load(tile);
+    }
 
+    if(m_tiles->LayerCount() >= 2)
+    {
       baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 2);
       for (int c = 0; c < baseLayer->ColumnCount(); c++)
       {
@@ -148,12 +150,13 @@ namespace mapviz_plugins
           }
         }
       }
+    }
 
-    if (m_currentLayer < m_tiles->LayerCount() - 2)
+    if (m_tiles->LayerCount() >= 2 && m_currentLayer < m_tiles->LayerCount() - 2)
     {
-    multires_image::TileSetLayer* layer = m_tiles->GetLayer(m_currentLayer);
-    if (m_endColumn < layer->ColumnCount() && m_endRow < layer->RowCount())
-    {
+      multires_image::TileSetLayer* layer = m_tiles->GetLayer(m_currentLayer);
+      if (m_endColumn < layer->ColumnCount() && m_endRow < layer->RowCount())
+      {
         for (int c = m_startColumn; c <= m_endColumn; c++)
         {
           for (int r = m_startRow; r <= m_endRow; r++)
