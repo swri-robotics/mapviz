@@ -87,6 +87,7 @@ namespace multires_image
     m_width = m_geo.Width();
     m_height = m_geo.Height();
     m_tileSize = m_geo.TileSize();
+    m_extension = m_geo.Extension();
 
     float max_dim = std::max(m_width, m_height);
     m_layerCount = std::ceil(std::log(max_dim / m_tileSize) / std::log(2.0f)) + 1;
