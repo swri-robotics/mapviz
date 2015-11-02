@@ -85,6 +85,11 @@
      </item>
      <item>
       <property name="text">
+       <string>OpenStreetMap</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Stamen (watercolor)</string>
       </property>
      </item>

@@ -83,6 +83,12 @@ namespace tile_map
       tile_map_.SetExtension(".jpg");
       tile_map_.SetMaxLevel(19);
     }
+    else if (source == "OpenStreetMap")
+    {
+      tile_map_.SetBaseUrl("http://tile.openstreetmap.org/");
+      tile_map_.SetExtension(".png");
+      tile_map_.SetMaxLevel(19);
+    }
     else if (source == "Stamen (watercolor)")
     {
       tile_map_.SetBaseUrl("http://tile.stamen.com/watercolor/");
