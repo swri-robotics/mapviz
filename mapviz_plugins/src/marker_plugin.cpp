@@ -148,7 +148,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::markerCallback(const visualization_msgs::MarkerConstPtr marker)
   {
-    if (!has_message_)
+    if (!has_message_ && !marker->header.frame_id.empty())
     {
       source_frame_ = marker->header.frame_id;
       initialized_ = true;
@@ -255,12 +255,17 @@ namespace mapviz_plugins
           markerData.points.push_back(point);
         }
       }
+      ROS_DEBUG("Adding a marker with ID %d in namespace [%s]", marker->id, marker->ns.c_str());
     }
-    else
+    else if (marker->action == visualization_msgs::Marker::DELETE)
     {
       markers_[marker->ns].erase(marker->id);
     }
-
+    else if (marker->action == 3)  // Delete All
+    {
+      ROS_DEBUG("Deleting all markers in namespace [%s]", marker->ns.c_str());
+      markers_[marker->ns].clear();
+    }
     canvas_->update();
   }
 
