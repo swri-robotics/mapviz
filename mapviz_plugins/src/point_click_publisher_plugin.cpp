@@ -82,7 +82,7 @@ namespace mapviz_plugins {
   void PointClickPublisherPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string tmp;
-    if (node.FindValue("topic"))
+    if (yaml_util::FindValue(node, "topic"))
     {
       node["topic"] >> tmp;
       ui_.topic->setText(QString(tmp.c_str()));
@@ -90,7 +90,7 @@ namespace mapviz_plugins {
 
     topicChanged(ui_.topic->text());
 
-    if (node.FindValue("output_frame"))
+    if (yaml_util::FindValue(node, "output_frame"))
     {
       node["output_frame"] >> tmp;
       ui_.outputframe->addItem(QString(tmp.c_str()));
