@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2015-11-17)
+------------------
 * Extensions for geo files (PR `#262 <https://github.com/swri-robotics/mapviz/issues/262>`_)
 * Adds a plugin to visualize laser scans.
   Display features are based on the laserscan plugin for rviz:

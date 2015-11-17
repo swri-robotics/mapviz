@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2015-11-17)
+------------------
 * Fixes mapviz launch file frame param
 * Marks single argument constructors explicit.
 * Contributors: Edward Venator, Marc Alban, Vincent Rousseau
