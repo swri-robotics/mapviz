@@ -2,6 +2,16 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Extensions for geo files (PR `#262 <https://github.com/swri-robotics/mapviz/issues/262>`_)
+* Adds a plugin to visualize laser scans.
+  Display features are based on the laserscan plugin for rviz:
+  * Points can be colored by range, or x/y/z axis
+  * Points can be colored by interpolation between two colors or rainbow coloring
+* Adds a plugin to visualize sensor_msgs/NavSatFix msgs, based on the old GPSFix plugin
+* Contributors: Claudio Bandera, Ed Venator, Vincent Rousseau
+
 0.1.0 (2015-09-29)
 ------------------
 * Removes gps plugin, since gps_common is not in ROS Jade. See issue 
