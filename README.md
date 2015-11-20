@@ -20,6 +20,7 @@ tile_map (32-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job
 tile_map (64-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_saucy_amd64)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_saucy_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_trusty_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_trusty_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_utopic_amd64)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_utopic_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_vivid_amd64)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_vivid_amd64/) |
 
 Installation (ROS Indigo, Jade)
+-----------
 
 In ROS Indigo, you can install mapviz using apt-get from the ROS apt repository. This is the recommended installation method for ROS Indigo and Jade.
 
