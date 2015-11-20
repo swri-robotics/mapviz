@@ -22,11 +22,9 @@ tile_map (64-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job
 Installation (ROS Indigo, Jade)
 ------------
 
-*At this time, Mapviz is only available from OSRF's prerelease apt repository (ros-shadow-fixed). Until the repository is synced over to the main ROS repository, the recommended installation method is to compile Mapviz from source code.*
-
 In ROS Indigo, you can install mapviz using apt-get from the ROS apt repository. This is the recommended installation method for ROS Indigo and Jade.
 
-    sudo apt-get install ros-$ROS_DISTRO-mapviz
+    sudo apt-get install ros-$ROS_DISTRO-mapviz ros-$ROS_DISTRO-mapviz-plugins
 
 
 Building From Source (ROS Indigo, Jade)
