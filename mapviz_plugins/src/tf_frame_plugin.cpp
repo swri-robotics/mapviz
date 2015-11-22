@@ -244,6 +244,9 @@ namespace mapviz_plugins
       }
     
       cur_point_ = stamped_point;
+      
+      if (canvas_)
+        canvas_->update();
     }
   }
 
