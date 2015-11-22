@@ -32,6 +32,7 @@
 // C++ standard libraries
 #include <cmath>
 #include <cstdlib>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 
@@ -259,6 +260,7 @@ void Mapviz::UpdateFrames()
 {
   std::vector<std::string> frames;
   tf_->getFrameStrings(frames);
+  std::sort(frames.begin(), frames.end());
 
   if (ui_.fixedframe->count() >= 0 && 
       static_cast<size_t>(ui_.fixedframe->count()) == frames.size())
