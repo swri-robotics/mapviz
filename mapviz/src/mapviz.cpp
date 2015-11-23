@@ -812,11 +812,13 @@ void Mapviz::SelectNewDisplay()
   ui.setupUi(&dialog);
 
   std::vector<std::string> plugins = loader_->getDeclaredClasses();
-  for (unsigned int i = 0; i < plugins.size(); i++)
+  std::map<std::string, std::string> plugin_types;
+  for (size_t i = 0; i < plugins.size(); i++)
   {
     QString type(plugins[i].c_str());
     type = type.split('/').last();
     ui.displaylist->addItem(type);
+    plugin_types[type.toStdString()] = plugins[i];
   }
   ui.displaylist->setCurrentRow(0);
 
@@ -824,8 +826,8 @@ void Mapviz::SelectNewDisplay()
 
   if (dialog.result() == QDialog::Accepted)
   {
-    int row =ui.displaylist->currentRow();
-    std::string type = plugins[row].c_str();
+    std::string type_name = ui.displaylist->selectedItems().first()->text().toStdString();
+    std::string type = plugin_types[type_name];
     std::string name = "new display";
     try
     {
