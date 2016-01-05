@@ -125,7 +125,7 @@ namespace multires_image
       }
     }
 
-    if (m_currentLayer != m_tiles->LayerCount() - 2)
+    if (m_tiles->LayerCount() >= 2 && m_currentLayer != m_tiles->LayerCount() - 2)
     {
       TileSetLayer* baseLayer = m_tiles->GetLayer(m_tiles->LayerCount() - 2);
       for (int c = 0; c < baseLayer->ColumnCount(); c++)
