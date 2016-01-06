@@ -2,6 +2,13 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Enables the possibility to load a one-layer tile set
+* Sorts topic, plug-in, and frame lists in selection dialogs.
+* Fixes tf plug-in update.
+* Contributors: Marc Alban, Vincent Rousseau
+
 0.1.1 (2015-11-17)
 ------------------
 * Extensions for geo files (PR `#262 <https://github.com/swri-robotics/mapviz/issues/262>`_)

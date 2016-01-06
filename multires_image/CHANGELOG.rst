@@ -2,6 +2,11 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Enables the possibility to load a one-layer tile set
+* Contributors: Vincent Rousseau
+
 0.1.1 (2015-11-17)
 ------------------
 * Use extension from geo file
