@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2016-01-06)
+------------------
 * Enables the possibility to load a one-layer tile set
 * Contributors: Vincent Rousseau
 

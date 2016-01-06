@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2016-01-06)
+------------------
 * Enables the possibility to load a one-layer tile set
 * Sorts topic, plug-in, and frame lists in selection dialogs.
 * Fixes tf plug-in update.
