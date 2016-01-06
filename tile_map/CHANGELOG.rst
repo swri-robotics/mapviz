@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2016-01-06)
+------------------
 * Marks single argument constructors explicit.
 * Contributors: Marc Alban
 

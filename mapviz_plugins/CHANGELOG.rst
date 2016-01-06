@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2016-01-06)
+------------------
 * Fixes bad package names in includes.
 * Backports navsat plug-in from jade.
 * Sorts topic, plug-in, and frame lists in selection dialogs.

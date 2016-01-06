@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2016-01-06)
+------------------
 * Show full path when recording screenshots/movies.
 * Fixes a bug in plug-in sorting.
 * Sorts topic, plug-in, and frame lists in selection dialogs.
