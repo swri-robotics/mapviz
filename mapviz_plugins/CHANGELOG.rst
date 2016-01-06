@@ -2,6 +2,18 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixes bad package names in includes.
+* Backports navsat plug-in from jade.
+* Sorts topic, plug-in, and frame lists in selection dialogs.
+* Fixes tf plug-in update.
+* Adds a plugin to visualize laser scans based on the laserscan plugin for rviz:
+  * Points can be colored by range, or x/y/z axis
+  * Points can be colored by interpolation between two colors or rainbow coloring
+* Enables the possibility to load one layer tile set
+* Contributors: Edward Venator, Marc Alban, P. J. Reed, Vincent Rousseau
+
 0.0.3 (2015-09-28)
 ------------------
 

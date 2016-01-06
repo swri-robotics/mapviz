@@ -2,6 +2,15 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Show full path when recording screenshots/movies.
+* Fixes a bug in plug-in sorting.
+* Sorts topic, plug-in, and frame lists in selection dialogs.
+* Fixes mapviz launch file frame parameter
+* Marks single argument constructors explicit.
+* Contributors: Edward Venator, Elliot Johnson, Marc Alban, Vincent Rousseau
+
 0.0.3 (2015-09-28)
 ------------------
 * Fixing casting issues that prevented compilation on 32-bit systems.
