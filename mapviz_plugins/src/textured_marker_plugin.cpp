@@ -47,6 +47,8 @@
 
 #include <swri_math_util/constants.h>
 
+#include <mapviz/select_topic_dialog.h>
+
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
@@ -83,39 +85,16 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::SelectTopic()
   {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
+    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+      "marti_visualization_msgs/TexturedMarker",
+      "marti_visualization_msgs/TexturedMarkerArray");
 
-    std::vector<ros::master::TopicInfo> topics;
-    ros::master::getTopics(topics);
-
-    for (unsigned int i = 0; i < topics.size(); i++)
+    if (!topic.name.empty())
     {
-      if (topics[i].datatype == "marti_visualization_msgs/TexturedMarker" || topics[i].datatype == "marti_visualization_msgs/TexturedMarkerArray")
-      {
-        ui.displaylist->addItem(topics[i].name.c_str());
-      }
-    }
-    ui.displaylist->setCurrentRow(0);
+      ui_.topic->setText(QString::fromStdString(topic.name));
 
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.topic->setText(ui.displaylist->selectedItems().first()->text());
-
-      // Determine if this is a marker array
-      is_marker_array_ = false;
-      for (unsigned int i = 0; i < topics.size(); i++)
-      {
-        if (topics[i].datatype == "marti_visualization_msgs/TexturedMarkerArray")
-        {
-          if (ui.displaylist->selectedItems().first()->text().toStdString() == topics[i].name)
-          {
-            is_marker_array_ = true;
-          }
-        }
+      if (topic.datatype == "marti_visualization_msgs/TexturedMarkerArray") {
+        is_marker_array_ = true;
       }
 
       TopicEdited();
