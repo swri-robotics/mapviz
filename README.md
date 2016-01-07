@@ -19,6 +19,13 @@ multires_image (64-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/ic
 tile_map (32-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_saucy_i386)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_saucy_i386/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_trusty_i386)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_trusty_i386/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_trusty_i386)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_trusty_i386/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_utopic_i386)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_utopic_i386/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_vivid_i386)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_vivid_i386/) |
 tile_map (64-bit) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_saucy_amd64)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_saucy_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-indigo-tile-map_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-indigo-tile-map_binarydeb_trusty_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_trusty_amd64)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_trusty_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_utopic_amd64)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_utopic_amd64/) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-tile-map_binarydeb_vivid_amd64)](http://jenkins.ros.org/job/ros-jade-tile-map_binarydeb_vivid_amd64/) |
 
+Travis CI Build Status
+----------------------
+
+Indigo | Jade
+------ | ----
+[![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=indigo-devel)](https://travis-ci.org/swri-robotics/mapviz) | [![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=jade-devel)](https://travis-ci.org/swri-robotics/mapviz)
+
 Installation (ROS Indigo, Jade)
 ------------
 
