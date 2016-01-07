@@ -41,7 +41,6 @@
 #include <QGLWidget>
 #include <QObject>
 #include <QWidget>
-#include <QColor>
 
 // ROS libraries
 #include <ros/ros.h>
@@ -99,22 +98,20 @@ namespace mapviz_plugins
 
   protected Q_SLOTS:
     void SelectTopic();
-    void SelectColor();
     void TopicEdited();
     void PositionToleranceChanged(double value);
     void AngleToleranceChanged(double value);
     void BufferSizeChanged(int value);
     void SetDrawStyle(QString style);
+    void DrawIcon();
 
   private:
     void DrawCovariance();
     bool DrawArrows();
     bool TransformPoint(StampedPoint& point);
-    void DrawIcon();
 
     Ui::odometry_config ui_;
     QWidget* config_widget_;
-    QColor color_;
 
     DrawStyle draw_style_;
 

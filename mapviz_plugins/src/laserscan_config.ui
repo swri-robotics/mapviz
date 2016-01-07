@@ -275,7 +275,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="selectMinColor">
+        <widget class="mapviz::ColorButton" name="min_color">
          <property name="maximumSize">
           <size>
            <width>24</width>
@@ -304,7 +304,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="selectMaxColor">
+        <widget class="mapviz::ColorButton" name="max_color">
          <property name="maximumSize">
           <size>
            <width>24</width>
@@ -348,6 +348,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>mapviz::ColorButton</class>
+   <extends>QPushButton</extends>
+   <header location="global">mapviz/color_button.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
  <slots>
