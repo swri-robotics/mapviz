@@ -37,6 +37,8 @@
 #include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
 
+#include <mapviz/select_topic_dialog.h>
+
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
@@ -127,27 +129,11 @@ namespace mapviz_plugins
 
   void NavSatPlugin::SelectTopic()
   {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
+    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+      "sensor_msgs/NavSatFix");
 
-    std::vector<ros::master::TopicInfo> topics;
-    ros::master::getTopics(topics);
-
-    for (unsigned int i = 0; i < topics.size(); i++)
-    {
-      if (topics[i].datatype == "sensor_msgs/NavSatFix")
-      {
-        ui.displaylist->addItem(topics[i].name.c_str());
-      }
-    }
-    ui.displaylist->setCurrentRow(0);
-
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.topic->setText(ui.displaylist->selectedItems().first()->text());
+    if (!topic.name.empty()) {
+      ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
   }
