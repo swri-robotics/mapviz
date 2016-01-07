@@ -40,7 +40,6 @@
 #include <QGLWidget>
 #include <QObject>
 #include <QWidget>
-#include <QColor>
 
 // ROS libraries
 #include <ros/ros.h>
@@ -81,9 +80,9 @@ namespace mapviz_plugins
     void PrintWarning(const std::string& message);
 
   protected Q_SLOTS:
-    void SelectColor();
     void SelectTopic();
     void TopicEdited();
+    void DrawIcon();
 
   private:
     Ui::path_config ui_;
@@ -101,11 +100,9 @@ namespace mapviz_plugins
 
     bool transformed_;
 
-    QColor color_;
     float line_width_;
 
     void pathCallback(const nav_msgs::PathConstPtr path);
-    void DrawIcon();
   };
 }
 

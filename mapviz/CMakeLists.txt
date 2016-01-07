@@ -58,6 +58,7 @@ file (GLOB UI_FILES
   src/pluginselect.ui
   src/rqt_mapviz.ui)
 file (GLOB HEADER_FILES
+  include/mapviz/color_button.h
   include/mapviz/config_item.h
   include/mapviz/map_canvas.h
   include/mapviz/mapviz.h
@@ -66,6 +67,7 @@ file (GLOB HEADER_FILES
   include/mapviz/widgets.h)
 file (GLOB SRC_FILES
   src/mapviz.cpp
+  src/color_button.cpp
   src/config_item.cpp
   src/map_canvas.cpp
   src/rqt_mapviz.cpp)

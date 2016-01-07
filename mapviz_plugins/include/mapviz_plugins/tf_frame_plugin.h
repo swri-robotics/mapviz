@@ -41,7 +41,6 @@
 #include <QGLWidget>
 #include <QObject>
 #include <QWidget>
-#include <QColor>
 
 // ROS libraries
 #include <ros/ros.h>
@@ -101,19 +100,17 @@ namespace mapviz_plugins
   protected Q_SLOTS:
     void SelectFrame();
     void FrameEdited();
-    void SelectColor();
     void PositionToleranceChanged(double value);
     void BufferSizeChanged(int value);
     void SetDrawStyle(QString style);
+    void DrawIcon();
 
   private:
     bool DrawArrows();
     bool TransformPoint(StampedPoint& point);
-    void DrawIcon();
 
     Ui::tf_frame_config ui_;
     QWidget* config_widget_;
-    QColor color_;
 
     DrawStyle draw_style_;
 

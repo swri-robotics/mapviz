@@ -109,7 +109,7 @@ namespace mapviz
     void Force720p(bool on);
     void Force480p(bool on);
     void SetResizable(bool on);
-    void SelectBackgroundColor();
+    void SelectBackgroundColor(const QColor &color);
     void SetCaptureDirectory();
     void Hover(double x, double y, double scale);
 
