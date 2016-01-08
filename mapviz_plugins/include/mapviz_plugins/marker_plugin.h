@@ -83,6 +83,7 @@ namespace mapviz_plugins
     void PrintError(const std::string& message);
     void PrintInfo(const std::string& message);
     void PrintWarning(const std::string& message);
+    void timerEvent(QTimerEvent *);
 
   protected Q_SLOTS:
     void SelectTopic();
@@ -122,6 +123,7 @@ namespace mapviz_plugins
     std::string topic_;
 
     ros::Subscriber marker_sub_;
+    bool connected_;
     bool has_message_;
 
     std::map<std::string, std::map<int, MarkerData> > markers_;
