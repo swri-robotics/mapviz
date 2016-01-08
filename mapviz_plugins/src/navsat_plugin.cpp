@@ -25,7 +25,6 @@
 
 // QT libraries
 #include <QDialog>
-#include <QColorDialog>
 #include <QGLWidget>
 #include <QPalette>
 
@@ -51,30 +50,29 @@ namespace mapviz_plugins
 {
   NavSatPlugin::NavSatPlugin() :
     config_widget_(new QWidget()),
-    color_(Qt::green),
     draw_style_(LINES)
   {
     ui_.setupUi(config_widget_);
+
+    ui_.color->setColor(Qt::green);
 
     // Set background white
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
     config_widget_->setPalette(p);
 
-    // Initialize color selector color
-    ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
-
     // Set status text red
     QPalette p3(ui_.status->palette());
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.selectcolor, SIGNAL(clicked()), this, SLOT(SelectColor()));
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this, SLOT(PositionToleranceChanged(double)));
     QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this, SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this, SLOT(SetDrawStyle(QString)));
+    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
+            this, SLOT(DrawIcon()));
   }
 
   NavSatPlugin::~NavSatPlugin()
@@ -91,7 +89,7 @@ namespace mapviz_plugins
       QPainter painter(&icon);
       painter.setRenderHint(QPainter::Antialiasing, true);
 
-      QPen pen(color_);
+      QPen pen(ui_.color->color());
 
       if (draw_style_ == POINTS)
       {
@@ -135,20 +133,6 @@ namespace mapviz_plugins
     if (!topic.name.empty()) {
       ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
-    }
-  }
-
-  void NavSatPlugin::SelectColor()
-  {
-    QColorDialog dialog(color_, config_widget_);
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted)
-    {
-      color_ = dialog.selectedColor();
-      ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
-      DrawIcon();
-      canvas_->update();
     }
   }
 
@@ -277,6 +261,9 @@ namespace mapviz_plugins
   {
     canvas_ = canvas;
 
+    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
+            canvas_, SLOT(update()));          
+
     DrawIcon();
 
     return true;
@@ -284,11 +271,11 @@ namespace mapviz_plugins
 
   void NavSatPlugin::Draw(double x, double y, double scale)
   {
-    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
-
+    QColor color = ui_.color->color();
+    
     bool transformed = false;
 
-    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
+    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
 
     if (draw_style_ == LINES)
     {
@@ -385,8 +372,7 @@ namespace mapviz_plugins
 
     std::string color;
     node["color"] >> color;
-    color_ = QColor(color.c_str());
-    ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
+    ui_.color->setColor(QColor(color.c_str()));
 
     std::string draw_style;
     node["draw_style"] >> draw_style;
@@ -416,7 +402,7 @@ namespace mapviz_plugins
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;
 
-    std::string color = color_.name().toStdString();
+    std::string color = ui_.color->color().name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;
 
     std::string draw_style = ui_.drawstyle->currentText().toStdString();

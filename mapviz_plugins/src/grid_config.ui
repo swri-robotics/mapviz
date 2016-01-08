@@ -50,7 +50,7 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QPushButton" name="selectcolor">
+    <widget class="mapviz::ColorButton" name="color">
      <property name="maximumSize">
       <size>
        <width>24</width>
@@ -313,6 +313,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>mapviz::ColorButton</class>
+   <extends>QPushButton</extends>
+   <header location="global">mapviz/color_button.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
  <slots>

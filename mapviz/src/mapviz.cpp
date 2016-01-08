@@ -147,12 +147,13 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(canvas_, SIGNAL(Hover(double,double,double)), this, SLOT(Hover(double,double,double)));
   connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
+  connect(ui_.bg_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectBackgroundColor(const QColor &)));
 
   connect(rec_button_, SIGNAL(toggled(bool)), this, SLOT(ToggleRecord(bool)));
   connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
   connect(screenshot_button_, SIGNAL(clicked()), this, SLOT(Screenshot()));
 
-  ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
+  ui_.bg_color->setColor(background_);
   canvas_->SetBackground(background_);
 }
 
@@ -593,7 +594,7 @@ void Mapviz::Open(const std::string& filename)
       std::string color;
       doc["background"] >> color;
       background_ = QColor(color.c_str());
-      ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
+      ui_.bg_color->setColor(background_);
       canvas_->SetBackground(background_);
     }
 
@@ -1232,17 +1233,10 @@ void Mapviz::ReorderDisplays()
   canvas_->ReorderDisplays();
 }
 
-void Mapviz::SelectBackgroundColor()
+void Mapviz::SelectBackgroundColor(const QColor &color)
 {
-  QColorDialog dialog(background_, this);
-  dialog.exec();
-
-  if (dialog.result() == QDialog::Accepted)
-  {
-    background_ = dialog.selectedColor();
-    ui_.bg_color->setStyleSheet("background: " + background_.name() + ";");
-    canvas_->SetBackground(background_);
-  }
+  background_ = color;
+  canvas_->SetBackground(background_);
 }
 
 void Mapviz::SetCaptureDirectory()
