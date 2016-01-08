@@ -34,7 +34,6 @@
 #include <vector>
 
 // QT libraries
-#include <QColorDialog>
 #include <QGLWidget>
 #include <QPalette>
 
@@ -52,7 +51,6 @@ namespace mapviz_plugins
 {
   GridPlugin::GridPlugin() :
     config_widget_(new QWidget()),
-    color_(Qt::red),
     alpha_(1.0),
     top_left_(0, 0, 0),
     size_(1),
@@ -62,13 +60,12 @@ namespace mapviz_plugins
   {
     ui_.setupUi(config_widget_);
 
+    ui_.color->setColor(Qt::red);
+    
     // Set background white
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
     config_widget_->setPalette(p);
-
-    // Initialize color selector color
-    ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
 
     // Set status text red
     QPalette p3(ui_.status->palette());
@@ -77,14 +74,13 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.select_frame, SIGNAL(clicked()), this, SLOT(SelectFrame()));
     QObject::connect(ui_.frame, SIGNAL(textEdited(const QString&)), this, SLOT(FrameEdited()));
-
-    QObject::connect(ui_.selectcolor, SIGNAL(clicked()), this, SLOT(SelectColor()));
     QObject::connect(ui_.alpha, SIGNAL(valueChanged(double)), this, SLOT(SetAlpha(double)));
     QObject::connect(ui_.x, SIGNAL(valueChanged(double)), this, SLOT(SetX(double)));
     QObject::connect(ui_.y, SIGNAL(valueChanged(double)), this, SLOT(SetY(double)));
     QObject::connect(ui_.size, SIGNAL(valueChanged(double)), this, SLOT(SetSize(double)));
     QObject::connect(ui_.rows, SIGNAL(valueChanged(int)), this, SLOT(SetRows(int)));
     QObject::connect(ui_.columns, SIGNAL(valueChanged(int)), this, SLOT(SetColumns(int)));
+    connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
   }
 
   GridPlugin::~GridPlugin()
@@ -106,7 +102,7 @@ namespace mapviz_plugins
       QPainter painter(&icon);
       painter.setRenderHint(QPainter::Antialiasing, true);
       
-      QPen pen(QColor(color_.rgb()));
+      QPen pen(QColor(ui_.color->color()));
       
       pen.setWidth(2);
       pen.setCapStyle(Qt::SquareCap);
@@ -126,10 +122,8 @@ namespace mapviz_plugins
   void GridPlugin::SetAlpha(double alpha)
   {
     alpha_ = alpha;
-    color_.setAlpha(alpha_);
-    DrawIcon();
     if (canvas_)
-    canvas_->update();
+      canvas_->update();
   }
 
   void GridPlugin::SetX(double x)
@@ -191,24 +185,6 @@ namespace mapviz_plugins
     }
   }
 
-  void GridPlugin::SelectColor()
-  {
-    QColorDialog dialog(color_, config_widget_);
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted)
-    {
-      color_ = dialog.selectedColor();
-      color_.setAlpha(alpha_);
-      ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
-
-      DrawIcon();
-
-      if (canvas_)
-      canvas_->update();
-    }
-  }
-
   void GridPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
@@ -265,8 +241,10 @@ namespace mapviz_plugins
   {
     if (transformed_)
     {
+      QColor color = ui_.color->color();
+      
       glLineWidth(3);
-      glColor4f(color_.redF(), color_.greenF(), color_.blueF(), alpha_);
+      glColor4f(color.redF(), color.greenF(), color.blueF(), alpha_);
       glBegin(GL_LINES);
 
         std::list<tf::Point>::iterator transformed_left_it = transformed_left_points_.begin();
@@ -368,8 +346,7 @@ namespace mapviz_plugins
   {
     std::string color;
     node["color"] >> color;
-    color_ = QColor(color.c_str());
-    ui_.selectcolor->setStyleSheet("background: " + color_.name() + ";");
+    ui_.color->setColor(QColor(color.c_str()));
 
     std::string frame;
     node["frame"] >> frame;
@@ -401,8 +378,7 @@ namespace mapviz_plugins
 
   void GridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    std::string color = color_.name().toStdString();
-    emitter << YAML::Key << "color" << YAML::Value << color;
+    emitter << YAML::Key << "color" << YAML::Value << ui_.color->color().name().toStdString();
 
     emitter << YAML::Key << "alpha" << YAML::Value << alpha_;
 

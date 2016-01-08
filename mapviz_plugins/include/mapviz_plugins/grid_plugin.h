@@ -41,7 +41,6 @@
 #include <QObject>
 #include <QWidget>
 #include <QTimer>
-#include <QColor>
 
 // ROS libraries
 #include <ros/ros.h>
@@ -89,11 +88,11 @@ namespace mapviz_plugins
     void SetSize(double size);
     void SetRows(int rows);
     void SetColumns(int columns);
+    void DrawIcon();
 
   private:
     Ui::grid_config ui_;
     QWidget* config_widget_;
-    QColor color_;
 
     double alpha_;
 
@@ -121,7 +120,6 @@ namespace mapviz_plugins
 
     void RecalculateGrid();
     void Transform(std::list<tf::Point>& src, std::list<tf::Point>& dst);
-    void DrawIcon();
   };
 }
 

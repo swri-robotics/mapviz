@@ -54,6 +54,8 @@
 #include <swri_transform_util/transform.h>
 #include <swri_yaml_util/yaml_util.h>
 
+#include <mapviz/select_topic_dialog.h>
+
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(
@@ -67,8 +69,6 @@ namespace mapviz_plugins
   LaserScanPlugin::LaserScanPlugin() :
       config_widget_(new QWidget()),
           topic_(""),
-          min_color_(Qt::white),
-          max_color_(Qt::black),
           alpha_(1.0),
           min_value_(0.0),
           max_value_(100.0),
@@ -87,9 +87,9 @@ namespace mapviz_plugins
     ui_.status->setPalette(p3);
 
     // Initialize color selector colors
-    ui_.selectMinColor->setStyleSheet("background: " + min_color_.name() + ";");
-    ui_.selectMaxColor->setStyleSheet("background: " + max_color_.name() + ";");
-
+    ui_.min_color->setColor(Qt::white);
+    ui_.max_color->setColor(Qt::black);
+    
     // Set color transformer choices
     ui_.color_transformer->addItem(QString("Flat Color"), QVariant(0));
     ui_.color_transformer->addItem(QString("Intensity"), QVariant(1));
@@ -114,14 +114,14 @@ namespace mapviz_plugins
         SIGNAL(currentIndexChanged(int)),
         this,
         SLOT(ColorTransformerChanged(int)));
-    QObject::connect(ui_.selectMaxColor,
-        SIGNAL(clicked()),
+    QObject::connect(ui_.max_color,
+        SIGNAL(colorEdited(const QColor &)),
         this,
-        SLOT(SelectMaxColor()));
-    QObject::connect(ui_.selectMinColor,
-        SIGNAL(clicked()),
+        SLOT(UpdateColors()));
+    QObject::connect(ui_.min_color,
+        SIGNAL(colorEdited(const QColor &)),
         this,
-        SLOT(SelectMinColor()));
+        SLOT(UpdateColors()));
     QObject::connect(ui_.minValue,
         SIGNAL(valueChanged(double)),
         this,
@@ -142,6 +142,16 @@ namespace mapviz_plugins
         SIGNAL(stateChanged(int)),
         this,
         SLOT(UseRainbowChanged(int)));
+
+    QObject::connect(ui_.max_color,
+        SIGNAL(colorEdited(const QColor &)),
+        this,
+        SLOT(DrawIcon()));
+    QObject::connect(ui_.min_color,
+        SIGNAL(colorEdited(const QColor &)),
+        this,
+        SLOT(DrawIcon()));
+
     PrintInfo("Constructed LaserScanPlugin");
   }
 
@@ -163,19 +173,19 @@ namespace mapviz_plugins
       pen.setWidth(4);
       pen.setCapStyle(Qt::RoundCap);
 
-      pen.setColor(min_color_);
+      pen.setColor(ui_.min_color->color());
       painter.setPen(pen);
       painter.drawPoint(2, 13);
 
-      pen.setColor(min_color_);
+      pen.setColor(ui_.min_color->color());
       painter.setPen(pen);
       painter.drawPoint(4, 6);
 
-      pen.setColor(min_color_);
+      pen.setColor(ui_.max_color->color());
       painter.setPen(pen);
       painter.drawPoint(12, 9);
 
-      pen.setColor(min_color_);
+      pen.setColor(ui_.max_color->color());
       painter.setPen(pen);
       painter.drawPoint(13, 2);
 
@@ -210,7 +220,7 @@ namespace mapviz_plugins
     }
     else  // No intensity or  (color_transformer == COLOR_FLAT)
     {
-      return min_color_;
+      return ui_.min_color->color();
     }
     if (max_value_ > min_value_)
       val = (val - min_value_) / (max_value_ - min_value_);
@@ -223,11 +233,13 @@ namespace mapviz_plugins
     }
     else
     {
+      const QColor min_color = ui_.min_color->color();
+      const QColor max_color = ui_.max_color->color();
       // RGB Interpolation
       int red, green, blue;
-      red = val * max_color_.red() + ((1.0 - val) * min_color_.red());
-      green = val * max_color_.green() + ((1.0 - val) * min_color_.green());
-      blue = val * max_color_.blue() + ((1.0 - val) * min_color_.blue());
+      red =   val * max_color.red()   + ((1.0 - val) * min_color.red());
+      green = val * max_color.green() + ((1.0 - val) * min_color.green());
+      blue =  val * max_color.blue()  + ((1.0 - val) * min_color.blue());
       return QColor(red, green, blue, 255);
     }
   }
@@ -243,32 +255,17 @@ namespace mapviz_plugins
         point_it->color = CalculateColor(*point_it, scan_it->has_intensity);
       }
     }
+    canvas_->update();
   }
 
   void LaserScanPlugin::SelectTopic()
   {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
+    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+      "sensor_msgs/LaserScan");
 
-    std::vector<ros::master::TopicInfo> topics;
-    ros::master::getTopics(topics);
-
-    for (unsigned int i = 0; i < topics.size(); i++)
+    if (!topic.name.empty())
     {
-      if (topics[i].datatype == "sensor_msgs/LaserScan")
-      {
-        ui.displaylist->addItem(topics[i].name.c_str());
-      }
-    }
-    ui.displaylist->setCurrentRow(0);
-
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted &&
-        ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.topic->setText(ui.displaylist->selectedItems().first()->text());
+      ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
   }
@@ -293,48 +290,16 @@ namespace mapviz_plugins
     }
   }
 
-  void LaserScanPlugin::SelectMinColor()
-  {
-    QColorDialog dialog(min_color_, config_widget_);
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted)
-    {
-      min_color_ = dialog.selectedColor();
-      ui_.selectMinColor->setStyleSheet("background: " + min_color_.name() + ";");
-      DrawIcon();
-      UpdateColors();
-      canvas_->update();
-    }
-  }
-
-  void LaserScanPlugin::SelectMaxColor()
-  {
-    QColorDialog dialog(max_color_, config_widget_);
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted)
-    {
-      max_color_ = dialog.selectedColor();
-      ui_.selectMaxColor->setStyleSheet("background: " + max_color_.name() + ";");
-      DrawIcon();
-      UpdateColors();
-      canvas_->update();
-    }
-  }
-
   void LaserScanPlugin::MinValueChanged(double value)
   {
     min_value_ = value;
     UpdateColors();
-    canvas_->update();
   }
 
   void LaserScanPlugin::MaxValueChanged(double value)
   {
     max_value_ = value;
     UpdateColors();
-    canvas_->update();
   }
 
   void LaserScanPlugin::BufferSizeChanged(int value)
@@ -508,20 +473,19 @@ namespace mapviz_plugins
   {
     if (check_state == Qt::Checked)
     {
-      ui_.selectMaxColor->setVisible(false);
-      ui_.selectMinColor->setVisible(false);
+      ui_.max_color->setVisible(false);
+      ui_.min_color->setVisible(false);
       ui_.maxColorLabel->setVisible(false);
       ui_.minColorLabel->setVisible(false);
     }
     else
     {
-      ui_.selectMaxColor->setVisible(true);
-      ui_.selectMinColor->setVisible(true);
+      ui_.max_color->setVisible(true);
+      ui_.min_color->setVisible(true);
       ui_.maxColorLabel->setVisible(true);
       ui_.minColorLabel->setVisible(true);
     }
     UpdateColors();
-    canvas_->update();
   }
 
   void LaserScanPlugin::Transform()
@@ -551,7 +515,6 @@ namespace mapviz_plugins
     if (ui_.color_transformer->currentIndex() == COLOR_Z)
     {
       UpdateColors();
-      canvas_->update();
     }
   }
 
@@ -587,13 +550,11 @@ namespace mapviz_plugins
 
     std::string min_color_str;
     node["min_color"] >> min_color_str;
-    min_color_ = QColor(min_color_str.c_str());
-    ui_.selectMinColor->setStyleSheet("background: " + min_color_.name() + ";");
+    ui_.min_color->setColor(QColor(min_color_str.c_str()));
 
     std::string max_color_str;
     node["max_color"] >> max_color_str;
-    max_color_ = QColor(max_color_str.c_str());
-    ui_.selectMaxColor->setStyleSheet("background: " + max_color_.name() + ";");
+    ui_.max_color->setColor(QColor(max_color_str.c_str()));
 
     node["value_min"] >> min_value_;
     ui_.minValue->setValue(min_value_);
@@ -617,8 +578,8 @@ namespace mapviz_plugins
     switch (index)
     {
       case COLOR_FLAT:
-        ui_.selectMinColor->setVisible(true);
-        ui_.selectMaxColor->setVisible(false);
+        ui_.min_color->setVisible(true);
+        ui_.max_color->setVisible(false);
         ui_.maxColorLabel->setVisible(false);
         ui_.minColorLabel->setVisible(false);
         ui_.minValueLabel->setVisible(false);
@@ -633,8 +594,8 @@ namespace mapviz_plugins
       case COLOR_Y:  // Y Axis
       case COLOR_Z:  // Z axis
       default:
-        ui_.selectMinColor->setVisible(!ui_.use_rainbow->isChecked());
-        ui_.selectMaxColor->setVisible(!ui_.use_rainbow->isChecked());
+        ui_.min_color->setVisible(!ui_.use_rainbow->isChecked());
+        ui_.max_color->setVisible(!ui_.use_rainbow->isChecked());
         ui_.maxColorLabel->setVisible(!ui_.use_rainbow->isChecked());
         ui_.minColorLabel->setVisible(!ui_.use_rainbow->isChecked());
         ui_.minValueLabel->setVisible(true);
@@ -645,7 +606,6 @@ namespace mapviz_plugins
         break;
     }
     UpdateColors();
-    canvas_->update();
   }
 
   /**
@@ -671,9 +631,9 @@ namespace mapviz_plugins
     emitter << YAML::Key << "color_transformer" <<
                YAML::Value << ui_.color_transformer->currentText().toStdString();
     emitter << YAML::Key << "min_color" <<
-               YAML::Value << min_color_.name().toStdString();
+               YAML::Value << ui_.min_color->color().name().toStdString();
     emitter << YAML::Key << "max_color" <<
-               YAML::Value << max_color_.name().toStdString();
+               YAML::Value << ui_.max_color->color().name().toStdString();
     emitter << YAML::Key << "value_min" <<
                YAML::Value << ui_.minValue->text().toDouble();
     emitter << YAML::Key << "value_max" <<

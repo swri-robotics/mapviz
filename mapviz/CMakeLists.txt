@@ -56,21 +56,28 @@ file (GLOB UI_FILES
   src/configitem.ui
   src/mapviz.ui
   src/pluginselect.ui
-  src/rqt_mapviz.ui)
+  src/rqt_mapviz.ui
+)
 file (GLOB HEADER_FILES
+  include/mapviz/color_button.h
   include/mapviz/config_item.h
   include/mapviz/map_canvas.h
   include/mapviz/mapviz.h
   include/mapviz/mapviz_plugin.h
   include/mapviz/rqt_mapviz.h
   include/mapviz/select_frame_dialog.h
-  include/mapviz/widgets.h)
+  include/mapviz/select_topic_dialog.h
+  include/mapviz/widgets.h
+)
 file (GLOB SRC_FILES
   src/mapviz.cpp
+  src/color_button.cpp
   src/config_item.cpp
   src/map_canvas.cpp
   src/rqt_mapviz.cpp
-  src/select_frame_dialog.cpp)
+  src/select_frame_dialog.cpp
+  src/select_topic_dialog.cpp
+)
 QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 QT4_WRAP_CPP(SRC_FILES ${HEADER_FILES})

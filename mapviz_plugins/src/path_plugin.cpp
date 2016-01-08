@@ -36,10 +36,11 @@
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
-#include <QColorDialog>
 
 // ROS libraries
 #include <ros/master.h>
+
+#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -50,10 +51,10 @@ namespace mapviz_plugins
   PathPlugin::PathPlugin() :
     config_widget_(new QWidget()),
     transformed_(false),
-    color_(Qt::green),
     line_width_(2)
   {
     ui_.setupUi(config_widget_);
+    ui_.path_color->setColor(Qt::green);
 
     // Set background white
     QPalette p(config_widget_->palette());
@@ -65,9 +66,10 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.selectColor, SIGNAL(clicked()), this, SLOT(SelectColor()));
-    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
+    connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    connect(ui_.path_color, SIGNAL(colorEdited(const QColor &)),
+            this, SLOT(DrawIcon()));
   }
 
   PathPlugin::~PathPlugin()
@@ -84,7 +86,7 @@ namespace mapviz_plugins
       QPainter painter(&icon);
       painter.setRenderHint(QPainter::Antialiasing, true);
 
-      QPen pen(QColor(color_.rgb()));
+      QPen pen(ui_.path_color->color());
 
       pen.setWidth(2);
       pen.setCapStyle(Qt::SquareCap);
@@ -104,46 +106,13 @@ namespace mapviz_plugins
     }
   }
 
-  void PathPlugin::SelectColor()
-  {
-    QColorDialog dialog(color_, config_widget_);
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted)
-    {
-      color_ = dialog.selectedColor();
-      ui_.selectColor->setStyleSheet("background: " + color_.name() + ";");
-
-      DrawIcon();
-
-      if (canvas_)
-      canvas_->update();
-    }
-  }
-
   void PathPlugin::SelectTopic()
   {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
+    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+      "nav_msgs/Path");
 
-    std::vector<ros::master::TopicInfo> topics;
-    ros::master::getTopics(topics);
-
-    for (unsigned int i = 0; i < topics.size(); i++)
-    {
-      if (topics[i].datatype == "nav_msgs/Path")
-      {
-        ui.displaylist->addItem(topics[i].name.c_str());
-      }
-    }
-    ui.displaylist->setCurrentRow(0);
-
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.topic->setText(ui.displaylist->selectedItems().first()->text());
+    if (!topic.name.empty()) {
+      ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
   }
@@ -242,6 +211,8 @@ namespace mapviz_plugins
   bool PathPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
+    connect(ui_.path_color, SIGNAL(colorEdited(const QColor &)),
+            canvas_, SLOT(update()));          
 
     DrawIcon();
 
@@ -252,8 +223,10 @@ namespace mapviz_plugins
   {
     if (transformed_ && has_message_)
     {
+      QColor color = ui_.path_color->color();
+
       glLineWidth(line_width_);
-      glColor4f(color_.redF(), color_.greenF(), color_.blueF(), color_.alphaF());
+      glColor4f(color.redF(), color.greenF(), color.blueF(), color.alphaF());
       glBegin(GL_LINE_STRIP);
 
         std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
@@ -266,7 +239,7 @@ namespace mapviz_plugins
 
       glPointSize(line_width_*4);
 
-      QColor dark = color_.darker(200);
+      QColor dark = color.darker(200);
 
       glColor4f(dark.redF(), dark.greenF(), dark.blueF(), dark.alphaF());
       glBegin(GL_POINTS);
@@ -317,10 +290,8 @@ namespace mapviz_plugins
     {
       std::string color;
       node["color"] >> color;
-      color_ = QColor(color.c_str());
+      ui_.path_color->setColor(QColor(color.c_str()));
     }
-
-    ui_.selectColor->setStyleSheet("background: " + color_.name() + ";");
 
     TopicEdited();
   }
@@ -330,7 +301,7 @@ namespace mapviz_plugins
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;
 
-    std::string color = color_.name().toStdString();
+    std::string color = ui_.path_color->color().name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;
   }
 }

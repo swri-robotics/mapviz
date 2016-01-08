@@ -44,6 +44,8 @@
 // ROS libraries
 #include <ros/master.h>
 
+#include <mapviz/select_topic_dialog.h>
+
 #include <swri_math_util/constants.h>
 
 // Declare plugin
@@ -82,43 +84,21 @@ namespace mapviz_plugins
 
   void MarkerPlugin::SelectTopic()
   {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
+    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+      "visualization_msgs/Marker",
+      "visualization_msgs/MarkerArray");
 
-    std::vector<ros::master::TopicInfo> topics;
-    ros::master::getTopics(topics);
-
-    for (unsigned int i = 0; i < topics.size(); i++)
-    {
-      if (topics[i].datatype == "visualization_msgs/Marker" || topics[i].datatype == "visualization_msgs/MarkerArray")
-      {
-        ui.displaylist->addItem(topics[i].name.c_str());
-      }
+    if (topic.name.empty()) {
+      return;
     }
-    ui.displaylist->setCurrentRow(0);
 
-    dialog.exec();
+    ui_.topic->setText(QString::fromStdString(topic.name));
 
-    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.topic->setText(ui.displaylist->selectedItems().first()->text());
-
-      // Determine if this is a marker array
-      is_marker_array_ = false;
-      for (unsigned int i = 0; i < topics.size(); i++)
-      {
-        if (topics[i].datatype == "visualization_msgs/MarkerArray")
-        {
-          if (ui.displaylist->selectedItems().first()->text().toStdString() == topics[i].name)
-          {
-            is_marker_array_ = true;
-          }
-        }
-      }
-
-      TopicEdited();
+    if (topic.datatype == "visualization_msgs/MarkerArray") {
+      is_marker_array_ = true;
     }
+
+    TopicEdited();
   }
 
   void MarkerPlugin::TopicEdited()
