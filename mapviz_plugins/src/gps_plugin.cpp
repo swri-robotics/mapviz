@@ -36,6 +36,7 @@
 
 #include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
+#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -140,27 +141,12 @@ namespace mapviz_plugins
 
   void GpsPlugin::SelectTopic()
   {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
-
-    std::vector<ros::master::TopicInfo> topics;
-    ros::master::getTopics(topics);
-
-    for (unsigned int i = 0; i < topics.size(); i++)
+    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+      "gps_common/GPSFix");
+      
+    if (!topic.name.empty())
     {
-      if (topics[i].datatype == "gps_common/GPSFix")
-      {
-        ui.displaylist->addItem(topics[i].name.c_str());
-      }
-    }
-    ui.displaylist->setCurrentRow(0);
-
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.topic->setText(ui.displaylist->selectedItems().first()->text());
+      ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
   }
