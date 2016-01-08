@@ -36,12 +36,13 @@
 
 // QT libraries
 #include <QColorDialog>
-#include <QDialog>
 #include <QGLWidget>
 #include <QPalette>
 
 // ROS libraries
 #include <ros/master.h>
+
+#include <mapviz/select_frame_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -127,24 +128,10 @@ namespace mapviz_plugins
 
   void TfFramePlugin::SelectFrame()
   {
-    QDialog dialog;
-    Ui::topicselect ui;
-    ui.setupUi(&dialog);
-
-    std::vector<std::string> frames;
-    tf_->getFrameStrings(frames);
-
-    for (unsigned int i = 0; i < frames.size(); i++)
+    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
+    if (!frame.empty())
     {
-      ui.displaylist->addItem(frames[i].c_str());
-    }
-    ui.displaylist->setCurrentRow(0);
-
-    dialog.exec();
-
-    if (dialog.result() == QDialog::Accepted && ui.displaylist->selectedItems().count() == 1)
-    {
-      ui_.frame->setText(ui.displaylist->selectedItems().first()->text());
+      ui_.frame->setText(QString::fromStdString(frame));
       FrameEdited();
     }
   }

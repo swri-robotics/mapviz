@@ -81,19 +81,18 @@ namespace mapviz_plugins
 
   protected Q_SLOTS:
     void SelectColor();
+    void SelectFrame();
+    void FrameEdited();
     void SetAlpha(double alpha);
     void SetX(double x);
     void SetY(double y);
     void SetSize(double size);
     void SetRows(int rows);
     void SetColumns(int columns);
-    void SetFrame(QString frame);
-    void UpdateFrames();
 
   private:
     Ui::grid_config ui_;
     QWidget* config_widget_;
-    QTimer frame_timer_;
     QColor color_;
 
     double alpha_;
