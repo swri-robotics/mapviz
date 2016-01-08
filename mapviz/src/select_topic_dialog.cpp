@@ -37,7 +37,6 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QTimerEvent>
-#include <QDebug>
 
 namespace mapviz
 {
@@ -253,10 +252,6 @@ std::vector<ros::master::TopicInfo> SelectTopicDialog::filterTopics(
 void SelectTopicDialog::updateDisplayedTopics()
 {
   std::vector<ros::master::TopicInfo> next_displayed_topics = filterTopics(known_topics_);
-  qDebug() << next_displayed_topics.size() << " topics to display";
-  for (size_t i = 0; i < next_displayed_topics.size(); i++) {
-    qDebug() << "   >" << next_displayed_topics[i].name.c_str();
-  }
   
   // It's a lot more work to keep track of the additions/removals like
   // this compared to resetting the QListWidget's items each time, but
@@ -267,25 +262,21 @@ void SelectTopicDialog::updateDisplayedTopics()
   for (size_t i = 0; i < displayed_topics_.size(); i++) {
     prev_names.insert(displayed_topics_[i].name);
   }
-  qDebug() << "prev_names: " << prev_names.size();
   
   std::set<std::string> next_names;
   for (size_t i = 0; i < next_displayed_topics.size(); i++) {
     next_names.insert(next_displayed_topics[i].name);
   }
-  qDebug() << "next_names: " << next_names.size();
 
   std::set<std::string> added_names;
   std::set_difference(next_names.begin(), next_names.end(),
                       prev_names.begin(), prev_names.end(),
                       std::inserter(added_names, added_names.end()));
-  qDebug() << "added_names: " << added_names.size();
 
   std::set<std::string> removed_names;
   std::set_difference(prev_names.begin(), prev_names.end(),
                       next_names.begin(), next_names.end(),
                       std::inserter(removed_names, removed_names.end()));
-  qDebug() << "removed_names: " << removed_names.size();
 
   // Remove all the removed names
   size_t removed = 0;
@@ -305,7 +296,6 @@ void SelectTopicDialog::updateDisplayedTopics()
       continue;
     }
 
-    qDebug() << "adding " << next_displayed_topics[i].name.c_str();
     list_widget_->insertItem(i, QString::fromStdString(next_displayed_topics[i].name));
     if (list_widget_->count() == 1) {
       list_widget_->setCurrentRow(0);
