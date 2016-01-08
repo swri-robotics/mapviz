@@ -58,9 +58,11 @@ PLUGINLIB_DECLARE_CLASS(
 
 namespace mapviz_plugins
 {
+#define IS_INSTANCE(msg, type)                                  \
+  (msg->getDataType() == ros::message_traits::datatype<type>())
+
   MarkerPlugin::MarkerPlugin() :
-    config_widget_(new QWidget()),
-    is_marker_array_(false)
+    config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 
@@ -93,11 +95,6 @@ namespace mapviz_plugins
     }
 
     ui_.topic->setText(QString::fromStdString(topic.name));
-
-    if (topic.datatype == "visualization_msgs/MarkerArray") {
-      is_marker_array_ = true;
-    }
-
     TopicEdited();
   }
 
@@ -112,38 +109,43 @@ namespace mapviz_plugins
       PrintWarning("No messages received.");
 
       marker_sub_.shutdown();
-
-      if (is_marker_array_)
-      {
-        marker_sub_ = node_.subscribe(topic_, 100, &MarkerPlugin::markerArrayCallback, this);
-      }
-      else
-      {
-        marker_sub_ = node_.subscribe(topic_, 100, &MarkerPlugin::markerCallback, this);
-      }
+      
+      marker_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
+        topic_, 100, &MarkerPlugin::handleMessage, this);
 
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
 
-  void MarkerPlugin::markerCallback(const visualization_msgs::MarkerConstPtr marker)
+  void MarkerPlugin::handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg)
+  {
+    if (IS_INSTANCE(msg, visualization_msgs::Marker)) {
+      handleMarker(*(msg->instantiate<visualization_msgs::Marker>()));
+    } else if (IS_INSTANCE(msg, visualization_msgs::MarkerArray)) {
+      handleMarkerArray(*(msg->instantiate<visualization_msgs::MarkerArray>()));
+    } else {
+      PrintError("Unknown message type: " + msg->getDataType());
+    }    
+  }
+
+  void MarkerPlugin::handleMarker(const visualization_msgs::Marker &marker)
   {
     if (!has_message_)
     {
-      source_frame_ = marker->header.frame_id;
+      source_frame_ = marker.header.frame_id;
       initialized_ = true;
       has_message_ = true;
     }
 
-    if (marker->action == visualization_msgs::Marker::ADD)
+    if (marker.action == visualization_msgs::Marker::ADD)
     {
-      MarkerData& markerData = markers_[marker->ns][marker->id];
-      markerData.stamp = marker->header.stamp;
-      markerData.display_type = marker->type;
-      markerData.color = QColor::fromRgbF(marker->color.r, marker->color.g, marker->color.b, marker->color.a);
-      markerData.scale_x = marker->scale.x;
-      markerData.scale_y = marker->scale.y;
-      markerData.scale_z = marker->scale.z;
+      MarkerData& markerData = markers_[marker.ns][marker.id];
+      markerData.stamp = marker.header.stamp;
+      markerData.display_type = marker.type;
+      markerData.color = QColor::fromRgbF(marker.color.r, marker.color.g, marker.color.b, marker.color.a);
+      markerData.scale_x = marker.scale.x;
+      markerData.scale_y = marker.scale.y;
+      markerData.scale_z = marker.scale.z;
       markerData.transformed = true;
 
 
@@ -151,36 +153,36 @@ namespace mapviz_plugins
       // invalid all-zero orientations, so we need to check for this
       // and provide a default identity transform.
       tf::Quaternion orientation(0.0, 0.0, 0.0, 1.0);      
-      if (marker->pose.orientation.x ||
-          marker->pose.orientation.y ||
-          marker->pose.orientation.z ||
-          marker->pose.orientation.w)
+      if (marker.pose.orientation.x ||
+          marker.pose.orientation.y ||
+          marker.pose.orientation.z ||
+          marker.pose.orientation.w)
       {
-        orientation = tf::Quaternion(marker->pose.orientation.x,
-                                     marker->pose.orientation.y,
-                                     marker->pose.orientation.z,
-                                     marker->pose.orientation.w);
+        orientation = tf::Quaternion(marker.pose.orientation.x,
+                                     marker.pose.orientation.y,
+                                     marker.pose.orientation.z,
+                                     marker.pose.orientation.w);
       }
       
       markerData.local_transform =  swri_transform_util::Transform(
         tf::Transform(
           orientation,
-          tf::Vector3(marker->pose.position.x,
-                      marker->pose.position.y,
-                      marker->pose.position.z)));
+          tf::Vector3(marker.pose.position.x,
+                      marker.pose.position.y,
+                      marker.pose.position.z)));
 
       markerData.points.clear();
       markerData.text = std::string();
 
       swri_transform_util::Transform transform;
-      if (!GetTransform(marker->header.stamp, transform))
+      if (!GetTransform(marker.header.stamp, transform))
       {
         markerData.transformed = false;
         PrintError("No transform between " + source_frame_ + " and " + target_frame_);
       }
 
       // Handle lifetime parameter
-      ros::Duration lifetime = marker->lifetime;
+      ros::Duration lifetime = marker.lifetime;
       if (lifetime.isZero())
       {
         markerData.expire_time = ros::TIME_MAX;
@@ -209,23 +211,23 @@ namespace mapviz_plugins
         point.color = markerData.color;
 
         markerData.points.push_back(point);
-        markerData.text = marker->text;
+        markerData.text = marker.text;
       }
       else
       {
-        for (unsigned int i = 0; i < marker->points.size(); i++)
+        for (unsigned int i = 0; i < marker.points.size(); i++)
         {
           StampedPoint point;
-          point.point = tf::Point(marker->points[i].x, marker->points[i].y, marker->points[i].z);
+          point.point = tf::Point(marker.points[i].x, marker.points[i].y, marker.points[i].z);
           point.transformed_point = transform * (markerData.local_transform * point.point);
 
-          if (i < marker->colors.size())
+          if (i < marker.colors.size())
           {
             point.color = QColor::fromRgbF(
-                marker->colors[i].r,
-                marker->colors[i].g,
-                marker->colors[i].b,
-                marker->colors[i].a);
+                marker.colors[i].r,
+                marker.colors[i].g,
+                marker.colors[i].b,
+                marker.colors[i].a);
           }
           else
           {
@@ -238,17 +240,17 @@ namespace mapviz_plugins
     }
     else
     {
-      markers_[marker->ns].erase(marker->id);
+      markers_[marker.ns].erase(marker.id);
     }
 
     canvas_->update();
   }
 
-  void MarkerPlugin::markerArrayCallback(const visualization_msgs::MarkerArrayConstPtr markers)
+  void MarkerPlugin::handleMarkerArray(const visualization_msgs::MarkerArray &markers)
   {
-    for (unsigned int i = 0; i < markers->markers.size(); i++)
+    for (unsigned int i = 0; i < markers.markers.size(); i++)
     {
-      markerCallback(visualization_msgs::MarkerConstPtr(new visualization_msgs::Marker(markers->markers[i])));
+      handleMarker(markers.markers[i]);
     }
   }
 
@@ -534,15 +536,12 @@ namespace mapviz_plugins
     node["topic"] >> topic;
     ui_.topic->setText(boost::trim_copy(topic).c_str());
 
-    node["is_marker_array"] >> is_marker_array_;
-
     TopicEdited();
   }
 
   void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
-    emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;
   }
 }
 

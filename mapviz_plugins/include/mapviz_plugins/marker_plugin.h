@@ -47,6 +47,7 @@
 // ROS libraries
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
+#include <topic_tools/shape_shifter.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <std_msgs/ColorRGBA.h>
@@ -125,12 +126,9 @@ namespace mapviz_plugins
 
     std::map<std::string, std::map<int, MarkerData> > markers_;
 
-    bool is_marker_array_;
-
-    void markerCallback(const visualization_msgs::MarkerConstPtr odometry);
-
-    void markerArrayCallback(
-      const visualization_msgs::MarkerArrayConstPtr markers);
+    void handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg);
+    void handleMarker(const visualization_msgs::Marker &marker);
+    void handleMarkerArray(const visualization_msgs::MarkerArray &markers);
   };
 }
 
