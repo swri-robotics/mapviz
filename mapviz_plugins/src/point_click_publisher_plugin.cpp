@@ -29,7 +29,7 @@
 
 #include "include/mapviz_plugins/point_click_publisher_plugin.h"
 #include <geometry_msgs/PointStamped.h>
-#include <yaml_util/yaml_util.h>
+#include <swri_yaml_util/yaml_util.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -82,7 +82,7 @@ namespace mapviz_plugins {
   void PointClickPublisherPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string tmp;
-    if (node.FindValue("topic"))
+    if (swri_yaml_util::FindValue(node, "topic"))
     {
       node["topic"] >> tmp;
       ui_.topic->setText(QString(tmp.c_str()));
@@ -90,7 +90,7 @@ namespace mapviz_plugins {
 
     topicChanged(ui_.topic->text());
 
-    if (node.FindValue("output_frame"))
+    if (swri_yaml_util::FindValue(node, "output_frame"))
     {
       node["output_frame"] >> tmp;
       ui_.outputframe->addItem(QString(tmp.c_str()));
@@ -118,7 +118,7 @@ namespace mapviz_plugins {
     std::string output_frame = ui_.outputframe->currentText().toStdString();
 
     if (target_frame_ != output_frame) {
-      transform_util::Transform tf;
+      swri_transform_util::Transform tf;
       tf::Point tfPoint(transformed.x(), transformed.y(), 0.0);
       if (tf_manager_.GetTransform(output_frame, target_frame_, tf)) {
         tfPoint = tf * tfPoint;
