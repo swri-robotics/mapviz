@@ -62,7 +62,8 @@ namespace mapviz_plugins
   (msg->getDataType() == ros::message_traits::datatype<type>())
 
   MarkerPlugin::MarkerPlugin() :
-    config_widget_(new QWidget())
+    config_widget_(new QWidget()),
+    connected_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -78,6 +79,8 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+
+    startTimer(1000);
   }
 
   MarkerPlugin::~MarkerPlugin()
@@ -110,6 +113,7 @@ namespace mapviz_plugins
 
       marker_sub_.shutdown();
       
+      connected_ = false;
       marker_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
         topic_, 100, &MarkerPlugin::handleMessage, this);
 
@@ -119,6 +123,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg)
   {
+    connected_ = true;
     if (IS_INSTANCE(msg, visualization_msgs::Marker)) {
       handleMarker(*(msg->instantiate<visualization_msgs::Marker>()));
     } else if (IS_INSTANCE(msg, visualization_msgs::MarkerArray)) {
@@ -542,6 +547,17 @@ namespace mapviz_plugins
   void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
+  }
+
+  void MarkerPlugin::timerEvent(QTimerEvent *event)
+  {
+    bool new_connected = (marker_sub_.getNumPublishers() > 0);
+    if (connected_ && !new_connected) {
+      marker_sub_.shutdown();      
+      marker_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
+        topic_, 100, &MarkerPlugin::handleMessage, this);
+    }
+    connected_ = new_connected;
   }
 }
 
