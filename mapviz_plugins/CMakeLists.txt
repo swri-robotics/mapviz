@@ -53,6 +53,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 file (GLOB UI_FILES src/*.ui)
 
 file (GLOB SRC_FILES
+    src/attitude_indicator_plugin.cpp 
     src/canvas_click_filter.cpp
     src/disparity_plugin.cpp 
     src/gps_plugin.cpp
@@ -65,6 +66,7 @@ file (GLOB SRC_FILES
     src/navsat_plugin.cpp
     src/odometry_plugin.cpp 
     src/path_plugin.cpp
+    src/placeable_window_proxy.cpp
     src/point_click_publisher_plugin.cpp
     src/pointcloud2_plugin.cpp
     src/robot_image_plugin.cpp
@@ -76,11 +78,14 @@ file (GLOB SRC_FILES
 QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 
 QT4_WRAP_CPP(SRC_FILES
+    include/mapviz_plugins/attitude_indicator_plugin.h
     include/mapviz_plugins/canvas_click_filter.h
     include/mapviz_plugins/disparity_plugin.h
     include/mapviz_plugins/gps_plugin.h
     include/mapviz_plugins/grid_plugin.h
     include/mapviz_plugins/image_plugin.h
+    include/mapviz_plugins/path_plugin.h
+    include/mapviz_plugins/placeable_window_proxy.h
     include/mapviz_plugins/laserscan_plugin.h
     include/mapviz_plugins/marker_plugin.h 
     include/mapviz_plugins/multires_image_plugin.h

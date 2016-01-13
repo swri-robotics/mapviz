@@ -1,4 +1,14 @@
 <library path="lib/libmapviz_plugins">
+
+  <class name="mapviz_plugins/attitude_indicator" 
+         type="mapviz_plugins::AttitudeIndicatorPlugin" 
+         base_class_type="mapviz::MapvizPlugin">
+    <description>
+      Plugin to provide an intuitive visualization of orientations
+      from IMU messages, Odometry messages, and Tf messages.
+    </description>
+  </class>
+
   <class name="mapviz_plugins/multires_image" type="mapviz_plugins::MultiresImagePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Multires image mapviz plugin.</description>
   </class>
