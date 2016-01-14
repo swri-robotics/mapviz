@@ -181,7 +181,7 @@ void Mapviz::Initialize()
       // If this Mapviz is running as a standalone application, it needs to init
       // ROS and start spinning.  If it's running as an rqt plugin, rqt will
       // take care of that.
-      ros::init(argc_, argv_, "mapviz");
+      ros::init(argc_, argv_, "mapviz", ros::init_options::AnonymousName);
 
       spin_timer_.start(30);
       connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
