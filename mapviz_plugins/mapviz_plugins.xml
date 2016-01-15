@@ -35,6 +35,9 @@
   <class name="mapviz_plugins/laserscan" type="mapviz_plugins::LaserScanPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>LaserScan mapviz plugin.</description>
   </class>
+  <class name="mapviz_plugins/pointcloud2" type="mapviz_plugins::PointCloud2Plugin" base_class_type="mapviz::MapvizPlugin">
+    <description>LaserScan mapviz plugin.</description>
+  </class>
   <class name="mapviz_plugins/point_click_publisher" type="mapviz_plugins::PointClickPublisherPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Publishes a StampedPoint when a point on the map canvas is clicked.</description>
   </class>
