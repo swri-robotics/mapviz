@@ -209,19 +209,19 @@ namespace mapviz_plugins
         {
          last_field_=0;
          act_max_=act_min_ = val;
-//         ROS_INFO("Setting max/min for x%f",val);
+        //ROS_INFO("Setting max/min for x%f",val);
         }
       else{
       if(val>act_max_)
       {   last_field_=0;
           act_max_=val;
-        //  ROS_INFO("Updating Max for x:%f",val);
+       // ROS_INFO("Updating Max for x:%f",val);
       }
 
       if(val<act_min_)
       {   last_field_=0;
           act_min_=val;
-//          ROS_INFO("Updating Min for x:%f",val);
+        // ROS_INFO("Updating Min for x:%f",val);
       }}}
 
     }
@@ -233,19 +233,19 @@ namespace mapviz_plugins
         {
          last_field_=1;
          act_max_=act_min_ = val;
-       //  ROS_INFO("Setting max/min for y%f",val);
+        // ROS_INFO("Setting max/min for y%f",val);
         }
       else{
       if(val>act_max_)
       {   last_field_=1;
           act_max_=val;
-//          ROS_INFO("Updating Max for y:%f",val);
+          //ROS_INFO("Updating Max for y:%f",val);
       }
 
       if(val<act_min_)
       {   last_field_=1;
           act_min_=val;
-          //ROS_INFO("Updating Min for y:%f",val);
+        // ROS_INFO("Updating Min for y:%f",val);
       }}}
 
     }
@@ -257,13 +257,13 @@ namespace mapviz_plugins
         {
          last_field_=2;
          act_max_=act_min_ = val;
-         //ROS_INFO("Setting max/min for z%f",val);
+        // ROS_INFO("Setting max/min for z%f",val);
         }
       else{
       if(val>act_max_)
       {   last_field_=2;
           act_max_=val;
-         // ROS_INFO("Updating Max for z:%f",val);
+        // ROS_INFO("Updating Max for z:%f",val);
       }
 
       if(val<act_min_)
@@ -287,14 +287,14 @@ namespace mapviz_plugins
               if(last_field_!=3)
               {
                 last_field_=3;
-              // ROS_INFO("Setting max/min for field 3:%f",val);
+               // ROS_INFO("Setting max/min for field 3:%f",val);
                act_max_=act_min_ = 4*ReturnFeature(1,point);
               }
             else{
             if(val>act_max_)
             {   last_field_=3;
                 act_max_=val;
-               // ROS_INFO("Updating Max for field 1:%f",val);
+              //  ROS_INFO("Updating Max for field 1:%f",val);
 
             }
 
@@ -329,13 +329,13 @@ namespace mapviz_plugins
             if(val>act_max_)
             {   last_field_=4;
                 act_max_=val;
-                //ROS_INFO("Updating Max for field 2:%f",val);
+               // ROS_INFO("Updating Max for field 2:%f",val);
             }
 
             if(val<act_min_)
             {   last_field_=4;
                 act_min_=val;
-                //ROS_INFO("Updating Min for field 2:%f",val);
+               // ROS_INFO("Updating Min for field 2:%f",val);
             }}}
 
         }
@@ -356,19 +356,19 @@ namespace mapviz_plugins
               {
                last_field_=5;
                act_max_=act_min_ = 4*ReturnFeature(3,point);
-               //ROS_INFO("Setting max/min for field 3:%f",val);
+             //  ROS_INFO("Setting max/min for field 3:%f",val);
               }
             else{
             if(val>act_max_)
             {   last_field_=5;
                 act_max_=val;
-                //ROS_INFO("Updating Max for field 3:%f",val);
+               // ROS_INFO("Updating Max for field 3:%f",val);
             }
 
             if(val<act_min_)
             {   last_field_=5;
                 act_min_=val;
-                //ROS_INFO("Updating Min for field 3:%f",val);
+               // ROS_INFO("Updating Min for field 3:%f",val);
             }}}
 
 
@@ -396,14 +396,14 @@ namespace mapviz_plugins
             {
                 last_field_=6;
                 act_max_=val;
-               // ROS_INFO("Updating Max for field 4:%f",val);
+             //  ROS_INFO("Updating Max for field 4:%f",val);
             }
 
             if(val<act_min_)
             {
                 last_field_=6;
                 act_min_=val;
-               // ROS_INFO("Updating Min for field 4:%f",val);
+             //   ROS_INFO("Updating Min for field 4:%f",val);
             }}}
 
         }
@@ -416,18 +416,21 @@ namespace mapviz_plugins
     if (max_value_ > min_value_)
       val = (val - min_value_) / (max_value_ - min_value_);
     val = std::max(0.0, std::min(val, 1.0));
+
+    if (ui_.use_automaxmin->isChecked())
+    {
+        max_value_=act_max_;
+        min_value_=act_min_;
+
+    }
+
     if (ui_.use_rainbow->isChecked())
     {  // Hue Interpolation
 
       int hue = val * 255;
       return QColor::fromHsl(hue, 255, 127, 255);
     }
-    if (ui_.use_automaxmin->isChecked()){
-        max_value_=act_max_;
-        min_value_=act_min_;
-
-    }
-    else
+      else
     { const QColor min_color = ui_.min_color->color();
       const QColor max_color = ui_.max_color->color();
       // RGB Interpolation
@@ -797,10 +800,10 @@ namespace mapviz_plugins
   {
     if (check_state == Qt::Checked)
     {
-      ui_.max_color->setVisible(false);
-      ui_.min_color->setVisible(false);
-      ui_.maxColorLabel->setVisible(false);
-      ui_.minColorLabel->setVisible(false);
+      ui_.max_color->setVisible(true);
+      ui_.min_color->setVisible(true);
+      ui_.maxColorLabel->setVisible(true);
+      ui_.minColorLabel->setVisible(true);
       ui_.minValueLabel->setVisible(false);
       ui_.maxValueLabel->setVisible(false);
       ui_.minValue->setVisible(false);
@@ -923,6 +926,16 @@ namespace mapviz_plugins
     switch (index)
     {
       case COLOR_FLAT:
+//        ui_.min_color->setVisible(true);
+//        ui_.max_color->setVisible(false);
+//        ui_.maxColorLabel->setVisible(false);
+//        ui_.minColorLabel->setVisible(false);
+//        ui_.minValueLabel->setVisible(false);
+//        ui_.maxValueLabel->setVisible(false);
+//        ui_.minValue->setVisible(false);
+//        ui_.maxValue->setVisible(false);
+//        ui_.use_rainbow->setVisible(false);
+//        ui_.use_automaxmin->setVisible(false);
         ui_.min_color->setVisible(true);
         ui_.max_color->setVisible(false);
         ui_.maxColorLabel->setVisible(false);
@@ -931,7 +944,8 @@ namespace mapviz_plugins
         ui_.maxValueLabel->setVisible(false);
         ui_.minValue->setVisible(false);
         ui_.maxValue->setVisible(false);
-        ui_.use_rainbow->setVisible(false);
+        ui_.use_rainbow->setVisible(true);
+        ui_.use_automaxmin->setVisible(true);
         break;
       case COLOR_X:  // X Axis
       case COLOR_Y:  // Y Axis
@@ -951,7 +965,8 @@ namespace mapviz_plugins
         ui_.minValue->setVisible(true);
         ui_.maxValue->setVisible(true);
         ui_.use_rainbow->setVisible(true);
-        break;
+        ui_.use_automaxmin->setVisible(true);
+
     }
     UpdateColors();
   }
