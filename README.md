@@ -224,6 +224,14 @@ Projects [nav_msgs::Path](http://docs.ros.org/api/nav_msgs/html/msg/Path.html) m
 **Parameters**
  * Topic: The path topic
 
+### Point Click Publisher
+
+Publishes a [geometry_msgs::PointStamped](http://docs.ros.org/api/geometry_msgs/html/msg/PointStamped.html) message every time a user clicks on the map frame that corresponds to the clicked location.  
+
+**Parameters**
+ * Topic: The topic to publish the point to
+ * Frame: The target frame to transform the point to before publishing it
+
 ### Robot Image
 
 Projects an image loaded from file into the scene to represent the robot platform.
