@@ -145,7 +145,6 @@ namespace mapviz_plugins
     }
 
     DrawIcon();
-    canvas_->update();
   }
 
   void OdometryPlugin::SelectTopic()
@@ -246,8 +245,6 @@ namespace mapviz_plugins
         }
       }
     }
-
-    canvas_->update();
   }
 
   void OdometryPlugin::PositionToleranceChanged(double value)
@@ -266,8 +263,6 @@ namespace mapviz_plugins
         points_.pop_front();
       }
     }
-
-    canvas_->update();
   }
 
   void OdometryPlugin::PrintError(const std::string& message)
@@ -316,9 +311,6 @@ namespace mapviz_plugins
   bool OdometryPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
-
-    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
-            canvas_, SLOT(update()));          
     
     DrawIcon();
 

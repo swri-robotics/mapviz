@@ -46,6 +46,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QColor>
+#include <QTimer>
 
 // ROS libraries
 #include <ros/ros.h>
@@ -76,6 +77,8 @@ namespace mapviz
     void UpdateView();
     void ReorderDisplays();
     QPointF MapGlCoordToFixedFrame(const QPointF& point);
+
+    double frameRate() const;
 
     float ViewScale() const { return view_scale_; }
     float OffsetX() const { return offset_x_; }
@@ -130,6 +133,9 @@ namespace mapviz
   Q_SIGNALS:
     void Hover(double x, double y, double scale);
 
+  public Q_SLOTS:
+    void setFrameRate(const double fps);
+
   protected:
     void initializeGL();
     void resizeGL(int w, int h);
@@ -154,6 +160,8 @@ namespace mapviz
     bool initialized_;
     bool fix_orientation_;
     bool rotate_90_;
+
+    QTimer frame_rate_timer_;
 
     QColor bg_color_;
 

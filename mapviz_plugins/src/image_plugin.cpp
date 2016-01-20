@@ -95,27 +95,21 @@ namespace mapviz_plugins
   void ImagePlugin::SetOffsetX(int offset)
   {
     offset_x_ = offset;
-    canvas_->update();
   }
 
   void ImagePlugin::SetOffsetY(int offset)
   {
     offset_y_ = offset;
-    canvas_->update();
   }
 
   void ImagePlugin::SetWidth(int width)
   {
     width_ = width;
-
-    canvas_->update();
   }
 
   void ImagePlugin::SetHeight(int height)
   {
     height_ = height;
-
-    canvas_->update();
   }
 
   void ImagePlugin::SetAnchor(QString anchor)
@@ -156,8 +150,6 @@ namespace mapviz_plugins
     {
       anchor_ = BOTTOM_RIGHT;
     }
-
-    canvas_->update();
   }
 
   void ImagePlugin::SetUnits(QString units)
@@ -170,8 +162,6 @@ namespace mapviz_plugins
     {
       units_ = PERCENT;
     }
-
-    canvas_->update();
   }
 
   void ImagePlugin::SelectTopic()
@@ -226,8 +216,6 @@ namespace mapviz_plugins
     last_height_ = 0;
 
     has_image_ = true;
-
-    canvas_->update();
   }
 
   void ImagePlugin::PrintError(const std::string& message)

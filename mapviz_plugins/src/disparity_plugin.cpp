@@ -98,27 +98,21 @@ namespace mapviz_plugins
   void DisparityPlugin::SetOffsetX(int offset)
   {
     offset_x_ = offset;
-    canvas_->update();
   }
 
   void DisparityPlugin::SetOffsetY(int offset)
   {
     offset_y_ = offset;
-    canvas_->update();
   }
 
   void DisparityPlugin::SetWidth(int width)
   {
     width_ = width;
-
-    canvas_->update();
   }
 
   void DisparityPlugin::SetHeight(int height)
   {
     height_ = height;
-
-    canvas_->update();
   }
 
   void DisparityPlugin::SetAnchor(QString anchor)
@@ -159,8 +153,6 @@ namespace mapviz_plugins
     {
       anchor_ = BOTTOM_RIGHT;
     }
-
-    canvas_->update();
   }
 
   void DisparityPlugin::SetUnits(QString units)
@@ -173,8 +165,6 @@ namespace mapviz_plugins
     {
       units_ = PERCENT;
     }
-
-    canvas_->update();
   }
 
   void DisparityPlugin::SelectTopic()
@@ -257,8 +247,6 @@ namespace mapviz_plugins
     last_height_ = 0;
 
     has_image_ = true;
-
-    canvas_->update();
   }
 
   void DisparityPlugin::PrintError(const std::string& message)

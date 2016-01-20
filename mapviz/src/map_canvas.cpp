@@ -75,6 +75,10 @@ MapCanvas::MapCanvas(QWidget* parent) :
   setMouseTracking(true);
   
   transform_.setIdentity();
+
+  QObject::connect(&frame_rate_timer_, SIGNAL(timeout()), this, SLOT(update()));
+  setFrameRate(50.0);
+  frame_rate_timer_.start();
 }
 
 MapCanvas::~MapCanvas()
@@ -444,4 +448,19 @@ void MapCanvas::Recenter()
   view_right_ = (width() * view_scale_ * 0.5);
   view_bottom_ = (height() * view_scale_ * 0.5);
 }
+
+void MapCanvas::setFrameRate(const double fps)
+{
+  if (fps <= 0.0) {
+    ROS_ERROR("Invalid frame rate: %f", fps);
+    return;
+  }
+
+  frame_rate_timer_.setInterval(1000.0/fps);    
 }
+
+double MapCanvas::frameRate() const
+{
+  return 1000.0 / frame_rate_timer_.interval();
+}
+}  // namespace mapviz

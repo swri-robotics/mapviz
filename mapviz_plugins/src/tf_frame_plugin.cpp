@@ -142,8 +142,6 @@ namespace mapviz_plugins
     ROS_INFO("Setting target frame to to %s", source_frame_.c_str());
 
     initialized_ = true;
-
-    canvas_->update();
   }
   
   void TfFramePlugin::SetDrawStyle(QString style)
@@ -162,7 +160,6 @@ namespace mapviz_plugins
     }
 
     DrawIcon();
-    canvas_->update();
   }
     
   void TfFramePlugin::PositionToleranceChanged(double value)
@@ -181,8 +178,6 @@ namespace mapviz_plugins
         points_.pop_front();
       }
     }
-
-    canvas_->update();
   }
   
   void TfFramePlugin::TimerCallback(const ros::TimerEvent& event)
@@ -215,9 +210,6 @@ namespace mapviz_plugins
       }
     
       cur_point_ = stamped_point;
-      
-      if (canvas_)
-        canvas_->update();
     }
   }
 
@@ -267,9 +259,6 @@ namespace mapviz_plugins
   bool TfFramePlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
-
-    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
-            canvas_, SLOT(update()));          
 
     timer_ = node_.createTimer(ros::Duration(0.1), &TfFramePlugin::TimerCallback, this);
 
