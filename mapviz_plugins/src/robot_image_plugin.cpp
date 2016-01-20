@@ -123,8 +123,6 @@ namespace mapviz_plugins
     initialized_ = true;
 
     UpdateShape();
-
-    canvas_->update();
   }
 
   void RobotImagePlugin::WidthChanged(double value)
@@ -132,8 +130,6 @@ namespace mapviz_plugins
     width_ = value;
 
     UpdateShape();
-
-    canvas_->update();
   }
 
   void RobotImagePlugin::HeightChanged(double value)
@@ -141,8 +137,6 @@ namespace mapviz_plugins
     height_ = value;
 
     UpdateShape();
-
-    canvas_->update();
   }
 
   void RobotImagePlugin::UpdateShape()
