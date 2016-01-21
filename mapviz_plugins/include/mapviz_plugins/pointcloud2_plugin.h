@@ -142,8 +142,8 @@ namespace mapviz_plugins
       bool has_message_;
       int num_of_feats;
       bool need_new_list_,need_minmax_;
-      double act_max_,act_min_;
-      int last_field_;
+      std::vector<double> max_;
+      std::vector<double> min_;
       // Use a list instead of a deque for scans to facilitate removing
       // timed-out scans in the middle of the list in case I ever re-implement
       // decay time (evenator)
