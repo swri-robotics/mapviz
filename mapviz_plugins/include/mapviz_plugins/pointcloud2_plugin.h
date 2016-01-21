@@ -58,13 +58,7 @@ namespace mapviz_plugins
       enum
       {
         COLOR_FLAT = 0,
-        COLOR_X = 1,
-        COLOR_Y = 2,
-        COLOR_Z = 3,
-        EXTRA_1 = 4,
-        EXTRA_2 = 5,
-        EXTRA_3 = 6,
-        EXTRA_4 = 7
+        COLOR_Z = 3
       };
       PointCloud2Plugin();
       virtual ~PointCloud2Plugin();
@@ -75,9 +69,8 @@ namespace mapviz_plugins
       }
       struct Field_info
       {
-          uint8_t datatype_;
-          uint32_t offset;
-          //uint32_t count;
+        uint8_t datatype_;
+        uint32_t offset;
       };
       void Draw(double x, double y, double scale);
 
@@ -110,23 +103,21 @@ namespace mapviz_plugins
     private:
       struct StampedPoint
       {
-          tf::Point point;
-          tf::Point transformed_point;
-          QColor color;
-          std::vector<double> features;
-
+        tf::Point point;
+        tf::Point transformed_point;
+        QColor color;
+        std::vector<double> features;
       };
 
       struct Scan
       {
-          ros::Time stamp;
-          QColor color;
-          std::vector<StampedPoint> points;
-          bool transformed;
-          std::map<std::string, Field_info> new_features;
+        ros::Time stamp;
+        QColor color;
+        std::vector<StampedPoint> points;
+        bool transformed;
+        std::map<std::string, Field_info> new_features;
       };
-      inline const double ReturnFeature(int index,const PointCloud2Plugin::StampedPoint& point);
-      double PointFeature(const uint8_t*,Field_info&);
+      double PointFeature(const uint8_t*, const Field_info&);
       void PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& scan);
       QColor CalculateColor(const StampedPoint& point);
 
@@ -140,7 +131,7 @@ namespace mapviz_plugins
       size_t buffer_size_;
       bool new_topic_;
       bool has_message_;
-      int num_of_feats;
+      int num_of_feats_;
       bool need_new_list_,need_minmax_;
       std::vector<double> max_;
       std::vector<double> min_;
