@@ -92,9 +92,6 @@ namespace mapviz_plugins
     ui_.max_color->setColor(Qt::black);
     // Set color transformer choices
     ui_.color_transformer->addItem(QString("Flat Color"), QVariant(0));
-    ui_.color_transformer->addItem(QString("X Axis"), QVariant(1));
-    ui_.color_transformer->addItem(QString("Y Axis"), QVariant(2));
-    ui_.color_transformer->addItem(QString("Z Axis"), QVariant(3));
     //ui_.color_transformer->removeItem();
 
 
@@ -199,215 +196,21 @@ namespace mapviz_plugins
   QColor PointCloud2Plugin::CalculateColor(const StampedPoint& point)
   {
     double val;
-
     unsigned int color_transformer = ui_.color_transformer->currentIndex();
-    if (color_transformer == COLOR_X)
-    {
-      val = point.point.x();
-      if(need_minmax_){
-        if(last_field_!=0)
-        {
-         last_field_=0;
-         act_max_=act_min_ = val;
-        //ROS_INFO("Setting max/min for x%f",val);
-        }
-      else{
-      if(val>act_max_)
-      {   last_field_=0;
-          act_max_=val;
-       // ROS_INFO("Updating Max for x:%f",val);
-      }
-
-      if(val<act_min_)
-      {   last_field_=0;
-          act_min_=val;
-        // ROS_INFO("Updating Min for x:%f",val);
-      }}}
-
-    }
-    else if (color_transformer == COLOR_Y)
-    {
-      val = point.point.y();
-      if(need_minmax_){
-        if(last_field_!=1)
-        {
-         last_field_=1;
-         act_max_=act_min_ = val;
-        // ROS_INFO("Setting max/min for y%f",val);
-        }
-      else{
-      if(val>act_max_)
-      {   last_field_=1;
-          act_max_=val;
-          //ROS_INFO("Updating Max for y:%f",val);
-      }
-
-      if(val<act_min_)
-      {   last_field_=1;
-          act_min_=val;
-        // ROS_INFO("Updating Min for y:%f",val);
-      }}}
-
-    }
-    else if (color_transformer == COLOR_Z)
-    {
-      val = point.point.z();
-      if(need_minmax_){
-        if(last_field_!=2)
-        {
-         last_field_=2;
-         act_max_=act_min_ = val;
-        // ROS_INFO("Setting max/min for z%f",val);
-        }
-      else{
-      if(val>act_max_)
-      {   last_field_=2;
-          act_max_=val;
-        // ROS_INFO("Updating Max for z:%f",val);
-      }
-
-      if(val<act_min_)
-      {   last_field_=2;
-          act_min_=val;
-          //ROS_INFO("Updating Min for z:%f",val);
-      }}}
-
-    }
-    else if (color_transformer == EXTRA_1 && num_of_feats>0)
-    {
-        if(point.features.size()==0)
-        {
-            val=0;
-
-        }
-        else
-        {
-            val = ReturnFeature(1,point);
-             if(need_minmax_){
-              if(last_field_!=3)
-              {
-                last_field_=3;
-               // ROS_INFO("Setting max/min for field 3:%f",val);
-               act_max_=act_min_ = 4*ReturnFeature(1,point);
-              }
-            else{
-            if(val>act_max_)
-            {   last_field_=3;
-                act_max_=val;
-              //  ROS_INFO("Updating Max for field 1:%f",val);
-
-            }
-
-            if(val<act_min_)
-            {   last_field_=3;
-                act_min_=val;
-               // ROS_INFO("Updating Min for field 1:%f",val);
-            }}}
-        }
-
-    }
-    else if (color_transformer == EXTRA_2 && num_of_feats>0)
-    {
-        if(point.features.size()==0)
-        {
-            val=0;
-
-        }
-        else
-        {
-
-            val = ReturnFeature(2,point);
-
-           if(need_minmax_){
-              if(last_field_!=4)
-              {
-                  last_field_=4;
-               act_max_=act_min_ = 4*ReturnFeature(2,point);
-              // ROS_INFO("Setting max/min for field 3:%f",val);
-              }
-            else{
-            if(val>act_max_)
-            {   last_field_=4;
-                act_max_=val;
-               // ROS_INFO("Updating Max for field 2:%f",val);
-            }
-
-            if(val<act_min_)
-            {   last_field_=4;
-                act_min_=val;
-               // ROS_INFO("Updating Min for field 2:%f",val);
-            }}}
-
-        }
-    }
-    else if (color_transformer == EXTRA_3 && num_of_feats>0)
-    {
-        if(point.features.size()==0)
-        {
-            val=0;
-
-        }
-        else
-        {
-
-            val = ReturnFeature(3,point);
-            if(need_minmax_){
-              if(last_field_!=5)
-              {
-               last_field_=5;
-               act_max_=act_min_ = 4*ReturnFeature(3,point);
-             //  ROS_INFO("Setting max/min for field 3:%f",val);
-              }
-            else{
-            if(val>act_max_)
-            {   last_field_=5;
-                act_max_=val;
-               // ROS_INFO("Updating Max for field 3:%f",val);
-            }
-
-            if(val<act_min_)
-            {   last_field_=5;
-                act_min_=val;
-               // ROS_INFO("Updating Min for field 3:%f",val);
-            }}}
+    if(num_of_feats>0&&color_transformer>0){
+       val=point.features[color_transformer-1];
+    if(need_minmax_){
 
 
-        }
-    }
-    else if (color_transformer == EXTRA_4 && num_of_feats>0)
-    {
-        if(point.features.size()==0)
-        {
-            val=0;
+             if(val>max_[color_transformer-1])
+             {
+                max_[color_transformer-1]=val;
+             }
 
-        }
-        else
-        {
-            val = ReturnFeature(4,point);
-            if(need_minmax_){
-              if(last_field_!=6)
-              {
-                  last_field_=6;
-               act_max_=act_min_ = 4*ReturnFeature(4,point);
-              // ROS_INFO("Setting max/min for field 3:%f",val);
-              }
-            else{
-            if(val>act_max_)
-            {
-                last_field_=6;
-                act_max_=val;
-             //  ROS_INFO("Updating Max for field 4:%f",val);
-            }
-
-            if(val<act_min_)
-            {
-                last_field_=6;
-                act_min_=val;
-             //   ROS_INFO("Updating Min for field 4:%f",val);
-            }}}
-
-        }
-    }
+             if(val<min_[color_transformer-1])
+             {
+                min_[color_transformer-1]=val;
+             }}}
     else  // No intensity or  (color_transformer == COLOR_FLAT)
     {
       return ui_.min_color->color();
@@ -419,8 +222,8 @@ namespace mapviz_plugins
 
     if (ui_.use_automaxmin->isChecked())
     {
-        max_value_=act_max_;
-        min_value_=act_min_;
+        max_value_=max_[ui_.color_transformer->currentIndex()-1];
+        min_value_=min_[ui_.color_transformer->currentIndex()-1];
 
     }
 
@@ -478,18 +281,7 @@ namespace mapviz_plugins
       TopicEdited();
     }
   }
-  inline const double PointCloud2Plugin::ReturnFeature(int index,const PointCloud2Plugin::StampedPoint& point)
-  {
-      switch(index)
-      {
-      case 1:return point.features[0];
-      case 2:return point.features[1];
-      case 3:return point.features[2];
-      case 4:return point.features[3];
-      default: return 0.0;
 
-      }
-  }
 
   void PointCloud2Plugin::TopicEdited()
   {
@@ -508,6 +300,8 @@ namespace mapviz_plugins
           this);
       new_topic_=true;
       need_new_list_=true;
+      max_.clear();
+      min_.clear();
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
@@ -548,12 +342,13 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& msg)
   {
-
+        bool flag;
       if (!has_message_)
       {
           source_frame_ = msg->header.frame_id;
           initialized_ = true;
           has_message_ = true;
+
       }
 
       Scan scan;
@@ -584,7 +379,6 @@ namespace mapviz_plugins
       const uint32_t yoff = msg->fields[yi].offset;
       const uint32_t zoff = msg->fields[zi].offset;
       const uint32_t point_step = msg->point_step;
-      const size_t point_count = msg->width * msg->height;
       const uint8_t* ptr = &msg->data.front(), *ptr_end = &msg->data.back();
       float x,y,z;
       StampedPoint point;
@@ -593,8 +387,10 @@ namespace mapviz_plugins
       {
 
           for (size_t i = 0; i < msg->fields.size(); ++i)
-          { Field_info input;
+          {
+              Field_info input;
               std::string name = msg->fields[i].name;
+
               uint32_t offset_value = msg->fields[i].offset;
               uint8_t datatype_value= msg->fields[i].datatype;
               input.offset=offset_value;
@@ -606,13 +402,18 @@ namespace mapviz_plugins
 
           new_topic_=false;
           num_of_feats= scan.new_features.size();
-          int label=4;
+
+          max_.resize(num_of_feats);
+          min_.resize(num_of_feats);
+
+
+          int label=1;
           if(need_new_list_)
           { for(it=scan.new_features.begin(); it!=scan.new_features.end(); ++it)
-              { ui_.color_transformer->removeItem(num_of_feats);
+              {
+                  ui_.color_transformer->removeItem(num_of_feats);
                   num_of_feats--;
-                  if(num_of_feats<4)
-                      break;
+
               }
 
 
@@ -620,7 +421,6 @@ namespace mapviz_plugins
               {
                   std::string const field=it->first;
                   char a[field.size()];
-
                   for(int i=0;i<=field.size();i++)
                   {
                       a[i]=field[i];
@@ -628,8 +428,7 @@ namespace mapviz_plugins
                   ui_.color_transformer->addItem(QString(a), QVariant(label));
                   num_of_feats++;
                   label++;
-                  if(label>7)
-                      break;
+
               }
               need_new_list_=false;
 
@@ -872,25 +671,6 @@ namespace mapviz_plugins
     node["buffer_size"] >> buffer_size_;
     ui_.bufferSize->setValue(buffer_size_);
 
-    std::string color_transformer;
-    node["color_transformer"] >> color_transformer;
-    if (color_transformer == "X Axis")
-      ui_.color_transformer->setCurrentIndex(COLOR_X);
-    else if (color_transformer == "Y Axis")
-      ui_.color_transformer->setCurrentIndex(COLOR_Y);
-    else if (color_transformer == "Z Axis")
-      ui_.color_transformer->setCurrentIndex(COLOR_Z);
-    else if (color_transformer == "Field 1")
-      ui_.color_transformer->setCurrentIndex(EXTRA_1);
-    else if (color_transformer == "Field 2")
-      ui_.color_transformer->setCurrentIndex(EXTRA_2);
-    else if (color_transformer == "Field 3")
-      ui_.color_transformer->setCurrentIndex(EXTRA_3);
-    else if (color_transformer == "Field 4")
-      ui_.color_transformer->setCurrentIndex(EXTRA_4);
-    else
-      ui_.color_transformer->setCurrentIndex(COLOR_FLAT);
-
     std::string min_color_str;
     node["min_color"] >> min_color_str;
     ui_.min_color->setColor(QColor(min_color_str.c_str()));
@@ -926,16 +706,6 @@ namespace mapviz_plugins
     switch (index)
     {
       case COLOR_FLAT:
-//        ui_.min_color->setVisible(true);
-//        ui_.max_color->setVisible(false);
-//        ui_.maxColorLabel->setVisible(false);
-//        ui_.minColorLabel->setVisible(false);
-//        ui_.minValueLabel->setVisible(false);
-//        ui_.maxValueLabel->setVisible(false);
-//        ui_.minValue->setVisible(false);
-//        ui_.maxValue->setVisible(false);
-//        ui_.use_rainbow->setVisible(false);
-//        ui_.use_automaxmin->setVisible(false);
         ui_.min_color->setVisible(true);
         ui_.max_color->setVisible(false);
         ui_.maxColorLabel->setVisible(false);
@@ -947,14 +717,6 @@ namespace mapviz_plugins
         ui_.use_rainbow->setVisible(true);
         ui_.use_automaxmin->setVisible(true);
         break;
-      case COLOR_X:  // X Axis
-      case COLOR_Y:  // Y Axis
-      case COLOR_Z:  // Z axis
-      case EXTRA_1:  //field 1
-      case EXTRA_2:  //field 2
-      case EXTRA_3:  //field 3
-      case EXTRA_4:  //field 4
-
       default:
         ui_.min_color->setVisible(!ui_.use_rainbow->isChecked());
         ui_.max_color->setVisible(!ui_.use_rainbow->isChecked());
