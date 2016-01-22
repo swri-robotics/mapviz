@@ -195,13 +195,14 @@ namespace mapviz_plugins
       PrintWarning("No messages received.");
 
       image_sub_.shutdown();
-      image_sub_ = node_.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
+      image_transport::ImageTransport it(node_);
+      image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
 
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
 
-  void ImagePlugin::imageCallback(const sensor_msgs::ImageConstPtr image)
+  void ImagePlugin::imageCallback(const sensor_msgs::ImageConstPtr& image)
   {
     if (!has_message_)
     {

@@ -48,6 +48,7 @@
 #include <sensor_msgs/Image.h>
 #include <opencv/highgui.h>
 #include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
 
 #include <mapviz/map_canvas.h>
 
@@ -121,7 +122,7 @@ namespace mapviz_plugins
     int last_width_;
     int last_height_;
 
-    ros::Subscriber image_sub_;
+    image_transport::Subscriber image_sub_;
     bool has_message_;
 
     sensor_msgs::Image image_;
@@ -129,7 +130,7 @@ namespace mapviz_plugins
     cv_bridge::CvImagePtr cv_image_;
     cv::Mat scaled_image_;
 
-    void imageCallback(const sensor_msgs::ImageConstPtr image);
+    void imageCallback(const sensor_msgs::ImageConstPtr& image);
 
     void ScaleImage(int width, int height);
     void DrawIplImage(cv::Mat *image);
