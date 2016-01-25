@@ -276,6 +276,7 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 {
   if (mouse_pressed_)
   {
+    int diff;
     switch (mouse_button_)
     {
       case Qt::LeftButton:
@@ -288,7 +289,7 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
         }
         break;
       case Qt::RightButton:
-        int diff = e->y() - mouse_previous_y_;
+        diff = e->y() - mouse_previous_y_;
         if (diff != 0)
         {
           Zoom(((float)diff) / 10.0f);
