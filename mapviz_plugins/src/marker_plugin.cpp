@@ -247,8 +247,6 @@ namespace mapviz_plugins
     {
       markers_[marker.ns].erase(marker.id);
     }
-
-    canvas_->update();
   }
 
   void MarkerPlugin::handleMarkerArray(const visualization_msgs::MarkerArray &markers)

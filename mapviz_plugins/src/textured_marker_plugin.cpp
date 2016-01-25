@@ -317,8 +317,6 @@ namespace mapviz_plugins
     {
       markers_[marker.ns].erase(marker.id);
     }
-
-    canvas_->update();
   }
 
   void TexturedMarkerPlugin::MarkerCallback(const marti_visualization_msgs::TexturedMarkerConstPtr marker)

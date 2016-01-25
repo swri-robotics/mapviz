@@ -135,7 +135,6 @@ namespace mapviz_plugins
     }
 
     DrawIcon();
-    canvas_->update();
   }
 
   void GpsPlugin::SelectTopic()
@@ -207,8 +206,6 @@ namespace mapviz_plugins
     }
 
     cur_point_ = stamped_point;
-
-    canvas_->update();
   }
 
   void GpsPlugin::PositionToleranceChanged(double value)
@@ -227,8 +224,6 @@ namespace mapviz_plugins
         points_.pop_front();
       }
     }
-
-    canvas_->update();
   }
 
   void GpsPlugin::PrintError(const std::string& message)
@@ -277,9 +272,6 @@ namespace mapviz_plugins
   bool GpsPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
-    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
-            canvas_, SLOT(update()));          
-
     DrawIcon();
 
     return true;

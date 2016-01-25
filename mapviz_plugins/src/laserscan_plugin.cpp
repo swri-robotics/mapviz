@@ -255,7 +255,6 @@ namespace mapviz_plugins
         point_it->color = CalculateColor(*point_it, scan_it->has_intensity);
       }
     }
-    canvas_->update();
   }
 
   void LaserScanPlugin::SelectTopic()
@@ -313,15 +312,11 @@ namespace mapviz_plugins
         scans_.pop_front();
       }
     }
-
-    canvas_->update();
   }
 
   void LaserScanPlugin::PointSizeChanged(int value)
   {
     point_size_ = value;
-
-    canvas_->update();
   }
 
   void LaserScanPlugin::laserScanCallback(const sensor_msgs::LaserScanConstPtr& msg)
@@ -380,8 +375,6 @@ namespace mapviz_plugins
         scans_.pop_front();
       }
     }
-
-    canvas_->update();
   }
 
   void LaserScanPlugin::PrintError(const std::string& message)

@@ -145,8 +145,6 @@ namespace mapviz_plugins
 
         MultiresView* view = new MultiresView(tile_set_, canvas_);
         tile_view_ = view;
-
-        canvas_->update();
       }
       else
       {

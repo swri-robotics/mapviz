@@ -122,8 +122,6 @@ namespace mapviz_plugins
   void GridPlugin::SetAlpha(double alpha)
   {
     alpha_ = alpha;
-    if (canvas_)
-      canvas_->update();
   }
 
   void GridPlugin::SetX(double x)
@@ -178,11 +176,6 @@ namespace mapviz_plugins
     initialized_ = true;
 
     RecalculateGrid();
-
-    if (canvas_)
-    {
-      canvas_->update();
-    }
   }
 
   void GridPlugin::PrintError(const std::string& message)
@@ -310,9 +303,6 @@ namespace mapviz_plugins
       right_points_.push_back(right_point);
       transformed_right_points_.push_back(transform_ * right_point);
     }
-
-    if (canvas_)
-    canvas_->update();
   }
 
   void GridPlugin::Transform()
@@ -371,9 +361,6 @@ namespace mapviz_plugins
 
     node["columns"] >> columns_;
     ui_.columns->setValue(columns_);
-
-    if (canvas_)
-      canvas_->update();
   }
 
   void GridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)

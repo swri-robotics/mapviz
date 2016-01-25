@@ -161,8 +161,6 @@ namespace mapviz_plugins
       points_.push_back(point);
       transformed_points_.push_back(point);
     }
-
-    canvas_->update();
   }
 
   void PathPlugin::PrintError(const std::string& message)
@@ -211,11 +209,7 @@ namespace mapviz_plugins
   bool PathPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
-    connect(ui_.path_color, SIGNAL(colorEdited(const QColor &)),
-            canvas_, SLOT(update()));          
-
     DrawIcon();
-
     return true;
   }
 
