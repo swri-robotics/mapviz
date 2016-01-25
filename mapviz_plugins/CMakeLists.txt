@@ -62,6 +62,7 @@ file (GLOB SRC_FILES
     src/grid_plugin.cpp
     src/path_plugin.cpp
     src/laserscan_plugin.cpp
+    src/pointcloud2_plugin.cpp
     src/point_click_publisher_plugin.cpp
     src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
@@ -80,6 +81,7 @@ QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/grid_plugin.h
     include/mapviz_plugins/path_plugin.h
     include/mapviz_plugins/laserscan_plugin.h
+    include/mapviz_plugins/pointcloud2_plugin.h
     include/mapviz_plugins/point_click_publisher_plugin.h
     include/mapviz_plugins/textured_marker_plugin.h
     include/mapviz_plugins/tf_frame_plugin.h
