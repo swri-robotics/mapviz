@@ -148,6 +148,7 @@ namespace mapviz
 
     void Recenter();
     void TransformTarget();
+    void Zoom(float factor);
 
     void InitializePixelBuffers();
 
@@ -165,9 +166,12 @@ namespace mapviz
 
     QColor bg_color_;
 
+    Qt::MouseButton mouse_button_;
     bool mouse_pressed_;
     int mouse_x_;
     int mouse_y_;
+    // Used when right-click dragging to zoom
+    int mouse_previous_y_;
 
     bool mouse_hovering_;
     int mouse_hover_x_;

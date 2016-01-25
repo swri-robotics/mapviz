@@ -49,9 +49,11 @@ MapCanvas::MapCanvas(QWidget* parent) :
   initialized_(false),
   fix_orientation_(false),
   rotate_90_(false),
+  mouse_button_(Qt::NoButton),
   mouse_pressed_(false),
   mouse_x_(0),
   mouse_y_(0),
+  mouse_previous_y_(0),
   mouse_hovering_(false),
   mouse_hover_x_(0),
   mouse_hover_y_(0),
@@ -229,8 +231,12 @@ void MapCanvas::wheelEvent(QWheelEvent* e)
 {
   float numDegrees = e->delta() / -8;
 
-  view_scale_ *= std::pow(1.1, numDegrees / 10.0);
+  Zoom(numDegrees / 10.0);
+}
 
+void MapCanvas::Zoom(float factor)
+{
+  view_scale_ *= std::pow(1.1, factor);
   UpdateView();
 }
 
@@ -238,9 +244,11 @@ void MapCanvas::mousePressEvent(QMouseEvent* e)
 {
   mouse_x_ = e->x();
   mouse_y_ = e->y();
+  mouse_previous_y_ = mouse_y_;
   drag_x_ = 0;
   drag_y_ = 0;
   mouse_pressed_ = true;
+  mouse_button_ = e->button();
 }
 
 QPointF MapCanvas::MapGlCoordToFixedFrame(const QPointF& point)
@@ -256,6 +264,7 @@ QPointF MapCanvas::MapGlCoordToFixedFrame(const QPointF& point)
 
 void MapCanvas::mouseReleaseEvent(QMouseEvent* e)
 {
+  mouse_button_ = Qt::NoButton;
   mouse_pressed_ = false;
   offset_x_ += drag_x_;
   offset_y_ += drag_y_;
@@ -265,24 +274,45 @@ void MapCanvas::mouseReleaseEvent(QMouseEvent* e)
 
 void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 {
-  if (mouse_pressed_ && ((mouse_x_ -  e->x()) != 0 || (mouse_y_ - e->y()) != 0))
+  if (mouse_pressed_)
   {
-    drag_x_ = -((mouse_x_ - e->x()) * view_scale_);
-    drag_y_ = ((mouse_y_ - e->y()) * view_scale_);
-    update();
+    switch (mouse_button_)
+    {
+      case Qt::LeftButton:
+      case Qt::MiddleButton:
+        if (((mouse_x_ - e->x()) != 0 || (mouse_y_ - e->y()) != 0))
+        {
+          drag_x_ = -((mouse_x_ - e->x()) * view_scale_);
+          drag_y_ = ((mouse_y_ - e->y()) * view_scale_);
+          update();
+        }
+        break;
+      case Qt::RightButton:
+        int diff = e->y() - mouse_previous_y_;
+        if (diff != 0)
+        {
+          Zoom(((float)diff) / 10.0f);
+        }
+        mouse_previous_y_ = e->y();
+        break;
+      default:
+        // Unexpected mouse button
+        break;
+    }
   }
-  
+
   double center_x = -offset_x_ - drag_x_;
   double center_y = -offset_y_ - drag_y_;
   double x = center_x + (e->x() - width() / 2.0) * view_scale_;
-  double y = center_y + (height() / 2.0  - e->y()) * view_scale_;
-  
+  double y = center_y + (height() / 2.0 - e->y()) * view_scale_;
+
   tf::Point point(x, y, 0);
   point = transform_ * point;
-  
+
   mouse_hovering_ = true;
   mouse_hover_x_ = e->x();
   mouse_hover_y_ = e->y();
+
   Q_EMIT Hover(point.x(), point.y(), view_scale_);
 }
 
