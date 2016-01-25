@@ -19,6 +19,7 @@
   <build_depend>libqt4-opengl-dev</build_depend>
   <depend>cv_bridge</depend>
   <depend>gps_common</depend>
+  <depend>image_transport</depend>
   <depend>mapviz</depend>
   <depend>marti_visualization_msgs</depend>
   <depend>multires_image</depend>
