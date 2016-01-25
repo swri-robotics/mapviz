@@ -59,6 +59,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
+
 PLUGINLIB_DECLARE_CLASS(
     mapviz_plugins,
     PointCloud2,
@@ -69,11 +70,11 @@ namespace mapviz_plugins
 {
   PointCloud2Plugin::PointCloud2Plugin() :
       config_widget_(new QWidget()),
-          topic_(""),
-          alpha_(1.0),
-          min_value_(0.0),
-          max_value_(100.0),
-          point_size_(3)
+      topic_(""),
+      alpha_(1.0),
+      min_value_(0.0),
+      max_value_(100.0),
+      point_size_(3)
   {
     ui_.setupUi(config_widget_);
 
@@ -97,61 +98,65 @@ namespace mapviz_plugins
 
 
     QObject::connect(ui_.selecttopic,
-        SIGNAL(clicked()),
-        this,
-        SLOT(SelectTopic()));
+                     SIGNAL(clicked()),
+                     this,
+                     SLOT(SelectTopic()));
     QObject::connect(ui_.topic,
-        SIGNAL(editingFinished()),
-        this,
-        SLOT(TopicEdited()));
+                     SIGNAL(editingFinished()),
+                     this,
+                     SLOT(TopicEdited()));
     QObject::connect(ui_.alpha,
-        SIGNAL(editingFinished()),
-        this,
-        SLOT(AlphaEdited()));
+                     SIGNAL(editingFinished()),
+                     this,
+                     SLOT(AlphaEdited()));
     QObject::connect(ui_.color_transformer,
-        SIGNAL(currentIndexChanged(int)),
-        this,
-        SLOT(ColorTransformerChanged(int)));
+                     SIGNAL(currentIndexChanged(int)),
+                     this,
+                     SLOT(ColorTransformerChanged(int)));
     QObject::connect(ui_.max_color,
-        SIGNAL(colorEdited(const QColor &)),
-        this,
-        SLOT(UpdateColors()));
+                     SIGNAL(colorEdited(
+                                const QColor &)),
+                     this,
+                     SLOT(UpdateColors()));
     QObject::connect(ui_.min_color,
-        SIGNAL(colorEdited(const QColor &)),
-        this,
-        SLOT(UpdateColors()));
+                     SIGNAL(colorEdited(
+                                const QColor &)),
+                     this,
+                     SLOT(UpdateColors()));
     QObject::connect(ui_.minValue,
-        SIGNAL(valueChanged(double)),
-        this,
-        SLOT(MinValueChanged(double)));
+                     SIGNAL(valueChanged(double)),
+                     this,
+                     SLOT(MinValueChanged(double)));
     QObject::connect(ui_.maxValue,
-        SIGNAL(valueChanged(double)),
-        this,
-        SLOT(MaxValueChanged(double)));
+                     SIGNAL(valueChanged(double)),
+                     this,
+                     SLOT(MaxValueChanged(double)));
     QObject::connect(ui_.bufferSize,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(BufferSizeChanged(int)));
+                     SIGNAL(valueChanged(int)),
+                     this,
+                     SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.pointSize,
-        SIGNAL(valueChanged(int)),
-        this,
-        SLOT(PointSizeChanged(int)));
+                     SIGNAL(valueChanged(int)),
+                     this,
+                     SLOT(PointSizeChanged(int)));
     QObject::connect(ui_.use_rainbow,
-        SIGNAL(stateChanged(int)),
-        this,
-        SLOT(UseRainbowChanged(int)));
+                     SIGNAL(stateChanged(int)),
+                     this,
+                     SLOT(UseRainbowChanged(int)));
     QObject::connect(ui_.use_automaxmin,
-        SIGNAL(stateChanged(int)),
-        this,
-        SLOT(UseAutomaxminChanged(int)));
+                     SIGNAL(stateChanged(int)),
+                     this,
+                     SLOT(UseAutomaxminChanged(int)));
     QObject::connect(ui_.max_color,
-        SIGNAL(colorEdited(const QColor &)),
-        this,
-        SLOT(DrawIcon()));
+                     SIGNAL(colorEdited(
+                                const QColor &)),
+                     this,
+                     SLOT(DrawIcon()));
     QObject::connect(ui_.min_color,
-        SIGNAL(colorEdited(const QColor &)),
-        this,
-        SLOT(DrawIcon()));
+                     SIGNAL(colorEdited(
+                                const QColor &)),
+                     this,
+                     SLOT(DrawIcon()));
 
     PrintInfo("Constructed PointCloud2Plugin");
   }
@@ -159,6 +164,7 @@ namespace mapviz_plugins
   PointCloud2Plugin::~PointCloud2Plugin()
   {
   }
+
   void PointCloud2Plugin::DrawIcon()
   {
     if (icon_)
@@ -197,33 +203,37 @@ namespace mapviz_plugins
   {
     double val;
     unsigned int color_transformer = ui_.color_transformer->currentIndex();
-    if(num_of_feats>0&&color_transformer>0){
-       val=point.features[color_transformer-1];
-    if(need_minmax_){
+    if (num_of_feats_ > 0 && color_transformer > 0)
+    {
+      val = point.features[color_transformer - 1];
+      if (need_minmax_)
+      {
+        if (val > max_[color_transformer - 1])
+        {
+          max_[color_transformer - 1] = val;
+        }
 
-
-             if(val>max_[color_transformer-1])
-             {
-                max_[color_transformer-1]=val;
-             }
-
-             if(val<min_[color_transformer-1])
-             {
-                min_[color_transformer-1]=val;
-             }}}
+        if (val < min_[color_transformer - 1])
+        {
+          min_[color_transformer - 1] = val;
+        }
+      }
+    }
     else  // No intensity or  (color_transformer == COLOR_FLAT)
     {
       return ui_.min_color->color();
     }
 
     if (max_value_ > min_value_)
+    {
       val = (val - min_value_) / (max_value_ - min_value_);
+    }
     val = std::max(0.0, std::min(val, 1.0));
 
     if (ui_.use_automaxmin->isChecked())
     {
-        max_value_=max_[ui_.color_transformer->currentIndex()-1];
-        min_value_=min_[ui_.color_transformer->currentIndex()-1];
+      max_value_ = max_[ui_.color_transformer->currentIndex() - 1];
+      min_value_ = min_[ui_.color_transformer->currentIndex() - 1];
 
     }
 
@@ -233,29 +243,32 @@ namespace mapviz_plugins
       int hue = val * 255;
       return QColor::fromHsl(hue, 255, 127, 255);
     }
-      else
-    { const QColor min_color = ui_.min_color->color();
+    else
+    {
+      const QColor min_color = ui_.min_color->color();
       const QColor max_color = ui_.max_color->color();
       // RGB Interpolation
       int red, green, blue;
-      red =   val * max_color.red()   + ((1.0 - val) * min_color.red());
+      red = val * max_color.red() + ((1.0 - val) * min_color.red());
       green = val * max_color.green() + ((1.0 - val) * min_color.green());
-      blue =  val * max_color.blue()  + ((1.0 - val) * min_color.blue());
+      blue = val * max_color.blue() + ((1.0 - val) * min_color.blue());
       return QColor(red, green, blue, 255);
     }
   }
+
   inline int32_t findChannelIndex(const sensor_msgs::PointCloud2ConstPtr& cloud, const std::string& channel)
   {
-    for (size_t i = 0; i < cloud->fields.size(); ++i)
-     {
-       if (cloud->fields[i].name == channel)
-       {
-         return i;
-       }
-     }
+    for (int32_t i = 0; i < cloud->fields.size(); ++i)
+    {
+      if (cloud->fields[i].name == channel)
+      {
+        return i;
+      }
+    }
 
-     return -1;
+    return -1;
   }
+
   void PointCloud2Plugin::UpdateColors()
   {
     std::deque<Scan>::iterator scan_it = scans_.begin();
@@ -264,7 +277,7 @@ namespace mapviz_plugins
       std::vector<StampedPoint>::iterator point_it = scan_it->points.begin();
       for (; point_it != scan_it->points.end(); point_it++)
       {
-       point_it->color = CalculateColor(*point_it);
+        point_it->color = CalculateColor(*point_it);
       }
     }
     canvas_->update();
@@ -273,7 +286,7 @@ namespace mapviz_plugins
   void PointCloud2Plugin::SelectTopic()
   {
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "sensor_msgs/PointCloud2");
+        "sensor_msgs/PointCloud2");
 
     if (!topic.name.empty())
     {
@@ -295,11 +308,11 @@ namespace mapviz_plugins
 
       PointCloud2_sub_.shutdown();
       PointCloud2_sub_ = node_.subscribe(topic_,
-          100,
-          &PointCloud2Plugin::PointCloud2Callback,
-          this);
-      new_topic_=true;
-      need_new_list_=true;
+                                         100,
+                                         &PointCloud2Plugin::PointCloud2Callback,
+                                         this);
+      new_topic_ = true;
+      need_new_list_ = true;
       max_.clear();
       min_.clear();
       ROS_INFO("Subscribing to %s", topic_.c_str());
@@ -342,160 +355,166 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& msg)
   {
-        bool flag;
-      if (!has_message_)
+    if (!has_message_)
+    {
+      source_frame_ = msg->header.frame_id;
+      initialized_ = true;
+      has_message_ = true;
+    }
+
+    Scan scan;
+    scan.stamp = msg->header.stamp;
+    scan.color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
+    scan.transformed = true;
+    scan.points.clear();
+
+
+    swri_transform_util::Transform transform;
+    if (!GetTransform(msg->header.stamp, transform))
+    {
+      scan.transformed = false;
+      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+    }
+
+
+    int32_t xi = findChannelIndex(msg, "x");
+    int32_t yi = findChannelIndex(msg, "y");
+    int32_t zi = findChannelIndex(msg, "z");
+
+    if (xi == -1 || yi == -1 || zi == -1)
+    {
+      return;
+    }
+
+    if (new_topic_)
+    {
+
+      for (size_t i = 0; i < msg->fields.size(); ++i)
       {
-          source_frame_ = msg->header.frame_id;
-          initialized_ = true;
-          has_message_ = true;
+        Field_info input;
+        std::string name = msg->fields[i].name;
+
+        uint32_t offset_value = msg->fields[i].offset;
+        uint8_t datatype_value = msg->fields[i].datatype;
+        input.offset = offset_value;
+        input.datatype_ = datatype_value;
+        scan.new_features.insert(std::pair<std::string, Field_info>(name, input));
 
       }
 
-      Scan scan;
-      scan.stamp = msg->header.stamp;
-      scan.color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
-      scan.transformed = true;
-      scan.points.clear();
+
+      new_topic_ = false;
+      num_of_feats_ = scan.new_features.size();
+
+      max_.resize(num_of_feats_);
+      min_.resize(num_of_feats_);
 
 
-      swri_transform_util::Transform transform;
-      if (!GetTransform(msg->header.stamp, transform))
+      int label = 1;
+      if (need_new_list_)
       {
-          scan.transformed = false;
-          PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+        std::map<std::string, Field_info>::const_iterator it;
+        for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
+        {
+          ui_.color_transformer->removeItem(num_of_feats_);
+          num_of_feats_--;
+
+        }
+
+        for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
+        {
+          std::string const field = it->first;
+          char a[field.size()];
+          for (int i = 0; i <= field.size(); i++)
+          {
+            a[i] = field[i];
+          }
+          ui_.color_transformer->addItem(QString(a), QVariant(label));
+          num_of_feats_++;
+          label++;
+
+        }
+        need_new_list_ = false;
       }
+    }
 
+    const uint8_t* ptr = &msg->data.front();
+    const uint8_t* ptr_end = &msg->data.back();
+    const uint32_t point_step = msg->point_step;
+    const uint32_t xoff = msg->fields[xi].offset;
+    const uint32_t yoff = msg->fields[yi].offset;
+    const uint32_t zoff = msg->fields[zi].offset;
+    for (; ptr < ptr_end; ptr += point_step)
+    {
+      float x = *reinterpret_cast<const float*>(ptr + xoff);
+      float y = *reinterpret_cast<const float*>(ptr + yoff);
+      float z = *reinterpret_cast<const float*>(ptr + zoff);
 
-      int32_t xi = findChannelIndex(msg, "x");
-      int32_t yi = findChannelIndex(msg, "y");
-      int32_t zi = findChannelIndex(msg, "z");
-
-      if (xi == -1 || yi == -1 || zi == -1)
-      {
-          return;
-      }
-
-      const uint32_t xoff = msg->fields[xi].offset;
-      const uint32_t yoff = msg->fields[yi].offset;
-      const uint32_t zoff = msg->fields[zi].offset;
-      const uint32_t point_step = msg->point_step;
-      const uint8_t* ptr = &msg->data.front(), *ptr_end = &msg->data.back();
-      float x,y,z;
       StampedPoint point;
-      std::map<std::string, Field_info>::iterator it=scan.new_features.begin();
-      if(new_topic_)
+      point.point = tf::Point(x, y, z);
+      point.features.resize(scan.new_features.size());
+      int count = 0;
+      std::map<std::string, Field_info>::const_iterator it;
+      for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
       {
-
-          for (size_t i = 0; i < msg->fields.size(); ++i)
-          {
-              Field_info input;
-              std::string name = msg->fields[i].name;
-
-              uint32_t offset_value = msg->fields[i].offset;
-              uint8_t datatype_value= msg->fields[i].datatype;
-              input.offset=offset_value;
-              input.datatype_=datatype_value;
-              scan.new_features.insert ( std::pair<std::string,Field_info>(name,input));
-
-          }
-
-
-          new_topic_=false;
-          num_of_feats= scan.new_features.size();
-
-          max_.resize(num_of_feats);
-          min_.resize(num_of_feats);
-
-
-          int label=1;
-          if(need_new_list_)
-          { for(it=scan.new_features.begin(); it!=scan.new_features.end(); ++it)
-              {
-                  ui_.color_transformer->removeItem(num_of_feats);
-                  num_of_feats--;
-
-              }
-
-
-              for(it=scan.new_features.begin(); it!=scan.new_features.end(); ++it)
-              {
-                  std::string const field=it->first;
-                  char a[field.size()];
-                  for(int i=0;i<=field.size();i++)
-                  {
-                      a[i]=field[i];
-                  }
-                  ui_.color_transformer->addItem(QString(a), QVariant(label));
-                  num_of_feats++;
-                  label++;
-
-              }
-              need_new_list_=false;
-
-
-          }
+        point.features[count] = PointFeature(ptr, (it->second));
+        count++;
       }
 
-
-
-
-      for (; ptr < ptr_end; ptr += point_step)
+      if (scan.transformed)
       {
-
-          x = *reinterpret_cast<const float*>(ptr + xoff);
-          y = *reinterpret_cast<const float*>(ptr + yoff);
-          z = *reinterpret_cast<const float*>(ptr + zoff);
-
-          point.point = tf::Point(x, y, z);
-          point.features.resize(scan.new_features.size());
-          int count=0;
-          for(it=scan.new_features.begin(); it!=scan.new_features.end(); ++it)
-          {
-              point.features[count]=PointFeature(ptr,(it->second));
-              count++;
-          }
-
-          if (scan.transformed)
-          {
-              point.transformed_point = transform * point.point;
-          }
-
-          point.color = CalculateColor(point);
-
-          scan.points.push_back(point);
+        point.transformed_point = transform * point.point;
       }
 
-      scans_.push_back(scan);
-      if (buffer_size_ > 0)
+      point.color = CalculateColor(point);
+
+      scan.points.push_back(point);
+    }
+
+    scans_.push_back(scan);
+    if (buffer_size_ > 0)
+    {
+      while (scans_.size() > buffer_size_)
       {
-          while (scans_.size() > buffer_size_)
-          {
-              scans_.pop_front();
-          }
+        scans_.pop_front();
       }
-      new_topic_=true;
-      canvas_->update();
+    }
+    new_topic_ = true;
+    canvas_->update();
   }
-  double PointCloud2Plugin::PointFeature(const uint8_t *data, Field_info& feature_info)
-  {
-      switch(feature_info.datatype_)
-      {
-      case 1: return *reinterpret_cast<const int8_t*>(data+feature_info.offset);
-      case 2: return *reinterpret_cast<const uint8_t*>(data+feature_info.offset);
-      case 3: return *reinterpret_cast<const int16_t*>(data+feature_info.offset);
-      case 4: return *reinterpret_cast<const uint16_t*>(data+feature_info.offset);
-      case 5: return *reinterpret_cast<const int32_t*>(data+feature_info.offset);
-      case 6: return *reinterpret_cast<const uint32_t*>(data+feature_info.offset);
-      case 7: return *reinterpret_cast<const float*>(data+feature_info.offset);
-      case 8: return *reinterpret_cast<const double*>(data+feature_info.offset);
 
-      }
+  double PointCloud2Plugin::PointFeature(const uint8_t* data, const Field_info& feature_info)
+  {
+    switch (feature_info.datatype_)
+    {
+      case 1:
+        return *reinterpret_cast<const int8_t*>(data + feature_info.offset);
+      case 2:
+        return *reinterpret_cast<const uint8_t*>(data + feature_info.offset);
+      case 3:
+        return *reinterpret_cast<const int16_t*>(data + feature_info.offset);
+      case 4:
+        return *reinterpret_cast<const uint16_t*>(data + feature_info.offset);
+      case 5:
+        return *reinterpret_cast<const int32_t*>(data + feature_info.offset);
+      case 6:
+        return *reinterpret_cast<const uint32_t*>(data + feature_info.offset);
+      case 7:
+        return *reinterpret_cast<const float*>(data + feature_info.offset);
+      case 8:
+        return *reinterpret_cast<const double*>(data + feature_info.offset);
+      default:
+        ROS_WARN("Unknown data type in point: %d", feature_info.datatype_);
+        return 0.0;
+    }
   }
 
   void PointCloud2Plugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -507,7 +526,9 @@ namespace mapviz_plugins
   void PointCloud2Plugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -519,7 +540,9 @@ namespace mapviz_plugins
   void PointCloud2Plugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -546,18 +569,16 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::Draw(double x, double y, double scale)
   {
-    ros::Time now = ros::Time::now();
-
     glPointSize(point_size_);
     glBegin(GL_POINTS);
 
-    std::deque<Scan>::const_iterator scan_it = scans_.begin();
-    while (scan_it != scans_.end())
+    std::deque<Scan>::const_iterator scan_it;
+    for (scan_it = scans_.begin(); scan_it != scans_.end(); scan_it++)
     {
       if (scan_it->transformed)
       {
-        std::vector<StampedPoint>::const_iterator point_it = scan_it->points.begin();
-        for (; point_it != scan_it->points.end(); ++point_it)
+        std::vector<StampedPoint>::const_iterator point_it;
+        for (point_it = scan_it->points.begin(); point_it != scan_it->points.end(); ++point_it)
         {
           glColor4f(
               point_it->color.redF(),
@@ -569,7 +590,6 @@ namespace mapviz_plugins
               point_it->transformed_point.getY());
         }
       }
-      ++scan_it;
     }
 
     glEnd();
@@ -595,6 +615,7 @@ namespace mapviz_plugins
     }
     UpdateColors();
   }
+
   void PointCloud2Plugin::UseAutomaxminChanged(int check_state)
   {
     if (check_state == Qt::Checked)
@@ -608,7 +629,7 @@ namespace mapviz_plugins
       ui_.minValue->setVisible(false);
       ui_.maxValue->setVisible(false);
 
-      need_minmax_=true;
+      need_minmax_ = true;
 
     }
     else
@@ -622,10 +643,11 @@ namespace mapviz_plugins
       ui_.minValue->setVisible(true);
       ui_.maxValue->setVisible(true);
 
-      need_minmax_=false;
+      need_minmax_ = false;
     }
     UpdateColors();
   }
+
   void PointCloud2Plugin::Transform()
   {
     std::deque<Scan>::iterator scan_it = scans_.begin();
@@ -645,6 +667,7 @@ namespace mapviz_plugins
       }
       else
       {
+        ROS_WARN("Unable to get transform.");
         scan.transformed = false;
       }
     }
@@ -657,7 +680,7 @@ namespace mapviz_plugins
   }
 
   void PointCloud2Plugin::LoadConfig(const YAML::Node& node,
-      const std::string& path)
+                                     const std::string& path)
   {
     std::string topic;
     node["topic"] >> topic;
@@ -743,30 +766,30 @@ namespace mapviz_plugins
   }
 
   void PointCloud2Plugin::SaveConfig(YAML::Emitter& emitter,
-      const std::string& path)
+                                     const std::string& path)
   {
     emitter << YAML::Key << "topic" <<
-               YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
+      YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
     emitter << YAML::Key << "size" <<
-               YAML::Value << ui_.pointSize->value();
+      YAML::Value << ui_.pointSize->value();
     emitter << YAML::Key << "buffer_size" <<
-               YAML::Value << ui_.bufferSize->value();
+      YAML::Value << ui_.bufferSize->value();
     emitter << YAML::Key << "alpha" <<
-               YAML::Value << alpha_;
+      YAML::Value << alpha_;
     emitter << YAML::Key << "color_transformer" <<
-               YAML::Value << ui_.color_transformer->currentText().toStdString();
+      YAML::Value << ui_.color_transformer->currentText().toStdString();
     emitter << YAML::Key << "min_color" <<
-               YAML::Value << ui_.min_color->color().name().toStdString();
+      YAML::Value << ui_.min_color->color().name().toStdString();
     emitter << YAML::Key << "max_color" <<
-               YAML::Value << ui_.max_color->color().name().toStdString();
+      YAML::Value << ui_.max_color->color().name().toStdString();
     emitter << YAML::Key << "value_min" <<
-               YAML::Value << ui_.minValue->text().toDouble();
+      YAML::Value << ui_.minValue->text().toDouble();
     emitter << YAML::Key << "value_max" <<
-               YAML::Value << ui_.maxValue->text().toDouble();
+      YAML::Value << ui_.maxValue->text().toDouble();
     emitter << YAML::Key << "use_rainbow" <<
-               YAML::Value << ui_.use_rainbow->isChecked();
+      YAML::Value << ui_.use_rainbow->isChecked();
     emitter << YAML::Key << "use_automaxmin" <<
-               YAML::Value << ui_.use_automaxmin->isChecked();
+      YAML::Value << ui_.use_automaxmin->isChecked();
   }
 }
 
