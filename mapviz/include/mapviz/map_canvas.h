@@ -139,7 +139,7 @@ namespace mapviz
   protected:
     void initializeGL();
     void resizeGL(int w, int h);
-    void paintGL();
+    void paintEvent(QPaintEvent* event);
     void wheelEvent(QWheelEvent* e);
     void mousePressEvent(QMouseEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
@@ -147,7 +147,7 @@ namespace mapviz
     void leaveEvent(QEvent* e);
 
     void Recenter();
-    void TransformTarget();
+    void TransformTarget(QPainter* painter);
     void Zoom(float factor);
 
     void InitializePixelBuffers();
@@ -209,6 +209,7 @@ namespace mapviz
 
     boost::shared_ptr<tf::TransformListener> tf_;
     tf::StampedTransform transform_;
+    QTransform qtransform_;
     std::list<MapvizPluginPtr> plugins_;
     
     std::vector<uint8_t> capture_buffer_;
