@@ -189,18 +189,26 @@ void MapCanvas::CaptureFrame(bool force)
   }
 }
 
-void MapCanvas::paintGL()
+void MapCanvas::paintEvent(QPaintEvent* event)
 {
   if (capture_frames_)
   {
     CaptureFrame();
   }
+
+  QPainter p(this);
+  p.beginNativePainting();
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
   
   glClearColor(bg_color_.redF(), bg_color_.greenF(), bg_color_.blueF(), 1.0f);
+  UpdateView();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glPushMatrix();
-  TransformTarget();
+  TransformTarget(&p);
+
+  //glPushMatrix();
+  //TransformTarget();
 
   // Draw test pattern
   glLineWidth(3);
@@ -220,6 +228,15 @@ void MapCanvas::paintGL()
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
+  }
+
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+  p.endNativePainting();
+
+  for (it = plugins_.begin(); it != plugins_.end(); ++it)
+  {
+    (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
   }
 
   glPopMatrix();
@@ -349,15 +366,18 @@ void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
   update();
 }
 
-void MapCanvas::TransformTarget()
+void MapCanvas::TransformTarget(QPainter* painter)
 {
   glTranslatef(offset_x_ + drag_x_, offset_y_ + drag_y_, 0);
+  qtransform_ = qtransform_.translate(offset_x_ + drag_x_, -(offset_y_ + drag_y_));
 
   view_center_x_ = -offset_x_ - drag_x_;
   view_center_y_ = -offset_y_ - drag_y_;
 
   if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
+  {
     return;
+  }
 
   try
   {
@@ -379,8 +399,10 @@ void MapCanvas::TransformTarget()
     transform_.getBasis().getRPY(roll, pitch, yaw);
 
     glRotatef(-yaw * 57.2957795, 0, 0, 1);
+    qtransform_ = qtransform_.rotateRadians(yaw);
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
+    qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(), transform_.getOrigin().getY());
 
     tf::Point point(view_center_x_, view_center_y_, 0);
 
@@ -388,6 +410,9 @@ void MapCanvas::TransformTarget()
 
     view_center_x_ = center.getX();
     view_center_y_ = center.getY();
+
+    qtransform_ = qtransform_.scale(1, -1);
+    painter->setWorldTransform(qtransform_, false);
     
     if (mouse_hovering_)
     {
@@ -430,6 +455,9 @@ void MapCanvas::UpdateView()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(view_left_, view_right_, view_top_, view_bottom_, -0.5f, 0.5f);
+
+    qtransform_ = QTransform::fromTranslate(width() / 2.0, height() / 2.0).
+        scale(1.0 / view_scale_, 1.0 / view_scale_);
 
     update();
   }

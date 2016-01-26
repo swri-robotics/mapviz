@@ -71,6 +71,8 @@ namespace mapviz
     virtual void Shutdown() = 0;
 
     virtual void Draw(double x, double y, double scale) = 0;
+    
+    virtual void Paint(QPainter* painter, double x, double y, double scale) {};
 
     void SetUseLatestTransforms(bool value)
     {
@@ -104,6 +106,16 @@ namespace mapviz
         Transform();
 
         Draw(x, y, scale);
+      }
+    }
+    
+    void PaintPlugin(QPainter* painter, double x, double y, double scale)
+    {
+      if (visible_ && initialized_)
+      {
+        Transform();
+         
+        Paint(painter, x, y, scale);
       }
     }
 
