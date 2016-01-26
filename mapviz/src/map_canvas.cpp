@@ -209,9 +209,6 @@ void MapCanvas::paintEvent(QPaintEvent* event)
 
   TransformTarget(&p);
 
-  //glPushMatrix();
-  //TransformTarget();
-
   // Draw test pattern
   glLineWidth(3);
   glBegin(GL_LINES);
@@ -230,16 +227,14 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
+    p.endNativePainting();
+    (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
+    p.beginNativePainting();
   }
 
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   p.endNativePainting();
-
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
-    (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
-  }
 
   glPopMatrix();
 }
@@ -400,6 +395,10 @@ void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
 void MapCanvas::TransformTarget(QPainter* painter)
 {
   glTranslatef(offset_x_ + drag_x_, offset_y_ + drag_y_, 0);
+  // In order for plugins drawing with a QPainter to be able to use the same coordinates
+  // as plugins using drawing using native GL commands, we have to replicate the
+  // GL transforms using a QTransform.  Note that a QPainter's coordinate system is
+  // flipped on the Y axis relative to OpenGL's.
   qtransform_ = qtransform_.translate(offset_x_ + drag_x_, -(offset_y_ + drag_y_));
 
   view_center_x_ = -offset_x_ - drag_x_;

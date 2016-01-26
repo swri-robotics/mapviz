@@ -70,8 +70,16 @@ namespace mapviz
 
     virtual void Shutdown() = 0;
 
+    /**
+     * Draws on the Mapviz canvas using OpenGL commands; this will be called
+     * before Paint();
+     */
     virtual void Draw(double x, double y, double scale) = 0;
-    
+
+    /**
+     * Draws on the Mapviz canvas using a QPainter; this is called after Draw().
+     * You only need to implement this if you're actually using a QPainter.
+     */
     virtual void Paint(QPainter* painter, double x, double y, double scale) {};
 
     void SetUseLatestTransforms(bool value)
