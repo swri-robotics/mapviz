@@ -473,24 +473,6 @@ namespace mapviz_plugins
                 glEnd();
               }
             }
-            else if (marker.display_type== visualization_msgs::Marker::TEXT_VIEW_FACING)
-            {
-              if (!marker.points.empty())
-              {
-                StampedPoint& point = marker.points.front();
-                std::string text = marker.text;
-
-                glPushMatrix();
-                glRasterPos3f(point.transformed_point.x(), point.transformed_point.y(), 0.0);
-                for (uint32_t i = 0; i < text.size(); i++)
-                {
-                  glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10,
-                      static_cast<int>(text.c_str()[i]));
-                    // glutBitmapCharacter(glutBitmapHelvetica10,buf.at(i));
-                }
-                glPushMatrix();
-              }
-            }
 
             PrintInfo("OK");
           }
@@ -502,6 +484,54 @@ namespace mapviz_plugins
         }
       }
     }
+  }
+
+  void MarkerPlugin::Paint(QPainter* painter, double x, double y, double scale)
+  {
+    // Most of the marker drawing is done using OpenGL commands, but text labels
+    // are rendered using a QPainter.  This is intended primarily as an example
+    // of how the QPainter works.
+    ros::Time now = ros::Time::now();
+
+    // We don't want the text to be rotated or scaled, but we do want it to be
+    // translated appropriately.  So, we save off the current world transform
+    // and reset it; when we actually draw the text, we'll manually translate
+    // it to the right place.
+    QTransform tf = painter->worldTransform();
+    QFont font("Helvetica", 10);
+    painter->setFont(font);
+    painter->save();
+    painter->resetTransform();
+
+    std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
+    for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
+    {
+      std::map<int, MarkerData>::iterator markerIter;
+      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
+      {
+        MarkerData& marker = markerIter->second;
+
+        if (marker.display_type != visualization_msgs::Marker::TEXT_VIEW_FACING ||
+            marker.expire_time <= now ||
+            !marker.transformed)
+        {
+          continue;
+        }
+
+        QPen pen(QBrush(QColor(marker.color.red(), marker.color.green(),
+                               marker.color.blue())), 1);
+        painter->setPen(pen);
+
+        StampedPoint& rosPoint = marker.points.front();
+        QPointF point = tf.map(QPointF(rosPoint.transformed_point.x(),
+                                       rosPoint.transformed_point.y()));
+        painter->drawText(point, QString(marker.text.c_str()));
+
+        PrintInfo("OK");
+      }
+    }
+
+    painter->restore();
   }
 
   void MarkerPlugin::Transform()
