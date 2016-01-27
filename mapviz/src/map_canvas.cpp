@@ -41,7 +41,7 @@ bool compare_plugins(MapvizPluginPtr a, MapvizPluginPtr b)
 }
 
 MapCanvas::MapCanvas(QWidget* parent) :
-  QGLWidget(parent),
+  QGLWidget(QGLFormat(QGL::SampleBuffers), parent),
   has_pixel_buffers_(false),
   pixel_buffer_size_(0),
   pixel_buffer_index_(0),
@@ -49,6 +49,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
   initialized_(false),
   fix_orientation_(false),
   rotate_90_(false),
+  enable_antialiasing_(true),
   mouse_pressed_(false),
   mouse_x_(0),
   mouse_y_(0),
@@ -134,11 +135,23 @@ void MapCanvas::initializeGL()
   }
 
   glClearColor(0.58f, 0.56f, 0.5f, 1);
-  glEnable(GL_POINT_SMOOTH);
-  glEnable(GL_LINE_SMOOTH);
-  glDisable(GL_POLYGON_SMOOTH);
-  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-  glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+  if (enable_antialiasing_)
+  {
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+  }
+  else
+  {
+    glDisable(GL_MULTISAMPLE);
+    glDisable(GL_POINT_SMOOTH);
+    glDisable(GL_LINE_SMOOTH);
+    glDisable(GL_POLYGON_SMOOTH);
+  }
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_NEVER);
@@ -324,6 +337,16 @@ void MapCanvas::ToggleRotate90(bool on)
 {
   rotate_90_ = on;
   update();
+}
+
+void MapCanvas::ToggleEnableAntialiasing(bool on)
+{
+  enable_antialiasing_ = on;
+  QGLFormat format;
+  format.setSwapInterval(1);
+  format.setSampleBuffers(enable_antialiasing_);
+  // After setting the format, initializeGL will automatically be called again, then paintGL.
+  this->setFormat(format);
 }
 
 void MapCanvas::ToggleUseLatestTransforms(bool on)
