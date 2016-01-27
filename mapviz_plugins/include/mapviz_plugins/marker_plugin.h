@@ -71,6 +71,7 @@ namespace mapviz_plugins
     void Shutdown() {}
 
     void Draw(double x, double y, double scale);
+    void Paint(QPainter* painter, double x, double y, double scale);
 
     void Transform();
 
