@@ -41,7 +41,7 @@ bool compare_plugins(MapvizPluginPtr a, MapvizPluginPtr b)
 }
 
 MapCanvas::MapCanvas(QWidget* parent) :
-  QGLWidget(parent),
+  QGLWidget(QGLFormat(QGL::SampleBuffers), parent),
   has_pixel_buffers_(false),
   pixel_buffer_size_(0),
   pixel_buffer_index_(0),
@@ -49,6 +49,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
   initialized_(false),
   fix_orientation_(false),
   rotate_90_(false),
+  enable_antialiasing_(true),
   mouse_button_(Qt::NoButton),
   mouse_pressed_(false),
   mouse_x_(0),
@@ -136,11 +137,23 @@ void MapCanvas::initializeGL()
   }
 
   glClearColor(0.58f, 0.56f, 0.5f, 1);
-  glEnable(GL_POINT_SMOOTH);
-  glEnable(GL_LINE_SMOOTH);
-  glDisable(GL_POLYGON_SMOOTH);
-  glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-  glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+  if (enable_antialiasing_)
+  {
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+  }
+  else
+  {
+    glDisable(GL_MULTISAMPLE);
+    glDisable(GL_POINT_SMOOTH);
+    glDisable(GL_LINE_SMOOTH);
+    glDisable(GL_POLYGON_SMOOTH);
+  }
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_NEVER);
@@ -191,18 +204,23 @@ void MapCanvas::CaptureFrame(bool force)
   }
 }
 
-void MapCanvas::paintGL()
+void MapCanvas::paintEvent(QPaintEvent* event)
 {
   if (capture_frames_)
   {
     CaptureFrame();
   }
+
+  QPainter p(this);
+  p.beginNativePainting();
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
   
   glClearColor(bg_color_.redF(), bg_color_.greenF(), bg_color_.blueF(), 1.0f);
+  UpdateView();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glPushMatrix();
-  TransformTarget();
+  TransformTarget(&p);
 
   // Draw test pattern
   glLineWidth(3);
@@ -222,7 +240,14 @@ void MapCanvas::paintGL()
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
+    p.endNativePainting();
+    (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
+    p.beginNativePainting();
   }
+
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+  p.endNativePainting();
 
   glPopMatrix();
 }
@@ -357,6 +382,16 @@ void MapCanvas::ToggleRotate90(bool on)
   update();
 }
 
+void MapCanvas::ToggleEnableAntialiasing(bool on)
+{
+  enable_antialiasing_ = on;
+  QGLFormat format;
+  format.setSwapInterval(1);
+  format.setSampleBuffers(enable_antialiasing_);
+  // After setting the format, initializeGL will automatically be called again, then paintGL.
+  this->setFormat(format);
+}
+
 void MapCanvas::ToggleUseLatestTransforms(bool on)
 {
   std::list<MapvizPluginPtr>::iterator it;
@@ -380,15 +415,22 @@ void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
   update();
 }
 
-void MapCanvas::TransformTarget()
+void MapCanvas::TransformTarget(QPainter* painter)
 {
   glTranslatef(offset_x_ + drag_x_, offset_y_ + drag_y_, 0);
+  // In order for plugins drawing with a QPainter to be able to use the same coordinates
+  // as plugins using drawing using native GL commands, we have to replicate the
+  // GL transforms using a QTransform.  Note that a QPainter's coordinate system is
+  // flipped on the Y axis relative to OpenGL's.
+  qtransform_ = qtransform_.translate(offset_x_ + drag_x_, -(offset_y_ + drag_y_));
 
   view_center_x_ = -offset_x_ - drag_x_;
   view_center_y_ = -offset_y_ - drag_y_;
 
   if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
+  {
     return;
+  }
 
   try
   {
@@ -410,8 +452,10 @@ void MapCanvas::TransformTarget()
     transform_.getBasis().getRPY(roll, pitch, yaw);
 
     glRotatef(-yaw * 57.2957795, 0, 0, 1);
+    qtransform_ = qtransform_.rotateRadians(yaw);
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
+    qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(), transform_.getOrigin().getY());
 
     tf::Point point(view_center_x_, view_center_y_, 0);
 
@@ -419,6 +463,9 @@ void MapCanvas::TransformTarget()
 
     view_center_x_ = center.getX();
     view_center_y_ = center.getY();
+
+    qtransform_ = qtransform_.scale(1, -1);
+    painter->setWorldTransform(qtransform_, false);
     
     if (mouse_hovering_)
     {
@@ -461,6 +508,9 @@ void MapCanvas::UpdateView()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(view_left_, view_right_, view_top_, view_bottom_, -0.5f, 0.5f);
+
+    qtransform_ = QTransform::fromTranslate(width() / 2.0, height() / 2.0).
+        scale(1.0 / view_scale_, 1.0 / view_scale_);
 
     update();
   }

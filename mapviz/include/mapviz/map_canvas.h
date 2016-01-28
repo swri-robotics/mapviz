@@ -73,6 +73,7 @@ namespace mapviz
     void SetTargetFrame(const std::string& frame);
     void ToggleFixOrientation(bool on);
     void ToggleRotate90(bool on);
+    void ToggleEnableAntialiasing(bool on);
     void ToggleUseLatestTransforms(bool on);
     void UpdateView();
     void ReorderDisplays();
@@ -139,7 +140,7 @@ namespace mapviz
   protected:
     void initializeGL();
     void resizeGL(int w, int h);
-    void paintGL();
+    void paintEvent(QPaintEvent* event);
     void wheelEvent(QWheelEvent* e);
     void mousePressEvent(QMouseEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
@@ -147,7 +148,7 @@ namespace mapviz
     void leaveEvent(QEvent* e);
 
     void Recenter();
-    void TransformTarget();
+    void TransformTarget(QPainter* painter);
     void Zoom(float factor);
 
     void InitializePixelBuffers();
@@ -161,6 +162,7 @@ namespace mapviz
     bool initialized_;
     bool fix_orientation_;
     bool rotate_90_;
+    bool enable_antialiasing_;
 
     QTimer frame_rate_timer_;
 
@@ -209,6 +211,7 @@ namespace mapviz
 
     boost::shared_ptr<tf::TransformListener> tf_;
     tf::StampedTransform transform_;
+    QTransform qtransform_;
     std::list<MapvizPluginPtr> plugins_;
     
     std::vector<uint8_t> capture_buffer_;
