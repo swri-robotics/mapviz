@@ -210,6 +210,11 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   }
 
   QPainter p(this);
+  p.setRenderHints(QPainter::Antialiasing |
+                       QPainter::TextAntialiasing |
+                       QPainter::SmoothPixmapTransform |
+                       QPainter::HighQualityAntialiasing,
+                   enable_antialiasing_);
   p.beginNativePainting();
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
