@@ -73,6 +73,7 @@ namespace mapviz
     void SetTargetFrame(const std::string& frame);
     void ToggleFixOrientation(bool on);
     void ToggleRotate90(bool on);
+    void ToggleEnableAntialiasing(bool on);
     void ToggleUseLatestTransforms(bool on);
     void UpdateView();
     void ReorderDisplays();
@@ -161,6 +162,7 @@ namespace mapviz
     bool initialized_;
     bool fix_orientation_;
     bool rotate_90_;
+    bool enable_antialiasing_;
 
     QTimer frame_rate_timer_;
 
