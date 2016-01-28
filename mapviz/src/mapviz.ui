@@ -51,6 +51,7 @@
     </property>
     <addaction name="actionFix_Orientation"/>
     <addaction name="actionRotate_90"/>
+    <addaction name="actionEnable_Antialiasing"/>
     <addaction name="separator"/>
     <addaction name="actionForce_720p"/>
     <addaction name="actionForce_480p"/>
@@ -450,6 +451,20 @@
     <string>Rotate the camera by 90 degrees</string>
    </property>
   </action>
+  <action name="actionEnable_Antialiasing">
+    <property name="checkable">
+      <bool>true</bool>
+    </property>
+    <property name="checked">
+      <bool>true</bool>
+    </property>
+    <property name="text">
+      <string>Enable Antialiasing</string>
+    </property>
+    <property name="statusTip">
+      <string>Enable antialiasing on the GL surface</string>
+    </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -732,6 +747,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionEnable_Antialiasing</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleEnableAntialiasing(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectNewDisplay()</slot>
@@ -740,6 +771,7 @@
   <slot>FixedFrameSelected(QString)</slot>
   <slot>TargetFrameSelected(QString)</slot>
   <slot>ToggleFixOrientation(bool)</slot>
+  <slot>ToggleEnableAntialiasing(bool)</slot>
   <slot>MoveDisplay(QModelIndexList)</slot>
   <slot>OpenConfig()</slot>
   <slot>SaveConfig()</slot>
