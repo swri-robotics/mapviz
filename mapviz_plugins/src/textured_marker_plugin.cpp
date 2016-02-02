@@ -134,7 +134,7 @@ namespace mapviz_plugins
     }
   }
 
-  void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::TexturedMarkerPtr marker)
+  void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr marker)
   {
     ProcessMarker(*marker);
   }
