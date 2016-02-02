@@ -80,6 +80,10 @@ namespace mapviz_plugins
 
     QWidget* GetConfigWidget(QWidget* parent);
 
+  Q_SLOTS:
+    void MarkerReceived(const marti_visualization_msgs::TexturedMarkerPtr marker);
+    void MarkersReceived(const marti_visualization_msgs::TexturedMarkerArrayConstPtr markers);
+
   protected:
     void PrintError(const std::string& message);
     void PrintInfo(const std::string& message);
@@ -88,6 +92,8 @@ namespace mapviz_plugins
   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
+    void ProcessMarker(const marti_visualization_msgs::TexturedMarkerPtr marker);
+    void ProcessMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr markers);
 
   private:
     struct MarkerData
