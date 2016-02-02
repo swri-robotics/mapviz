@@ -242,6 +242,19 @@ Projects an image loaded from file into the scene to represent the robot platfor
  * Width: The physical width represented by the image
  * Height: The physical height represented by the image
 
+### String
+
+Displays the most recent string from a std_msgs::String message at a fixed location on the scene.
+
+**Parameters**
+ * Topic: The string topic
+ * Font: The font for rendering the string
+ * Color: The color for drawing the string
+ * Anchor: (top left | top center | top right | center left | center | center right | bottom left | bottom center | bottom right)
+ * Offset X: Horizontal offset from the anchor
+ * Offset Y: Vertical offset from the anchor
+ * Units: (pixels | percent of window)
+
 ### Textured Marker
 
 Projects marti_visualization_msgs::TexturedMarker and marti_visualization_msgs::TexturedMarkerArray message data into the scene.
