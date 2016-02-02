@@ -54,7 +54,6 @@ file (GLOB UI_FILES src/*.ui)
 file (GLOB SRC_FILES
     src/canvas_click_filter.cpp
     src/disparity_plugin.cpp 
-    src/gps_plugin.cpp
     src/grid_plugin.cpp
     src/image_plugin.cpp
     src/laserscan_plugin.cpp
@@ -79,7 +78,6 @@ QT4_WRAP_UI(SRC_FILES ${UI_FILES})
 QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/canvas_click_filter.h
     include/mapviz_plugins/disparity_plugin.h
-    include/mapviz_plugins/gps_plugin.h
     include/mapviz_plugins/grid_plugin.h
     include/mapviz_plugins/image_plugin.h
     include/mapviz_plugins/laserscan_plugin.h
