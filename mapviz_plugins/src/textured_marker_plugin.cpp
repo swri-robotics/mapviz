@@ -77,14 +77,20 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+
+    // By using a signal/slot connection, we ensure that we only generate GL textures on the
+    // main thread in case a non-main thread handles the ROS callbacks.
+    qRegisterMetaType<marti_visualization_msgs::TexturedMarkerConstPtr>("TexturedMarkerConstPtr");
+    qRegisterMetaType<marti_visualization_msgs::TexturedMarkerArrayConstPtr>("TexturedMarkerArrayConstPtr");
+
     QObject::connect(this, 
-                     SIGNAL(MarkerReceived(const marti_visualization_msgs::TexturedMarkerPtr)),
+                     SIGNAL(MarkerReceived(const marti_visualization_msgs::TexturedMarkerConstPtr)),
                      this,
-                     SLOT(ProcessMarker(const marti_visualization_msgs::TexturedMarkerPtr)));
+                     SLOT(ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr)));
     QObject::connect(this,
                      SIGNAL(MarkersReceived(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)),
                      this,
-                     SLOT(ProcesssMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)));
+                     SLOT(ProcessMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)));
   }
 
   TexturedMarkerPlugin::~TexturedMarkerPlugin()
