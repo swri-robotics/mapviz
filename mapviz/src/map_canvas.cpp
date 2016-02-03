@@ -253,8 +253,6 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   p.endNativePainting();
-
-  glPopMatrix();
 }
 
 void MapCanvas::wheelEvent(QWheelEvent* e)
@@ -315,7 +313,6 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
         {
           drag_x_ = -((mouse_x_ - e->x()) * view_scale_);
           drag_y_ = ((mouse_y_ - e->y()) * view_scale_);
-          update();
         }
         break;
       case Qt::RightButton:
@@ -361,7 +358,6 @@ void MapCanvas::SetFixedFrame(const std::string& frame)
   {
     (*it)->SetTargetFrame(frame);
   }
-  update();
 }
 
 void MapCanvas::SetTargetFrame(const std::string& frame)
@@ -372,19 +368,16 @@ void MapCanvas::SetTargetFrame(const std::string& frame)
   drag_y_ = 0;
 
   target_frame_ = frame;
-  update();
 }
 
 void MapCanvas::ToggleFixOrientation(bool on)
 {
   fix_orientation_ = on;
-  update();
 }
 
 void MapCanvas::ToggleRotate90(bool on)
 {
   rotate_90_ = on;
-  update();
 }
 
 void MapCanvas::ToggleEnableAntialiasing(bool on)
@@ -404,8 +397,6 @@ void MapCanvas::ToggleUseLatestTransforms(bool on)
   {
     (*it)->SetUseLatestTransforms(on);
   }
-
-  update();
 }
 
 void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int order)
@@ -417,7 +408,6 @@ void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
 {
   plugin->Shutdown();
   plugins_.remove(plugin);
-  update();
 }
 
 void MapCanvas::TransformTarget(QPainter* painter)
@@ -516,8 +506,6 @@ void MapCanvas::UpdateView()
 
     qtransform_ = QTransform::fromTranslate(width() / 2.0, height() / 2.0).
         scale(1.0 / view_scale_, 1.0 / view_scale_);
-
-    update();
   }
 }
 
