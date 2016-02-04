@@ -239,6 +239,8 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   std::list<MapvizPluginPtr>::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
+    (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
+    
     if ((*it)->SupportsPainting())
     {
       glMatrixMode(GL_MODELVIEW);
@@ -251,7 +253,6 @@ void MapCanvas::paintEvent(QPaintEvent* event)
       UpdateView();
       TransformTarget(&p);
     }
-    (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
   }
 
   glMatrixMode(GL_MODELVIEW);
