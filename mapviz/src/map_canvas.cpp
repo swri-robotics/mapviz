@@ -253,7 +253,6 @@ void MapCanvas::paintEvent(QPaintEvent* event)
     }
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
   }
-  ROS_INFO("Done drawing plugins");
 
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
