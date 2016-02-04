@@ -77,6 +77,20 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+
+    // By using a signal/slot connection, we ensure that we only generate GL textures on the
+    // main thread in case a non-main thread handles the ROS callbacks.
+    qRegisterMetaType<marti_visualization_msgs::TexturedMarkerConstPtr>("TexturedMarkerConstPtr");
+    qRegisterMetaType<marti_visualization_msgs::TexturedMarkerArrayConstPtr>("TexturedMarkerArrayConstPtr");
+
+    QObject::connect(this, 
+                     SIGNAL(MarkerReceived(const marti_visualization_msgs::TexturedMarkerConstPtr)),
+                     this,
+                     SLOT(ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr)));
+    QObject::connect(this,
+                     SIGNAL(MarkersReceived(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)),
+                     this,
+                     SLOT(ProcessMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)));
   }
 
   TexturedMarkerPlugin::~TexturedMarkerPlugin()
@@ -124,6 +138,11 @@ namespace mapviz_plugins
 
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
+  }
+
+  void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr marker)
+  {
+    ProcessMarker(*marker);
   }
 
   void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::TexturedMarker& marker)
@@ -318,18 +337,24 @@ namespace mapviz_plugins
       markers_[marker.ns].erase(marker.id);
     }
   }
-
-  void TexturedMarkerPlugin::MarkerCallback(const marti_visualization_msgs::TexturedMarkerConstPtr marker)
-  {
-    ProcessMarker(*marker);
-  }
-
-  void TexturedMarkerPlugin::MarkerArrayCallback(const marti_visualization_msgs::TexturedMarkerArrayConstPtr markers)
+  
+  void TexturedMarkerPlugin::ProcessMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr markers)
   {
     for (unsigned int i = 0; i < markers->markers.size(); i++)
     {
       ProcessMarker(markers->markers[i]);
     }
+  }
+  
+
+  void TexturedMarkerPlugin::MarkerCallback(const marti_visualization_msgs::TexturedMarkerConstPtr marker)
+  {
+    Q_EMIT MarkerReceived(marker);
+  }
+
+  void TexturedMarkerPlugin::MarkerArrayCallback(const marti_visualization_msgs::TexturedMarkerArrayConstPtr markers)
+  {
+    Q_EMIT MarkersReceived(markers);
   }
 
   void TexturedMarkerPlugin::PrintError(const std::string& message)
