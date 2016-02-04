@@ -244,11 +244,21 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   std::list<MapvizPluginPtr>::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
+    if ((*it)->SupportsPainting())
+    {
+      glMatrixMode(GL_MODELVIEW);
+      glPushMatrix();
+      p.endNativePainting();
+      (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
+      p.beginNativePainting();
+      glPopMatrix();
+
+      UpdateView();
+      TransformTarget(&p);
+    }
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
-    p.endNativePainting();
-    (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
-    p.beginNativePainting();
   }
+  ROS_INFO("Done drawing plugins");
 
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
@@ -424,6 +434,9 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
   if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
   {
+    qtransform_ = qtransform_.scale(1, -1);
+    painter->setWorldTransform(qtransform_, false);
+
     return;
   }
 

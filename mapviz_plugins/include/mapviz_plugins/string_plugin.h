@@ -87,6 +87,11 @@ namespace mapviz_plugins
 
     QWidget* GetConfigWidget(QWidget* parent);
 
+    bool SupportsPainting()
+    {
+      return true;
+    }
+
   protected:
     void PaintText(QPainter* painter);
     void PrintError(const std::string& message);

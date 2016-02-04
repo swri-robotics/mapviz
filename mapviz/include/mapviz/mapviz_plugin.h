@@ -230,6 +230,15 @@ namespace mapviz
 
     void SetIcon(IconWidget* icon) { icon_ = icon; }
 
+    /**
+     * Override this to return "true" if you want QPainter support for your
+     * plugin.
+     */
+    virtual bool SupportsPainting()
+    {
+      return false;
+    }
+
   protected:
     bool initialized_;
     bool visible_;
