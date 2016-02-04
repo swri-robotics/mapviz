@@ -244,20 +244,33 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   std::list<MapvizPluginPtr>::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); ++it)
   {
+    // Before we let a plugin do any drawing, push all matrices and attributes.
+    // This helps to ensure that plugins can't accidentally mess something up
+    // for the next plugin.
+    glMatrixMode(GL_TEXTURE);
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
-    
+
     if ((*it)->SupportsPainting())
     {
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
       p.endNativePainting();
       (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
       p.beginNativePainting();
-      glPopMatrix();
-
-      UpdateView();
-      TransformTarget(&p);
     }
+
+    glPopAttrib();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_TEXTURE);
+    glPopMatrix();
   }
 
   glMatrixMode(GL_MODELVIEW);
