@@ -379,6 +379,7 @@ namespace mapviz_plugins
       y_pos = canvas_->height() - height - y_offset;
     }
 
+    glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
     glOrtho(0, canvas_->width(), canvas_->height(), 0, -0.5f, 0.5f);
