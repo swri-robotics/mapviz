@@ -54,17 +54,11 @@ PLUGINLIB_DECLARE_CLASS(
 
 namespace mapviz_plugins
 {
+#define IS_INSTANCE(msg, type)                                  \
+  (msg->getDataType() == ros::message_traits::datatype<type>())
+
 AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
   config_widget_(new QWidget())
-  // anchor_(TOP_LEFT),
-  // units_(PIXELS),
-  // offset_x_(0),
-  // offset_y_(0),
-  // width_(320),
-  // height_(240),
-  // has_image_(false),
-  // last_width_(0),
-  // last_height_(0)
 {
   ui_.setupUi(config_widget_);
 
@@ -72,7 +66,10 @@ AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
   QPalette p(config_widget_->palette());
   p.setColor(QPalette::Background, Qt::white);
   config_widget_->setPalette(p);
-
+  roll=pitch=yaw=0;
+  topics_.push_back("nav_msgs/Odometry");
+  topics_.push_back("geometry_msgs/Pose");
+  topics_.push_back("sensor_msgs/Imu");
   // Set status text red
   QPalette p3(ui_.status->palette());
   p3.setColor(QPalette::Text, Qt::red);
@@ -82,187 +79,146 @@ AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
   QObject::connect(this, SIGNAL(VisibleChanged(bool)),
                    &placer_, SLOT(setVisible(bool)));
   
-  // QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-  // QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-  // QObject::connect(ui_.anchor, SIGNAL(activated(QString)), this, SLOT(SetAnchor(QString)));
-  // QObject::connect(ui_.units, SIGNAL(activated(QString)), this, SLOT(SetUnits(QString)));
-  // QObject::connect(ui_.offsetx, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetX(int)));
-  // QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
-  // QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
-  // QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
-
+  QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
+  QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
 }
 
 AttitudeIndicatorPlugin::~AttitudeIndicatorPlugin()
 {
 }
+ void AttitudeIndicatorPlugin::SelectTopic()
+ {
 
-// void AttitudeIndicatorPlugin::SetOffsetX(int offset)
-// {
-//   offset_x_ = offset;
-//   canvas_->update();
-// }
+   ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+     topics_);
+   if (topic.name.empty())
+   {
+     return;
+   }
 
-// void AttitudeIndicatorPlugin::SetOffsetY(int offset)
-// {
-//   offset_y_ = offset;
-//   canvas_->update();
-// }
+   ui_.topic->setText(QString::fromStdString(topic.name));
+   TopicEdited();
 
-// void AttitudeIndicatorPlugin::SetWidth(int width)
-// {
-//   width_ = width;
+ }
 
-//   canvas_->update();
-// }
-
-// void AttitudeIndicatorPlugin::SetHeight(int height)
-// {
-//   height_ = height;
-
-//   canvas_->update();
-// }
-
-// void AttitudeIndicatorPlugin::SetAnchor(QString anchor)
-// {
-//   if (anchor == "top left")
-//   {
-//     anchor_ = TOP_LEFT;
-//   }
-//   else if (anchor == "top center")
-//   {
-//     anchor_ = TOP_CENTER;
-//   }
-//   else if (anchor == "top right")
-//   {
-//     anchor_ = TOP_RIGHT;
-//   }
-//   else if (anchor == "center left")
-//   {
-//     anchor_ = CENTER_LEFT;
-//   }
-//   else if (anchor == "center")
-//   {
-//     anchor_ = CENTER;
-//   }
-//   else if (anchor == "center right")
-//   {
-//     anchor_ = CENTER_RIGHT;
-//   }
-//   else if (anchor == "bottom left")
-//   {
-//     anchor_ = BOTTOM_LEFT;
-//   }
-//   else if (anchor == "bottom center")
-//   {
-//     anchor_ = BOTTOM_CENTER;
-//   }
-//   else if (anchor == "bottom right")
-//   {
-//     anchor_ = BOTTOM_RIGHT;
-//   }
-
-//   canvas_->update();
-// }
-
-// void AttitudeIndicatorPlugin::SetUnits(QString units)
-// {
-//   if (units == "pixels")
-//   {
-//     units_ = PIXELS;
-//   }
-//   else if (units == "percent")
-//   {
-//     units_ = PERCENT;
-//   }
-
-//   canvas_->update();
-// }
-
-// void AttitudeIndicatorPlugin::SelectTopic()
-// {
-//   ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-//     "stereo_msgs/AttitudeIndicatorImage");
-
-//   if (!topic.name.empty())
-//   {
-//     ui_.topic->setText(QString::fromStdString(topic.name));
-//     TopicEdited();
-//   }
-// }
-
-// void AttitudeIndicatorPlugin::TopicEdited()
-// {
+ void AttitudeIndicatorPlugin::TopicEdited()
+ {
 //   if (ui_.topic->text().toStdString() != topic_)
 //   {
-//     initialized_ = false;
+//     initialized_ = true;
 //     has_message_ = false;
 //     topic_ = ui_.topic->text().toStdString();
 //     PrintWarning("No messages received.");
-
-//     disparity_sub_.shutdown();
-//     disparity_sub_ = node_.subscribe(topic_, 1, &AttitudeIndicatorPlugin::disparityCallback, this);
+//     odometry_sub_.shutdown();
+//     ROS_INFO("HELLO");
+//     odometry_sub_ = node_.subscribe(topic_, 1, &AttitudeIndicatorPlugin::AttitudeCallback, this);
 
 //     ROS_INFO("Subscribing to %s", topic_.c_str());
+
 //   }
-// }
+     if (ui_.topic->text().toStdString() != topic_)
+     {
+       initialized_ = true;
+       has_message_ = false;
+       topic_ = boost::trim_copy(ui_.topic->text().toStdString());
+       PrintWarning("No messages received.");
 
-// void AttitudeIndicatorPlugin::disparityCallback(const stereo_msgs::AttitudeIndicatorImageConstPtr disparity)
-// {
-//   if (!has_message_)
-//   {
-//     initialized_ = true;
-//     has_message_ = true;
-//   }
+       odometry_sub_.shutdown();
+       odometry_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
+         topic_, 100, &AttitudeIndicatorPlugin::handleMessage, this);
 
-//   if (disparity->min_disparity == 0.0 && disparity->max_disparity == 0.0)
-//   {
-//     PrintError("Min and max disparity not set.");
-//     has_image_ = false;
-//     return;
-//   }
+       ROS_INFO("Subscribing to %s", topic_.c_str());
+     }
+ }
+ void AttitudeIndicatorPlugin::handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg)
+ {
 
-//   if (disparity->image.encoding != sensor_msgs::image_encodings::TYPE_32FC1)
-//   {
-//     PrintError("Invalid encoding.");
-//     has_image_ = false;
-//     return;
-//   }
+   if (IS_INSTANCE(msg, nav_msgs::Odometry)){
+     AttitudeCallbackOdom(*(msg->instantiate<nav_msgs::Odometry>()));
+   }else if (IS_INSTANCE(msg, sensor_msgs::Imu)){
+      AttitudeCallbackImu(*(msg->instantiate<sensor_msgs::Imu>()));
+    }else if (IS_INSTANCE(msg, geometry_msgs::Pose)){
+       AttitudeCallbackPose(*(msg->instantiate<geometry_msgs::Pose>()));
+      }else {
+     PrintError("Unknown message type: " + msg->getDataType());
+   }
+ }
 
-//   disparity_ = *disparity;
 
-//   // Colormap and display the disparity image
-//   float min_disparity = disparity->min_disparity;
-//   float max_disparity = disparity->max_disparity;
-//   float multiplier = 255.0f / (max_disparity - min_disparity);
+ void AttitudeIndicatorPlugin::AttitudeCallbackOdom(const nav_msgs::Odometry &odometry)
+ {
+   ROS_INFO("INSIDE CALLBACK FOR TOPIC:%s", topic_.c_str());
+    point_.stamp = odometry.header.stamp;
 
-//   cv_bridge::CvImageConstPtr cv_disparity = 
-//     cv_bridge::toCvShare(disparity->image, disparity);
+    point_.point = tf::Point(
+              odometry.pose.pose.position.x,
+              odometry.pose.pose.position.y,
+              odometry.pose.pose.position.z);
 
-//   disparity_color_.create(disparity->image.height, disparity->image.width);
 
-//   for (int row = 0; row < disparity_color_.rows; row++)
-//   {
-//     const float* d = cv_disparity->image.ptr<float>(row);
-//     for (int col = 0; col < disparity_color_.cols; col++)
-//     {
-//       int index = (d[col] - min_disparity) * multiplier + 0.5;
-//       index = std::min(255, std::max(0, index));
-//       // Fill as BGR
-//       disparity_color_(row, col)[2] = colormap[3*index + 0];
-//       disparity_color_(row, col)[1] = colormap[3*index + 1];
-//       disparity_color_(row, col)[0] = colormap[3*index + 2];
-//     }
-//   }
+    point_.orientation = tf::Quaternion(
+              odometry.pose.pose.orientation.x,
+              odometry.pose.pose.orientation.y,
+              odometry.pose.pose.orientation.z,
+              odometry.pose.pose.orientation.w);
 
-//   last_width_ = 0;
-//   last_height_ = 0;
+    tf::Matrix3x3 m(point_.orientation);
+    m.getRPY(roll,pitch,yaw);
+    roll=roll*(180.0/M_PI);
+    pitch=pitch*(180.0/M_PI);
+    yaw=yaw*(180.0/M_PI);
+    ROS_INFO("roll:%f,pitch:%f,yaw:%f",roll,pitch,yaw);
 
-//   has_image_ = true;
+    canvas_->update();
+ }
+ void AttitudeIndicatorPlugin::AttitudeCallbackImu(const sensor_msgs::Imu &Imu)
+ {
+   ROS_INFO("INSIDE CALLBACK FOR TOPIC:%s", topic_.c_str());
+    point_.stamp = Imu.header.stamp;
+    //No position Data
+    point_.point = tf::Point(0,0,0);
 
-//   canvas_->update();
-// }
 
+    point_.orientation = tf::Quaternion(
+              Imu.orientation.x,
+              Imu.orientation.y,
+              Imu.orientation.z,
+              Imu.orientation.w);
+
+    tf::Matrix3x3 m(point_.orientation);
+    m.getRPY(roll,pitch,yaw);
+    roll=roll*(180.0/M_PI);
+    pitch=pitch*(180.0/M_PI);
+    yaw=yaw*(180.0/M_PI);
+    ROS_INFO("roll:%f,pitch:%f,yaw:%f",roll,pitch,yaw);
+
+    canvas_->update();
+ }
+ void AttitudeIndicatorPlugin::AttitudeCallbackPose(const geometry_msgs::Pose &pose)
+ {
+   ROS_INFO("INSIDE CALLBACK FOR TOPIC:%s", topic_.c_str());
+
+   point_.point = tf::Point(
+              pose.position.x,
+              pose.position.y,
+              pose.position.z);
+
+
+    point_.orientation = tf::Quaternion(
+              pose.orientation.x,
+              pose.orientation.y,
+              pose.orientation.z,
+              pose.orientation.w);
+
+    tf::Matrix3x3 m(point_.orientation);
+    m.getRPY(roll,pitch,yaw);
+    roll=roll*(180.0/M_PI);
+    pitch=pitch*(180.0/M_PI);
+    yaw=yaw*(180.0/M_PI);
+    ROS_INFO("roll:%f,pitch:%f,yaw:%f",roll,pitch,yaw);
+
+    canvas_->update();
+ }
 void AttitudeIndicatorPlugin::PrintError(const std::string& message)
 {
   if (message == ui_.status->text().toStdString())
@@ -309,7 +265,7 @@ bool AttitudeIndicatorPlugin::Initialize(QGLWidget* canvas)
 {
   initialized_ = true;
   canvas_ = canvas;
-  placer_.setContainer(canvas_);  
+  placer_.setContainer(canvas_);
   startTimer(50);
   return true;
 }
@@ -322,6 +278,60 @@ void AttitudeIndicatorPlugin::Shutdown()
 void AttitudeIndicatorPlugin::timerEvent(QTimerEvent *)
 {
   canvas_->update();
+}
+
+void AttitudeIndicatorPlugin::drawBall()
+{
+  GLdouble eqn[4]={0.0,0.0,1.0,0.0};
+  GLdouble eqn2[4]={0.0,0.0,-1.0,0.0};
+  GLdouble eqn4[4]={0.0,0.0,1.0,0.05};
+  GLdouble eqn3[4]={0.0,0.0,-1.0,0.05};
+
+  glClipPlane(GL_CLIP_PLANE0,eqn);
+  glClipPlane(GL_CLIP_PLANE1,eqn2);
+  glClipPlane(GL_CLIP_PLANE2,eqn3);
+  glClipPlane(GL_CLIP_PLANE3,eqn4);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+  glPushMatrix();
+  glEnable(GL_CLIP_PLANE1);
+  glColor3f(0.392156863f, 0.584313725f,0.929411765f);
+  glRotatef(90.0+pitch, 1.0, 0.0, 0.0);
+  glRotatef(roll, 0.0, 1.0, 0.0);
+  glRotatef(yaw, 0.0, 0.0, 1.0);
+  glutSolidSphere(.8, 20 , 16);
+  glDisable(GL_CLIP_PLANE1);
+  glPopMatrix();
+
+
+  glPushMatrix();
+  glEnable(GL_CLIP_PLANE2);
+  glEnable(GL_CLIP_PLANE3);
+  glLineWidth(2);
+  glColor3f(1.0f,1.0f,1.0f);
+  glRotatef(90.0+pitch, 1.0, 0.0, 0.0);
+  glRotatef(roll, 0.0, 1.0, 0.0);
+  glRotatef(yaw, 0.0, 0.0, 1.0);
+  glutWireSphere(.809, 10 ,16);
+  glDisable(GL_CLIP_PLANE2);
+  glDisable(GL_CLIP_PLANE3);
+  glPopMatrix();
+
+
+
+  glPushMatrix();
+  glEnable(GL_CLIP_PLANE0);
+  glColor3f(0.62745098f,0.321568627f,0.176470588f);
+  glRotatef(90.0+pitch, 1.0, 0.0, 0.0);//x
+  glRotatef(roll, 0.0, 1.0, 0.0);//y
+  glRotatef(yaw, 0.0, 0.0, 1.0);//z
+  glutSolidSphere(.8, 20 , 16);
+  glDisable(GL_CLIP_PLANE0);
+  glPopMatrix();
+  glDisable(GL_DEPTH_TEST);
+
+
+
 }
 
 void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
@@ -347,13 +357,15 @@ void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
 
   // Placed in a separate function so that we don't forget to pop the
   // GL state back.
-  //drawIndicator();
+ //drawIndicator();
   drawBackground();
+  drawBall();
   // drawInnerShell();
   drawPanel();
-  
+
   glPopMatrix();
   glPopAttrib();
+  PrintInfo("OK!");
 }
 
 void AttitudeIndicatorPlugin::drawBackground()
@@ -393,18 +405,18 @@ void AttitudeIndicatorPlugin::drawPanel()
   glEnd();
 
   glBegin(GL_LINES);
-  glVertex2f(0.0, 0.9);
-  glVertex2f(0.0, 0.2);
+  glVertex2f(0.0,-0.2);
+  glVertex2f(0.0,-0.9);
   glEnd();
 }
 
 void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
 { 
-//   std::string topic;
-//   node["topic"] >> topic;
-//   ui_.topic->setText(topic.c_str());
+   std::string topic;
+   node["topic"] >> topic;
+   ui_.topic->setText(topic.c_str());
 
-//   TopicEdited();
+   TopicEdited();
 
 //   std::string anchor;
 //   node["anchor"] >> anchor;
@@ -431,7 +443,7 @@ void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::stri
 
 void AttitudeIndicatorPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
 {
-//   emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
+     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
 //   emitter << YAML::Key << "anchor" << YAML::Value << AnchorToString(anchor_);
 //   emitter << YAML::Key << "units" << YAML::Value << UnitsToString(units_);
 //   emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
