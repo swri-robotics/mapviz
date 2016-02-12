@@ -103,19 +103,6 @@ AttitudeIndicatorPlugin::~AttitudeIndicatorPlugin()
 
  void AttitudeIndicatorPlugin::TopicEdited()
  {
-//   if (ui_.topic->text().toStdString() != topic_)
-//   {
-//     initialized_ = true;
-//     has_message_ = false;
-//     topic_ = ui_.topic->text().toStdString();
-//     PrintWarning("No messages received.");
-//     odometry_sub_.shutdown();
-//     ROS_INFO("HELLO");
-//     odometry_sub_ = node_.subscribe(topic_, 1, &AttitudeIndicatorPlugin::AttitudeCallback, this);
-
-//     ROS_INFO("Subscribing to %s", topic_.c_str());
-
-//   }
      if (ui_.topic->text().toStdString() != topic_)
      {
        initialized_ = true;
@@ -147,7 +134,7 @@ AttitudeIndicatorPlugin::~AttitudeIndicatorPlugin()
 
  void AttitudeIndicatorPlugin::AttitudeCallbackOdom(const nav_msgs::Odometry &odometry)
  {
-   ROS_INFO("INSIDE CALLBACK FOR TOPIC:%s", topic_.c_str());
+
     point_.stamp = odometry.header.stamp;
 
     point_.point = tf::Point(
@@ -167,15 +154,14 @@ AttitudeIndicatorPlugin::~AttitudeIndicatorPlugin()
     roll=roll*(180.0/M_PI);
     pitch=pitch*(180.0/M_PI);
     yaw=yaw*(180.0/M_PI);
-    ROS_INFO("roll:%f,pitch:%f,yaw:%f",roll,pitch,yaw);
 
+  ROS_INFO("roll %f,pitch %f, yaw %f",roll,pitch,yaw);
     canvas_->update();
  }
  void AttitudeIndicatorPlugin::AttitudeCallbackImu(const sensor_msgs::Imu &Imu)
  {
-   ROS_INFO("INSIDE CALLBACK FOR TOPIC:%s", topic_.c_str());
     point_.stamp = Imu.header.stamp;
-    //No position Data
+
     point_.point = tf::Point(0,0,0);
 
 
@@ -190,13 +176,13 @@ AttitudeIndicatorPlugin::~AttitudeIndicatorPlugin()
     roll=roll*(180.0/M_PI);
     pitch=pitch*(180.0/M_PI);
     yaw=yaw*(180.0/M_PI);
-    ROS_INFO("roll:%f,pitch:%f,yaw:%f",roll,pitch,yaw);
+  ROS_INFO("roll %f,pitch %f, yaw %f",roll,pitch,yaw);
 
     canvas_->update();
  }
  void AttitudeIndicatorPlugin::AttitudeCallbackPose(const geometry_msgs::Pose &pose)
  {
-   ROS_INFO("INSIDE CALLBACK FOR TOPIC:%s", topic_.c_str());
+
 
    point_.point = tf::Point(
               pose.position.x,
@@ -215,8 +201,8 @@ AttitudeIndicatorPlugin::~AttitudeIndicatorPlugin()
     roll=roll*(180.0/M_PI);
     pitch=pitch*(180.0/M_PI);
     yaw=yaw*(180.0/M_PI);
-    ROS_INFO("roll:%f,pitch:%f,yaw:%f",roll,pitch,yaw);
 
+  ROS_INFO("roll %f,pitch %f, yaw %f",roll,pitch,yaw);
     canvas_->update();
  }
 void AttitudeIndicatorPlugin::PrintError(const std::string& message)
@@ -287,32 +273,40 @@ void AttitudeIndicatorPlugin::drawBall()
   GLdouble eqn4[4]={0.0,0.0,1.0,0.05};
   GLdouble eqn3[4]={0.0,0.0,-1.0,0.05};
 
-  glClipPlane(GL_CLIP_PLANE0,eqn);
-  glClipPlane(GL_CLIP_PLANE1,eqn2);
-  glClipPlane(GL_CLIP_PLANE2,eqn3);
-  glClipPlane(GL_CLIP_PLANE3,eqn4);
+
+
+
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+
   glPushMatrix();
-  glEnable(GL_CLIP_PLANE1);
+
+
   glColor3f(0.392156863f, 0.584313725f,0.929411765f);
   glRotatef(90.0+pitch, 1.0, 0.0, 0.0);
+
+
   glRotatef(roll, 0.0, 1.0, 0.0);
   glRotatef(yaw, 0.0, 0.0, 1.0);
+  glClipPlane(GL_CLIP_PLANE1,eqn2);
+  glEnable(GL_CLIP_PLANE1);
   glutSolidSphere(.8, 20 , 16);
   glDisable(GL_CLIP_PLANE1);
   glPopMatrix();
 
 
   glPushMatrix();
-  glEnable(GL_CLIP_PLANE2);
-  glEnable(GL_CLIP_PLANE3);
+
   glLineWidth(2);
   glColor3f(1.0f,1.0f,1.0f);
   glRotatef(90.0+pitch, 1.0, 0.0, 0.0);
   glRotatef(roll, 0.0, 1.0, 0.0);
   glRotatef(yaw, 0.0, 0.0, 1.0);
-  glutWireSphere(.809, 10 ,16);
+  glClipPlane(GL_CLIP_PLANE3,eqn4);
+  glClipPlane(GL_CLIP_PLANE2,eqn3);
+  glEnable(GL_CLIP_PLANE2);
+  glEnable(GL_CLIP_PLANE3);
+  glutWireSphere(.801, 10 ,16);
   glDisable(GL_CLIP_PLANE2);
   glDisable(GL_CLIP_PLANE3);
   glPopMatrix();
@@ -320,11 +314,12 @@ void AttitudeIndicatorPlugin::drawBall()
 
 
   glPushMatrix();
-  glEnable(GL_CLIP_PLANE0);
   glColor3f(0.62745098f,0.321568627f,0.176470588f);
   glRotatef(90.0+pitch, 1.0, 0.0, 0.0);//x
   glRotatef(roll, 0.0, 1.0, 0.0);//y
   glRotatef(yaw, 0.0, 0.0, 1.0);//z
+  glClipPlane(GL_CLIP_PLANE0,eqn);
+  glEnable(GL_CLIP_PLANE0);
   glutSolidSphere(.8, 20 , 16);
   glDisable(GL_CLIP_PLANE0);
   glPopMatrix();
@@ -337,10 +332,13 @@ void AttitudeIndicatorPlugin::drawBall()
 void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
 {
   glPushAttrib(GL_ALL_ATTRIB_BITS);
+  glMatrixMode(GL_PROJECTION);
   glPushMatrix();
   glLoadIdentity();
   glOrtho(0, canvas_->width(), canvas_->height(), 0, -1.0f, 1.0f);
-
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
   // Setup coordinate system so that we have a [-1,1]x[1,1] cube on
   // the screen.
   QRect rect = placer_.rect();
@@ -357,13 +355,16 @@ void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
 
   // Placed in a separate function so that we don't forget to pop the
   // GL state back.
- //drawIndicator();
+
   drawBackground();
   drawBall();
-  // drawInnerShell();
+
   drawPanel();
 
   glPopMatrix();
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
   glPopAttrib();
   PrintInfo("OK!");
 }
@@ -418,97 +419,14 @@ void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::stri
 
    TopicEdited();
 
-//   std::string anchor;
-//   node["anchor"] >> anchor;
-//   ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
-//   SetAnchor(anchor.c_str());
 
-//   std::string units;
-//   node["units"] >> units;
-//   ui_.units->setCurrentIndex(ui_.units->findText(units.c_str()));
-//   SetUnits(units.c_str());
-
-//   node["offset_x"] >> offset_x_;
-//   ui_.offsetx->setValue(offset_x_);
-
-//   node["offset_y"] >> offset_y_;
-//   ui_.offsety->setValue(offset_y_);
-
-//   node["width"] >> width_;
-//   ui_.width->setValue(width_);
-
-//   node["height"] >> height_;
-//   ui_.height->setValue(height_);
 }
 
 void AttitudeIndicatorPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
 {
      emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
-//   emitter << YAML::Key << "anchor" << YAML::Value << AnchorToString(anchor_);
-//   emitter << YAML::Key << "units" << YAML::Value << UnitsToString(units_);
-//   emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
-//   emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
-//   emitter << YAML::Key << "width" << YAML::Value << width_;
-//   emitter << YAML::Key << "height" << YAML::Value << height_;
+
 }
 
-// std::string AttitudeIndicatorPlugin::AnchorToString(Anchor anchor)
-// {
-//   std::string anchor_string = "top left";
 
-//   if (anchor == TOP_LEFT)
-//   {
-//     anchor_string = "top left";
-//   }
-//   else if (anchor == TOP_CENTER)
-//   {
-//     anchor_string = "top center";
-//   }
-//   else if (anchor == TOP_RIGHT)
-//   {
-//     anchor_string = "top right";
-//   }
-//   else if (anchor == CENTER_LEFT)
-//   {
-//     anchor_string = "center left";
-//   }
-//   else if (anchor == CENTER)
-//   {
-//     anchor_string = "center";
-//   }
-//   else if (anchor == CENTER_RIGHT)
-//   {
-//     anchor_string = "center right";
-//   }
-//   else if (anchor == BOTTOM_LEFT)
-//   {
-//     anchor_string = "bottom left";
-//   }
-//   else if (anchor == BOTTOM_CENTER)
-//   {
-//     anchor_string = "bottom center";
-//   }
-//   else if (anchor == BOTTOM_RIGHT)
-//   {
-//     anchor_string = "bottom right";
-//   }
-
-//   return anchor_string;
-// }
-
-// std::string AttitudeIndicatorPlugin::UnitsToString(Units units)
-// {
-//   std::string units_string = "pixels";
-
-//   if (units == PIXELS)
-//   {
-//     units_string = "pixels";
-//   }
-//   else if (units == PERCENT)
-//   {
-//     units_string = "percent";
-//   }
-
-//   return units_string;
-// }
-}  // namespace mapviz_plugins
+}
