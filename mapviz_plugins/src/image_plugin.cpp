@@ -87,6 +87,8 @@ namespace mapviz_plugins
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
     QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
+
+
   }
 
   ImagePlugin::~ImagePlugin()
@@ -189,6 +191,13 @@ namespace mapviz_plugins
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
       "sensor_msgs/Image");
 
+
+    if(topic.name.empty())
+    {
+      topic.name.clear();
+      TopicEdited();
+
+    }
     if (!topic.name.empty()) {
       ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
@@ -197,6 +206,22 @@ namespace mapviz_plugins
 
   void ImagePlugin::TopicEdited()
   {
+
+    if(!this->Visible())
+    {
+      PrintWarning("Topic is Hidden");
+      initialized_ = false;
+      has_message_ = false;
+      topic_ = ui_.topic->text().toStdString();
+      image_sub_.shutdown();
+      return;
+    }
+    if (ui_.topic->text().toStdString().empty())
+    {
+      PrintWarning("No topic");
+      image_sub_.shutdown();
+      return;
+    }
     if (ui_.topic->text().toStdString() != topic_)
     {
       initialized_ = false;

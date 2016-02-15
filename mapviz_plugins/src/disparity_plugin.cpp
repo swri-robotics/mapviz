@@ -178,7 +178,7 @@ namespace mapviz_plugins
       disparity_sub_.shutdown();
       ROS_INFO("Dropped subscription to %s", topic_.c_str());
     }
-    else
+    else if(hidden)
     {
         disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
 
@@ -190,15 +190,36 @@ namespace mapviz_plugins
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
       "stereo_msgs/DisparityImage");
 
+    if(topic.name.empty())
+    {
+      topic.name.clear();
+      TopicEdited();
+    }
     if (!topic.name.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
+
   }
 
   void DisparityPlugin::TopicEdited()
   {
+    if(!this->Visible())
+    {
+      PrintWarning("Topic is Hidden");
+      initialized_ = false;
+      has_message_ = false;
+      topic_ = ui_.topic->text().toStdString();
+      disparity_sub_.shutdown();
+      return;
+    }
+    if (ui_.topic->text().toStdString().empty())
+    {
+      PrintWarning("No Topic");
+      disparity_sub_.shutdown();
+      return;
+    }
     if (ui_.topic->text().toStdString() != topic_)
     {
       initialized_ = false;
