@@ -86,6 +86,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
+    QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
   }
 
   ImagePlugin::~ImagePlugin()
@@ -161,6 +162,25 @@ namespace mapviz_plugins
     else if (units == "percent")
     {
       units_ = PERCENT;
+    }
+  }
+  void ImagePlugin::SetSubscription(bool hidden)
+  {
+    if(topic_.empty())
+    {
+      return;
+    }
+    else if(!hidden)
+    {
+      image_sub_.shutdown();
+      ROS_INFO("Dropped subscription to %s", topic_.c_str());
+    }
+    else
+    {
+        image_transport::ImageTransport it(node_);
+        image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
+
+        ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
 
