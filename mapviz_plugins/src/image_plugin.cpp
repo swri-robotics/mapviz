@@ -166,13 +166,13 @@ namespace mapviz_plugins
       units_ = PERCENT;
     }
   }
-  void ImagePlugin::SetSubscription(bool hidden)
+  void ImagePlugin::SetSubscription(bool visible)
   {
     if(topic_.empty())
     {
       return;
     }
-    else if(!hidden)
+    else if(!visible)
     {
       image_sub_.shutdown();
       ROS_INFO("Dropped subscription to %s", topic_.c_str());
