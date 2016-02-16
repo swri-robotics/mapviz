@@ -167,18 +167,18 @@ namespace mapviz_plugins
       units_ = PERCENT;
     }
   }
-  void DisparityPlugin::SetSubscription(bool hidden)
+  void DisparityPlugin::SetSubscription(bool visible)
   {
     if(topic_.empty())
     {
       return;
     }
-    else if(!hidden)
+    else if(!visible)
     {
       disparity_sub_.shutdown();
       ROS_INFO("Dropped subscription to %s", topic_.c_str());
     }
-    else if(hidden)
+    else
     {
         disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
 
