@@ -21,6 +21,8 @@
   <depend>image_transport</depend>
   <depend>mapviz</depend>
   <depend>marti_visualization_msgs</depend>
+  <depend>marti_common_msgs</depend>
+  <depend>marti_nav_msgs</depend>
   <depend>multires_image</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
