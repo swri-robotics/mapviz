@@ -202,7 +202,6 @@ namespace mapviz_plugins
     points_it++;
     std::list<StampedPoint>::iterator end_it = points_.end();
     end_it--;
-    prev_position_ = points_.front();
 
     if (points_.front().id.empty())
     {
@@ -221,7 +220,6 @@ namespace mapviz_plugins
       {
         TransformPoint(*points_it);
       }
-      prev_position_ = *(points_it);
     }
   }
 
