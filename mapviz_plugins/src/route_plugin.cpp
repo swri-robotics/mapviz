@@ -359,6 +359,11 @@ namespace mapviz_plugins
 
   bool RoutePlugin::TransformPoint(StampedPoint& point)
   {
+    if (point.transformed == true)
+    {
+      return true;
+    }
+
     swri_transform_util::Transform transform;
     if (GetTransform(point.stamp, transform))
     {
