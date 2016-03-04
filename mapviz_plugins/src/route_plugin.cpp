@@ -202,7 +202,6 @@ namespace mapviz_plugins
     points_it++;
     std::list<StampedPoint>::iterator end_it = points_.end();
     end_it--;
-    prev_position_ = points_.front();
 
     if (points_.front().id.empty())
     {
@@ -211,17 +210,21 @@ namespace mapviz_plugins
 
     for (; points_it != end_it; ++points_it)
     {
-      if (points_it->id == msg->id && points_it->transformed)
+      if (points_it->id == msg->id)
       {
         cur_position_ = *points_it;
-        next_position_ = *(++points_it);
+
+        std::list<StampedPoint>::iterator next_point = ++points_it;
+        next_position_ = *(next_point);
+
+        if (!points_it->transformed)
+        {
+          TransformPoint(cur_position_);
+          TransformPoint(next_position_);
+        }
+
         return;
       }
-      else if (!points_it->transformed)
-      {
-        TransformPoint(*points_it);
-      }
-      prev_position_ = *(points_it);
     }
   }
 
@@ -361,6 +364,11 @@ namespace mapviz_plugins
 
   bool RoutePlugin::TransformPoint(StampedPoint& point)
   {
+    if (point.transformed == true)
+    {
+      return true;
+    }
+
     swri_transform_util::Transform transform;
     if (GetTransform(point.stamp, transform))
     {
