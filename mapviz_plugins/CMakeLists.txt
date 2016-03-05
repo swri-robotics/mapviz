@@ -7,6 +7,8 @@ set(DEPENDENCIES
   image_transport
   mapviz
   marti_visualization_msgs
+  marti_common_msgs
+  marti_nav_msgs
   multires_image
   nav_msgs
   pluginlib 
@@ -70,6 +72,7 @@ file (GLOB SRC_FILES
     src/point_click_publisher_plugin.cpp
     src/pointcloud2_plugin.cpp
     src/robot_image_plugin.cpp
+    src/route_plugin.cpp
     src/string_plugin.cpp
     src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
@@ -95,6 +98,7 @@ QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/point_click_publisher_plugin.h
     include/mapviz_plugins/pointcloud2_plugin.h
     include/mapviz_plugins/robot_image_plugin.h
+    include/mapviz_plugins/route_plugin.h
     include/mapviz_plugins/string_plugin.h
     include/mapviz_plugins/textured_marker_plugin.h
     include/mapviz_plugins/tf_frame_plugin.h
