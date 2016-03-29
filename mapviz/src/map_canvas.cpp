@@ -154,12 +154,17 @@ void MapCanvas::initializeGL()
     glDisable(GL_LINE_SMOOTH);
     glDisable(GL_POLYGON_SMOOTH);
   }
+  initGlBlending();
+
+  initialized_ = true;
+}
+
+void MapCanvas::initGlBlending()
+{
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_NEVER);
   glDisable(GL_DEPTH_TEST);
-  
-  initialized_ = true;
 }
 
 void MapCanvas::resizeGL(int w, int h)
@@ -213,14 +218,17 @@ void MapCanvas::paintEvent(QPaintEvent* event)
 
   QPainter p(this);
   p.setRenderHints(QPainter::Antialiasing |
-                       QPainter::TextAntialiasing |
-                       QPainter::SmoothPixmapTransform |
-                       QPainter::HighQualityAntialiasing,
+                   QPainter::TextAntialiasing |
+                   QPainter::SmoothPixmapTransform |
+                   QPainter::HighQualityAntialiasing,
                    enable_antialiasing_);
   p.beginNativePainting();
+  // .beginNativePainting() disables blending and clears a handful of other
+  // values that we need to manually reset.
+  initGlBlending();
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  
+
   glClearColor(bg_color_.redF(), bg_color_.greenF(), bg_color_.blueF(), 1.0f);
   UpdateView();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -230,15 +238,15 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   // Draw test pattern
   glLineWidth(3);
   glBegin(GL_LINES);
-    // Red line to the right
-    glColor3f(1, 0, 0);
-    glVertex2f(0, 0);
-    glVertex2f(20, 0);
+  // Red line to the right
+  glColor3f(1, 0, 0);
+  glVertex2f(0, 0);
+  glVertex2f(20, 0);
 
-    // Green line to the top
-    glColor3f(0, 1, 0);
-    glVertex2f(0, 0);
-    glVertex2f(0, 20);
+  // Green line to the top
+  glColor3f(0, 1, 0);
+  glVertex2f(0, 0);
+  glVertex2f(0, 20);
   glEnd();
 
   std::list<MapvizPluginPtr>::iterator it;
@@ -247,13 +255,7 @@ void MapCanvas::paintEvent(QPaintEvent* event)
     // Before we let a plugin do any drawing, push all matrices and attributes.
     // This helps to ensure that plugins can't accidentally mess something up
     // for the next plugin.
-    glMatrixMode(GL_TEXTURE);
-    glPushMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    pushGlMatrices();
 
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
 
@@ -262,20 +264,37 @@ void MapCanvas::paintEvent(QPaintEvent* event)
       p.endNativePainting();
       (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
       p.beginNativePainting();
+      initGlBlending();
     }
 
-    glPopAttrib();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_TEXTURE);
-    glPopMatrix();
+    popGlMatrices();
   }
 
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   p.endNativePainting();
+}
+
+void MapCanvas::pushGlMatrices()
+{
+  glMatrixMode(GL_TEXTURE);
+  glPushMatrix();
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glPushAttrib(GL_ALL_ATTRIB_BITS);
+}
+
+void MapCanvas::popGlMatrices()
+{
+  glPopAttrib();
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_TEXTURE);
+  glPopMatrix();
 }
 
 void MapCanvas::wheelEvent(QWheelEvent* e)

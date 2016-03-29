@@ -139,6 +139,9 @@ namespace mapviz
 
   protected:
     void initializeGL();
+    void initGlBlending();
+    void pushGlMatrices();
+    void popGlMatrices();
     void resizeGL(int w, int h);
     void paintEvent(QPaintEvent* event);
     void wheelEvent(QWheelEvent* e);
