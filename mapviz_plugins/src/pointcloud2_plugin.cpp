@@ -357,10 +357,10 @@ namespace mapviz_plugins
   {
     if (!has_message_)
     {
-      source_frame_ = msg->header.frame_id;
       initialized_ = true;
       has_message_ = true;
     }
+    source_frame_ = msg->header.frame_id;
 
     Scan scan;
     scan.stamp = msg->header.stamp;

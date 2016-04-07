@@ -180,10 +180,10 @@ namespace mapviz_plugins
   {
     if (!has_message_)
     {
-      source_frame_ = odometry->header.frame_id;
       initialized_ = true;
       has_message_ = true;
     }
+    source_frame_ = odometry->header.frame_id;
 
     StampedPoint stamped_point;
     stamped_point.stamp = odometry->header.stamp;
