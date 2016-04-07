@@ -27,20 +27,26 @@
 //
 // *****************************************************************************
 
-#include "mapviz/mapviz.h"
-#include "mapviz/mapviz_application.h"
+#ifndef MAPVIZ_MAPVIZ_APPLICATION_H
+#define MAPVIZ_MAPVIZ_APPLICATION_H
 
-int main(int argc, char **argv)
+#include <QApplication>
+#include <QEvent>
+
+namespace mapviz
 {
-  // Initialize QT
-  mapviz::MapvizApplication app(argc, argv);
-
-  // Initialize glut (for displaying text)
-  glutInit(&argc, argv);
-
-  // Start mapviz
-  mapviz::Mapviz mapviz(true, argc, argv);
-  mapviz.show();
-
-  return app.exec();
+  /**
+   * This class exists solely so that we can override QApplication::notify and
+   * log exceptions in the event loop as errors rather than letting them
+   * crash the entire program.
+   */
+  class MapvizApplication : public QApplication
+  {
+  public:
+    MapvizApplication(int &argc, char** argv);
+  private:
+    bool notify(QObject* receiver, QEvent* event);
+  };
 }
+
+#endif
