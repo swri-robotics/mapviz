@@ -137,10 +137,10 @@ namespace mapviz_plugins
   {
     if (!has_message_)
     {
-      source_frame_ = marker.header.frame_id;
       initialized_ = true;
       has_message_ = true;
     }
+    source_frame_ = marker.header.frame_id;
 
     if (marker.action == visualization_msgs::Marker::ADD)
     {

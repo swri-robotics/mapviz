@@ -232,16 +232,16 @@ namespace mapviz_plugins
   {
     if (!has_message_)
     {
-      if (!route->header.frame_id.empty())
-      {
-        source_frame_ = route->header.frame_id;
-      }
-      else
-      {
-        source_frame_ = "/wgs84";
-      }
       initialized_ = true;
       has_message_ = true;
+    }
+    if (!route->header.frame_id.empty())
+    {
+      source_frame_ = route->header.frame_id;
+    }
+    else
+    {
+      source_frame_ = "/wgs84";
     }
     int route_size = route->route_points.size();
 

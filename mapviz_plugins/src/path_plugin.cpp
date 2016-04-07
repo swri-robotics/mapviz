@@ -140,10 +140,10 @@ namespace mapviz_plugins
     ROS_INFO("Got path message");
     if (!has_message_)
     {
-      source_frame_ = path->header.frame_id;
       initialized_ = true;
       has_message_ = true;
     }
+    source_frame_ = path->header.frame_id;
 
     transformed_ = false;
 
