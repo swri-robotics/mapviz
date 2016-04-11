@@ -12,7 +12,7 @@ find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 set(QT_USE_QTOPENGL TRUE)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
