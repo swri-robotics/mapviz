@@ -232,22 +232,22 @@ namespace mapviz_plugins
   {
     if (!has_message_)
     {
-      if (!route->header.frame_id.empty())
-      {
-        source_frame_ = route->header.frame_id;
-      }
-      else
-      {
-        source_frame_ = "/wgs84";
-      }
       initialized_ = true;
       has_message_ = true;
     }
-    int route_size = route->route_points.size();
+    if (!route->header.frame_id.empty())
+    {
+      source_frame_ = route->header.frame_id;
+    }
+    else
+    {
+      source_frame_ = "/wgs84";
+    }
+    size_t route_size = route->route_points.size();
 
     points_.clear();
 
-    for (int i = 0; i < route_size; i++)
+    for (size_t i = 0; i < route_size; i++)
     {
       StampedPoint stamped_point;
       stamped_point.stamp = route->header.stamp;
