@@ -140,7 +140,11 @@ namespace mapviz_plugins
       initialized_ = true;
       has_message_ = true;
     }
-    source_frame_ = marker.header.frame_id;
+
+    // Note that unlike some plugins, this one does not store nor rely on the
+    // source_frame_ member variable.  This one can potentially store many
+    // messages with different source frames, so we need to store and transform
+    // them individually.
 
     if (marker.action == visualization_msgs::Marker::ADD)
     {
@@ -152,6 +156,7 @@ namespace mapviz_plugins
       markerData.scale_y = marker.scale.y;
       markerData.scale_z = marker.scale.z;
       markerData.transformed = true;
+      markerData.source_frame_ = marker.header.frame_id;
 
 
       // Since orientation was not implemented, many markers publish
@@ -180,10 +185,10 @@ namespace mapviz_plugins
       markerData.text = std::string();
 
       swri_transform_util::Transform transform;
-      if (!GetTransform(marker.header.stamp, transform))
+      if (!GetTransform(markerData.source_frame_, marker.header.stamp, transform))
       {
         markerData.transformed = false;
-        PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+        PrintError("No transform between " + markerData.source_frame_ + " and " + target_frame_);
       }
 
       // Handle lifetime parameter
@@ -545,7 +550,7 @@ namespace mapviz_plugins
         MarkerData& marker = markerIter->second;
 
         swri_transform_util::Transform transform;
-        if (GetTransform(marker.stamp, transform))
+        if (GetTransform(marker.source_frame_, marker.stamp, transform))
         {
           marker.transformed = true;
 
