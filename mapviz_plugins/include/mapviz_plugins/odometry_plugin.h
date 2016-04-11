@@ -67,6 +67,7 @@ namespace mapviz_plugins
       tf::Point transformed_arrow_point;
       tf::Point transformed_arrow_left;
       tf::Point transformed_arrow_right;
+      std::string source_frame;
       bool transformed;
       ros::Time stamp;
 

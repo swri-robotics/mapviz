@@ -360,20 +360,24 @@ namespace mapviz_plugins
       initialized_ = true;
       has_message_ = true;
     }
-    source_frame_ = msg->header.frame_id;
+
+    // Note that unlike some plugins, this one does not store nor rely on the
+    // source_frame_ member variable.  This one can potentially store many
+    // messages with different source frames, so we need to store and transform
+    // them individually.
 
     Scan scan;
     scan.stamp = msg->header.stamp;
     scan.color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
+    scan.source_frame = msg->header.frame_id;
     scan.transformed = true;
     scan.points.clear();
 
-
     swri_transform_util::Transform transform;
-    if (!GetTransform(msg->header.stamp, transform))
+    if (!GetTransform(scan.source_frame, msg->header.stamp, transform))
     {
       scan.transformed = false;
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+      PrintError("No transform between " + scan.source_frame + " and " + target_frame_);
     }
 
 
@@ -656,7 +660,9 @@ namespace mapviz_plugins
       Scan& scan = *scan_it;
 
       swri_transform_util::Transform transform;
-      if (GetTransform(scan.stamp, transform, false))
+      bool was_using_latest_transforms = use_latest_transforms_;
+      use_latest_transforms_ = false;
+      if (GetTransform(scan.source_frame, scan.stamp, transform))
       {
         scan.transformed = true;
         std::vector<StampedPoint>::iterator point_it = scan.points.begin();
@@ -670,6 +676,7 @@ namespace mapviz_plugins
         ROS_WARN("Unable to get transform.");
         scan.transformed = false;
       }
+      use_latest_transforms_ = was_using_latest_transforms;
     }
     // Z color is based on transformed color, so it is dependent on the
     // transform

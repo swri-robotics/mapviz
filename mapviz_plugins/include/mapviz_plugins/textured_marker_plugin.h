@@ -116,6 +116,8 @@ namespace mapviz_plugins
       
       std::vector<tf::Vector3> quad_;
       std::vector<tf::Vector3> transformed_quad_;
+
+      std::string source_frame_;
       
       bool transformed;
     };

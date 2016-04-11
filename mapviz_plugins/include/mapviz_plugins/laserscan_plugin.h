@@ -101,20 +101,21 @@ namespace mapviz_plugins
     private:
       struct StampedPoint
       {
-          tf::Point point;
-          tf::Point transformed_point;
-          QColor color;
-          float range;
-          float intensity;
+        tf::Point point;
+        tf::Point transformed_point;
+        QColor color;
+        float range;
+        float intensity;
       };
 
       struct Scan
       {
-          ros::Time stamp;
-          QColor color;
-          std::vector<StampedPoint> points;
-          bool transformed;
-          bool has_intensity;
+        ros::Time stamp;
+        QColor color;
+        std::vector<StampedPoint> points;
+        std::string source_frame_;
+        bool transformed;
+        bool has_intensity;
       };
 
       void laserScanCallback(const sensor_msgs::LaserScanConstPtr& scan);

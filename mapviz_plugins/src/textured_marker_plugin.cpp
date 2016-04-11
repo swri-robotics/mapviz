@@ -152,7 +152,11 @@ namespace mapviz_plugins
       initialized_ = true;
       has_message_ = true;
     }
-    source_frame_ = marker.header.frame_id;
+
+    // Note that unlike some plugins, this one does not store nor rely on the
+    // source_frame_ member variable.  This one can potentially store many
+    // messages with different source frames, so we need to store and transform
+    // them individually.
 
     if (marker.action == marti_visualization_msgs::TexturedMarker::ADD)
     {
@@ -161,12 +165,13 @@ namespace mapviz_plugins
 
       markerData.transformed = true;
       markerData.alpha_ = marker.alpha;
+      markerData.source_frame_ = marker.header.frame_id;
 
       swri_transform_util::Transform transform;
-      if (!GetTransform(marker.header.stamp, transform))
+      if (!GetTransform(markerData.source_frame_, marker.header.stamp, transform))
       {
         markerData.transformed = false;
-        PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+        PrintError("No transform between " + markerData.source_frame_ + " and " + target_frame_);
       }
 
       // Handle lifetime parameter
@@ -464,7 +469,7 @@ namespace mapviz_plugins
       for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
         swri_transform_util::Transform transform;
-        if (GetTransform(markerIter->second.stamp, transform))
+        if (GetTransform(markerIter->second.source_frame_, markerIter->second.stamp, transform))
         {
           markerIter->second.transformed_quad_.clear();
           for (size_t i = 0; i < markerIter->second.quad_.size(); i++)
