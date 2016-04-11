@@ -243,11 +243,11 @@ namespace mapviz_plugins
     {
       source_frame_ = "/wgs84";
     }
-    unsigned long route_size = route->route_points.size();
+    size_t route_size = route->route_points.size();
 
     points_.clear();
 
-    for (unsigned long i = 0; i < route_size; i++)
+    for (size_t i = 0; i < route_size; i++)
     {
       StampedPoint stamped_point;
       stamped_point.stamp = route->header.stamp;
