@@ -180,13 +180,18 @@ namespace mapviz_plugins
   {
     if (!has_message_)
     {
-      source_frame_ = odometry->header.frame_id;
       initialized_ = true;
       has_message_ = true;
     }
 
+    // Note that unlike some plugins, this one does not store nor rely on the
+    // source_frame_ member variable.  This one can potentially store many
+    // messages with different source frames, so we need to store and transform
+    // them individually.
+
     StampedPoint stamped_point;
     stamped_point.stamp = odometry->header.stamp;
+    stamped_point.source_frame = odometry->header.frame_id;
 
     stamped_point.point = tf::Point(
         odometry->pose.pose.position.x,
@@ -460,7 +465,7 @@ namespace mapviz_plugins
   bool OdometryPlugin::TransformPoint(StampedPoint& point)
   {
     swri_transform_util::Transform transform;
-    if (GetTransform(point.stamp, transform))
+    if (GetTransform(point.source_frame, point.stamp, transform))
     {
       point.transformed_point = transform * point.point;
 
@@ -499,7 +504,7 @@ namespace mapviz_plugins
 
     if (!points_.empty() && !transformed)
     {
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+      PrintError("No transform between " + cur_point_.source_frame + " and " + target_frame_);
     }
   }
 
