@@ -63,6 +63,7 @@ file (GLOB HEADER_FILES
   include/mapviz/config_item.h
   include/mapviz/map_canvas.h
   include/mapviz/mapviz.h
+  include/mapviz/mapviz_application.h
   include/mapviz/mapviz_plugin.h
   include/mapviz/rqt_mapviz.h
   include/mapviz/select_frame_dialog.h
@@ -73,6 +74,7 @@ file (GLOB SRC_FILES
   src/mapviz.cpp
   src/color_button.cpp
   src/config_item.cpp
+  src/mapviz_application.cpp
   src/map_canvas.cpp
   src/rqt_mapviz.cpp
   src/select_frame_dialog.cpp
