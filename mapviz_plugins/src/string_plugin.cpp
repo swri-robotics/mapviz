@@ -198,6 +198,50 @@ namespace mapviz_plugins
     painter->drawStaticText(ulPoint, message_);
   }
 
+  void StringPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count(TOPIC_KEY) > 0)
+    {
+      ui_.topic->setText(params[TOPIC_KEY].c_str());
+      TopicEdited();
+    }
+
+    if (params.count(FONT_KEY) > 0)
+    {
+      font_.fromString(QString(params[FONT_KEY].c_str()));
+      ui_.font_button->setFont(font_);
+      ui_.font_button->setText(font_.family());
+    }
+
+    if (params.count(COLOR_KEY) > 0)
+    {
+      color_ = QColor(params[COLOR_KEY].c_str());
+      ui_.color->setColor(QColor(color_.name().toStdString().c_str()));
+    }
+
+    if (params.count(ANCHOR_KEY) > 0)
+    {
+      ui_.anchor->setCurrentIndex(ui_.anchor->findText(params[ANCHOR_KEY].c_str()));
+      SetAnchor(params[ANCHOR_KEY].c_str());
+    }
+
+    if (params.count(UNITS_KEY) > 0)
+    {
+      ui_.units->setCurrentIndex(ui_.units->findText(params[UNITS_KEY].c_str()));
+      SetUnits(params[UNITS_KEY].c_str());
+    }
+
+    if (params.count(OFFSET_X_KEY) > 0)
+    {
+      ui_.offsetx->setValue(boost::lexical_cast<int>(params[OFFSET_X_KEY]));
+    }
+
+    if (params.count(OFFSET_Y_KEY) > 0)
+    {
+      ui_.offsety->setValue(boost::lexical_cast<int>(params[OFFSET_Y_KEY]));
+    }
+  }
+
   void StringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     if (node[TOPIC_KEY])

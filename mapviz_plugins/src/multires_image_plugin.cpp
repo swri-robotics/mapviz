@@ -290,6 +290,17 @@ namespace mapviz_plugins
     }
   }
 
+  void MultiresImagePlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("path") > 0)
+    {
+      std::string path_string = params["path"];
+      ui_.path->setText(path_string.c_str());
+
+      AcceptConfiguration();
+    }
+  }
+
   void MultiresImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string path_string;

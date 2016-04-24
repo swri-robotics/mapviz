@@ -33,6 +33,8 @@
 #include <cstdio>
 #include <vector>
 
+#include <boost/lexical_cast.hpp>
+
 // QT libraries
 #include <QGLWidget>
 #include <QPalette>
@@ -361,7 +363,7 @@ namespace mapviz_plugins
 
     node["columns"] >> columns_;
     ui_.columns->setValue(columns_);
-    
+
     FrameEdited();
   }
 
@@ -379,6 +381,52 @@ namespace mapviz_plugins
     emitter << YAML::Key << "size" << YAML::Value << size_;
     emitter << YAML::Key << "rows" << YAML::Value << rows_;
     emitter << YAML::Key << "columns" << YAML::Value << columns_;
+  }
+  
+  void GridPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("color") > 0)
+    {
+      ui_.color->setColor(QColor(params["color"].c_str()));
+    }
+
+    if (params.count("alpha") > 0)
+    {
+      ui_.alpha->setValue(boost::lexical_cast<double>(params["alpha"]));
+    }
+
+    if (params.count("frame") > 0)
+    {
+      ui_.frame->setText(QString::fromStdString(params["frame"]));
+    }
+
+    if (params.count("x") > 0)
+    {
+      ui_.x->setValue(boost::lexical_cast<double>(params["x"]));
+    }
+
+    if (params.count("y") > 0)
+    {
+      ui_.y->setValue(boost::lexical_cast<double>(params["y"]));
+    }
+
+    if (params.count("size") > 0)
+    {
+      ui_.size->setValue(boost::lexical_cast<double>(params["size"]));
+    }
+
+    if (params.count("rows") > 0)
+    {
+      ui_.rows->setValue(boost::lexical_cast<int>(params["rows"]));
+    }
+
+    if (params.count("columns") > 0)
+    {
+      ui_.columns->setValue(boost::lexical_cast<int>(params["columns"]));
+    }
+
+
+    FrameEdited();
   }
 }
 

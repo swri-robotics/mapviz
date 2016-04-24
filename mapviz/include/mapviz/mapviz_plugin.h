@@ -220,6 +220,7 @@ namespace mapviz
 
     virtual void Transform() = 0;
 
+    virtual void UpdateConfig(std::map<std::string, std::string>& params) {}
     virtual void LoadConfig(const YAML::Node& load, const std::string& path) = 0;
     virtual void SaveConfig(YAML::Emitter& emitter, const std::string& path) = 0;
 

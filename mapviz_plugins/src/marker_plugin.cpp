@@ -568,6 +568,15 @@ namespace mapviz_plugins
     }
   }
 
+  void MarkerPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("topic") > 0)
+    {
+      ui_.topic->setText(boost::trim_copy(params["topic"]).c_str());
+      TopicEdited();
+    }
+  }
+
   void MarkerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;

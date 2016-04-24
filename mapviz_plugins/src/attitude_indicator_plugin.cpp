@@ -411,6 +411,44 @@ void AttitudeIndicatorPlugin::drawPanel()
   glEnd();
 }
 
+void AttitudeIndicatorPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+{
+  if (params.count("topic") > 0)
+  {
+    ui_.topic->setText(params["topic"].c_str());
+  }
+
+  QRect current = placer_.rect();
+  int x = current.x();
+  int y = current.y();
+  int width = current.width();
+  int height = current.height();
+
+  if (params.count("x") > 0)
+  {
+    x = boost::lexical_cast<int>(params["x"]);
+  }
+
+  if (params.count("y") > 0)
+  {
+    y = boost::lexical_cast<int>(params["y"]);
+  }
+
+  if (params.count("width") > 0)
+  {
+    width = boost::lexical_cast<int>(params["width"]);
+  }
+
+  if (params.count("height") > 0)
+  {
+    height = boost::lexical_cast<int>(params["height"]);
+  }
+
+  placer_.setRect(QRect(x, y, width, height));
+
+  TopicEdited();
+}
+
 void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
 { 
    std::string topic;

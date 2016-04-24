@@ -466,6 +466,47 @@ namespace mapviz_plugins
     last_height_ = height;
   }
 
+  void DisparityPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("topic") > 0)
+    {
+      ui_.topic->setText(params["topic"].c_str());
+      TopicEdited();
+    }
+
+    if (params.count("anchor") > 0)
+    {
+      ui_.anchor->setCurrentIndex(ui_.anchor->findText(params["anchor"].c_str()));
+      SetAnchor(params["anchor"].c_str());
+    }
+
+    if (params.count("units") > 0)
+    {
+      ui_.units->setCurrentIndex(ui_.units->findText(params["units"].c_str()));
+      SetUnits(params["units"].c_str());
+    }
+
+    if (params.count("offset_x") > 0)
+    {
+      ui_.offsetx->setValue(boost::lexical_cast<int>(params["offset_x"]));
+    }
+
+    if (params.count("offset_y") > 0)
+    {
+      ui_.offsety->setValue(boost::lexical_cast<int>(params["offset_y"]));
+    }
+
+    if (params.count("width") > 0)
+    {
+      ui_.width->setValue(boost::lexical_cast<int>(params["width"]));
+    }
+
+    if (params.count("height") > 0)
+    {
+      ui_.height->setValue(boost::lexical_cast<int>(params["height"]));
+    }
+  }
+
   void DisparityPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;

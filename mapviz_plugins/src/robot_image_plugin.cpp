@@ -297,6 +297,33 @@ namespace mapviz_plugins
     }
   }
 
+  void RobotImagePlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("frame") > 0)
+    {
+      ui_.frame->setText(QString::fromStdString(params["frame"]));
+    }
+
+    if (params.count("image") > 0)
+    {
+      ui_.image->setText(QString::fromStdString(params["image"]));
+    }
+
+    if (params.count("width") > 0)
+    {
+      ui_.width->setValue(boost::lexical_cast<double>(params["width"]));
+    }
+
+    if (params.count("height") > 0)
+    {
+      ui_.height->setValue(boost::lexical_cast<double>(params["height"]));
+    }
+
+    UpdateShape();
+    LoadImage();
+    FrameEdited();
+  }
+
   void RobotImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     node["frame"] >> source_frame_;

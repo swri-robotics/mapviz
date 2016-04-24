@@ -354,6 +354,45 @@ namespace mapviz_plugins
     }
   }
 
+  void NavSatPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("topic") > 0)
+    {
+      ui_.topic->setText(params["topic"].c_str());
+    }
+
+    if (params.count("color") > 0)
+    {
+      ui_.color->setColor(QColor(params["color"].c_str()));
+    }
+
+    if (params.count("draw_style") > 0)
+    {
+      if (params["draw_style"] == "lines")
+      {
+        draw_style_ = LINES;
+        ui_.drawstyle->setCurrentIndex(0);
+      }
+      else if (params["draw_style"] == "points")
+      {
+        draw_style_ = POINTS;
+        ui_.drawstyle->setCurrentIndex(1);
+      }
+    }
+
+    if (params.count("position_tolerance") > 0)
+    {
+      ui_.positiontolerance->setValue(boost::lexical_cast<double>(params["position_tolerance"]));
+    }
+
+    if (params.count("buffer_size") > 0)
+    {
+      ui_.buffersize->setValue(boost::lexical_cast<int>(params["buffer_size"]));
+    }
+
+    TopicEdited();
+  }
+
   void NavSatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;
