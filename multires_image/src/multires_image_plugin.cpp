@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/multires_image_plugin.h>
+#include <multires_image/multires_image_plugin.h>
 
 // C++ standard libraries
 #include <cstdio>

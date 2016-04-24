@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/multires_view.h>
+#include <multires_image/multires_view.h>
 
 // C++ standard libraries
 #include <cmath>
