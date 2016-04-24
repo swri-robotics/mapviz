@@ -417,16 +417,47 @@ void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::stri
    node["topic"] >> topic;
    ui_.topic->setText(topic.c_str());
 
+   int x = 0;
+   int y = 0;
+   int width = 100;
+   int height = 100;
+
+   if (swri_yaml_util::FindValue(node, "x"))
+   {
+     node["x"] >> x;
+   }
+
+   if (swri_yaml_util::FindValue(node, "y"))
+   {
+     node["y"] >> y;
+   }
+
+   if (swri_yaml_util::FindValue(node, "width"))
+   {
+     node["width"] >> width;
+   }
+
+   if (swri_yaml_util::FindValue(node, "height"))
+   {
+     node["height"] >> height;
+   }
+
+   QRect position(x, y, width, height);
+   placer_.setRect(position);
+
    TopicEdited();
-
-
 }
 
 void AttitudeIndicatorPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
 {
-     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
+  emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
 
+  QRect position = placer_.rect();
+
+  emitter << YAML::Key << "x" << YAML::Value << position.x();
+  emitter << YAML::Key << "y" << YAML::Value << position.y();
+  emitter << YAML::Key << "width" << YAML::Value << position.width();
+  emitter << YAML::Key << "height" << YAML::Value << position.height();
 }
-
 
 }
