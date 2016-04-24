@@ -361,6 +361,8 @@ namespace mapviz_plugins
 
     node["columns"] >> columns_;
     ui_.columns->setValue(columns_);
+    
+    FrameEdited();
   }
 
   void GridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
