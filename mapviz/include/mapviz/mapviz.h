@@ -68,6 +68,7 @@
 #include "ui_pluginselect.h"
 
 #include <swri_transform_util/transform_manager.h>
+#include <mapviz/AddMapvizDisplay.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 
@@ -149,6 +150,7 @@ namespace mapviz
     bool updating_frames_;
 
     ros::NodeHandle* node_;
+    ros::ServiceServer add_display_srv_;
     boost::shared_ptr<tf::TransformListener> tf_;
     swri_transform_util::TransformManager tf_manager_;
 
@@ -163,7 +165,12 @@ namespace mapviz
         const std::string& name,
         const std::string& type,
         bool visible,
-        bool collapsed);
+        bool collapsed,
+        int draw_order = 0);
+
+    bool AddDisplay(
+      AddMapvizDisplay::Request& req, 
+      AddMapvizDisplay::Response& resp);
 
     void ClearDisplays();
     void AdjustWindowSize();

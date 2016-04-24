@@ -205,6 +205,8 @@ void Mapviz::Initialize()
     canvas_->SetTargetFrame(ui_.targetframe->currentText().toStdString());
 
     ros::NodeHandle priv("~");
+    
+    add_display_srv_ = node_->advertiseService("add_mapviz_display", &Mapviz::AddDisplay, this);
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     QString default_path = QDir::homePath();
@@ -852,6 +854,75 @@ void Mapviz::SelectNewDisplay()
   }
 }
 
+bool Mapviz::AddDisplay(
+      AddMapvizDisplay::Request& req, 
+      AddMapvizDisplay::Response& resp)
+{
+  std::map<std::string, std::string> properties;
+  for (auto& property: req.properties)
+  {
+    properties[property.key] = property.value;
+  }
+
+  YAML::Node config;
+  if (!swri_yaml_util::LoadMap(properties, config))
+  {
+    ROS_ERROR("Failed to parse properties into YAML.");
+    return false;
+  }
+
+  for (auto& display: plugins_)
+  {
+    MapvizPluginPtr plugin = display.second;
+    if (!plugin)
+    {
+      ROS_ERROR("Invalid plugin ptr.");
+      continue;
+    }
+    if (plugin->Name() == req.name && plugin->Type() ==req.type)
+    {
+      plugin->LoadConfig(config, "");
+      plugin->SetVisible(req.visible);
+
+      if (req.draw_order > 0)
+      {
+        display.first->setData(Qt::UserRole, QVariant(req.draw_order - 1.1));
+        ui_.configs->sortItems();
+        
+        ReorderDisplays();
+      }
+      else if (req.draw_order < 0)
+      {
+        display.first->setData(Qt::UserRole, QVariant(ui_.configs->count() + req.draw_order + 0.1));
+        ui_.configs->sortItems();
+        
+        ReorderDisplays();
+      }
+      
+      resp.success = true;
+      
+      return true;
+    }
+  }
+  
+  try
+  {
+    MapvizPluginPtr plugin = 
+      CreateNewDisplay(req.name, req.type, req.visible, false, req.draw_order);
+    plugin->LoadConfig(config, "");
+    plugin->DrawIcon();
+    resp.success = true;
+  }
+  catch (const pluginlib::LibraryLoadException& e)
+  {
+    ROS_ERROR("%s", e.what());
+    resp.success = false;
+    resp.message = "Failed to load display plug-in.";
+  }
+  
+  return true;
+}
+
 void Mapviz::Hover(double x, double y, double scale)
 {
   if (ui_.statusbar->isVisible())
@@ -935,7 +1006,8 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
     const std::string& name,
     const std::string& type,
     bool visible,
-    bool collapsed)
+    bool collapsed,
+    int draw_order)
 {
   ConfigItem* config_item = new ConfigItem();
 
@@ -963,19 +1035,41 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   plugin->SetName(name);
   plugin->SetNode(*node_);
   plugin->SetVisible(visible);
-  plugin->SetDrawOrder(ui_.configs->count());
+  
+  if (draw_order == 0)
+  {
+    plugin->SetDrawOrder(ui_.configs->count());
+  }
+  else if (draw_order > 0)
+  {
+    plugin->SetDrawOrder(std::min(ui_.configs->count(), draw_order - 1));
+  }
+  else if (draw_order < 0)
+  {
+    plugin->SetDrawOrder(std::max(0, ui_.configs->count() + draw_order + 1));
+  }
 
   QString pretty_type(real_type.c_str());
   pretty_type = pretty_type.split('/').last();
   config_item->SetType(pretty_type);
-  QListWidgetItem* item = new QListWidgetItem();
+  QListWidgetItem* item = new PluginConfigListItem();
   config_item->SetListItem(item);
   item->setSizeHint(config_item->sizeHint());
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
   connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
+  connect(plugin.get(), SIGNAL(VisibleChanged(bool)), config_item, SLOT(ToggleDraw(bool)));
 
-  ui_.configs->addItem(item);
+  if (draw_order == 0)
+  {
+    ui_.configs->addItem(item);
+  }
+  else
+  {
+    ui_.configs->insertItem(plugin->DrawOrder(), item);
+  }
+  
   ui_.configs->setItemWidget(item, config_item);
+  ui_.configs->UpdateIndices();
 
   // Add plugin to canvas
   plugin->SetTargetFrame(ui_.fixedframe->currentText().toStdString());
@@ -987,6 +1081,8 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   if (collapsed)
     config_item->Hide();
+
+  ReorderDisplays();
 
   return plugin;
 }

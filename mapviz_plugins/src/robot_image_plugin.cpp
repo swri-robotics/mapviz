@@ -299,17 +299,29 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    node["frame"] >> source_frame_;
-    ui_.frame->setText(source_frame_.c_str());
+    if (node["frame"])
+    {
+      node["frame"] >> source_frame_;
+      ui_.frame->setText(source_frame_.c_str());
+    }
 
-    node["image"] >> filename_;
-    ui_.image->setText(filename_.c_str());
+    if (node["image"])
+    {
+      node["image"] >> filename_;
+      ui_.image->setText(filename_.c_str());
+    }
 
-    node["width"] >> width_;
-    ui_.width->setValue(width_);
+    if (node["width"])
+    {
+      node["width"] >> width_;
+      ui_.width->setValue(width_);
+    }
 
-    node["height"] >> height_;
-    ui_.height->setValue(height_);
+    if (node["height"])
+    {
+      node["height"] >> height_;
+      ui_.height->setValue(height_);
+    }
 
     UpdateShape();
     LoadImage();

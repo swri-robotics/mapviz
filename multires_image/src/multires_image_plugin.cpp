@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/multires_image_plugin.h>
+#include <multires_image/multires_image_plugin.h>
 
 // C++ standard libraries
 #include <cstdio>
@@ -292,20 +292,23 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    std::string path_string;
-    node["path"] >> path_string;
-
-    boost::filesystem::path image_path(path_string);
-    if (image_path.is_complete() == false)
+    if (node["path"])
     {
-      boost::filesystem::path base_path(path);
-      path_string =
-        (path / image_path.relative_path()).normalize().string();
+      std::string path_string;
+      node["path"] >> path_string;
+
+      boost::filesystem::path image_path(path_string);
+      if (image_path.is_complete() == false)
+      {
+        boost::filesystem::path base_path(path);
+        path_string =
+          (path / image_path.relative_path()).normalize().string();
+      }
+
+      ui_.path->setText(path_string.c_str());
+
+      AcceptConfiguration();
     }
-
-    ui_.path->setText(path_string.c_str());
-
-    AcceptConfiguration();
   }
 
   void MultiresImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)

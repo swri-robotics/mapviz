@@ -570,11 +570,14 @@ namespace mapviz_plugins
 
   void MarkerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    std::string topic;
-    node["topic"] >> topic;
-    ui_.topic->setText(boost::trim_copy(topic).c_str());
-
-    TopicEdited();
+    if (node["topic"])
+    {
+      std::string topic;
+      node["topic"] >> topic;
+      ui_.topic->setText(boost::trim_copy(topic).c_str());
+      
+      TopicEdited();
+    }
   }
 
   void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)

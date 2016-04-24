@@ -9,7 +9,6 @@ set(DEPENDENCIES
   marti_visualization_msgs
   marti_common_msgs
   marti_nav_msgs
-  multires_image
   nav_msgs
   pluginlib 
   roscpp 
@@ -63,8 +62,6 @@ file (GLOB SRC_FILES
     src/image_plugin.cpp
     src/laserscan_plugin.cpp
     src/marker_plugin.cpp 
-    src/multires_image_plugin.cpp 
-    src/multires_view.cpp 
     src/navsat_plugin.cpp
     src/odometry_plugin.cpp 
     src/path_plugin.cpp
@@ -91,7 +88,6 @@ QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/placeable_window_proxy.h
     include/mapviz_plugins/laserscan_plugin.h
     include/mapviz_plugins/marker_plugin.h 
-    include/mapviz_plugins/multires_image_plugin.h
     include/mapviz_plugins/navsat_plugin.h
     include/mapviz_plugins/odometry_plugin.h 
     include/mapviz_plugins/path_plugin.h
