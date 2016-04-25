@@ -689,41 +689,75 @@ namespace mapviz_plugins
   void PointCloud2Plugin::LoadConfig(const YAML::Node& node,
                                      const std::string& path)
   {
-    std::string topic;
-    node["topic"] >> topic;
-    ui_.topic->setText(boost::trim_copy(topic).c_str());
+    if (node["topic"])
+    {
+      std::string topic;
+      node["topic"] >> topic;
+      ui_.topic->setText(boost::trim_copy(topic).c_str());
+      TopicEdited();
+    }
 
-    TopicEdited();
+    if (node["size"])
+    {
+      node["size"] >> point_size_;
+      ui_.pointSize->setValue(point_size_);
+    }
 
-    node["size"] >> point_size_;
-    ui_.pointSize->setValue(point_size_);
+    if (node["buffer_size"])
+    {
+      node["buffer_size"] >> buffer_size_;
+      ui_.bufferSize->setValue(buffer_size_);
+    }
 
-    node["buffer_size"] >> buffer_size_;
-    ui_.bufferSize->setValue(buffer_size_);
+    if (node["min_color"])
+    {
+      std::string min_color_str;
+      node["min_color"] >> min_color_str;
+      ui_.min_color->setColor(QColor(min_color_str.c_str()));
+    }
+    
+    if (node["max_color"])
+    {
+      std::string max_color_str;
+      node["max_color"] >> max_color_str;
+      ui_.max_color->setColor(QColor(max_color_str.c_str()));
+    }
 
-    std::string min_color_str;
-    node["min_color"] >> min_color_str;
-    ui_.min_color->setColor(QColor(min_color_str.c_str()));
+    if (node["value_min"])
+    {
+      node["value_min"] >> min_value_;
+      ui_.minValue->setValue(min_value_);
+    }
 
-    std::string max_color_str;
-    node["max_color"] >> max_color_str;
-    ui_.max_color->setColor(QColor(max_color_str.c_str()));
+    if (node["value_max"])
+    {
+      node["value_max"] >> max_value_;
+      ui_.maxValue->setValue(max_value_);
+    }
 
-    node["value_min"] >> min_value_;
-    ui_.minValue->setValue(min_value_);
-    node["value_max"] >> max_value_;
-    ui_.maxValue->setValue(max_value_);
-    node["alpha"] >> alpha_;
-    ui_.alpha->setValue(alpha_);
-    AlphaEdited();
-    bool use_rainbow;
-    node["use_rainbow"] >> use_rainbow;
-    ui_.use_rainbow->setChecked(use_rainbow);
+    if (node["alpha"])
+    {      
+      node["alpha"] >> alpha_;
+      ui_.alpha->setValue(alpha_);
+      AlphaEdited();
+    }
+
+    if (node["use_rainbow"])
+    {
+      bool use_rainbow;
+      node["use_rainbow"] >> use_rainbow;
+      ui_.use_rainbow->setChecked(use_rainbow);
+    }
+    
     // UseRainbowChanged must be called *before* ColorTransformerChanged
     UseRainbowChanged(ui_.use_rainbow->checkState());
-    bool use_automaxmin;
-    node["use_automaxmin"] >> use_automaxmin;
-    ui_.use_automaxmin->setChecked(use_automaxmin);
+
+    if (node["use_automaxmin"])
+    {
+      bool use_automaxmin;
+      node["use_automaxmin"] >> use_automaxmin;
+      ui_.use_automaxmin->setChecked(use_automaxmin);
+    }
     // UseRainbowChanged must be called *before* ColorTransformerChanged
     UseAutomaxminChanged(ui_.use_automaxmin->checkState());
     // ColorTransformerChanged will also update colors of all points
