@@ -160,7 +160,6 @@ bool PlaceableWindowProxy::handleMouseRelease(QMouseEvent *event)
 
   if (event->button() == Qt::LeftButton) {
     state_ = INACTIVE;
-    qWarning("changing state to inactive");
     return true;    
   }
   

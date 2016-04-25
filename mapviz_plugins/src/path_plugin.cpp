@@ -274,6 +274,20 @@ namespace mapviz_plugins
     }
   }
 
+  void PathPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("topic") > 0)
+    {
+      ui_.topic->setText(boost::trim_copy(params["topic"]).c_str());
+      TopicEdited();
+    }
+    
+    if (params.count("color") > 0)
+    {
+      ui_.path_color->setColor(QColor(params["color"].c_str()));
+    }
+  }
+
   void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;

@@ -70,6 +70,7 @@ namespace mapviz_plugins
 
     void LoadConfig(const YAML::Node& node, const std::string& path);
     void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+    virtual void UpdateConfig(std::map<std::string, std::string>& params);
 
     QWidget* GetConfigWidget(QWidget* parent);
 

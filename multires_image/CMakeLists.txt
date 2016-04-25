@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(multires_image)
 
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
+  mapviz
   roscpp 
   tf 
   swri_transform_util 
@@ -19,6 +20,7 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME} multires_widget
   DEPENDS Qt4
   CATKIN_DEPENDS
+    mapviz
     pluginlib
     roscpp
     swri_transform_util
@@ -61,12 +63,21 @@ QT4_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
 add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
 target_link_libraries(multires_view_node multires_widget)
 
+# Build mapviz plugin
+file (GLOB MAPVIZ_SRC_FILES 
+  src/multires_image_plugin.cpp
+  src/multires_view.cpp)
+QT4_WRAP_UI(MAPVIZ_SRC_FILES src/multires_config.ui)
+QT4_WRAP_CPP(MAPVIZ_SRC_FILES include/multires_image/multires_image_plugin.h)
+add_library(${PROJECT_NAME}_plugin ${MAPVIZ_SRC_FILES})
+target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS ${PROJECT_NAME} multires_view_node multires_widget
+install(TARGETS ${PROJECT_NAME} multires_view_node multires_widget ${PROJECT_NAME}_plugin
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -75,3 +86,6 @@ install(TARGETS ${PROJECT_NAME} multires_view_node multires_widget
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+
+install(FILES mapviz_plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

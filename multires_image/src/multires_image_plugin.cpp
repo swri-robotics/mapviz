@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/multires_image_plugin.h>
+#include <multires_image/multires_image_plugin.h>
 
 // C++ standard libraries
 #include <cstdio>
@@ -287,6 +287,17 @@ namespace mapviz_plugins
         }
         return result;
       }
+    }
+  }
+
+  void MultiresImagePlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("path") > 0)
+    {
+      std::string path_string = params["path"];
+      ui_.path->setText(path_string.c_str());
+
+      AcceptConfiguration();
     }
   }
 

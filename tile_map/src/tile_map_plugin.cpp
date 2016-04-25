@@ -194,6 +194,28 @@ namespace tile_map
     }
   }
 
+  void TileMapPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("source") > 0)
+    {
+      std::string source = params["source"];
+
+      int index = ui_.source_combo->findText(QString::fromStdString(source), Qt::MatchExactly);
+      if (index < 0)
+      {
+        ui_.source_combo->addItem(QString::fromStdString(source));
+        index = ui_.source_combo->findText(QString::fromStdString(source), Qt::MatchExactly);
+      }
+      
+      if (index >= 0)
+      {
+        ui_.source_combo->setCurrentIndex(index);
+      }
+      
+      SelectSource(QString::fromStdString(source));
+    }
+  }
+
   void TileMapPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     if (swri_yaml_util::FindValue(node, "custom_sources"))

@@ -508,6 +508,55 @@ namespace mapviz_plugins
     }
   }
 
+  void OdometryPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("topic") > 0)
+    {
+      ui_.topic->setText(params["topic"].c_str());
+    }
+
+    if (params.count("color") > 0)
+    {
+      ui_.color->setColor(QColor(params["color"].c_str()));
+    }
+
+    if (params.count("draw_style") > 0)
+    {
+      if (params["draw_style"] == "lines")
+      {
+        draw_style_ = LINES;
+        ui_.drawstyle->setCurrentIndex(0);
+      }
+      else if (params["draw_style"] == "points")
+      {
+        draw_style_ = POINTS;
+        ui_.drawstyle->setCurrentIndex(1);
+      }
+      else if (params["draw_style"] == "arrows")
+      {
+        draw_style_ = ARROWS;
+        ui_.drawstyle->setCurrentIndex(2);
+      }
+    }
+
+    if (params.count("position_tolerance") > 0)
+    {
+      ui_.positiontolerance->setValue(boost::lexical_cast<double>(params["position_tolerance"]));
+    }
+
+    if (params.count("buffer_size") > 0)
+    {
+      ui_.buffersize->setValue(boost::lexical_cast<int>(params["buffer_size"]));
+    }
+
+    if (params.count("show_covariance") > 0)
+    {
+      ui_.show_covariance->setChecked(boost::lexical_cast<bool>(params["show_covariance"]));
+    }
+    
+    TopicEdited();
+  }
+
   void OdometryPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string topic;

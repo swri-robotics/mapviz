@@ -758,7 +758,7 @@
    <sender>show</sender>
    <signal>toggled(bool)</signal>
    <receiver>configitem</receiver>
-   <slot>Draw(bool)</slot>
+   <slot>ToggleDraw(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>385</x>
@@ -789,7 +789,7 @@
  </connections>
  <slots>
   <slot>Hide()</slot>
-  <slot>Draw(bool)</slot>
+  <slot>ToggleDraw(bool)</slot>
   <slot>EditName()</slot>
  </slots>
 </ui>

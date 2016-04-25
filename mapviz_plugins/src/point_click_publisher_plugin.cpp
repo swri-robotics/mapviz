@@ -79,6 +79,20 @@ namespace mapviz_plugins {
   {
   }
 
+  void PointClickPublisherPlugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("topic") > 0)
+    {
+      ui_.topic->setText(boost::trim_copy(params["topic"]).c_str());
+    }
+    topicChanged(ui_.topic->text());
+    
+    if (params.count("output_frame") > 0)
+    {
+      ui_.outputframe->addItem(QString(params["output_frame"].c_str()));
+    }
+  }
+
   void PointClickPublisherPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string tmp;

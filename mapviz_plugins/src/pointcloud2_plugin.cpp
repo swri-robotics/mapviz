@@ -686,6 +686,74 @@ namespace mapviz_plugins
     }
   }
 
+  void PointCloud2Plugin::UpdateConfig(std::map<std::string, std::string>& params)
+  {
+    if (params.count("topic") > 0)
+    {
+      ui_.topic->setText(boost::trim_copy(params["topic"]).c_str());
+      TopicEdited();
+    }
+
+    if (params.count("size") > 0)
+    {
+      point_size_ = boost::lexical_cast<int>(params["size"]);
+      ui_.pointSize->setValue(point_size_);
+    }
+
+    if (params.count("buffer_size") > 0)
+    {
+      buffer_size_ = boost::lexical_cast<int>(params["buffer_size"]);
+      ui_.bufferSize->setValue(buffer_size_);
+    }
+
+    if (params.count("min_color") > 0)
+    {
+      ui_.min_color->setColor(QColor(params["min_color"].c_str()));
+    }
+
+    if (params.count("max_color") > 0)
+    {
+      ui_.max_color->setColor(QColor(params["max_color"].c_str()));
+    }
+
+    if (params.count("min_value") > 0)
+    {
+      min_value_ = boost::lexical_cast<double>(params["min_value"]);
+      ui_.minValue->setValue(min_value_);
+    }
+
+    if (params.count("max_value") > 0)
+    {
+      max_value_ = boost::lexical_cast<double>(params["max_value"]);
+      ui_.maxValue->setValue(max_value_);
+    }
+
+    if (params.count("alpha") > 0)
+    {
+      alpha_ = boost::lexical_cast<double>(params["alpha"]);
+      ui_.alpha->setValue(alpha_);
+      AlphaEdited();
+    }
+
+    if (params.count("use_rainbow") > 0)
+    {
+      ui_.use_rainbow->setChecked(boost::lexical_cast<bool>(params["use_rainbow"]));
+    }
+    
+    // UseRainbowChanged must be called *before* ColorTransformerChanged
+    UseRainbowChanged(ui_.use_rainbow->checkState());
+    
+    if (params.count("use_automaxmin") > 0)
+    {
+      ui_.use_automaxmin->setChecked(boost::lexical_cast<bool>(params["use_automaxmin"]));
+    }
+    UseAutomaxminChanged(ui_.use_automaxmin->checkState());
+    
+    // ColorTransformerChanged will also update colors of all points
+    ColorTransformerChanged(ui_.color_transformer->currentIndex());
+  }
+
+
   void PointCloud2Plugin::LoadConfig(const YAML::Node& node,
                                      const std::string& path)
   {
