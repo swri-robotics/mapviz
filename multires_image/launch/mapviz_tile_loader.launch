@@ -1,0 +1,31 @@
+<launch>
+
+  <node pkg="swri_transform_util" type="initialize_origin.py" name="initialize_origin" >
+    <param name="local_xy_frame" value="/far_field"/>
+    <param name="local_xy_origin" value="swri"/>
+    <rosparam param="local_xy_origins">
+      [{ name: swri,
+         latitude: 29.45196669,
+         longitude: -98.61370577,
+         altitude: 233.719,
+         heading: 0.0},
+         
+       { name: back_40,
+         latitude: 29.447507,
+         longitude: -98.629367,
+         altitude: 200.0,
+         heading: 0.0}]
+    </rosparam>
+  </node>
+
+  <node pkg="mapviz" type="mapviz" name="$(anon mapviz)"/>
+
+  <node pkg="multires_image" type="mapviz_tile_loader" name="mapviz_tile_loader">
+    <param name="base_directory" value="$(env HOME)/.map_tiles"/>
+    <param name="draw_order" value="1"/>
+    
+  	<remap from="add_mapviz_display" to="mapviz/add_mapviz_display"/>
+  	<remap from="gps" to="/local_xy_origin"/>
+  </node>
+
+</launch>
