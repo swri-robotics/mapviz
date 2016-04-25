@@ -35,7 +35,8 @@ namespace mapviz
 {
   ConfigItem::ConfigItem(QWidget *parent, Qt::WFlags flags) :
     QWidget(parent, flags),
-    item_(0)
+    item_(0),
+    visible_(true)
   {
     ui_.setupUi(this);
   }
@@ -46,7 +47,16 @@ namespace mapviz
 
   void ConfigItem::ToggleDraw(bool toggled)
   {
-    ui_.show->setChecked(toggled);
+    if (visible_ != toggled)
+    {
+      visible_ = toggled;      
+      if (ui_.show->isChecked() != toggled)
+      {
+        ui_.show->setChecked(toggled);
+      }
+      
+      Q_EMIT ToggledDraw(item_, toggled);
+    }
   }
 
   void ConfigItem::SetName(QString name)

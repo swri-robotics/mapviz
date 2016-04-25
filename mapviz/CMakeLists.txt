@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mapviz)
 
 find_package(catkin REQUIRED COMPONENTS
+  marti_common_msgs
+  message_generation
   roscpp
   #rqt_gui
   rqt_gui_cpp
@@ -24,10 +26,19 @@ find_package(GLUT REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLEW glew)
 
+add_service_files(FILES
+  AddMapvizDisplay.srv
+)
+
+generate_messages(DEPENDENCIES
+  marti_common_msgs)
+
 catkin_package(
   INCLUDE_DIRS include
   DEPENDS libqt4
   CATKIN_DEPENDS
+    marti_common_msgs
+    message_runtime
     roscpp
     #rqt_gui
     rqt_gui_cpp
@@ -86,9 +97,13 @@ QT4_WRAP_CPP(SRC_FILES ${HEADER_FILES})
 
 add_library(rqt_${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
 target_link_libraries(rqt_${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(rqt_${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+set_target_properties(rqt_${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 
 add_executable(${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS} src/mapviz_main.cpp)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${Boost_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

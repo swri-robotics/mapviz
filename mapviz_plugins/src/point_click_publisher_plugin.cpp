@@ -86,9 +86,8 @@ namespace mapviz_plugins {
     {
       node["topic"] >> tmp;
       ui_.topic->setText(QString(tmp.c_str()));
+      topicChanged(ui_.topic->text());
     }
-
-    topicChanged(ui_.topic->text());
 
     if (swri_yaml_util::FindValue(node, "output_frame"))
     {

@@ -1,0 +1,21 @@
+# Add or updates a mapviz display.
+
+string                        name         # The name of the display.
+string                        type         # The plugin type.
+
+int32                         draw_order   # The display order. 1 corresponds
+                                           # to the first displayed, 2 to the 
+                                           # second, -1 to last, and -2 to the
+                                           # second to last, etc.  0 will keep
+                                           # the current display order of an 
+                                           # existing display and give a new
+                                           # display the last display order.
+
+bool                          visible      # If the display should be visible.
+
+marti_common_msgs/KeyValue[]  properties   # Configuration properties.
+
+---
+
+bool   success   # indicate successful run of triggered service
+string message   # informational, e.g. for error messages

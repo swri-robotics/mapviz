@@ -356,34 +356,49 @@ namespace mapviz_plugins
 
   void NavSatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    std::string topic;
-    node["topic"] >> topic;
-    ui_.topic->setText(topic.c_str());
-
-    std::string color;
-    node["color"] >> color;
-    ui_.color->setColor(QColor(color.c_str()));
-
-    std::string draw_style;
-    node["draw_style"] >> draw_style;
-
-    if (draw_style == "lines")
+    if (node["topic"])
     {
-      draw_style_ = LINES;
-      ui_.drawstyle->setCurrentIndex(0);
-    }
-    else if (draw_style == "points")
-    {
-      draw_style_ = POINTS;
-      ui_.drawstyle->setCurrentIndex(1);
+      std::string topic;
+      node["topic"] >> topic;
+      ui_.topic->setText(topic.c_str());
     }
 
-    node["position_tolerance"] >> position_tolerance_;
-    ui_.positiontolerance->setValue(position_tolerance_);
+    if (node["color"])
+    {
+      std::string color;
+      node["color"] >> color;
+      ui_.color->setColor(QColor(color.c_str()));
+    }
 
-    node["buffer_size"] >> buffer_size_;
-    ui_.buffersize->setValue(buffer_size_);
+    if (node["draw_style"])
+    {
+      std::string draw_style;
+      node["draw_style"] >> draw_style;
 
+      if (draw_style == "lines")
+      {
+        draw_style_ = LINES;
+        ui_.drawstyle->setCurrentIndex(0);
+      }
+      else if (draw_style == "points")
+      {
+        draw_style_ = POINTS;
+        ui_.drawstyle->setCurrentIndex(1);
+      }
+    }
+
+    if (node["position_tolerance"])
+    {
+      node["position_tolerance"] >> position_tolerance_;
+      ui_.positiontolerance->setValue(position_tolerance_);
+    }
+
+    if (node["buffer_size"])
+    {
+      node["buffer_size"] >> buffer_size_;
+      ui_.buffersize->setValue(buffer_size_);
+    }
+    
     TopicEdited();
   }
 

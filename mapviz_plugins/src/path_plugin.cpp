@@ -276,9 +276,13 @@ namespace mapviz_plugins
 
   void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    std::string topic;
-    node["topic"] >> topic;
-    ui_.topic->setText(topic.c_str());
+    if (swri_yaml_util::FindValue(node, "color"))
+    {
+      std::string topic;
+      node["topic"] >> topic;
+      ui_.topic->setText(topic.c_str());
+      TopicEdited();
+    }
 
     if (swri_yaml_util::FindValue(node, "color"))
     {
@@ -286,8 +290,6 @@ namespace mapviz_plugins
       node["color"] >> color;
       ui_.path_color->setColor(QColor(color.c_str()));
     }
-
-    TopicEdited();
   }
 
   void PathPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
