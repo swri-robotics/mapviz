@@ -12,6 +12,9 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <depend>glut</depend>
   <exec_depend>libqt4</exec_depend>
@@ -21,6 +24,7 @@
   <depend>libglew-dev</depend>
   <depend>libopencv-dev</depend>
   <depend>libxmu-dev</depend>
+  <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
   <depend>qt4-qmake</depend>
   <depend>roscpp</depend>

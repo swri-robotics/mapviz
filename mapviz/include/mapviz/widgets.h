@@ -33,6 +33,7 @@
 // QT libraries
 #include <QWidget>
 #include <QListWidget>
+#include <QListWidgetItem>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QDropEvent>
@@ -48,6 +49,14 @@ namespace mapviz
   public:
     explicit PluginConfigList(QWidget *parent = 0) : QListWidget(parent) {}
     PluginConfigList();
+    
+    void UpdateIndices()
+    {
+      for (size_t i = 0; i < count(); i++)
+      {
+        item(i)->setData(Qt::UserRole, QVariant((float)i));
+      }
+    }
 
   Q_SIGNALS:
     void ItemsMoved();
@@ -57,7 +66,21 @@ namespace mapviz
     {
       QListWidget::dropEvent(event);
 
+      UpdateIndices();
+
       Q_EMIT ItemsMoved();
+    }
+  };
+  
+  class PluginConfigListItem : public QListWidgetItem
+  {
+   
+  public:
+    explicit PluginConfigListItem(QListWidget *parent = 0) : QListWidgetItem(parent) {}
+    
+    virtual bool operator< (const QListWidgetItem & other) const 
+    {
+      return data(Qt::UserRole).toFloat() < other.data(Qt::UserRole).toFloat();
     }
   };
 

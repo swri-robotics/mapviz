@@ -412,40 +412,44 @@ void AttitudeIndicatorPlugin::drawPanel()
 }
 
 void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
-{ 
-   std::string topic;
-   node["topic"] >> topic;
-   ui_.topic->setText(topic.c_str());
+{
+  if (node["topic"])
+  {
+    std::string topic;
+    node["topic"] >> topic;
+    ui_.topic->setText(topic.c_str());
+  }
+  
+  QRect current = placer_.rect();
+  int x = current.x();
+  int y = current.y();
+  int width = current.width();
+  int height = current.height();
 
-   int x = 0;
-   int y = 0;
-   int width = 100;
-   int height = 100;
+  if (swri_yaml_util::FindValue(node, "x"))
+  {
+    node["x"] >> x;
+  }
 
-   if (swri_yaml_util::FindValue(node, "x"))
-   {
-     node["x"] >> x;
-   }
+  if (swri_yaml_util::FindValue(node, "y"))
+  {
+    node["y"] >> y;
+  }
+  
+  if (swri_yaml_util::FindValue(node, "width"))
+  {
+    node["width"] >> width;
+  }
 
-   if (swri_yaml_util::FindValue(node, "y"))
-   {
-     node["y"] >> y;
-   }
+  if (swri_yaml_util::FindValue(node, "height"))
+  {
+    node["height"] >> height;
+  }
 
-   if (swri_yaml_util::FindValue(node, "width"))
-   {
-     node["width"] >> width;
-   }
-
-   if (swri_yaml_util::FindValue(node, "height"))
-   {
-     node["height"] >> height;
-   }
-
-   QRect position(x, y, width, height);
-   placer_.setRect(position);
-
-   TopicEdited();
+  QRect position(x, y, width, height);
+  placer_.setRect(position);
+  
+  TopicEdited();
 }
 
 void AttitudeIndicatorPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)

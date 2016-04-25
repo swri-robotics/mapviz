@@ -87,8 +87,6 @@ namespace mapviz_plugins
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
     QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
-
-
   }
 
   ImagePlugin::~ImagePlugin()
@@ -441,34 +439,53 @@ namespace mapviz_plugins
 
   void ImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    std::string topic;
-    node["topic"] >> topic;
-    ui_.topic->setText(topic.c_str());
+    if (node["topic"])
+    {
+      std::string topic;
+      node["topic"] >> topic;
+      ui_.topic->setText(topic.c_str());
+      TopicEdited();
+    }
 
-    TopicEdited();
+    if (node["anchor"])
+    {
+      std::string anchor;
+      node["anchor"] >> anchor;
+      ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
+      SetAnchor(anchor.c_str());
+    }
 
-    std::string anchor;
-    node["anchor"] >> anchor;
-    ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
-    SetAnchor(anchor.c_str());
+    if (node["units"])
+    {
+      std::string units;
+      node["units"] >> units;
+      ui_.units->setCurrentIndex(ui_.units->findText(units.c_str()));
+      SetUnits(units.c_str());
+    }
 
-    std::string units;
-    node["units"] >> units;
-    ui_.units->setCurrentIndex(ui_.units->findText(units.c_str()));
-    SetUnits(units.c_str());
+    if (node["offset_x"])
+    {
+      node["offset_x"] >> offset_x_;
+      ui_.offsetx->setValue(offset_x_);
+    }
 
+    if (node["offset_y"])
+    {
+      node["offset_y"] >> offset_y_;
+      ui_.offsety->setValue(offset_y_);
+    }
 
-    node["offset_x"] >> offset_x_;
-    ui_.offsetx->setValue(offset_x_);
+    if (node["width"])
+    {
+      node["width"] >> width_;
+      ui_.width->setValue(width_);
+    }
 
-    node["offset_y"] >> offset_y_;
-    ui_.offsety->setValue(offset_y_);
-
-    node["width"] >> width_;
-    ui_.width->setValue(width_);
-
-    node["height"] >> height_;
-    ui_.height->setValue(height_);
+    if (node["height"])
+    {
+      node["height"] >> height_;
+      ui_.height->setValue(height_);
+    }
   }
 
   void ImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)

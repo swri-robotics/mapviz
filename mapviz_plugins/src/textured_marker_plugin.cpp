@@ -483,11 +483,17 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    std::string topic;
-    node["topic"] >> topic;
-    ui_.topic->setText(boost::trim_copy(topic).c_str());
+    if (node["topic"])
+    {
+      std::string topic;
+      node["topic"] >> topic;
+      ui_.topic->setText(boost::trim_copy(topic).c_str());
+    }
 
-    node["is_marker_array"] >> is_marker_array_;
+    if (node["is_marker_array"])
+    {
+      node["is_marker_array"] >> is_marker_array_;
+    }
 
     TopicEdited();
   }
