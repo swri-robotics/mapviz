@@ -153,7 +153,7 @@ namespace tile_map
       return;
     }
     
-    if (size_ != size_ || level_ != level || center_x_ != center_x || center_y_ != center_y)
+    if (size_ != size || level_ != level || center_x_ != center_x || center_y_ != center_y)
     {
       size_ = size;
       level_ = level;
