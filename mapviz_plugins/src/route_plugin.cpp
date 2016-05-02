@@ -45,13 +45,19 @@
 #include <ros/master.h>
 
 #include <swri_image_util/geometry_util.h>
+#include <swri_route_util/util.h>
 #include <swri_transform_util/transform_util.h>
 #include <mapviz/select_topic_dialog.h>
+
+#include <marti_nav_msgs/Route.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_DECLARE_CLASS(mapviz_plugins, route, mapviz_plugins::RoutePlugin,
                         mapviz::MapvizPlugin);
+
+namespace sru = swri_route_util;
+namespace stu = swri_transform_util;
 
 namespace mapviz_plugins
 {
@@ -64,12 +70,10 @@ namespace mapviz_plugins
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
     config_widget_->setPalette(p);
-    has_message_ = false;
     // Set status text red
     QPalette p3(ui_.status->palette());
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
-    points_.clear();
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this,
                      SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
@@ -163,25 +167,24 @@ namespace mapviz_plugins
   {
     if (ui_.topic->text().toStdString() != topic_)
     {
-      initialized_ = false;
-      points_.clear();
-      has_message_ = false;
+      src_route_ = sru::Route();
       topic_ = ui_.topic->text().toStdString();
-      PrintWarning("No messages received.");
 
       route_sub_.shutdown();
       route_sub_ =
-          node_.subscribe(topic_, 1, &RoutePlugin::MartiCallback, this);
+          node_.subscribe(topic_, 1, &RoutePlugin::RouteCallback, this);
 
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
+
   void RoutePlugin::PositionTopicEdited()
   {
     if (ui_.positiontopic->text().toStdString() != position_topic_)
     {
+      src_route_position_.reset();
+      
       position_topic_ = ui_.positiontopic->text().toStdString();
-      PrintWarning("No messages received.");
       position_sub_.shutdown();
       position_sub_ = node_.subscribe(position_topic_, 1,
                                       &RoutePlugin::PositionCallback, this);
@@ -189,81 +192,16 @@ namespace mapviz_plugins
       ROS_INFO("Subscribing to %s", position_topic_.c_str());
     }
   }
+
   void RoutePlugin::PositionCallback(
-      const marti_nav_msgs::RoutePositionConstPtr msg)
+      const marti_nav_msgs::RoutePositionConstPtr &msg)
   {
-    if (!has_message_)
-    {
-      ROS_ERROR_THROTTLE(1.0, "No route message");
-      return;
-    }
-    distance_ = msg->distance;
-    std::list<StampedPoint>::iterator points_it = points_.begin();
-    points_it++;
-    std::list<StampedPoint>::iterator end_it = points_.end();
-    end_it--;
-
-    if (points_.front().id.empty())
-    {
-      ROS_ERROR("Stored points have no Id");
-    }
-
-    for (; points_it != end_it; ++points_it)
-    {
-      if (points_it->id == msg->id)
-      {
-        cur_position_ = *points_it;
-
-        std::list<StampedPoint>::iterator next_point = ++points_it;
-        next_position_ = *(next_point);
-
-        if (!points_it->transformed)
-        {
-          TransformPoint(cur_position_);
-          TransformPoint(next_position_);
-        }
-
-        return;
-      }
-    }
+    src_route_position_ = msg;
   }
 
-  void RoutePlugin::MartiCallback(const marti_nav_msgs::RouteConstPtr route)
+  void RoutePlugin::RouteCallback(const marti_nav_msgs::RouteConstPtr &msg)
   {
-    if (!has_message_)
-    {
-      initialized_ = true;
-      has_message_ = true;
-    }
-    if (!route->header.frame_id.empty())
-    {
-      source_frame_ = route->header.frame_id;
-    }
-    else
-    {
-      source_frame_ = "/wgs84";
-    }
-    size_t route_size = route->route_points.size();
-
-    points_.clear();
-
-    for (size_t i = 0; i < route_size; i++)
-    {
-      StampedPoint stamped_point;
-      stamped_point.stamp = route->header.stamp;
-      stamped_point.transformed = false;
-      stamped_point.point = tf::Point(route->route_points[i].pose.position.x,
-                                      route->route_points[i].pose.position.y,
-                                      route->route_points[i].pose.position.z);
-
-      stamped_point.orientation =
-          tf::Quaternion(route->route_points[i].pose.orientation.x,
-                         route->route_points[i].pose.orientation.y,
-                         route->route_points[i].pose.orientation.z,
-                         route->route_points[i].pose.orientation.w);
-      stamped_point.id = route->route_points[i].id;
-      points_.push_back(stamped_point);
-    }
+    src_route_ = sru::Route(*msg);
   }
 
   void RoutePlugin::PrintError(const std::string& message)
@@ -271,7 +209,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_ERROR("Error: %s", message.c_str());
+    ROS_ERROR_THROTTLE(1.0, "Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p);
@@ -283,7 +221,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_INFO("%s", message.c_str());
+    ROS_INFO_THROTTLE(1.0, "%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p);
@@ -295,7 +233,7 @@ namespace mapviz_plugins
     if (message == ui_.status->text().toStdString())
       return;
 
-    ROS_WARN("%s", message.c_str());
+    ROS_WARN_THROTTLE(1.0, "%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::darkYellow);
     ui_.status->setPalette(p);
@@ -315,86 +253,48 @@ namespace mapviz_plugins
 
     DrawIcon();
 
+    initialized_ = true;
     return true;
   }
 
   void RoutePlugin::Draw(double x, double y, double scale)
   {
-    QColor color = ui_.color->color();
-
-    bool transformed = false;
-
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
-
-    if (draw_style_ == LINES)
-    {
-      glLineWidth(3);
-      glBegin(GL_LINE_STRIP);
-    }
-    else
-    {
-      glPointSize(2);
-      glBegin(GL_POINTS);
+    if (!src_route_.valid()) {
+      PrintError("No valid route received.");
+      return;
     }
 
-    std::list<StampedPoint>::iterator it = points_.begin();
+    sru::Route route = src_route_;
+    if (route.header.frame_id.empty()) {
+      route.header.frame_id = "/wgs84";
+    }
 
-    for (; it != points_.end(); ++it)
-    {
-      if (it->transformed)
-      {
-        glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
+    stu::Transform transform;
+    if (!GetTransform(route.header.frame_id, ros::Time(), transform)) {
+      PrintError("Failed to transform route");
+      return;
+    }
 
-        transformed = true;
+    sru::transform(route, transform, target_frame_);
+    sru::projectToXY(route);
+    sru::fillOrientations(route);
+
+    DrawRoute(route);
+
+    bool ok = true;
+    if (route.valid() && src_route_position_) {
+      sru::RoutePoint point;
+      if (sru::interpolateRoutePosition(point, route, *src_route_position_, true)) {
+        DrawRoutePoint(point);
+      } else {
+        PrintError("Failed to find route position in route.");
+        ok = false;
       }
     }
 
-    glEnd();
-    it--;
-    DrawStopWaypoint(it->transformed_point.x(), it->transformed_point.y());
-    if (!position_topic_.empty())
-    {
-      DrawCurrentWaypointIndicator();
-    }
-    if (transformed)
-    {
+    if (ok) {
       PrintInfo("OK");
-    }
-  }
-
-  bool RoutePlugin::TransformPoint(StampedPoint& point)
-  {
-    if (point.transformed == true)
-    {
-      return true;
-    }
-
-    swri_transform_util::Transform transform;
-    if (GetTransform(point.stamp, transform))
-    {
-      point.transformed_point = transform * point.point;
-      point.transformed = true;
-      return true;
-    }
-
-    point.transformed = false;
-    return false;
-  }
-
-  void RoutePlugin::Transform()
-  {
-    bool transformed = false;
-    std::list<StampedPoint>::iterator points_it = points_.begin();
-    for (; points_it != points_.end(); ++points_it)
-    {
-      transformed = transformed | TransformPoint(*points_it);
-    }
-
-    if (!points_.empty() && !transformed)
-    {
-      PrintError("No transform between " + source_frame_ + " and " +
-                 target_frame_);
-    }
+    }        
   }
 
   void RoutePlugin::DrawStopWaypoint(double x, double y)
@@ -417,66 +317,51 @@ namespace mapviz_plugins
 
     glEnd();
   }
-  void RoutePlugin::CalculateTangentVectorAtPoint(double* t_dx, double* t_dy)
+
+  void RoutePlugin::DrawRoute(const sru::Route &route)
   {
-    ROS_ASSERT(t_dx != NULL);
-    ROS_ASSERT(t_dy != NULL);
-    double dx = 0.0;
-    double dy = 0.0;
+    const QColor color = ui_.color->color();
+    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
 
-    dx += (next_position_.transformed_point.x() -
-           cur_position_.transformed_point.x());
-    dy += (next_position_.transformed_point.y() -
-           cur_position_.transformed_point.y());
+    if (draw_style_ == LINES)
+    {
+      glLineWidth(3);
+      glBegin(GL_LINE_STRIP);
+    }
+    else
+    {
+      glPointSize(2);
+      glBegin(GL_POINTS);
+    }
 
-    // Normalize the tangent vector
-    double d = sqrt(dx * dx + dy * dy);
-    dx = dx / d;
-    dy = dy / d;
-
-    *t_dx = dx;
-    *t_dy = dy;
+    for (size_t i = 0; i < route.points.size(); i++) {
+      glVertex2f(route.points[i].position().x(),
+                 route.points[i].position().y());
+    }
+    glEnd();
   }
-  void RoutePlugin::CalculateVectorsAtPoint(double* t_dx, double* t_dy,
-                                            double* n_dx, double* n_dy)
+
+  void RoutePlugin::DrawRoutePoint(const sru::RoutePoint &point)
   {
-    ROS_ASSERT(t_dx != NULL);
-    ROS_ASSERT(t_dy != NULL);
-    ROS_ASSERT(n_dx != NULL);
-    ROS_ASSERT(n_dy != NULL);
-    CalculateTangentVectorAtPoint(t_dx, t_dy);
-    *n_dx = -*t_dy;
-    *n_dy = *t_dx;
-  }
-  void RoutePlugin::DrawCurrentWaypointIndicator()
-  {
-    double t_dx = 0.0;
-    double t_dy = 0.0;
-    double n_dx = 0.0;
-    double n_dy = 0.0;
-    CalculateVectorsAtPoint(&t_dx, &t_dy, &n_dx, &n_dy);
-    double orig_x = cur_position_.transformed_point.x();
-    double orig_y = cur_position_.transformed_point.y();
-    double x = cur_position_.transformed_point.x() + t_dx * distance_;
-    double y = cur_position_.transformed_point.y() + t_dy * distance_;
+    const double arrow_size = ui_.iconsize->value();
+
+    tf::Vector3 v1(arrow_size, 0.0, 0.0);
+    tf::Vector3 v2(0.0,  arrow_size/2.0, 0.0);
+    tf::Vector3 v3(0.0, -arrow_size/2.0, 0.0);
+
+    tf::Transform point_g(point.orientation(), point.position());
+
+    v1 = point_g*v1;
+    v2 = point_g*v2;
+    v3 = point_g*v3;
+
+    const QColor color = ui_.positioncolor->color();
     glLineWidth(3);
     glBegin(GL_POLYGON);
-    QColor color = ui_.positioncolor->color();
     glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
-    int outer_dist = ui_.iconsize->value();
-
-    glVertex2f(x, y);
-    glVertex2f(x + n_dx * outer_dist / 2, y + n_dy * outer_dist / 2);
-
-    glVertex2f(x + n_dx * outer_dist / 2, y + n_dy * outer_dist / 2);
-    glVertex2f(x + (t_dx * outer_dist), y + (t_dy * outer_dist));
-
-    glVertex2f(x + (t_dx * outer_dist), y + (t_dy * outer_dist));
-    glVertex2f(x - n_dx * outer_dist / 2, y - n_dy * outer_dist / 2);
-
-    glVertex2f(x - n_dx * outer_dist / 2, y - n_dy * outer_dist / 2);
-    glVertex2f(x, y);
-
+    glVertex2f(v1.x(), v1.y());
+    glVertex2f(v2.x(), v2.y());
+    glVertex2f(v3.x(), v3.y());
     glEnd();
   }
 

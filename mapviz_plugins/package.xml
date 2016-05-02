@@ -32,6 +32,7 @@
   <depend>stereo_msgs</depend>
   <depend>swri_image_util</depend>
   <depend>swri_math_util</depend>
+  <depend>swri_route_util</depend>
   <depend>swri_transform_util</depend>
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
