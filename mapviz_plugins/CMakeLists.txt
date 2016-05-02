@@ -17,6 +17,7 @@ set(DEPENDENCIES
   stereo_msgs
   swri_image_util
   swri_math_util
+  swri_route_util
   swri_transform_util
   swri_yaml_util
   tf 
