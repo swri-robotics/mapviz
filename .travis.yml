@@ -8,9 +8,15 @@ notifications:
     on_success: always
     on_failure: always
 env:
+  global:
+    - USE_DEB=true
+    - ROS_DISTRO="indigo"
   matrix:
-    - USE_DEB=true ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu ADDITIONAL_DEBS="ros-indigo-marti-can-msgs ros-indigo-marti-common-msgs ros-indigo-marti-data-structures ros-indigo-marti-nav-msgs ros-indigo-marti-perception-msgs ros-indigo-marti-sensor-msgs ros-indigo-marti-visualization-msgs ros-indigo-marti-data-structures ros-indigo-swri-console-util ros-indigo-swri-geometry-util ros-indigo-swri-image-util ros-indigo-swri-math-util ros-indigo-swri-opencv-util ros-indigo-swri-prefix-tools ros-indigo-swri-roscpp ros-indigo-swri-serial-util ros-indigo-swri-string-util ros-indigo-swri-system-util ros-indigo-swri-transform-util ros-indigo-swri-yaml-util"
-    - USE_DEB=true ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu ADDITIONAL_DEBS="ros-indigo-marti-can-msgs ros-indigo-marti-common-msgs ros-indigo-marti-data-structures ros-indigo-marti-nav-msgs ros-indigo-marti-perception-msgs ros-indigo-marti-sensor-msgs ros-indigo-marti-visualization-msgs ros-indigo-marti-data-structures ros-indigo-swri-console-util ros-indigo-swri-geometry-util ros-indigo-swri-image-util ros-indigo-swri-math-util ros-indigo-swri-opencv-util ros-indigo-swri-prefix-tools ros-indigo-swri-roscpp ros-indigo-swri-serial-util ros-indigo-swri-string-util ros-indigo-swri-system-util ros-indigo-swri-transform-util ros-indigo-swri-yaml-util"
+    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+matrix:
+  allow_failures:
+    - env: ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script: 
