@@ -8,9 +8,15 @@ notifications:
     on_success: always
     on_failure: always
 env:
+  global:
+    - USE_DEB=true
+    - ROS_DISTRO="jade"
   matrix:
-    - USE_DEB=true ROS_DISTRO="jade" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu ADDITIONAL_DEBS="ros-jade-marti-can-msgs ros-jade-marti-common-msgs ros-jade-marti-data-structures ros-jade-marti-nav-msgs ros-jade-marti-perception-msgs ros-jade-marti-sensor-msgs ros-jade-marti-visualization-msgs ros-jade-marti-data-structures ros-jade-swri-console-util ros-jade-swri-geometry-util ros-jade-swri-image-util ros-jade-swri-math-util ros-jade-swri-opencv-util ros-jade-swri-prefix-tools ros-jade-swri-roscpp ros-jade-swri-serial-util ros-jade-swri-string-util ros-jade-swri-system-util ros-jade-swri-transform-util ros-jade-swri-yaml-util"
-    - USE_DEB=true ROS_DISTRO="jade" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu ADDITIONAL_DEBS="ros-jade-marti-can-msgs ros-jade-marti-common-msgs ros-jade-marti-data-structures ros-jade-marti-nav-msgs ros-jade-marti-perception-msgs ros-jade-marti-sensor-msgs ros-jade-marti-visualization-msgs ros-jade-marti-data-structures ros-jade-swri-console-util ros-jade-swri-geometry-util ros-jade-swri-image-util ros-jade-swri-math-util ros-jade-swri-opencv-util ros-jade-swri-prefix-tools ros-jade-swri-roscpp ros-jade-swri-serial-util ros-jade-swri-string-util ros-jade-swri-system-util ros-jade-swri-transform-util ros-jade-swri-yaml-util"
+    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+matrix:
+  allow_failures:
+    - env: ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script: 
