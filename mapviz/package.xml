@@ -12,6 +12,7 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>pkg-config</buildtool_depend>
   
   <build_depend>message_generation</build_depend>
   <exec_depend>message_runtime</exec_depend>
