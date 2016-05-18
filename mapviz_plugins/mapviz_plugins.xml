@@ -32,6 +32,9 @@
   <class name="mapviz_plugins/tf_frame" type="mapviz_plugins::TfFramePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>TF frame mapviz plugin.</description>
   </class>
+  <class name="mapviz_plugins/plan_route" type="mapviz_plugins::PlanRoutePlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Plan route mapviz plugin.</description>
+  </class>
   <class name="mapviz_plugins/route" type="mapviz_plugins::RoutePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Route mapviz plugin.</description>
   </class>
