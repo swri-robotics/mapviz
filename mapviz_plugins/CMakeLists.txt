@@ -65,6 +65,7 @@ file (GLOB SRC_FILES
     src/odometry_plugin.cpp 
     src/path_plugin.cpp
     src/placeable_window_proxy.cpp
+    src/plan_route_plugin.cpp
     src/point_click_publisher_plugin.cpp
     src/pointcloud2_plugin.cpp
     src/robot_image_plugin.cpp
@@ -72,7 +73,6 @@ file (GLOB SRC_FILES
     src/string_plugin.cpp
     src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
-    src/robot_image_plugin.cpp
     src/navsat_plugin.cpp
 )
     
@@ -90,6 +90,7 @@ QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/odometry_plugin.h 
     include/mapviz_plugins/path_plugin.h
     include/mapviz_plugins/placeable_window_proxy.h
+    include/mapviz_plugins/plan_route_plugin.h    
     include/mapviz_plugins/point_click_publisher_plugin.h
     include/mapviz_plugins/pointcloud2_plugin.h
     include/mapviz_plugins/robot_image_plugin.h
@@ -97,7 +98,6 @@ QT4_WRAP_CPP(SRC_FILES
     include/mapviz_plugins/string_plugin.h
     include/mapviz_plugins/textured_marker_plugin.h
     include/mapviz_plugins/tf_frame_plugin.h
-    include/mapviz_plugins/robot_image_plugin.h
     include/mapviz_plugins/navsat_plugin.h
 )
 
