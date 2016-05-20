@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-05-20)
+------------------
 * Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.
 * Adding an explicit dependency on pkg-config to package.xml (`#354 <https://github.com/swri-robotics/mapviz/issues/354>`_)
 * Add _gencpp dependency to mapviz targets.

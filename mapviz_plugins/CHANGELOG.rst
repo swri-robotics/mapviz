@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-05-20)
+------------------
 * Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.
 * Migrate route plugin to use swri_route_util
   This change migrates the mapviz route plugin to use swri_route_util to

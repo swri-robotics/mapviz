@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-05-20)
+------------------
 * Add helper node to automatically add relevant multires_image display to mapviz based on a GPS message.
 * Implement service for adding and modifying mapviz displays.
 * Fix for `#339 <https://github.com/swri-robotics/mapviz/issues/339>`_; explicitly depending on OpenCV 2
