@@ -2,6 +2,11 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix typo in tile map view size comparison.
+* Contributors: Marc Alban
+
 0.1.2 (2016-01-06)
 ------------------
 

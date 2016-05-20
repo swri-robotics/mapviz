@@ -2,6 +2,12 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Implement service for adding and modifying mapviz displays.
+* Fix for `#339 <https://github.com/swri-robotics/mapviz/issues/339>`_; explicitly depending on OpenCV 2
+* Contributors: Marc Alban, P. J. Reed
+
 0.1.2 (2016-01-06)
 ------------------
 * Enables the possibility to load a one-layer tile set
