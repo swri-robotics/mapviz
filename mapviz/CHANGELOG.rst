@@ -2,6 +2,93 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.
+* Adding an explicit dependency on pkg-config to package.xml (`#354 <https://github.com/swri-robotics/mapviz/issues/354>`_)
+* Add _gencpp dependency to mapviz targets.
+  This commit adds the _gencpp target to mapviz targets to ensure that
+  the AddMapvizDisplay service is built before the targets.
+* Make compiler flags specific to each target.
+* Implement service for adding and modifying mapviz displays.
+* Fix for `#339 <https://github.com/swri-robotics/mapviz/issues/339>`_; explicitly depending on OpenCV 2
+* Fix for `#336 <https://github.com/swri-robotics/mapviz/issues/336>`_; Qt event handler exceptions shouldn't crash Mapviz
+* Fixing blending for GL drawing
+  The call to QGLWidget::beginNativePainting has a side effect of clearing
+  GL settings related to blending and depth testing, and that was causing
+  alpha transparency to not work right for plugins.  I fixed it by manually
+  re-enabling those settings every time beginNativePainting is called.
+* Fix for `#319 <https://github.com/swri-robotics/mapviz/issues/319>`_
+  Previously, the MapCanvas::MapGlCoordToFixedFrame function relied on
+  the transform\_ member variable being set, but it is not set if the
+  target frame is <none>.  Instead it will now use the qtransform\_
+  variable, which is always initialized for the purpose of QPainters.
+* Saving & restoring all matrices and attribs
+* Moving QPainter drawing back to being after GL
+  I had switched the order while debugging things and forgot to set it
+  back to the way it originally was.
+* Removing a leftover debug print
+* Fixing `#317 <https://github.com/swri-robotics/mapviz/issues/317>`_
+  First, the model view matrix needs to be saved and restored around
+  QPainter operations because Qt clears several GL variables.  Also, the
+  image plugin needed to explicitly call glMatrixMode(GL_PROJECTION);
+  it does a few operations on the projection matrix and was just assuming
+  that was the current matrix mode.  Also, I added a function that plugins
+  need to override if they want to do QPainter operations; this will
+  eliminate unnecessary overhead for plugins that do not.
+* Removing extraneous calls to MapCanvas::update()
+  Now that update() is being called automatically at a rate of 50 Hz,
+  the explicit calls in many locations are unnecessary.  It was also
+  possible for it to be called in some of these locations from a
+  non-main thread, which is invalid and could cause crashes.
+* Enabling anti-aliasing for QPainter drawing
+* Adding the ability to toggle anti-aliasing
+  Now there's a checkbox under the "View" menu that will toggle whether
+  anti-aliasing is applied to the canvas.  In some situations this will
+  make the display look much prettier at a slight performance cost.
+* Cleaning up documentation.
+* Plugins can now draw using a QPainter
+  This is the same as the old version of this change, except updated
+  to the most recent version of Mapviz.
+* Fix for `#298 <https://github.com/swri-robotics/mapviz/issues/298>`_; right-click + drag will now zoom
+* Update map canvas at a fixed rate.
+  This update adds a timer to the map canvas to repaint at a fixed rate.
+  The default rate is 50 Hz, but there is a method to change it (not
+  exposed to the UI at the moment).  50Hz was chosen because it is fast
+  enough to give smooth animations and we almost always are running
+  mapviz with at least one plugin triggering updates from a 50Hz topic.
+* Update mapviz.launch file to also launch anonymously.
+* Initialize mapviz as an anonymous node.
+* This commit adds a class called SelectFrameDialog that plugins can use
+  to present the user with a dialog to choose a TF frame. The dialog
+  sorts the frames by name and provides an edit box that the user can
+  use to filter the frames to a specific substring.
+* Fixing an issue that could cause the click publisher plugin's publisher to not be initialized after it's first added.
+* Adding a plugin that, when a user clicks on a point, will publish that point's coordinates to a topic.
+* Remove debugging messages from SelectFrameDialog.
+  These were accidentally left in during initial development.
+* Adding color button widget and updating plugins.
+  This commit adds a subclass of QPushButton called ColorButton that
+  implements a widget for displaying and selecting colors.  We've been
+  doing this manually everywhere with duplicated code.  This is a simple
+  abstraction but allows us to elminate a lot of duplication, especially
+  in plugins that have multiple color selections.
+* Add documentation for the SelectTopicDialog.
+* Adds SelectTopicDialog to mapviz.
+  This commit adds the SelectTopicDialog that can be used in plugins to
+  provide the user with a dialog to select topics.  Typically we have
+  done this with a lot of duplicated code across all the plugins.  This
+  commit also updates the plugins in mapviz_plugins to use the new
+  dialog.
+  The new dialog provides several benefits:
+  - Reduced code duplication
+  - Simplifies writing new plugins
+  - Common behavior between all plugins
+  - Topics sorted by name
+  - User can filter topics by substring
+  - Continuously checks the master for new topics while the dialog is open.
+* Contributors: Elliot Johnson, Marc Alban, P. J. Reed
+
 0.0.4 (2016-01-06)
 ------------------
 * Show full path when recording screenshots/movies.
