@@ -76,7 +76,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
 {
   ROS_INFO("View scale: %f meters/pixel", view_scale_);
   setMouseTracking(true);
-  
+
   transform_.setIdentity();
 
   QObject::connect(&frame_rate_timer_, SIGNAL(timeout()), this, SLOT(update()));
@@ -102,21 +102,21 @@ void MapCanvas::InitializePixelBuffers()
   if(has_pixel_buffers_)
   {
     int32_t buffer_size = width() * height() * 4;
-    
+
     if (pixel_buffer_size_ != buffer_size)
     {
       if (pixel_buffer_size_ != 0)
       {
         glDeleteBuffersARB(2, pixel_buffer_ids_);
       }
-    
+
       glGenBuffersARB(2, pixel_buffer_ids_);
       glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[0]);
       glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, buffer_size, 0, GL_STREAM_READ_ARB);
       glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[1]);
       glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, buffer_size, 0, GL_STREAM_READ_ARB);
       glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
-      
+
       pixel_buffer_size_ = buffer_size;
     }
   }
@@ -133,7 +133,7 @@ void MapCanvas::initializeGL()
   {
     // Check if pixel buffers are available for asynchronous capturing
     std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
-    has_pixel_buffers_ = extensions.find("GL_ARB_pixel_buffer_object") != std::string::npos;  
+    has_pixel_buffers_ = extensions.find("GL_ARB_pixel_buffer_object") != std::string::npos;
   }
 
   glClearColor(0.58f, 0.56f, 0.5f, 1);
@@ -176,14 +176,14 @@ void MapCanvas::CaptureFrame(bool force)
 {
   // Ensure the pixel size is actually 4
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
-  
+
   if (has_pixel_buffers_ && !force)
   {
     InitializePixelBuffers();
-    
+
     pixel_buffer_index_ = (pixel_buffer_index_ + 1) % 2;
     int32_t next_index = (pixel_buffer_index_ + 1) % 2;
-    
+
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[pixel_buffer_index_]);
     glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[next_index]);
@@ -192,9 +192,9 @@ void MapCanvas::CaptureFrame(bool force)
     {
       capture_buffer_.clear();
       capture_buffer_.resize(pixel_buffer_size_);
-      
+
       memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
-      
+
       glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
     }
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
@@ -325,6 +325,11 @@ QPointF MapCanvas::MapGlCoordToFixedFrame(const QPointF& point)
 {
   bool invertible = true;
   return qtransform_.inverted(&invertible).map(point);
+}
+
+QPointF MapCanvas::FixedFrameToMapGlCoord(const QPointF& point)
+{
+  return qtransform_.map(point);
 }
 
 void MapCanvas::mouseReleaseEvent(QMouseEvent* e)
@@ -501,17 +506,17 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
     qtransform_ = qtransform_.scale(1, -1);
     painter->setWorldTransform(qtransform_, false);
-    
+
     if (mouse_hovering_)
     {
       double center_x = -offset_x_ - drag_x_;
       double center_y = -offset_y_ - drag_y_;
       double x = center_x + (mouse_hover_x_ - width() / 2.0) * view_scale_;
       double y = center_y + (height() / 2.0  - mouse_hover_y_) * view_scale_;
-      
+
       tf::Point hover(x, y, 0);
       hover = transform_ * hover;
-      
+
       Q_EMIT Hover(hover.x(), hover.y(), view_scale_);
     }
   }
@@ -570,7 +575,7 @@ void MapCanvas::setFrameRate(const double fps)
     return;
   }
 
-  frame_rate_timer_.setInterval(1000.0/fps);    
+  frame_rate_timer_.setInterval(1000.0/fps);
 }
 
 double MapCanvas::frameRate() const

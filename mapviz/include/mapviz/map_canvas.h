@@ -78,6 +78,7 @@ namespace mapviz
     void UpdateView();
     void ReorderDisplays();
     QPointF MapGlCoordToFixedFrame(const QPointF& point);
+    QPointF FixedFrameToMapGlCoord(const QPointF& point);
 
     double frameRate() const;
 
@@ -108,13 +109,13 @@ namespace mapviz
       bg_color_ = color;
       update();
     }
-    
+
     void CaptureFrames(bool enabled)
     {
       capture_frames_ = enabled;
       update();
     }
-    
+
     bool CopyCaptureBuffer(std::vector<uint8_t>& buffer)
     {
       buffer.clear();
@@ -122,15 +123,15 @@ namespace mapviz
       {
         buffer.resize(capture_buffer_.size());
         memcpy(&buffer[0], &capture_buffer_[0], buffer.size());
-        
+
         return true;
       }
-      
+
       return false;
     }
-    
+
     void CaptureFrame(bool force = false);
-    
+
   Q_SIGNALS:
     void Hover(double x, double y, double scale);
 
@@ -216,7 +217,7 @@ namespace mapviz
     tf::StampedTransform transform_;
     QTransform qtransform_;
     std::list<MapvizPluginPtr> plugins_;
-    
+
     std::vector<uint8_t> capture_buffer_;
   };
 }
