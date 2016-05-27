@@ -285,6 +285,8 @@ namespace mapviz_plugins
         return true;
       }
     }
+
+    return false;
   }
 
   bool PlanRoutePlugin::handleMouseRelease(QMouseEvent* event)
