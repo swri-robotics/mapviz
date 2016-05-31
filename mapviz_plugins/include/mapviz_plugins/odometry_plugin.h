@@ -36,7 +36,7 @@
 #include <vector>
 
 #include <mapviz/mapviz_plugin.h>
-
+#include <mapviz_plugins/point_draw.h>
 // QT libraries
 #include <QGLWidget>
 #include <QObject>
@@ -54,79 +54,81 @@
 
 namespace mapviz_plugins
 {
-  class OdometryPlugin : public mapviz::MapvizPlugin
+  class OdometryPlugin : public mapviz_plugins::PointDraw
   {
     Q_OBJECT
 
-  public:
-    struct StampedPoint
-    {
-      tf::Point point;
-      tf::Quaternion orientation;
-      tf::Point transformed_point;
-      tf::Point transformed_arrow_point;
-      tf::Point transformed_arrow_left;
-      tf::Point transformed_arrow_right;
-      std::string source_frame;
-      bool transformed;
-      ros::Time stamp;
+   public:
+    //    struct StampedPoint
+    //    {
+    //      tf::Point point;
+    //      tf::Quaternion orientation;
+    //      tf::Point transformed_point;
+    //      tf::Point transformed_arrow_point;
+    //      tf::Point transformed_arrow_left;
+    //      tf::Point transformed_arrow_right;
+    //      std::string source_frame;
+    //      bool transformed;
+    //      ros::Time stamp;
 
-      std::vector<tf::Point> cov_points;
-      std::vector<tf::Point> transformed_cov_points;
-    };
+    //      std::vector<tf::Point> cov_points;
+    //      std::vector<tf::Point> transformed_cov_points;
+    //    };
 
-    enum DrawStyle { LINES = 0, POINTS, ARROWS };
+    //    enum DrawStyle { LINES = 0, POINTS, ARROWS };
 
     OdometryPlugin();
     virtual ~OdometryPlugin();
 
     bool Initialize(QGLWidget* canvas);
-    void Shutdown() {}
+    void Shutdown()
+    {
+    }
 
     void Draw(double x, double y, double scale);
 
-    void Transform();
+    // void Transform();
 
     void LoadConfig(const YAML::Node& node, const std::string& path);
     void SaveConfig(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
-  protected:
+   protected:
     void PrintError(const std::string& message);
     void PrintInfo(const std::string& message);
     void PrintWarning(const std::string& message);
 
-  protected Q_SLOTS:
+   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
     void PositionToleranceChanged(double value);
     void AngleToleranceChanged(double value);
     void BufferSizeChanged(int value);
-    void SetDrawStyle(QString style);
-    void DrawIcon();
+    //    void SetDrawStyle(QString style);
+    //    void DrawIcon();
 
-  private:
+   private:
     void DrawCovariance();
-    bool DrawArrows();
-    bool TransformPoint(StampedPoint& point);
+    //    bool DrawArrows();
+    //    bool TransformPoint(StampedPoint& point);
 
     Ui::odometry_config ui_;
     QWidget* config_widget_;
 
-    DrawStyle draw_style_;
+    //    DrawStyle draw_style_;
 
     std::string topic_;
 
-    int buffer_size_;
-    float position_tolerance_;
+    //    int buffer_size_;
+    //    float position_tolerance_;
     float angle_tolerance_;
 
     ros::Subscriber odometry_sub_;
     bool has_message_;
 
-    StampedPoint cur_point_;
-    std::list<StampedPoint> points_;
+    //    StampedPoint cur_point_;
+    //    std::list<StampedPoint> points_;
 
     void odometryCallback(const nav_msgs::OdometryConstPtr odometry);
   };

@@ -39,17 +39,12 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    gps,
-    mapviz_plugins::GpsPlugin,
-    mapviz::MapvizPlugin);
+PLUGINLIB_DECLARE_CLASS(mapviz_plugins, gps, mapviz_plugins::GpsPlugin,
+                        mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
-  GpsPlugin::GpsPlugin() :
-    config_widget_(new QWidget()),
-    draw_style_(LINES)
+  GpsPlugin::GpsPlugin() : config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 
@@ -65,83 +60,29 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)),
-                     this, SLOT(PositionToleranceChanged(double)));
-    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this, SLOT(BufferSizeChanged(int)));
-    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this, SLOT(SetDrawStyle(QString)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
-            this, SLOT(DrawIcon()));
+    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this,
+                     SLOT(SelectTopic()));
+    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
+                     SLOT(TopicEdited()));
+    QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this,
+                     SLOT(PositionToleranceChanged(double)));
+    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this,
+                     SLOT(BufferSizeChanged(int)));
+    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
+                     SLOT(SetDrawStyle(QString)));
+    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+            SLOT(DrawIcon()));
   }
 
   GpsPlugin::~GpsPlugin()
   {
   }
 
-  void GpsPlugin::DrawIcon()
-  {
-    if (icon_)
-    {
-      QPixmap icon(16, 16);
-      icon.fill(Qt::transparent);
-      
-      QPainter painter(&icon);
-      painter.setRenderHint(QPainter::Antialiasing, true);
-      
-      QPen pen(ui_.color->color());
-      
-      if (draw_style_ == POINTS)
-      {
-        pen.setWidth(7);
-        pen.setCapStyle(Qt::RoundCap);
-        painter.setPen(pen);
-        painter.drawPoint(8, 8);
-      }
-      else if (draw_style_ == LINES)
-      {
-        pen.setWidth(3);
-        pen.setCapStyle(Qt::FlatCap);
-        painter.setPen(pen);
-        painter.drawLine(1, 14, 14, 1);
-      }
-      else if (draw_style_ == ARROWS)
-      {
-        pen.setWidth(2);
-        pen.setCapStyle(Qt::SquareCap);
-        painter.setPen(pen);
-        painter.drawLine(2, 13, 13, 2);
-        painter.drawLine(13, 2, 13, 8);
-        painter.drawLine(13, 2, 7, 2);
-      }
-      
-      icon_->SetPixmap(icon);
-    }
-  }
-
-  void GpsPlugin::SetDrawStyle(QString style)
-  {
-    if (style == "lines")
-    {
-      draw_style_ = LINES;
-    }
-    else if (style == "points")
-    {
-      draw_style_ = POINTS;
-    }
-    else if (style == "arrows")
-    {
-      draw_style_ = ARROWS;
-    }
-
-    DrawIcon();
-  }
-
   void GpsPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "gps_common/GPSFix");
-      
+    ros::master::TopicInfo topic =
+        mapviz::SelectTopicDialog::selectTopic("gps_common/GPSFix");
+
     if (!topic.name.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic.name));
@@ -180,19 +121,23 @@ namespace mapviz_plugins
 
     StampedPoint stamped_point;
     stamped_point.stamp = gps->header.stamp;
-
+    stamped_point.source_frame = local_xy_util_.Frame();
     double x;
     double y;
     local_xy_util_.ToLocalXy(gps->latitude, gps->longitude, x, y);
 
     stamped_point.point = tf::Point(x, y, gps->altitude);
-
-    // The GPS "track" is in degrees, but createQuaternionFromYaw expects radians.
+    lap_checked_ = ui_.show_laps->isChecked();
+    // The GPS "track" is in degrees, but createQuaternionFromYaw expects
+    // radians.
     // Furthermore, the track rotates in the opposite direction and is also
     // offset by 90 degrees, so all of that has to be compensated for.
-    stamped_point.orientation = tf::createQuaternionFromYaw((-gps->track * (M_PI / 180.0)) + M_PI_2);
+    stamped_point.orientation =
+        tf::createQuaternionFromYaw((-gps->track * (M_PI / 180.0)) + M_PI_2);
 
-    if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
+    if (points_.empty() ||
+        stamped_point.point.distance(points_.back().point) >=
+            position_tolerance_)
     {
       points_.push_back(stamped_point);
     }
@@ -279,159 +224,10 @@ namespace mapviz_plugins
 
   void GpsPlugin::Draw(double x, double y, double scale)
   {
-    QColor color = ui_.color->color();
-
-    bool transformed = false;
-
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
-
-    if (draw_style_ == ARROWS)
-    {
-      transformed = DrawArrows();
-    }
-    else
-    {
-      if (draw_style_ == LINES)
-      {
-        glLineWidth(3);
-        glBegin(GL_LINE_STRIP);
-      }
-      else
-      {
-        glPointSize(6);
-        glBegin(GL_POINTS);
-      }
-
-      std::list<StampedPoint>::iterator it = points_.begin();
-      for (; it != points_.end(); ++it)
-      {
-        if (it->transformed)
-        {
-          glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-
-          transformed = true;
-        }
-      }
-
-      if (cur_point_.transformed)
-      {
-        glVertex2f(
-          cur_point_.transformed_point.getX(),
-          cur_point_.transformed_point.getY());
-
-        transformed = true;
-
-        swri_transform_util::Transform tf;
-      }
-
-      glEnd();
-    }
-
-    if (transformed)
+    color_ = ui_.color->color();
+    if (DrawPoints())
     {
       PrintInfo("OK");
-    }
-  }
-
-  bool GpsPlugin::DrawArrows()
-  {
-    bool transformed = false;
-    glLineWidth(2);
-    glBegin(GL_LINES);
-
-    std::list<StampedPoint>::iterator it = points_.begin();
-    for (; it != points_.end(); ++it)
-    {
-      if (it->transformed)
-      {
-        glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-        glVertex2f(it->transformed_arrow_left.getX(), it->transformed_arrow_left.getY());
-
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-        glVertex2f(it->transformed_arrow_right.getX(), it->transformed_arrow_right.getY());
-
-        transformed = true;
-      }
-    }
-
-    if (cur_point_.transformed)
-    {
-      glVertex2f(
-        cur_point_.transformed_point.getX(),
-        cur_point_.transformed_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_left.getX(),
-        cur_point_.transformed_arrow_left.getY());
-
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_right.getX(),
-        cur_point_.transformed_arrow_right.getY());
-
-      transformed = true;
-    }
-
-
-    glEnd();
-
-    return transformed;
-  }
-
-  bool GpsPlugin::TransformPoint(StampedPoint& point)
-  {
-    swri_transform_util::Transform transform;
-    if (GetTransform(point.stamp, transform))
-    {
-      point.transformed_point = transform * point.point;
-
-      tf::Transform orientation(tf::Transform(transform.GetOrientation()) * point.orientation);
-      point.transformed_arrow_point = point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
-      point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
-      point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
-
-      point.transformed = true;
-      return true;
-    }
-
-     point.transformed = false;
-     return false;
-  }
-
-  void GpsPlugin::Transform()
-  {
-    if (source_frame_.empty())
-    {
-      if (!local_xy_util_.Initialized())
-      {
-        return;
-      }
-      source_frame_ = local_xy_util_.Frame();
-    }
-    bool transformed = false;
-
-    std::list<StampedPoint>::iterator points_it = points_.begin();
-    for (; points_it != points_.end(); ++points_it)
-    {
-      transformed = transformed | TransformPoint(*points_it);
-    }
-
-    transformed = transformed | TransformPoint(cur_point_);
-
-    if (!points_.empty() && !transformed)
-    {
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
 
@@ -455,7 +251,7 @@ namespace mapviz_plugins
     {
       std::string draw_style;
       node["draw_style"] >> draw_style;
-      
+
       if (draw_style == "lines")
       {
         draw_style_ = LINES;
@@ -485,6 +281,13 @@ namespace mapviz_plugins
       ui_.buffersize->setValue(buffer_size_);
     }
 
+    if (swri_yaml_util::FindValue(node, "show_laps"))
+    {
+      bool show_laps = false;
+      node["show_laps"] >> show_laps;
+      ui_.show_laps->setChecked(show_laps);
+    }
+
     TopicEdited();
   }
 
@@ -493,14 +296,25 @@ namespace mapviz_plugins
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;
 
-    emitter << YAML::Key << "color" << YAML::Value << ui_.color->color().name().toStdString();
+    emitter << YAML::Key << "color" << YAML::Value
+            << ui_.color->color().name().toStdString();
 
     std::string draw_style = ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
-    emitter << YAML::Key << "position_tolerance" << YAML::Value << position_tolerance_;
+    emitter << YAML::Key << "position_tolerance" << YAML::Value
+            << position_tolerance_;
 
-    emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
+    if (!lap_checked_)
+    {
+      emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
+    }
+    else
+    {
+      emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_holder_;
+    }
+
+    bool show_laps = ui_.show_laps->isChecked();
+    emitter << YAML::Key << "show_laps" << YAML::Value << show_laps;
   }
 }
-
