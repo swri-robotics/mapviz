@@ -50,20 +50,16 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    marker,
-    mapviz_plugins::MarkerPlugin,
-    mapviz::MapvizPlugin)
+PLUGINLIB_DECLARE_CLASS(mapviz_plugins, marker, mapviz_plugins::MarkerPlugin,
+                        mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-#define IS_INSTANCE(msg, type)                                  \
+#define IS_INSTANCE(msg, type) \
   (msg->getDataType() == ros::message_traits::datatype<type>())
 
-  MarkerPlugin::MarkerPlugin() :
-    config_widget_(new QWidget()),
-    connected_(false)
+  MarkerPlugin::MarkerPlugin()
+      : config_widget_(new QWidget()), connected_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -77,8 +73,10 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this,
+                     SLOT(SelectTopic()));
+    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
+                     SLOT(TopicEdited()));
 
     startTimer(1000);
   }
@@ -90,10 +88,10 @@ namespace mapviz_plugins
   void MarkerPlugin::SelectTopic()
   {
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "visualization_msgs/Marker",
-      "visualization_msgs/MarkerArray");
+        "visualization_msgs/Marker", "visualization_msgs/MarkerArray");
 
-    if (topic.name.empty()) {
+    if (topic.name.empty())
+    {
       return;
     }
 
@@ -125,19 +123,25 @@ namespace mapviz_plugins
     }
   }
 
-  void MarkerPlugin::handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg)
+  void MarkerPlugin::handleMessage(
+      const topic_tools::ShapeShifter::ConstPtr& msg)
   {
     connected_ = true;
-    if (IS_INSTANCE(msg, visualization_msgs::Marker)) {
+    if (IS_INSTANCE(msg, visualization_msgs::Marker))
+    {
       handleMarker(*(msg->instantiate<visualization_msgs::Marker>()));
-    } else if (IS_INSTANCE(msg, visualization_msgs::MarkerArray)) {
+    }
+    else if (IS_INSTANCE(msg, visualization_msgs::MarkerArray))
+    {
       handleMarkerArray(*(msg->instantiate<visualization_msgs::MarkerArray>()));
-    } else {
+    }
+    else
+    {
       PrintError("Unknown message type: " + msg->getDataType());
-    }    
+    }
   }
 
-  void MarkerPlugin::handleMarker(const visualization_msgs::Marker &marker)
+  void MarkerPlugin::handleMarker(const visualization_msgs::Marker& marker)
   {
     if (marker.type == visualization_msgs::Marker::ARROW &&
         marker.points.size() == 1) {
@@ -161,13 +165,13 @@ namespace mapviz_plugins
       MarkerData& markerData = markers_[marker.ns][marker.id];
       markerData.stamp = marker.header.stamp;
       markerData.display_type = marker.type;
-      markerData.color = QColor::fromRgbF(marker.color.r, marker.color.g, marker.color.b, marker.color.a);
+      markerData.color = QColor::fromRgbF(marker.color.r, marker.color.g,
+                                          marker.color.b, marker.color.a);
       markerData.scale_x = marker.scale.x;
       markerData.scale_y = marker.scale.y;
       markerData.scale_z = marker.scale.z;
       markerData.transformed = true;
       markerData.source_frame_ = marker.header.frame_id;
-
 
       // Since orientation was not implemented, many markers publish
       // invalid all-zero orientations, so we need to check for this
@@ -178,27 +182,26 @@ namespace mapviz_plugins
           marker.pose.orientation.z ||
           marker.pose.orientation.w)
       {
-        orientation = tf::Quaternion(marker.pose.orientation.x,
-                                     marker.pose.orientation.y,
-                                     marker.pose.orientation.z,
-                                     marker.pose.orientation.w);
+        orientation = tf::Quaternion(
+            marker.pose.orientation.x, marker.pose.orientation.y,
+            marker.pose.orientation.z, marker.pose.orientation.w);
       }
-      
-      markerData.local_transform =  swri_transform_util::Transform(
-        tf::Transform(
+
+      markerData.local_transform = swri_transform_util::Transform(tf::Transform(
           orientation,
-          tf::Vector3(marker.pose.position.x,
-                      marker.pose.position.y,
+          tf::Vector3(marker.pose.position.x, marker.pose.position.y,
                       marker.pose.position.z)));
 
       markerData.points.clear();
       markerData.text = std::string();
 
       swri_transform_util::Transform transform;
-      if (!GetTransform(markerData.source_frame_, marker.header.stamp, transform))
+      if (!GetTransform(markerData.source_frame_, marker.header.stamp,
+                        transform))
       {
         markerData.transformed = false;
-        PrintError("No transform between " + markerData.source_frame_ + " and " + target_frame_);
+        PrintError("No transform between " + markerData.source_frame_ +
+                   " and " + target_frame_);
       }
 
       // Handle lifetime parameter
@@ -250,16 +253,19 @@ namespace mapviz_plugins
       {
         StampedPoint point;
         point.point = tf::Point(0.0, 0.0, 0.0);
-        point.transformed_point = transform * (markerData.local_transform * point.point);
+        point.transformed_point =
+            transform * (markerData.local_transform * point.point);
         point.color = markerData.color;
 
         markerData.points.push_back(point);
       }
-      else if (markerData.display_type == visualization_msgs::Marker::TEXT_VIEW_FACING)
+      else if (markerData.display_type ==
+               visualization_msgs::Marker::TEXT_VIEW_FACING)
       {
         StampedPoint point;
         point.point = tf::Point(0.0, 0.0, 0.0);
-        point.transformed_point = transform * (markerData.local_transform * point.point);
+        point.transformed_point =
+            transform * (markerData.local_transform * point.point);
         point.color = markerData.color;
 
         markerData.points.push_back(point);
@@ -270,16 +276,16 @@ namespace mapviz_plugins
         for (unsigned int i = 0; i < marker.points.size(); i++)
         {
           StampedPoint point;
-          point.point = tf::Point(marker.points[i].x, marker.points[i].y, marker.points[i].z);
-          point.transformed_point = transform * (markerData.local_transform * point.point);
+          point.point = tf::Point(marker.points[i].x, marker.points[i].y,
+                                  marker.points[i].z);
+          point.transformed_point =
+              transform * (markerData.local_transform * point.point);
 
           if (i < marker.colors.size())
           {
-            point.color = QColor::fromRgbF(
-                marker.colors[i].r,
-                marker.colors[i].g,
-                marker.colors[i].b,
-                marker.colors[i].a);
+            point.color =
+                QColor::fromRgbF(marker.colors[i].r, marker.colors[i].g,
+                                 marker.colors[i].b, marker.colors[i].a);
           }
           else
           {
@@ -296,6 +302,7 @@ namespace mapviz_plugins
     }
   }
 
+<<<<<<< HEAD
   /**
    * Given a MarkerData that represents an arrow and a transform, this function
    * will generate the points involved in drawing the arrow and then transform
@@ -345,6 +352,10 @@ namespace mapviz_plugins
   }
 
   void MarkerPlugin::handleMarkerArray(const visualization_msgs::MarkerArray &markers)
+=======
+  void MarkerPlugin::handleMarkerArray(
+      const visualization_msgs::MarkerArray& markers)
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
   {
     for (unsigned int i = 0; i < markers.markers.size(); i++)
     {
@@ -410,7 +421,8 @@ namespace mapviz_plugins
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
       std::map<int, MarkerData>::iterator markerIter;
-      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
+      for (markerIter = nsIter->second.begin();
+           markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
 
@@ -418,6 +430,7 @@ namespace mapviz_plugins
         {
           if (marker.transformed)
           {
+<<<<<<< HEAD
             glColor4d(marker.color.redF(), marker.color.greenF(), marker.color.blueF(), marker.color.alphaF());
 
             if (marker.display_type == visualization_msgs::Marker::ARROW)
@@ -463,6 +476,10 @@ namespace mapviz_plugins
                     point_it->transformed_arrow_right.getX(),
                     point_it->transformed_arrow_right.getY());
               }
+=======
+            glColor4f(marker.color.redF(), marker.color.greenF(),
+                      marker.color.blueF(), 1.0f);
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
 
               glEnd();
             }
@@ -470,7 +487,11 @@ namespace mapviz_plugins
             {
               glLineWidth(marker.scale_x);
               glBegin(GL_LINE_STRIP);
+<<<<<<< HEAD
 
+<<<<<<< HEAD
+=======
+>>>>>>> Create and implement an abstract class for drawing point paths
                 std::list<StampedPoint>::iterator point_it = marker.points.begin();
                 for (; point_it != marker.points.end(); ++point_it)
                 {
@@ -484,6 +505,18 @@ namespace mapviz_plugins
                       point_it->transformed_point.getX(),
                       point_it->transformed_point.getY());
                 }
+=======
+              std::list<StampedPoint>::iterator point_it =
+                  marker.points.begin();
+              for (; point_it != marker.points.end(); ++point_it)
+              {
+                glColor4f(point_it->color.redF(), point_it->color.greenF(),
+                          point_it->color.blueF(), point_it->color.alphaF());
+
+                glVertex2f(point_it->transformed_point.getX(),
+                           point_it->transformed_point.getY());
+              }
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
 
               glEnd();
             }
@@ -491,7 +524,11 @@ namespace mapviz_plugins
             {
               glLineWidth(marker.scale_x);
               glBegin(GL_LINES);
+<<<<<<< HEAD
 
+<<<<<<< HEAD
+=======
+>>>>>>> Create and implement an abstract class for drawing point paths
                 std::list<StampedPoint>::iterator point_it = marker.points.begin();
                 for (; point_it != marker.points.end(); ++point_it)
                 {
@@ -505,6 +542,18 @@ namespace mapviz_plugins
                       point_it->transformed_point.getX(),
                       point_it->transformed_point.getY());
                 }
+=======
+              std::list<StampedPoint>::iterator point_it =
+                  marker.points.begin();
+              for (; point_it != marker.points.end(); ++point_it)
+              {
+                glColor4f(point_it->color.redF(), point_it->color.greenF(),
+                          point_it->color.blueF(), point_it->color.alphaF());
+
+                glVertex2f(point_it->transformed_point.getX(),
+                           point_it->transformed_point.getY());
+              }
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
 
               glEnd();
             }
@@ -513,9 +562,11 @@ namespace mapviz_plugins
               glPointSize(marker.scale_x);
               glBegin(GL_POINTS);
 
-              std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              std::list<StampedPoint>::iterator point_it =
+                  marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
+<<<<<<< HEAD
                 glColor4d(
                     point_it->color.redF(),
                     point_it->color.greenF(),
@@ -525,17 +576,27 @@ namespace mapviz_plugins
                 glVertex2d(
                     point_it->transformed_point.getX(),
                     point_it->transformed_point.getY());
+=======
+                glColor4f(point_it->color.redF(), point_it->color.greenF(),
+                          point_it->color.blueF(), point_it->color.alphaF());
+
+                glVertex2f(point_it->transformed_point.getX(),
+                           point_it->transformed_point.getY());
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
               }
 
               glEnd();
             }
-            else if (marker.display_type == visualization_msgs::Marker::TRIANGLE_LIST)
+            else if (marker.display_type ==
+                     visualization_msgs::Marker::TRIANGLE_LIST)
             {
               glBegin(GL_TRIANGLES);
 
-              std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              std::list<StampedPoint>::iterator point_it =
+                  marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
+<<<<<<< HEAD
                 glColor4d(
                     point_it->color.redF(),
                     point_it->color.greenF(),
@@ -545,26 +606,41 @@ namespace mapviz_plugins
                 glVertex2d(
                     point_it->transformed_point.getX(),
                     point_it->transformed_point.getY());
+=======
+                glColor4f(point_it->color.redF(), point_it->color.greenF(),
+                          point_it->color.blueF(), point_it->color.alphaF());
+
+                glVertex2f(point_it->transformed_point.getX(),
+                           point_it->transformed_point.getY());
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
               }
 
               glEnd();
             }
-            else if (marker.display_type == visualization_msgs::Marker::CYLINDER ||
-                marker.display_type == visualization_msgs::Marker::SPHERE ||
-                marker.display_type == visualization_msgs::Marker::SPHERE_LIST)
+            else if (marker.display_type ==
+                         visualization_msgs::Marker::CYLINDER ||
+                     marker.display_type ==
+                         visualization_msgs::Marker::SPHERE ||
+                     marker.display_type ==
+                         visualization_msgs::Marker::SPHERE_LIST)
             {
-              std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              std::list<StampedPoint>::iterator point_it =
+                  marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
+<<<<<<< HEAD
                 glColor4d(
                     point_it->color.redF(),
                     point_it->color.greenF(),
                     point_it->color.blueF(),
                     point_it->color.alphaF());
 
+=======
+                glColor4f(point_it->color.redF(), point_it->color.greenF(),
+                          point_it->color.blueF(), point_it->color.alphaF());
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
 
                 glBegin(GL_TRIANGLE_FAN);
-
 
                 float x = point_it->transformed_point.getX();
                 float y = point_it->transformed_point.getY();
@@ -573,35 +649,50 @@ namespace mapviz_plugins
 
                 for (int32_t i = 0; i <= 360; i += 10)
                 {
-                  float radians = static_cast<float>(i) * swri_math_util::_deg_2_rad;
+                  float radians =
+                      static_cast<float>(i) * swri_math_util::_deg_2_rad;
                   // Spheres may be specified w/ only one scale value
-                  if(marker.scale_y == 0.0)
+                  if (marker.scale_y == 0.0)
                   {
                     marker.scale_y = marker.scale_x;
                   }
+<<<<<<< HEAD
                   glVertex2d(
                       x + std::sin(radians) * marker.scale_x,
                       y + std::cos(radians) * marker.scale_y);
+=======
+                  glVertex2f(x + std::sin(radians) * marker.scale_x,
+                             y + std::cos(radians) * marker.scale_y);
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
                 }
 
                 glEnd();
               }
             }
             else if (marker.display_type == visualization_msgs::Marker::CUBE ||
-                marker.display_type == visualization_msgs::Marker::CUBE_LIST)
+                     marker.display_type ==
+                         visualization_msgs::Marker::CUBE_LIST)
             {
-              std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              std::list<StampedPoint>::iterator point_it =
+                  marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
+<<<<<<< HEAD
                 glColor4d(
                     point_it->color.redF(),
                     point_it->color.greenF(),
                     point_it->color.blueF(),
                     point_it->color.alphaF());
 
+<<<<<<< HEAD
+=======
+                glColor4f(point_it->color.redF(), point_it->color.greenF(),
+                          point_it->color.blueF(), point_it->color.alphaF());
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
 
+=======
+>>>>>>> Create and implement an abstract class for drawing point paths
                 glBegin(GL_TRIANGLE_FAN);
-
 
                 float x = point_it->transformed_point.getX();
                 float y = point_it->transformed_point.getY();
@@ -621,7 +712,9 @@ namespace mapviz_plugins
         else
         {
           PrintInfo("OK");
-          ROS_ERROR("Not displaying expired marker[%s:%d]: %lf < %lf (now)", topic_.c_str(), markerIter->first, marker.expire_time.toSec(), now.toSec());
+          ROS_ERROR("Not displaying expired marker[%s:%d]: %lf < %lf (now)",
+                    topic_.c_str(), markerIter->first,
+                    marker.expire_time.toSec(), now.toSec());
         }
       }
     }
@@ -648,19 +741,21 @@ namespace mapviz_plugins
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
       std::map<int, MarkerData>::iterator markerIter;
-      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
+      for (markerIter = nsIter->second.begin();
+           markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
 
-        if (marker.display_type != visualization_msgs::Marker::TEXT_VIEW_FACING ||
-            marker.expire_time <= now ||
-            !marker.transformed)
+        if (marker.display_type !=
+                visualization_msgs::Marker::TEXT_VIEW_FACING ||
+            marker.expire_time <= now || !marker.transformed)
         {
           continue;
         }
 
         QPen pen(QBrush(QColor(marker.color.red(), marker.color.green(),
-                               marker.color.blue())), 1);
+                               marker.color.blue())),
+                 1);
         painter->setPen(pen);
 
         StampedPoint& rosPoint = marker.points.front();
@@ -681,7 +776,8 @@ namespace mapviz_plugins
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
       std::map<int, MarkerData>::iterator markerIter;
-      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
+      for (markerIter = nsIter->second.begin();
+           markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
 
@@ -692,6 +788,7 @@ namespace mapviz_plugins
 
           if (marker.display_type == visualization_msgs::Marker::ARROW)
           {
+<<<<<<< HEAD
             // Points for the ARROW marker type are stored a bit differently
             // than other types, so they have their own special transform case.
             transformArrow(marker, transform);
@@ -703,6 +800,10 @@ namespace mapviz_plugins
             {
               point_it->transformed_point = transform * (marker.local_transform * point_it->point);
             }
+=======
+            point_it->transformed_point =
+                transform * (marker.local_transform * point_it->point);
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
           }
         }
         else
@@ -720,19 +821,21 @@ namespace mapviz_plugins
       std::string topic;
       node["topic"] >> topic;
       ui_.topic->setText(boost::trim_copy(topic).c_str());
-      
+
       TopicEdited();
     }
   }
 
   void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
+    emitter << YAML::Key << "topic" << YAML::Value
+            << boost::trim_copy(ui_.topic->text().toStdString());
   }
 
-  void MarkerPlugin::timerEvent(QTimerEvent *event)
+  void MarkerPlugin::timerEvent(QTimerEvent* event)
   {
     bool new_connected = (marker_sub_.getNumPublishers() > 0);
+<<<<<<< HEAD
     if (connected_ && !new_connected) {
       marker_sub_.shutdown();
       if (!topic_.empty())
@@ -740,8 +843,14 @@ namespace mapviz_plugins
         marker_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
             topic_, 100, &MarkerPlugin::handleMessage, this);
       }
+=======
+    if (connected_ && !new_connected)
+    {
+      marker_sub_.shutdown();
+      marker_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
+          topic_, 100, &MarkerPlugin::handleMessage, this);
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
     }
     connected_ = new_connected;
   }
 }
-
