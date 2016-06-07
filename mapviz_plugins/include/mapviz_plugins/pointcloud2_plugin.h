@@ -41,6 +41,7 @@
 // QT libraries
 #include <QGLWidget>
 #include <QColor>
+#include <QMutex>
 
 // ROS libraries
 #include <sensor_msgs/PointCloud2.h>
@@ -99,6 +100,7 @@ namespace mapviz_plugins
       void UseAutomaxminChanged(int check_state);
       void UpdateColors();
       void DrawIcon();
+      void ResetTransformedPointClouds();
 
     private:
       struct StampedPoint
@@ -113,7 +115,7 @@ namespace mapviz_plugins
       {
         ros::Time stamp;
         QColor color;
-        std::vector<StampedPoint> points;
+        std::deque<StampedPoint> points;
         std::string source_frame;
         bool transformed;
         std::map<std::string, Field_info> new_features;
@@ -128,19 +130,23 @@ namespace mapviz_plugins
       std::string topic_;
       double alpha_;
       double min_value_, max_value_;
-      unsigned int point_size_;
+      size_t point_size_;
       size_t buffer_size_;
       bool new_topic_;
       bool has_message_;
-      int num_of_feats_;
-      bool need_new_list_,need_minmax_;
+      size_t num_of_feats_;
+      bool need_new_list_;
+      std::string saved_color_transformer_;
+      bool need_minmax_;
       std::vector<double> max_;
       std::vector<double> min_;
       // Use a list instead of a deque for scans to facilitate removing
       // timed-out scans in the middle of the list in case I ever re-implement
       // decay time (evenator)
       std::deque<Scan> scans_;
-      ros::Subscriber PointCloud2_sub_;
+      ros::Subscriber pc2_sub_;
+
+      QMutex scan_mutex_;
   };
 }
 
