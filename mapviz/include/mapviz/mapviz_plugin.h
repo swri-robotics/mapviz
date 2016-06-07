@@ -86,7 +86,11 @@ namespace mapviz
 
     void SetUseLatestTransforms(bool value)
     {
-      use_latest_transforms_ = value;
+      if (value != use_latest_transforms_)
+      {
+        use_latest_transforms_ = value;
+        Q_EMIT UseLatestTransformsChanged(use_latest_transforms_);
+      }
     }
 
     void SetName(const std::string& name) { name_ = name; }
@@ -101,7 +105,11 @@ namespace mapviz
 
     void SetDrawOrder(int order)
     {
-      draw_order_ = order;
+      if (draw_order_ != order)
+      {
+        draw_order_ = order;
+        Q_EMIT DrawOrderChanged(draw_order_);
+      }
     }
 
     virtual void SetNode(const ros::NodeHandle& node)
@@ -135,6 +143,7 @@ namespace mapviz
       {
         target_frame_ = frame_id;
         Transform();
+        Q_EMIT TargetFrameChanged(target_frame_);
       }
     }
 
@@ -142,8 +151,11 @@ namespace mapviz
 
     void SetVisible(bool visible)
     {
-      visible_ = visible;
-      Q_EMIT VisibleChanged(visible_);
+      if (visible_ != visible)
+      {
+        visible_ = visible;
+        Q_EMIT VisibleChanged(visible_);
+      }
     }
 
     bool GetTransform(const ros::Time& stamp, swri_transform_util::Transform& transform, bool use_latest_transforms = true)
@@ -244,6 +256,9 @@ namespace mapviz
     }
 
   Q_SIGNALS:
+    void DrawOrderChanged(int draw_order);
+    void TargetFrameChanged(const std::string& target_frame);
+    void UseLatestTransformsChanged(bool use_latest_transforms);
     void VisibleChanged(bool visible);
     
 
