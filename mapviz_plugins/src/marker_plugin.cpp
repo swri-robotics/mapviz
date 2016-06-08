@@ -166,7 +166,7 @@ namespace mapviz_plugins
       // Since orientation was not implemented, many markers publish
       // invalid all-zero orientations, so we need to check for this
       // and provide a default identity transform.
-      tf::Quaternion orientation(0.0, 0.0, 0.0, 1.0);      
+      tf::Quaternion orientation(0.0, 0.0, 0.0, 1.0);
       if (marker.pose.orientation.x ||
           marker.pose.orientation.y ||
           marker.pose.orientation.z ||
@@ -207,7 +207,39 @@ namespace mapviz_plugins
         markerData.expire_time = ros::Time::now() + lifetime + ros::Duration(5);
       }
 
-      if (markerData.display_type == visualization_msgs::Marker::CYLINDER ||
+      if (markerData.display_type == visualization_msgs::Marker::ARROW)
+      {
+        StampedPoint point;
+        point.color = markerData.color;
+        point.orientation = orientation;
+
+        if (marker.points.empty())
+        {
+          // If the "points" array is empty, we'll use the pose as the base of
+          // the arrow and scale its size based on the scale_x value.
+          point.point = tf::Point(0.0, 0.0, 0.0);
+          point.arrow_point = tf::Point(1.0, 0.0, 0.0);
+        }
+        else
+        {
+          // Otherwise the "points" array should have exactly two values, the
+          // start and end of the arrow.
+          point.point = tf::Point(marker.points[0].x, marker.points[0].y, marker.points[0].z);
+          point.arrow_point = tf::Point(marker.points[1].x, marker.points[1].y, marker.points[1].z);
+        }
+
+        markerData.points.push_back(point);
+
+        if (!marker.points.empty()) {
+          // The point we just pushed back has both the start and end of the
+          // arrow, so the point we're pushing here is useless; we use it later
+          // only to indicate whether the original message had two points or not.
+          markerData.points.push_back(StampedPoint());
+        }
+
+        transformArrow(markerData, transform);
+      }
+      else if (markerData.display_type == visualization_msgs::Marker::CYLINDER ||
           markerData.display_type == visualization_msgs::Marker::CUBE)
       {
         StampedPoint point;
@@ -256,6 +288,53 @@ namespace mapviz_plugins
     {
       markers_[marker.ns].erase(marker.id);
     }
+  }
+
+  /**
+   * Gives a MarkerData that represents an arrow and a transform, this function
+   * will generate the points involved in drawing the arrow and then transform
+   * all of them into the target frame.
+   * @param[inout] markerData A marker that represents an arrow.
+   * @param[in] transform The tf that should be applied to the arrow's points.
+   */
+  void MarkerPlugin::transformArrow(MarkerData& markerData,
+                      const swri_transform_util::Transform& transform)
+  {
+    // The firstpoint in the markerData.points array always represents the
+    // base of the arrow.
+    StampedPoint& point = markerData.points.front();
+    tf::Point arrowOffset;
+    if (markerData.points.size() == 1)
+    {
+      // If the markerData only has a single point, that means its "point" is
+      // the base of the arrow and the arrow's angle and length are determined
+      // by the orientation and scale_x.
+      point.transformed_point = transform * (markerData.local_transform * point.point);
+      tf::Transform arrow_tf(tf::Transform(
+          transform.GetOrientation()) * point.orientation,
+          tf::Point(0.0, 0.0, 0.0));
+      point.transformed_arrow_point = point.transformed_point +
+          arrow_tf * point.arrow_point * markerData.scale_x;
+      arrowOffset = tf::Point(0.25, 0.0, 0.0);
+    }
+    else
+    {
+      // If the markerData has two points, that means that the start and end points
+      // of the arrow were explicitly specified in the original message, so the
+      // length and angle are determined by them.
+      point.transformed_point = transform * point.point;
+      point.transformed_arrow_point = transform * point.arrow_point;
+      // Also, in those mode, scale_y is the diameter of the arrow's head.
+      arrowOffset = tf::Point(0.25 * markerData.scale_y, 0.0, 0.0);
+    }
+
+    tfScalar angle = tf::Point(1.0, 0.0, 0.0).angle(point.transformed_arrow_point - point.transformed_point);
+
+    tf::Transform left_tf(tf::createQuaternionFromRPY(0, 0, M_PI*0.75 + angle));
+    tf::Transform right_tf(tf::createQuaternionFromRPY(0, 0, -M_PI*0.75 + angle));
+
+    point.transformed_arrow_left = point.transformed_arrow_point + left_tf * arrowOffset;
+    point.transformed_arrow_right = point.transformed_arrow_point + right_tf * arrowOffset;
   }
 
   void MarkerPlugin::handleMarkerArray(const visualization_msgs::MarkerArray &markers)
@@ -332,9 +411,55 @@ namespace mapviz_plugins
         {
           if (marker.transformed)
           {
-            glColor4f(marker.color.redF(), marker.color.greenF(), marker.color.blueF(), 1.0f);
+            glColor4d(marker.color.redF(), marker.color.greenF(), marker.color.blueF(), marker.color.alphaF());
 
-            if (marker.display_type == visualization_msgs::Marker::LINE_STRIP)
+            if (marker.display_type == visualization_msgs::Marker::ARROW)
+            {
+              if (marker.points.size() == 1)
+              {
+                // If the marker only has one point, use scale_y as the arrow width.
+                glLineWidth(marker.scale_y);
+              }
+              else
+              {
+                // If the marker has both start and end points explicitly specified, use
+                // scale_x as the shaft diameter.
+                glLineWidth(marker.scale_x);
+              }
+              glBegin(GL_LINES);
+
+              std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              for (; point_it != marker.points.end(); ++point_it)
+              {
+                glColor4d(
+                    point_it->color.redF(),
+                    point_it->color.greenF(),
+                    point_it->color.blueF(),
+                    point_it->color.alphaF());
+
+                glVertex2d(
+                    point_it->transformed_point.getX(),
+                    point_it->transformed_point.getY());
+                glVertex2d(
+                    point_it->transformed_arrow_point.getX(),
+                    point_it->transformed_arrow_point.getY());
+                glVertex2d(
+                    point_it->transformed_arrow_point.getX(),
+                    point_it->transformed_arrow_point.getY());
+                glVertex2d(
+                    point_it->transformed_arrow_left.getX(),
+                    point_it->transformed_arrow_left.getY());
+                glVertex2d(
+                    point_it->transformed_arrow_point.getX(),
+                    point_it->transformed_arrow_point.getY());
+                glVertex2d(
+                    point_it->transformed_arrow_right.getX(),
+                    point_it->transformed_arrow_right.getY());
+              }
+
+              glEnd();
+            }
+            else if (marker.display_type == visualization_msgs::Marker::LINE_STRIP)
             {
               glLineWidth(marker.scale_x);
               glBegin(GL_LINE_STRIP);
@@ -342,20 +467,20 @@ namespace mapviz_plugins
                 std::list<StampedPoint>::iterator point_it = marker.points.begin();
                 for (; point_it != marker.points.end(); ++point_it)
                 {
-                  glColor4f(
+                  glColor4d(
                       point_it->color.redF(),
                       point_it->color.greenF(),
                       point_it->color.blueF(),
                       point_it->color.alphaF());
 
-                  glVertex2f(
+                  glVertex2d(
                       point_it->transformed_point.getX(),
                       point_it->transformed_point.getY());
                 }
 
               glEnd();
             }
-            if (marker.display_type == visualization_msgs::Marker::LINE_LIST)
+            else if (marker.display_type == visualization_msgs::Marker::LINE_LIST)
             {
               glLineWidth(marker.scale_x);
               glBegin(GL_LINES);
@@ -363,13 +488,13 @@ namespace mapviz_plugins
                 std::list<StampedPoint>::iterator point_it = marker.points.begin();
                 for (; point_it != marker.points.end(); ++point_it)
                 {
-                  glColor4f(
+                  glColor4d(
                       point_it->color.redF(),
                       point_it->color.greenF(),
                       point_it->color.blueF(),
                       point_it->color.alphaF());
 
-                  glVertex2f(
+                  glVertex2d(
                       point_it->transformed_point.getX(),
                       point_it->transformed_point.getY());
                 }
@@ -384,13 +509,13 @@ namespace mapviz_plugins
               std::list<StampedPoint>::iterator point_it = marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
-                glColor4f(
+                glColor4d(
                     point_it->color.redF(),
                     point_it->color.greenF(),
                     point_it->color.blueF(),
                     point_it->color.alphaF());
 
-                glVertex2f(
+                glVertex2d(
                     point_it->transformed_point.getX(),
                     point_it->transformed_point.getY());
               }
@@ -404,13 +529,13 @@ namespace mapviz_plugins
               std::list<StampedPoint>::iterator point_it = marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
-                glColor4f(
+                glColor4d(
                     point_it->color.redF(),
                     point_it->color.greenF(),
                     point_it->color.blueF(),
                     point_it->color.alphaF());
 
-                glVertex2f(
+                glVertex2d(
                     point_it->transformed_point.getX(),
                     point_it->transformed_point.getY());
               }
@@ -424,7 +549,7 @@ namespace mapviz_plugins
               std::list<StampedPoint>::iterator point_it = marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
-                glColor4f(
+                glColor4d(
                     point_it->color.redF(),
                     point_it->color.greenF(),
                     point_it->color.blueF(),
@@ -437,7 +562,7 @@ namespace mapviz_plugins
                 float x = point_it->transformed_point.getX();
                 float y = point_it->transformed_point.getY();
 
-                glVertex2f(x, y);
+                glVertex2d(x, y);
 
                 for (int32_t i = 0; i <= 360; i += 10)
                 {
@@ -447,7 +572,7 @@ namespace mapviz_plugins
                   {
                     marker.scale_y = marker.scale_x;
                   }
-                  glVertex2f(
+                  glVertex2d(
                       x + std::sin(radians) * marker.scale_x,
                       y + std::cos(radians) * marker.scale_y);
                 }
@@ -461,7 +586,7 @@ namespace mapviz_plugins
               std::list<StampedPoint>::iterator point_it = marker.points.begin();
               for (; point_it != marker.points.end(); ++point_it)
               {
-                glColor4f(
+                glColor4d(
                     point_it->color.redF(),
                     point_it->color.greenF(),
                     point_it->color.blueF(),
@@ -474,10 +599,10 @@ namespace mapviz_plugins
                 float x = point_it->transformed_point.getX();
                 float y = point_it->transformed_point.getY();
 
-                glVertex2f(x + marker.scale_x / 2, y + marker.scale_x / 2);
-                glVertex2f(x - marker.scale_x / 2, y + marker.scale_x / 2);
-                glVertex2f(x - marker.scale_x / 2, y - marker.scale_x / 2);
-                glVertex2f(x + marker.scale_x / 2, y - marker.scale_x / 2);
+                glVertex2d(x + marker.scale_x / 2, y + marker.scale_x / 2);
+                glVertex2d(x - marker.scale_x / 2, y + marker.scale_x / 2);
+                glVertex2d(x - marker.scale_x / 2, y - marker.scale_x / 2);
+                glVertex2d(x + marker.scale_x / 2, y - marker.scale_x / 2);
 
                 glEnd();
               }
@@ -559,9 +684,18 @@ namespace mapviz_plugins
           marker.transformed = true;
 
           std::list<StampedPoint>::iterator point_it = marker.points.begin();
-          for (; point_it != marker.points.end(); ++point_it)
+          if (marker.display_type == visualization_msgs::Marker::ARROW)
           {
-            point_it->transformed_point = transform * (marker.local_transform * point_it->point);
+            // Points for the ARROW marker type are stored a bit differently
+            // than other types, so they have their own special transform case.
+            transformArrow(marker, transform);
+          }
+          else
+          {
+            for (; point_it != marker.points.end(); ++point_it)
+            {
+              point_it->transformed_point = transform * (marker.local_transform * point_it->point);
+            }
           }
         }
         else
