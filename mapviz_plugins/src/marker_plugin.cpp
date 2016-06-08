@@ -324,7 +324,8 @@ namespace mapviz_plugins
       arrowOffset = tf::Point(0.25 * markerData.scale_y, 0.0, 0.0);
     }
 
-    tfScalar angle = tf::Point(1.0, 0.0, 0.0).angle(point.transformed_arrow_point - point.transformed_point);
+    tf::Vector3 pointDiff = point.transformed_arrow_point - point.transformed_point;
+    double angle = std::atan2(pointDiff.getY(), pointDiff.getX());
 
     tf::Transform left_tf(tf::createQuaternionFromRPY(0, 0, M_PI*0.75 + angle));
     tf::Transform right_tf(tf::createQuaternionFromRPY(0, 0, -M_PI*0.75 + angle));
