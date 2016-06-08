@@ -287,7 +287,7 @@ namespace mapviz_plugins
   }
 
   /**
-   * Gives a MarkerData that represents an arrow and a transform, this function
+   * Given a MarkerData that represents an arrow and a transform, this function
    * will generate the points involved in drawing the arrow and then transform
    * all of them into the target frame.
    * @param[inout] markerData A marker that represents an arrow.
@@ -296,7 +296,7 @@ namespace mapviz_plugins
   void MarkerPlugin::transformArrow(MarkerData& markerData,
                       const swri_transform_util::Transform& transform)
   {
-    // The firstpoint in the markerData.points array always represents the
+    // The first point in the markerData.points array always represents the
     // base of the arrow.
     StampedPoint& point = markerData.points.front();
     tf::Point arrowOffset;
@@ -320,7 +320,7 @@ namespace mapviz_plugins
       // length and angle are determined by them.
       point.transformed_point = transform * point.point;
       point.transformed_arrow_point = transform * point.arrow_point;
-      // Also, in those mode, scale_y is the diameter of the arrow's head.
+      // Also, in this mode, scale_y is the diameter of the arrow's head.
       arrowOffset = tf::Point(0.25 * markerData.scale_y, 0.0, 0.0);
     }
 
@@ -679,7 +679,6 @@ namespace mapviz_plugins
         {
           marker.transformed = true;
 
-          std::list<StampedPoint>::iterator point_it = marker.points.begin();
           if (marker.display_type == visualization_msgs::Marker::ARROW)
           {
             // Points for the ARROW marker type are stored a bit differently
@@ -688,7 +687,8 @@ namespace mapviz_plugins
           }
           else
           {
-            for (; point_it != marker.points.end(); ++point_it)
+            std::list<StampedPoint>::iterator point_it;
+            for (point_it = marker.points.begin(); point_it != marker.points.end(); ++point_it)
             {
               point_it->transformed_point = transform * (marker.local_transform * point_it->point);
             }
