@@ -103,18 +103,22 @@ AttitudeIndicatorPlugin::~AttitudeIndicatorPlugin()
 
  void AttitudeIndicatorPlugin::TopicEdited()
  {
-     if (ui_.topic->text().toStdString() != topic_)
+     std::string topic = ui_.topic->text().trimmed().toStdString();
+     if (topic != topic_)
      {
        initialized_ = true;
        has_message_ = false;
-       topic_ = boost::trim_copy(ui_.topic->text().toStdString());
        PrintWarning("No messages received.");
 
        odometry_sub_.shutdown();
-       odometry_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
-         topic_, 100, &AttitudeIndicatorPlugin::handleMessage, this);
 
-       ROS_INFO("Subscribing to %s", topic_.c_str());
+       if (!topic.empty()) {
+         topic_ = topic;
+         odometry_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
+           topic_, 100, &AttitudeIndicatorPlugin::handleMessage, this);
+
+         ROS_INFO("Subscribing to %s", topic_.c_str());
+       }
      }
  }
  void AttitudeIndicatorPlugin::handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg)

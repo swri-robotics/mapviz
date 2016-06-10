@@ -311,7 +311,8 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::TopicEdited()
   {
-    if (ui_.topic->text().toStdString() != topic_)
+    std::string topic = ui_.topic->text().trimmed().toStdString();
+    if (topic != topic_)
     {
       initialized_ = false;
       {
@@ -319,19 +320,23 @@ namespace mapviz_plugins
         scans_.clear();
       }
       has_message_ = false;
-      topic_ = boost::trim_copy(ui_.topic->text().toStdString());
       PrintWarning("No messages received.");
 
       pc2_sub_.shutdown();
-      pc2_sub_ = node_.subscribe(topic_,
-                                 100,
-                                 &PointCloud2Plugin::PointCloud2Callback,
-                                 this);
-      new_topic_ = true;
-      need_new_list_ = true;
-      max_.clear();
-      min_.clear();
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+
+      topic_ = topic;
+      if (!topic.empty())
+      {
+        pc2_sub_ = node_.subscribe(topic_,
+                                   100,
+                                   &PointCloud2Plugin::PointCloud2Callback,
+                                   this);
+        new_topic_ = true;
+        need_new_list_ = true;
+        max_.clear();
+        min_.clear();
+        ROS_INFO("Subscribing to %s", topic_.c_str());
+      }
     }
   }
 
