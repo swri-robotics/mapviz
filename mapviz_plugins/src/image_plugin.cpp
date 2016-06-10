@@ -204,34 +204,35 @@ namespace mapviz_plugins
 
   void ImagePlugin::TopicEdited()
   {
-
+    std::string topic = ui_.topic->text().trimmed().toStdString();
     if(!this->Visible())
     {
       PrintWarning("Topic is Hidden");
       initialized_ = false;
       has_message_ = false;
-      topic_ = ui_.topic->text().toStdString();
+      if (!topic.empty())
+      {
+        topic_ = topic;
+      }
       image_sub_.shutdown();
       return;
     }
-    if (ui_.topic->text().toStdString().empty())
-    {
-      PrintWarning("No topic");
-      image_sub_.shutdown();
-      return;
-    }
-    if (ui_.topic->text().toStdString() != topic_)
+    if (topic != topic_)
     {
       initialized_ = false;
       has_message_ = false;
-      topic_ = ui_.topic->text().toStdString();
+      topic_ = topic;
       PrintWarning("No messages received.");
 
       image_sub_.shutdown();
-      image_transport::ImageTransport it(node_);
-      image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
 
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      if (!topic_.empty())
+      {
+        image_transport::ImageTransport it(node_);
+        image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
+
+        ROS_INFO("Subscribing to %s", topic_.c_str());
+      }
     }
   }
 

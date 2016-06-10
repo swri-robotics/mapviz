@@ -165,31 +165,41 @@ namespace mapviz_plugins
 
   void RoutePlugin::TopicEdited()
   {
-    if (ui_.topic->text().toStdString() != topic_)
+    std::string topic = ui_.topic->text().trimmed().toStdString();
+    if (topic != topic_)
     {
       src_route_ = sru::Route();
-      topic_ = ui_.topic->text().toStdString();
 
       route_sub_.shutdown();
-      route_sub_ =
-          node_.subscribe(topic_, 1, &RoutePlugin::RouteCallback, this);
 
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      topic_ = topic;
+      if (!topic.empty())
+      {
+        route_sub_ =
+            node_.subscribe(topic_, 1, &RoutePlugin::RouteCallback, this);
+
+        ROS_INFO("Subscribing to %s", topic_.c_str());
+      }
     }
   }
 
   void RoutePlugin::PositionTopicEdited()
   {
-    if (ui_.positiontopic->text().toStdString() != position_topic_)
+    std::string topic = ui_.positiontopic->text().trimmed().toStdString();
+    if (topic != position_topic_)
     {
       src_route_position_.reset();
       
-      position_topic_ = ui_.positiontopic->text().toStdString();
       position_sub_.shutdown();
-      position_sub_ = node_.subscribe(position_topic_, 1,
-                                      &RoutePlugin::PositionCallback, this);
 
-      ROS_INFO("Subscribing to %s", position_topic_.c_str());
+      if (!topic.empty())
+      {
+        position_topic_ = topic;
+        position_sub_ = node_.subscribe(position_topic_, 1,
+                                        &RoutePlugin::PositionCallback, this);
+
+        ROS_INFO("Subscribing to %s", position_topic_.c_str());
+      }
     }
   }
 
