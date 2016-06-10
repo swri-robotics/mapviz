@@ -117,26 +117,30 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::TopicEdited()
   {
-    if (ui_.topic->text().toStdString() != topic_)
+    std::string topic = ui_.topic->text().trimmed().toStdString();
+    if (topic != topic_)
     {
       initialized_ = false;
       markers_.clear();
       has_message_ = false;
-      topic_ = boost::trim_copy(ui_.topic->text().toStdString());
       PrintWarning("No messages received.");
 
       marker_sub_.shutdown();
 
-      if (is_marker_array_)
+      topic_ = topic;
+      if (!topic.empty())
       {
-        marker_sub_ = node_.subscribe(topic_, 1000, &TexturedMarkerPlugin::MarkerArrayCallback, this);
-      }
-      else
-      {
-        marker_sub_ = node_.subscribe(topic_, 1000, &TexturedMarkerPlugin::MarkerCallback, this);
-      }
+        if (is_marker_array_)
+        {
+          marker_sub_ = node_.subscribe(topic_, 1000, &TexturedMarkerPlugin::MarkerArrayCallback, this);
+        }
+        else
+        {
+          marker_sub_ = node_.subscribe(topic_, 1000, &TexturedMarkerPlugin::MarkerCallback, this);
+        }
 
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+        ROS_INFO("Subscribing to %s", topic_.c_str());
+      }
     }
   }
 

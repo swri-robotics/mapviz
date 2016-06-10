@@ -151,18 +151,23 @@ namespace mapviz_plugins
 
   void GpsPlugin::TopicEdited()
   {
-    if (ui_.topic->text().toStdString() != topic_)
+    std::string topic = ui_.topic->text().trimmed().toStdString();
+    if (topic != topic_)
     {
       initialized_ = false;
       points_.clear();
       has_message_ = false;
-      topic_ = ui_.topic->text().toStdString();
       PrintWarning("No messages received.");
 
       gps_sub_.shutdown();
-      gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::GPSFixCallback, this);
 
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      topic_ = topic;
+      if (!topic.empty())
+      {
+        gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::GPSFixCallback, this);
+
+        ROS_INFO("Subscribing to %s", topic_.c_str());
+      }
     }
   }
 
