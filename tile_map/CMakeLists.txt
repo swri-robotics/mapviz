@@ -42,7 +42,7 @@ find_package(GLU REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
-  DEPENDS Qt4
+  DEPENDS Qt5Core Qt5Gui Qt5OpenGL Qt5Widgets
   CATKIN_DEPENDS 
     roscpp 
     pluginlib 
