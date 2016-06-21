@@ -9,7 +9,34 @@ find_package(catkin REQUIRED COMPONENTS
   swri_transform_util
   swri_math_util)
 
-find_package(Qt4 REQUIRED QtCore QtGui QtNetwork QtOpenGl)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Network REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+set(QT_LIBRARIES
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Gui_LIBRARIES}
+  ${Qt5Network_LIBRARIES}
+  ${Qt5OpenGL_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+)
+include_directories(
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Gui_INCLUDE_DIRS}
+  ${Qt5Network_INCLUDE_DIRS}
+  ${Qt5OpenGL_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+add_definitions(
+  ${Qt5Core_DEFINITIONS}
+  ${Qt5Gui_DEFINITIONS}
+  ${Qt5Network_DEFINITIONS}
+  ${Qt5OpenGL_DEFINITIONS}
+  ${Qt5Widgets_DEFINITIONS}
+)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
 find_package(GLU REQUIRED)
 
@@ -28,14 +55,7 @@ catkin_package(
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-include(${QT_USE_FILE})
-include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR})
-add_definitions(${QT_DEFINITIONS})
-
-set(QT_USE_QTCORE TRUE)
-set(QT_USE_QTGUI TRUE)
-set(QT_USE_QTOPENGL TRUE)
-set(QT_USE_NETWORK TRUE)
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -44,14 +64,14 @@ file (GLOB TILE_SRC_FILES
    src/image_cache.cpp
    src/texture_cache.cpp
    src/tile_map_view.cpp)
-QT4_WRAP_CPP(TILE_SRC_FILES include/tile_map/image_cache.h)
+qt5_wrap_cpp(TILE_SRC_FILES include/tile_map/image_cache.h)
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${catkin_LIBRARIES})
 
 file (GLOB PLUGIN_SRC_FILES src/tile_map_plugin.cpp)
 file (GLOB PLUGIN_UI_FILES src/*.ui)
-QT4_WRAP_UI(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
-QT4_WRAP_CPP(PLUGIN_SRC_FILES include/tile_map/tile_map_plugin.h)
+qt5_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
+qt5_wrap_cpp(PLUGIN_SRC_FILES include/tile_map/tile_map_plugin.h)
 
 add_library(${PROJECT_NAME}_plugin ${PLUGIN_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
