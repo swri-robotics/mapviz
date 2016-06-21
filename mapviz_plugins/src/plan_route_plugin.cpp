@@ -237,7 +237,7 @@ namespace mapviz_plugins
     size_t closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();
 
-    QPointF point = event->posF();
+    QPointF point = event->localPos();
     stu::Transform transform;
     if (tf_manager_.GetTransform(target_frame_, stu::_wgs84_frame, transform))
     {
@@ -271,7 +271,7 @@ namespace mapviz_plugins
       else
       {
         is_mouse_down_ = true;
-        mouse_down_pos_ = event->posF();
+        mouse_down_pos_ = event->localPos();
         mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
         return false;
       }
@@ -293,7 +293,7 @@ namespace mapviz_plugins
   {
     if (selected_point_ >= 0 && selected_point_ < waypoints_.size())
     {
-      QPointF point = event->posF();
+      QPointF point = event->localPos();
       stu::Transform transform;
       if (tf_manager_.GetTransform(stu::_wgs84_frame, target_frame_, transform))
       {
@@ -310,7 +310,7 @@ namespace mapviz_plugins
     }
     else if (is_mouse_down_)
     {
-      qreal distance = QLineF(mouse_down_pos_, event->posF()).length();
+      qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
       qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
       // Only fire the event if the mouse has moved less than the maximum distance
@@ -319,7 +319,7 @@ namespace mapviz_plugins
       // or just holding the cursor in place.
       if (msecsDiff < max_ms_ && distance <= max_distance_)
       {
-        QPointF point = event->posF();
+        QPointF point = event->localPos();
 
 
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
@@ -347,7 +347,7 @@ namespace mapviz_plugins
   {
     if (selected_point_ >= 0 && selected_point_ < waypoints_.size())
     {
-      QPointF point = event->posF();
+      QPointF point = event->localPos();
       stu::Transform transform;
       if (tf_manager_.GetTransform(stu::_wgs84_frame, target_frame_, transform))
       {
