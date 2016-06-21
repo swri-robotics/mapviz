@@ -25,8 +25,31 @@ set(DEPENDENCIES
 
 find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
 
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-set(QT_USE_QTOPENGL TRUE)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+set(QT_LIBRARIES
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Gui_LIBRARIES}
+  ${Qt5OpenGL_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+)
+include_directories(
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Gui_INCLUDE_DIRS}
+  ${Qt5OpenGL_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+add_definitions(
+  ${Qt5Core_DEFINITIONS}
+  ${Qt5Gui_DEFINITIONS}
+  ${Qt5OpenGL_DEFINITIONS}
+  ${Qt5Widgets_DEFINITIONS}
+)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+
 find_package(OpenCV 2 REQUIRED)
 find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
@@ -34,20 +57,14 @@ find_package(GLUT REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  DEPENDS Qt4
+  DEPENDS Qt5Core Qt5Gui Qt5OpenGL Qt5Widgets
   CATKIN_DEPENDS ${DEPENDENCIES}
 )
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-include(${QT_USE_FILE})
-include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
-add_definitions(${QT_DEFINITIONS})
-
-set(QT_USE_QTOPENGL TRUE)
-set(QT_USE_QTCORE TRUE)
-set(QT_USE_QTGUI TRUE)
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIR})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -76,9 +93,9 @@ file (GLOB SRC_FILES
     src/navsat_plugin.cpp
 )
     
-QT4_WRAP_UI(SRC_FILES ${UI_FILES})
+qt5_wrap_ui(SRC_FILES ${UI_FILES})
 
-QT4_WRAP_CPP(SRC_FILES
+qt5_wrap_cpp(SRC_FILES
     include/mapviz_plugins/attitude_indicator_plugin.h
     include/mapviz_plugins/canvas_click_filter.h
     include/mapviz_plugins/disparity_plugin.h
