@@ -10,11 +10,10 @@ notifications:
 env:
   global:
     - USE_DEB=true
+    - ROS_DISTRO="kinetic"
   matrix:
-    - ROS_DISTRO="jade"    ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-    - ROS_DISTRO="jade"    ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
-    - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-    - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
 matrix:
   allow_failures:
     - env: ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
