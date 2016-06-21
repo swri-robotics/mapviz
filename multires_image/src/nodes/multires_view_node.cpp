@@ -38,9 +38,9 @@
 #include <string>
 
 // QT libraries
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QString>
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 #include <QImage>
 #include <QFileInfo>
 

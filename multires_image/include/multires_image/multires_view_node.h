@@ -37,7 +37,7 @@
 #include <boost/thread.hpp>
 
 // QT libraries
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include <QMouseEvent>
 #include <QLabel>
 #include <QShowEvent>
