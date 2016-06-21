@@ -44,14 +44,12 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, path, mapviz_plugins::PathPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_DECLARE_CLASS(mapviz_plugins, path, mapviz_plugins::PathPlugin,
+                        mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PathPlugin::PathPlugin() :
-    config_widget_(new QWidget()),
-    transformed_(false),
-    line_width_(2)
+  PathPlugin::PathPlugin() : config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
     ui_.path_color->setColor(Qt::green);
@@ -68,50 +66,21 @@ namespace mapviz_plugins
 
     connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    connect(ui_.path_color, SIGNAL(colorEdited(const QColor &)),
-            this, SLOT(DrawIcon()));
+    connect(ui_.path_color, SIGNAL(colorEdited(const QColor&)), this,
+            SLOT(DrawIcon()));
   }
 
   PathPlugin::~PathPlugin()
   {
   }
 
-  void PathPlugin::DrawIcon()
-  {
-    if (icon_)
-    {
-      QPixmap icon(16, 16);
-      icon.fill(Qt::transparent);
-
-      QPainter painter(&icon);
-      painter.setRenderHint(QPainter::Antialiasing, true);
-
-      QPen pen(ui_.path_color->color());
-
-      pen.setWidth(2);
-      pen.setCapStyle(Qt::SquareCap);
-      painter.setPen(pen);
-      painter.drawLine(2, 13, 5, 5);
-      painter.drawLine(5, 5, 13, 2);
-
-      pen.setColor(pen.color().darker(200));
-      pen.setWidth(4);
-      pen.setCapStyle(Qt::RoundCap);
-      painter.setPen(pen);
-      painter.drawPoint(2, 13);
-      painter.drawPoint(5, 5);
-      painter.drawPoint(13, 2);
-
-      icon_->SetPixmap(icon);
-    }
-  }
-
   void PathPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "nav_msgs/Path");
+    ros::master::TopicInfo topic =
+        mapviz::SelectTopicDialog::selectTopic("nav_msgs/Path");
 
-    if (!topic.name.empty()) {
+    if (!topic.name.empty())
+    {
       ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
@@ -123,7 +92,6 @@ namespace mapviz_plugins
     {
       initialized_ = false;
       points_.clear();
-      transformed_points_.clear();
       has_message_ = false;
       topic_ = ui_.topic->text().toStdString();
       PrintWarning("No messages received.");
@@ -137,29 +105,24 @@ namespace mapviz_plugins
 
   void PathPlugin::pathCallback(const nav_msgs::PathConstPtr path)
   {
-    ROS_INFO("Got path message");
     if (!has_message_)
     {
       initialized_ = true;
       has_message_ = true;
     }
-    source_frame_ = path->header.frame_id;
 
-    transformed_ = false;
-
-    stamp_ = path->header.stamp;
     points_.clear();
-    transformed_points_.clear();
 
     for (unsigned int i = 0; i < path->poses.size(); i++)
     {
-      tf::Point point(
-        path->poses[i].pose.position.x,
-        path->poses[i].pose.position.y,
-        0);
+      StampedPoint stamped_point;
+      stamped_point.stamp = path->header.stamp;
+      stamped_point.source_frame = path->header.frame_id;
 
-      points_.push_back(point);
-      transformed_points_.push_back(point);
+      stamped_point.point = tf::Point(path->poses[i].pose.position.x,
+                                      path->poses[i].pose.position.y, 0);
+
+      points_.push_back(stamped_point);
     }
   }
 
@@ -215,62 +178,17 @@ namespace mapviz_plugins
 
   void PathPlugin::Draw(double x, double y, double scale)
   {
-    if (transformed_ && has_message_)
+    bool lines, points;
+    lines = points = false;
+    color_ = ui_.path_color->color();
+    draw_style_ = LINES;
+    lines = DrawPoints();
+    color_ = color_.dark(200);
+    draw_style_ = POINTS;
+    points = DrawPoints();
+    if (lines == true && points == true)
     {
-      QColor color = ui_.path_color->color();
-
-      glLineWidth(line_width_);
-      glColor4f(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-      glBegin(GL_LINE_STRIP);
-
-        std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
-        for (; transformed_it != transformed_points_.end(); ++transformed_it)
-        {
-          glVertex2f(transformed_it->getX(), transformed_it->getY());
-        }
-
-      glEnd();
-
-      glPointSize(line_width_*4);
-
-      QColor dark = color.darker(200);
-
-      glColor4f(dark.redF(), dark.greenF(), dark.blueF(), dark.alphaF());
-      glBegin(GL_POINTS);
-
-        transformed_it = transformed_points_.begin();
-        for (; transformed_it != transformed_points_.end(); ++transformed_it)
-        {
-          glVertex2f(transformed_it->getX(), transformed_it->getY());
-        }
-
-      glEnd();
-
       PrintInfo("OK");
-    }
-  }
-
-  void PathPlugin::Transform()
-  {
-    transformed_ = false;
-
-    swri_transform_util::Transform transform;
-    if (GetTransform(stamp_, transform))
-    {
-      std::list<tf::Point>::iterator points_it = points_.begin();
-      std::list<tf::Point>::iterator transformed_it = transformed_points_.begin();
-      for (; points_it != points_.end() && transformed_it != transformed_points_.end(); ++points_it)
-      {
-        (*transformed_it) = transform * (*points_it);
-
-        ++transformed_it;
-      }
-
-      transformed_ = true;
-    }
-    else
-    {
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
 
@@ -301,4 +219,3 @@ namespace mapviz_plugins
     emitter << YAML::Key << "color" << YAML::Value << color;
   }
 }
-
