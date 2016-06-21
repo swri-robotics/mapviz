@@ -48,7 +48,7 @@
 
 namespace multires_image
 {
-  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
+  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WindowFlags flags) :
     QMainWindow(parent, flags),
     argc_(argc),
     argv_(argv),
