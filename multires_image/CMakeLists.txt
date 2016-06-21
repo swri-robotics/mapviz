@@ -11,14 +11,37 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-set(QT_USE_QTOPENGL TRUE)
 find_package(OpenCV 2 REQUIRED)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+set(QT_LIBRARIES
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Gui_LIBRARIES}
+  ${Qt5OpenGL_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+)
+include_directories(
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Gui_INCLUDE_DIRS}
+  ${Qt5OpenGL_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+add_definitions(
+  ${Qt5Core_DEFINITIONS}
+  ${Qt5Gui_DEFINITIONS}
+  ${Qt5OpenGL_DEFINITIONS}
+  ${Qt5Widgets_DEFINITIONS}
+)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} multires_widget
-  DEPENDS Qt4
+  DEPENDS Qt5Core Qt5Gui Qt5OpenGL Qt5Widgets
   CATKIN_DEPENDS
     mapviz
     pluginlib
@@ -28,11 +51,7 @@ catkin_package(
     tf
 )
 
-include(${QT_USE_FILE})
-include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
-add_definitions(${QT_DEFINITIONS})
-
-set(QT_USE_QTOPENGL TRUE)
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIR})
 
 # Build libtile_cache
 file (GLOB TILE_SRC_FILES 
@@ -41,7 +60,7 @@ file (GLOB TILE_SRC_FILES
    src/tile_cache.cpp
    src/tile_set.cpp
    src/tile_set_layer.cpp)
-QT4_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
+qt5_wrap_cpp(TILE_SRC_FILES include/multires_image/tile_cache.h)
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES})
 
@@ -51,15 +70,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(src)
 file (GLOB UI_FILES src/*.ui)
 file (GLOB WIDGET_SRC_FILES src/tile_view.cpp src/QGLMap.cpp)
-QT4_WRAP_UI(WIDGET_SRC_FILES ${UI_FILES})
-QT4_WRAP_CPP(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
+qt5_wrap_ui(WIDGET_SRC_FILES ${UI_FILES})
+qt5_wrap_cpp(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
 add_library(multires_widget ${WIDGET_SRC_FILES})
 target_link_libraries(multires_widget ${PROJECT_NAME})
 
 # Build nodes
 include_directories(src)
 file (GLOB VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
-QT4_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
+qt5_wrap_cpp(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
 add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
 target_link_libraries(multires_view_node multires_widget)
 
@@ -67,8 +86,8 @@ target_link_libraries(multires_view_node multires_widget)
 file (GLOB MAPVIZ_SRC_FILES 
   src/multires_image_plugin.cpp
   src/multires_view.cpp)
-QT4_WRAP_UI(MAPVIZ_SRC_FILES src/multires_config.ui)
-QT4_WRAP_CPP(MAPVIZ_SRC_FILES include/multires_image/multires_image_plugin.h)
+qt5_wrap_ui(MAPVIZ_SRC_FILES src/multires_config.ui)
+qt5_wrap_cpp(MAPVIZ_SRC_FILES include/multires_image/multires_image_plugin.h)
 add_library(${PROJECT_NAME}_plugin ${MAPVIZ_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 

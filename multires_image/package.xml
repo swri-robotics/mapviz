@@ -14,10 +14,11 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>libopencv-dev</depend>
-  <exec_depend>libqt4</exec_depend>
-  <build_depend>libqt4-dev</build_depend>
-  <exec_depend>libqt4-opengl</exec_depend>
-  <build_depend>libqt4-opengl-dev</build_depend>
+  <depend>libqt5-core</depend>
+  <depend>libqt5-gui</depend>
+  <depend>libqt5-opengl</depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
+  <depend>libqt5-widgets</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
