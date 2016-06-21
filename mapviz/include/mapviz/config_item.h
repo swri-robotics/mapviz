@@ -50,7 +50,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    explicit ConfigItem(QWidget *parent = 0, Qt::WFlags flags = 0);
+    explicit ConfigItem(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~ConfigItem();
 
     void SetName(QString name);

@@ -48,7 +48,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 // QT libraries
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QFileDialog>
 #include <QActionGroup>
 #include <QColorDialog>
@@ -68,7 +68,7 @@ namespace mapviz
 const QString Mapviz::ROS_WORKSPACE_VAR = "ROS_WORKSPACE";
 const QString Mapviz::MAPVIZ_CONFIG_FILE = "/.mapviz_config";
 
-Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::WFlags flags) :
+Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::WindowFlags flags) :
     QMainWindow(parent, flags),
     xy_pos_label_(new QLabel("fixed: 0.0,0.0")),
     lat_lon_pos_label_(new QLabel("lat/lon: 0.0,0.0")),

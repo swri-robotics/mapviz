@@ -15,8 +15,31 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED system filesystem)
 find_package(OpenCV 2 REQUIRED)
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-set(QT_USE_QTOPENGL TRUE)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+set(QT_LIBRARIES
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Gui_LIBRARIES}
+  ${Qt5OpenGL_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+)
+include_directories(
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Gui_INCLUDE_DIRS}
+  ${Qt5OpenGL_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+add_definitions(
+  ${Qt5Core_DEFINITIONS}
+  ${Qt5Gui_DEFINITIONS}
+  ${Qt5OpenGL_DEFINITIONS}
+  ${Qt5Widgets_DEFINITIONS}
+)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
 # Require OpenGL
 find_package(OpenGL REQUIRED)
@@ -35,7 +58,7 @@ generate_messages(DEPENDENCIES
 
 catkin_package(
   INCLUDE_DIRS include
-  DEPENDS libqt4
+  DEPENDS Qt5Core Qt5Gui Qt5OpenGL Qt5Widgets
   CATKIN_DEPENDS
     marti_common_msgs
     message_runtime
@@ -51,13 +74,7 @@ catkin_package(
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-include(${QT_USE_FILE})
-include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR} ${OpenGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
-add_definitions(${QT_DEFINITIONS})
-
-set(QT_USE_QTOPENGL TRUE)
-set(QT_USE_QTCORE TRUE)
-set(QT_USE_QTGUI TRUE)
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
 
 # Build mapviz node
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -91,9 +108,9 @@ file (GLOB SRC_FILES
   src/select_frame_dialog.cpp
   src/select_topic_dialog.cpp
 )
-QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
-QT4_WRAP_UI(SRC_FILES ${UI_FILES})
-QT4_WRAP_CPP(SRC_FILES ${HEADER_FILES})
+qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
+qt5_wrap_ui(SRC_FILES ${UI_FILES})
+qt5_wrap_cpp(SRC_FILES ${HEADER_FILES})
 
 add_library(rqt_${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
 target_link_libraries(rqt_${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})

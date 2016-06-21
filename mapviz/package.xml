@@ -18,16 +18,16 @@
   <exec_depend>message_runtime</exec_depend>
 
   <depend>glut</depend>
-  <exec_depend>libqt4</exec_depend>
-  <build_depend>libqt4-dev</build_depend>
-  <exec_depend>libqt4-opengl</exec_depend>
-  <build_depend>libqt4-opengl-dev</build_depend>
   <depend>libglew-dev</depend>
   <depend>libopencv-dev</depend>
+  <depend>libqt5-core</depend>
+  <depend>libqt5-gui</depend>
+  <depend>libqt5-opengl</depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
+  <depend>libqt5-widgets</depend>
   <depend>libxmu-dev</depend>
   <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
-  <depend>qt4-qmake</depend>
   <depend>roscpp</depend>
   <depend>rqt_gui_cpp</depend>
   <depend>rqt_gui</depend>
