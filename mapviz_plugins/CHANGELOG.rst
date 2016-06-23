@@ -2,6 +2,17 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update Qt to version 5
+* Fixing a crash in the PointCloud2 plugin
+  Also sneaking in a few more changes:
+  - Caching transformed clouds to improve performance
+  - Properly saving the value of the "Color Transformer" combo box
+* Returning "false" if no other code handles the mouse event
+  Fixes `#360 <https://github.com/swri-robotics/mapviz/issues/360>`_
+* Contributors: Ed Venator, P. J. Reed
+
 0.1.3 (2016-05-20)
 ------------------
 * Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.

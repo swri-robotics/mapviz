@@ -2,6 +2,20 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update mapviz to qt5
+* Adding a Q_OBJECT declaration to MapvizPlugin
+* Adding signals for various plugin events
+  The MapvizPlugin class will now emit signals when any of the following settings change:
+  - Draw Order
+  - Target Frame
+  - Use Latest Transforms
+  - Visibility
+  Note that the signals will only be emitted if the setting actually *changes*, not
+  if it is somehow set to the same value that it was previously.
+* Contributors: Ed Venator, P. J. Reed
+
 0.1.3 (2016-05-20)
 ------------------
 * Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.

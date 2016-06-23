@@ -2,6 +2,11 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update tile_map to Qt5.
+* Contributors: Ed Venator
+
 0.1.3 (2016-05-20)
 ------------------
 * Fix typo in tile map view size comparison.

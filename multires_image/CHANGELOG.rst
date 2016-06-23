@@ -2,6 +2,11 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update Qt to version 5
+* Contributors: Ed Venator
+
 0.1.3 (2016-05-20)
 ------------------
 * Implement service for adding and modifying mapviz displays.
