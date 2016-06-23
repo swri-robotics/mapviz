@@ -271,21 +271,26 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::TopicEdited()
   {
-    if (ui_.topic->text().toStdString() != topic_)
+    std::string topic = ui_.topic->text().trimmed().toStdString();
+    if (topic != topic_)
     {
       initialized_ = false;
       scans_.clear();
       has_message_ = false;
-      topic_ = boost::trim_copy(ui_.topic->text().toStdString());
       PrintWarning("No messages received.");
 
       laserscan_sub_.shutdown();
-      laserscan_sub_ = node_.subscribe(topic_,
-          100,
-          &LaserScanPlugin::laserScanCallback,
-          this);
 
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      topic_ = topic;
+      if (!topic.empty())
+      {
+        laserscan_sub_ = node_.subscribe(topic_,
+                                         100,
+                                         &LaserScanPlugin::laserScanCallback,
+                                         this);
+
+        ROS_INFO("Subscribing to %s", topic_.c_str());
+      }
     }
   }
 

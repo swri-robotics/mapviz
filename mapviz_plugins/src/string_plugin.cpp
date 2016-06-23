@@ -330,17 +330,22 @@ namespace mapviz_plugins
 
   void StringPlugin::TopicEdited()
   {
-    if (ui_.topic->text().toStdString() != topic_)
+    std::string topic = ui_.topic->text().trimmed().toStdString();
+    if (topic != topic_)
     {
       initialized_ = false;
       has_message_ = false;
-      topic_ = ui_.topic->text().toStdString();
       PrintWarning("No messages received.");
 
       string_sub_.shutdown();
-      string_sub_ = node_.subscribe(topic_, 1, &StringPlugin::stringCallback, this);
 
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      topic_ = topic;
+      if (!topic.empty())
+      {
+        string_sub_ = node_.subscribe(topic_, 1, &StringPlugin::stringCallback, this);
+
+        ROS_INFO("Subscribing to %s", topic_.c_str());
+      }
     }
   }
 
