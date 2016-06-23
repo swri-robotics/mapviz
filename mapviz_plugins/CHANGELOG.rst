@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2016-06-23)
+------------------
 * Update Qt to version 5
 * Fixing a crash in the PointCloud2 plugin
   Also sneaking in a few more changes:

@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2016-06-23)
+------------------
 * Update Qt to version 5
 * Contributors: Ed Venator
 

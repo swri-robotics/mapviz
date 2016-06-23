@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2016-06-23)
+------------------
 * Update tile_map to Qt5.
 * Contributors: Ed Venator
 

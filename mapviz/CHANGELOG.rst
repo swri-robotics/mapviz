@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2016-06-23)
+------------------
 * Update mapviz to qt5
 * Adding a Q_OBJECT declaration to MapvizPlugin
 * Adding signals for various plugin events
