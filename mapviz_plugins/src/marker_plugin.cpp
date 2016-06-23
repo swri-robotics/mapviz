@@ -139,6 +139,12 @@ namespace mapviz_plugins
 
   void MarkerPlugin::handleMarker(const visualization_msgs::Marker &marker)
   {
+    if (marker.type == visualization_msgs::Marker::ARROW &&
+        marker.points.size() == 1) {
+      // Arrow markers must have either 0 or >1 points; exactly one point is
+      // invalid.  If we get one with 1 point, assume it's corrupt and ignore it.
+      return;
+    }
     if (!has_message_)
     {
       initialized_ = true;
