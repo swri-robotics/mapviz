@@ -36,7 +36,7 @@
 #include <vector>
 
 #include <mapviz/mapviz_plugin.h>
-
+#include <mapviz_plugins/point_drawing_plugin.h>
 // QT libraries
 #include <QGLWidget>
 #include <QObject>
@@ -54,76 +54,45 @@
 
 namespace mapviz_plugins
 {
-  class TfFramePlugin : public mapviz::MapvizPlugin
+  class TfFramePlugin : public mapviz_plugins::PointDrawingPlugin
   {
     Q_OBJECT
 
-  public:
-    struct StampedPoint
-    {
-      tf::Point point;
-      tf::Quaternion orientation;
-      
-      tf::Point transformed_point;
-      
-      tf::Point transformed_arrow_point;
-      tf::Point transformed_arrow_left;
-      tf::Point transformed_arrow_right;
-
-      bool transformed;
-      std::string frame;
-      ros::Time stamp;
-    };
-
-    enum DrawStyle { LINES = 0, POINTS, ARROWS };
-
+   public:
     TfFramePlugin();
     virtual ~TfFramePlugin();
 
     bool Initialize(QGLWidget* canvas);
-    void Shutdown() {}
+    void Shutdown()
+    {
+    }
 
     void Draw(double x, double y, double scale);
-
-    void Transform();
 
     void LoadConfig(const YAML::Node& node, const std::string& path);
     void SaveConfig(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
-  protected:
+   protected:
     void PrintError(const std::string& message);
     void PrintInfo(const std::string& message);
     void PrintWarning(const std::string& message);
 
-  protected Q_SLOTS:
+   protected Q_SLOTS:
     void SelectFrame();
     void FrameEdited();
     void PositionToleranceChanged(double value);
     void BufferSizeChanged(int value);
-    void SetDrawStyle(QString style);
-    void DrawIcon();
 
-  private:
-    bool DrawArrows();
-    bool TransformPoint(StampedPoint& point);
-
+   private:
     Ui::tf_frame_config ui_;
     QWidget* config_widget_;
 
-    DrawStyle draw_style_;
-
     std::string topic_;
-
-    int buffer_size_;
-    float position_tolerance_;
 
     ros::Subscriber odometry_sub_;
     bool has_message_;
-
-    StampedPoint cur_point_;
-    std::list<StampedPoint> points_;
 
     ros::Timer timer_;
 

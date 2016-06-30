@@ -189,7 +189,6 @@ namespace mapviz_plugins
     if (topic != position_topic_)
     {
       src_route_position_.reset();
-      
       position_sub_.shutdown();
 
       if (!topic.empty())
