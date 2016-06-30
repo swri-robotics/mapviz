@@ -90,7 +90,7 @@ file (GLOB SRC_FILES
     src/string_plugin.cpp
     src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
-    src/navsat_plugin.cpp
+    src/point_drawing_plugin.cpp
 )
     
 qt5_wrap_ui(SRC_FILES ${UI_FILES})
@@ -115,7 +115,7 @@ qt5_wrap_cpp(SRC_FILES
     include/mapviz_plugins/string_plugin.h
     include/mapviz_plugins/textured_marker_plugin.h
     include/mapviz_plugins/tf_frame_plugin.h
-    include/mapviz_plugins/navsat_plugin.h
+    include/mapviz_plugins/point_drawing_plugin.h
 )
 
 add_library(${PROJECT_NAME} ${SRC_FILES})

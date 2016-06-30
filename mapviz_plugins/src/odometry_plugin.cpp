@@ -50,22 +50,19 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    odometry,
-    mapviz_plugins::OdometryPlugin,
-    mapviz::MapvizPlugin);
+PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
+                        odometry,
+                        mapviz_plugins::OdometryPlugin,
+                        mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
-  OdometryPlugin::OdometryPlugin() :
-    config_widget_(new QWidget()),
-    draw_style_(LINES)
+  OdometryPlugin::OdometryPlugin() : config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
-
+    covariance_checked_ = ui_.show_covariance->isChecked();
     ui_.color->setColor(Qt::green);
-    
+
     // Set background white
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
@@ -76,82 +73,29 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this, SLOT(PositionToleranceChanged(double)));
-    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this, SLOT(BufferSizeChanged(int)));
-    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this, SLOT(SetDrawStyle(QString)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
-            this, SLOT(DrawIcon()));
+    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this,
+                     SLOT(SelectTopic()));
+    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
+                     SLOT(TopicEdited()));
+    QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this,
+                     SLOT(PositionToleranceChanged(double)));
+    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this,
+                     SLOT(BufferSizeChanged(int)));
+    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
+                     SLOT(SetDrawStyle(QString)));
+    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+            SLOT(DrawIcon()));
   }
 
   OdometryPlugin::~OdometryPlugin()
   {
   }
 
-  void OdometryPlugin::DrawIcon()
-  {
-    if (icon_)
-    {
-      QPixmap icon(16, 16);
-      icon.fill(Qt::transparent);
-      
-      QPainter painter(&icon);
-      painter.setRenderHint(QPainter::Antialiasing, true);
-      
-      QPen pen(ui_.color->color());
-      
-      if (draw_style_ == POINTS)
-      {
-        pen.setWidth(7);
-        pen.setCapStyle(Qt::RoundCap);
-        painter.setPen(pen);
-        painter.drawPoint(8, 8);
-      }
-      else if (draw_style_ == LINES)
-      {
-        pen.setWidth(3);
-        pen.setCapStyle(Qt::FlatCap);
-        painter.setPen(pen);
-        painter.drawLine(1, 14, 14, 1);
-      }
-      else if (draw_style_ == ARROWS)
-      {
-        pen.setWidth(2);
-        pen.setCapStyle(Qt::SquareCap);
-        painter.setPen(pen);
-        painter.drawLine(2, 13, 13, 2);
-        painter.drawLine(13, 2, 13, 8);
-        painter.drawLine(13, 2, 7, 2);
-      }
-      
-      icon_->SetPixmap(icon);
-    }
-  }
-
-  void OdometryPlugin::SetDrawStyle(QString style)
-  {
-    if (style == "lines")
-    {
-      draw_style_ = LINES;
-    }
-    else if (style == "points")
-    {
-      draw_style_ = POINTS;
-    }
-    else if (style == "arrows")
-    {
-      draw_style_ = ARROWS;
-    }
-
-    DrawIcon();
-  }
-
   void OdometryPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "nav_msgs/Odometry");
-    
+    ros::master::TopicInfo topic =
+        mapviz::SelectTopicDialog::selectTopic("nav_msgs/Odometry");
+
     if (!topic.name.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic.name));
@@ -174,14 +118,16 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        odometry_sub_ = node_.subscribe(topic_, 1, &OdometryPlugin::odometryCallback, this);
+        odometry_sub_ = node_.subscribe(
+                    topic_, 1, &OdometryPlugin::odometryCallback, this);
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void OdometryPlugin::odometryCallback(const nav_msgs::OdometryConstPtr odometry)
+  void OdometryPlugin::odometryCallback(
+      const nav_msgs::OdometryConstPtr odometry)
   {
     if (!has_message_)
     {
@@ -193,15 +139,13 @@ namespace mapviz_plugins
     // source_frame_ member variable.  This one can potentially store many
     // messages with different source frames, so we need to store and transform
     // them individually.
-
     StampedPoint stamped_point;
     stamped_point.stamp = odometry->header.stamp;
     stamped_point.source_frame = odometry->header.frame_id;
 
-    stamped_point.point = tf::Point(
-        odometry->pose.pose.position.x,
-        odometry->pose.pose.position.y,
-        odometry->pose.pose.position.z);
+    stamped_point.point = tf::Point(odometry->pose.pose.position.x,
+                                    odometry->pose.pose.position.y,
+                                    odometry->pose.pose.position.z);
 
     stamped_point.orientation = tf::Quaternion(
         odometry->pose.pose.orientation.x,
@@ -209,7 +153,9 @@ namespace mapviz_plugins
         odometry->pose.pose.orientation.z,
         odometry->pose.pose.orientation.w);
 
-    if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
+    if (points_.empty() ||
+        stamped_point.point.distance(points_.back().point) >=
+            position_tolerance_)
     {
       points_.push_back(stamped_point);
     }
@@ -223,8 +169,10 @@ namespace mapviz_plugins
     }
 
     cur_point_ = stamped_point;
+    covariance_checked_ = ui_.show_covariance->isChecked();
+    lap_checked_ = ui_.show_laps->isChecked();
 
-    if (ui_.show_covariance->isChecked())
+    if (covariance_checked_)
     {
       tf::Matrix3x3 tf_cov =
           swri_transform_util::GetUpperLeft(odometry->pose.covariance);
@@ -240,7 +188,8 @@ namespace mapviz_plugins
           }
         }
 
-        cv::Mat cov_matrix_2d = swri_image_util::ProjectEllipsoid(cov_matrix_3d);
+        cv::Mat cov_matrix_2d =
+            swri_image_util::ProjectEllipsoid(cov_matrix_3d);
 
         if (!cov_matrix_2d.empty())
         {
@@ -264,14 +213,20 @@ namespace mapviz_plugins
 
   void OdometryPlugin::BufferSizeChanged(int value)
   {
-    buffer_size_ = value;
-
-    if (buffer_size_ > 0)
+    if (!lap_checked_)
     {
-      while (static_cast<int>(points_.size()) > buffer_size_)
+      buffer_size_ = value;
+      if (buffer_size_ > 0)
       {
-        points_.pop_front();
+        while (static_cast<int>(points_.size()) > buffer_size_)
+        {
+          points_.pop_front();
+        }
       }
+    }
+    else
+    {
+      buffer_holder_ = value;
     }
   }
 
@@ -321,7 +276,7 @@ namespace mapviz_plugins
   bool OdometryPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
-    
+    color_ = ui_.color->color();
     DrawIcon();
 
     return true;
@@ -329,60 +284,13 @@ namespace mapviz_plugins
 
   void OdometryPlugin::Draw(double x, double y, double scale)
   {
-    QColor color = ui_.color->color();
-    
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 0.5);
-
-    bool transformed = false;
+    color_ = ui_.color->color();
 
     if (ui_.show_covariance->isChecked())
     {
       DrawCovariance();
     }
-
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
-
-    if (draw_style_ == ARROWS)
-    {
-      transformed = DrawArrows();
-    }
-    else
-    {
-      if (draw_style_ == LINES)
-      {
-        glLineWidth(3);
-        glBegin(GL_LINE_STRIP);
-      }
-      else
-      {
-        glPointSize(6);
-        glBegin(GL_POINTS);
-      }
-
-      std::list<StampedPoint>::iterator it = points_.begin();
-      for (; it != points_.end(); ++it)
-      {
-        if (it->transformed)
-        {
-          glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-
-          transformed = true;
-        }
-      }
-
-      if (cur_point_.transformed)
-      {
-        glVertex2f(
-          cur_point_.transformed_point.getX(),
-          cur_point_.transformed_point.getY());
-
-        transformed = true;
-      }
-
-      glEnd();
-    }
-
-    if (transformed)
+    if (DrawPoints())
     {
       PrintInfo("OK");
     }
@@ -398,122 +306,19 @@ namespace mapviz_plugins
 
       for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
       {
-        glVertex2f(
-            cur_point_.transformed_cov_points[i].getX(),
-            cur_point_.transformed_cov_points[i].getY());
+        glVertex2f(cur_point_.transformed_cov_points[i].getX(),
+                   cur_point_.transformed_cov_points[i].getY());
       }
 
-      glVertex2f(
-          cur_point_.transformed_cov_points.front().getX(),
-          cur_point_.transformed_cov_points.front().getY());
+      glVertex2f(cur_point_.transformed_cov_points.front().getX(),
+                 cur_point_.transformed_cov_points.front().getY());
 
       glEnd();
     }
   }
 
-  bool OdometryPlugin::DrawArrows()
-  {
-    bool transformed = false;
-    glLineWidth(2);
-    glBegin(GL_LINES);
-
-    std::list<StampedPoint>::iterator it = points_.begin();
-    for (; it != points_.end(); ++it)
-    {
-      if (it->transformed)
-      {
-        glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-        glVertex2f(it->transformed_arrow_left.getX(), it->transformed_arrow_left.getY());
-
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-        glVertex2f(it->transformed_arrow_right.getX(), it->transformed_arrow_right.getY());
-
-        transformed = true;
-      }
-    }
-
-    if (cur_point_.transformed)
-    {
-      glVertex2f(
-        cur_point_.transformed_point.getX(),
-        cur_point_.transformed_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_left.getX(),
-        cur_point_.transformed_arrow_left.getY());
-
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_right.getX(),
-        cur_point_.transformed_arrow_right.getY());
-
-      transformed = true;
-    }
-
-
-    glEnd();
-
-    return transformed;
-  }
-
-  bool OdometryPlugin::TransformPoint(StampedPoint& point)
-  {
-    swri_transform_util::Transform transform;
-    if (GetTransform(point.source_frame, point.stamp, transform))
-    {
-      point.transformed_point = transform * point.point;
-
-      tf::Transform orientation(tf::Transform(transform.GetOrientation()) * point.orientation);
-      point.transformed_arrow_point = point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
-      point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
-      point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
-
-      if (ui_.show_covariance->isChecked())
-      {
-        for (uint32_t i = 0; i < point.cov_points.size(); i++)
-        {
-          point.transformed_cov_points[i] = transform * point.cov_points[i];
-        }
-      }
-
-      point.transformed = true;
-      return true;
-    }
-
-     point.transformed = false;
-     return false;
-  }
-
-  void OdometryPlugin::Transform()
-  {
-    bool transformed = false;
-
-    std::list<StampedPoint>::iterator points_it = points_.begin();
-    for (; points_it != points_.end(); ++points_it)
-    {
-      transformed = transformed | TransformPoint(*points_it);
-    }
-
-    transformed = transformed | TransformPoint(cur_point_);
-
-    if (!points_.empty() && !transformed)
-    {
-      PrintError("No transform between " + cur_point_.source_frame + " and " + target_frame_);
-    }
-  }
-
-  void OdometryPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void OdometryPlugin::LoadConfig(const YAML::Node& node,
+                                  const std::string& path)
   {
     if (node["topic"])
     {
@@ -569,11 +374,18 @@ namespace mapviz_plugins
       node["show_covariance"] >> show_covariance;
       ui_.show_covariance->setChecked(show_covariance);
     }
+    if (swri_yaml_util::FindValue(node, "show_laps"))
+    {
+      bool show_laps = false;
+      node["show_laps"] >> show_laps;
+      ui_.show_laps->setChecked(show_laps);
+    }
 
     TopicEdited();
   }
 
-  void OdometryPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void OdometryPlugin::SaveConfig(YAML::Emitter& emitter,
+                                  const std::string& path)
   {
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;
@@ -584,12 +396,20 @@ namespace mapviz_plugins
     std::string draw_style = ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
-    emitter << YAML::Key << "position_tolerance" << YAML::Value << position_tolerance_;
-
-    emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
+    emitter << YAML::Key << "position_tolerance" <<
+               YAML::Value << position_tolerance_;
+    if (!lap_checked_)
+    {
+      emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
+    }
+    else
+    {
+      emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_holder_;
+    }
+    bool show_laps = ui_.show_laps->isChecked();
+    emitter << YAML::Key << "show_laps" << YAML::Value << show_laps;
 
     bool show_covariance = ui_.show_covariance->isChecked();
     emitter << YAML::Key << "show_covariance" << YAML::Value << show_covariance;
   }
 }
-
