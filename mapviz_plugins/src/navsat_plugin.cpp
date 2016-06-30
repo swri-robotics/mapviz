@@ -40,17 +40,14 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    navsat,
-    mapviz_plugins::NavSatPlugin,
-    mapviz::MapvizPlugin);
+PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
+                        navsat,
+                        mapviz_plugins::NavSatPlugin,
+                        mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
-  NavSatPlugin::NavSatPlugin() :
-    config_widget_(new QWidget()),
-    draw_style_(LINES)
+  NavSatPlugin::NavSatPlugin() : config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 
@@ -66,70 +63,31 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this, SLOT(PositionToleranceChanged(double)));
-    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this, SLOT(BufferSizeChanged(int)));
-    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this, SLOT(SetDrawStyle(QString)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
-            this, SLOT(DrawIcon()));
+    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this,
+                     SLOT(SelectTopic()));
+    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
+                     SLOT(TopicEdited()));
+    QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this,
+                     SLOT(PositionToleranceChanged(double)));
+    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this,
+                     SLOT(BufferSizeChanged(int)));
+    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
+                     SLOT(SetDrawStyle(QString)));
+    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+            SLOT(DrawIcon()));
   }
 
   NavSatPlugin::~NavSatPlugin()
   {
   }
 
-  void NavSatPlugin::DrawIcon()
-  {
-    if (icon_)
-    {
-      QPixmap icon(16, 16);
-      icon.fill(Qt::transparent);
-
-      QPainter painter(&icon);
-      painter.setRenderHint(QPainter::Antialiasing, true);
-
-      QPen pen(ui_.color->color());
-
-      if (draw_style_ == POINTS)
-      {
-        pen.setWidth(7);
-        pen.setCapStyle(Qt::RoundCap);
-        painter.setPen(pen);
-        painter.drawPoint(8, 8);
-      }
-      else if (draw_style_ == LINES)
-      {
-        pen.setWidth(3);
-        pen.setCapStyle(Qt::FlatCap);
-        painter.setPen(pen);
-        painter.drawLine(1, 14, 14, 1);
-      }
-
-      icon_->SetPixmap(icon);
-    }
-  }
-
-  void NavSatPlugin::SetDrawStyle(QString style)
-  {
-    if (style == "lines")
-    {
-      draw_style_ = LINES;
-    }
-    else if (style == "points")
-    {
-      draw_style_ = POINTS;
-    }
-
-    DrawIcon();
-  }
-
   void NavSatPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "sensor_msgs/NavSatFix");
+    ros::master::TopicInfo topic =
+        mapviz::SelectTopicDialog::selectTopic("sensor_msgs/NavSatFix");
 
-    if (!topic.name.empty()) {
+    if (!topic.name.empty())
+    {
       ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
@@ -146,7 +104,6 @@ namespace mapviz_plugins
       PrintWarning("No messages received.");
 
       navsat_sub_.shutdown();
-
       topic_ = topic;
       if (!topic.empty())
       {
@@ -157,7 +114,8 @@ namespace mapviz_plugins
     }
   }
 
-  void NavSatPlugin::NavSatFixCallback(const sensor_msgs::NavSatFixConstPtr navsat)
+  void NavSatPlugin::NavSatFixCallback(
+      const sensor_msgs::NavSatFixConstPtr navsat)
   {
     if (!local_xy_util_.Initialized())
     {
@@ -180,7 +138,11 @@ namespace mapviz_plugins
 
     stamped_point.orientation = tf::createQuaternionFromYaw(0.0);
 
-    if (points_.empty() || stamped_point.point.distance(points_.back().point) >= position_tolerance_)
+    stamped_point.source_frame = local_xy_util_.Frame();
+
+    if (points_.empty() ||
+        stamped_point.point.distance(points_.back().point) >=
+            position_tolerance_)
     {
       points_.push_back(stamped_point);
     }
@@ -266,96 +228,10 @@ namespace mapviz_plugins
 
   void NavSatPlugin::Draw(double x, double y, double scale)
   {
-    QColor color = ui_.color->color();
-    
-    bool transformed = false;
-
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
-
-    if (draw_style_ == LINES)
-    {
-      glLineWidth(3);
-      glBegin(GL_LINE_STRIP);
-    }
-    else
-    {
-      glPointSize(6);
-      glBegin(GL_POINTS);
-    }
-
-    std::list<StampedPoint>::iterator it = points_.begin();
-    for (; it != points_.end(); ++it)
-    {
-      if (it->transformed)
-      {
-        glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-
-        transformed = true;
-      }
-    }
-
-    if (cur_point_.transformed)
-    {
-      glVertex2f(
-        cur_point_.transformed_point.getX(),
-        cur_point_.transformed_point.getY());
-
-      transformed = true;
-
-      swri_transform_util::Transform tf;
-    }
-
-    glEnd();
-
-    if (transformed)
+    color_ = ui_.color->color();
+    if (DrawPoints())
     {
       PrintInfo("OK");
-    }
-  }
-
-  bool NavSatPlugin::TransformPoint(StampedPoint& point)
-  {
-    swri_transform_util::Transform transform;
-    if (GetTransform(point.stamp, transform))
-    {
-      point.transformed_point = transform * point.point;
-
-      tf::Transform orientation(tf::Transform(transform.GetOrientation()) * point.orientation);
-      point.transformed_arrow_point = point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
-      point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
-      point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
-
-      point.transformed = true;
-      return true;
-    }
-
-     point.transformed = false;
-     return false;
-  }
-
-  void NavSatPlugin::Transform()
-  {
-    if (source_frame_.empty())
-    {
-      if (!local_xy_util_.Initialized())
-      {
-        return;
-      }
-      source_frame_ = local_xy_util_.Frame();
-    }
-    bool transformed = false;
-
-    std::list<StampedPoint>::iterator points_it = points_.begin();
-    for (; points_it != points_.end(); ++points_it)
-    {
-      transformed = transformed | TransformPoint(*points_it);
-    }
-
-    transformed = transformed | TransformPoint(cur_point_);
-
-    if (!points_.empty() && !transformed)
-    {
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
 
@@ -403,7 +279,7 @@ namespace mapviz_plugins
       node["buffer_size"] >> buffer_size_;
       ui_.buffersize->setValue(buffer_size_);
     }
-    
+
     TopicEdited();
   }
 
@@ -418,9 +294,9 @@ namespace mapviz_plugins
     std::string draw_style = ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
-    emitter << YAML::Key << "position_tolerance" << YAML::Value << position_tolerance_;
+    emitter << YAML::Key << "position_tolerance" <<
+               YAML::Value << position_tolerance_;
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
   }
 }
-
