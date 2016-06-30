@@ -77,6 +77,7 @@ namespace mapviz
     void ToggleUseLatestTransforms(bool on);
     void UpdateView();
     void ReorderDisplays();
+    void ResetLocation();
     QPointF MapGlCoordToFixedFrame(const QPointF& point);
     QPointF FixedFrameToMapGlCoord(const QPointF& point);
 
