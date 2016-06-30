@@ -226,6 +226,11 @@ namespace mapviz_plugins
       PrintWarning("No messages received.");
 
       disparity_sub_.shutdown();
+<<<<<<< HEAD
+=======
+      disparity_sub_ =
+          node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
 
       if (!topic.empty())
       {
