@@ -22,7 +22,7 @@
 
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
-
+#include <mapviz_plugins/point_drawing_plugin.h>
 // C++ standard libraries
 #include <list>
 #include <string>
@@ -44,77 +44,48 @@
 
 namespace mapviz_plugins
 {
-  class GpsPlugin : public mapviz::MapvizPlugin
+  class GpsPlugin : public mapviz_plugins::PointDrawingPlugin
   {
     Q_OBJECT
 
-  public:
-    struct StampedPoint
-    {
-      tf::Point point;
-      tf::Quaternion orientation;
-      tf::Point transformed_point;
-      tf::Point transformed_arrow_point;
-      tf::Point transformed_arrow_left;
-      tf::Point transformed_arrow_right;
-      bool transformed;
-      ros::Time stamp;
-
-      std::vector<tf::Point> cov_points;
-      std::vector<tf::Point> transformed_cov_points;
-    };
-
-    enum DrawStyle { LINES = 0, POINTS, ARROWS };
-
+   public:
     GpsPlugin();
     virtual ~GpsPlugin();
 
     bool Initialize(QGLWidget* canvas);
-    void Shutdown() {}
+    void Shutdown()
+    {
+    }
 
     void Draw(double x, double y, double scale);
-
-    void Transform();
 
     void LoadConfig(const YAML::Node& node, const std::string& path);
     void SaveConfig(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
 
-  protected:
+   protected:
     void PrintError(const std::string& message);
     void PrintInfo(const std::string& message);
     void PrintWarning(const std::string& message);
 
-  protected Q_SLOTS:
+   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
     void PositionToleranceChanged(double value);
     void AngleToleranceChanged(double value);
     void BufferSizeChanged(int value);
-    void SetDrawStyle(QString style);
-    void DrawIcon();
 
-  private:
-    bool DrawArrows();
-    bool TransformPoint(StampedPoint& point);
-
+   private:
     Ui::gps_config ui_;
     QWidget* config_widget_;
 
-    DrawStyle draw_style_;
-
     std::string topic_;
 
-    int buffer_size_;
-    float position_tolerance_;
     float angle_tolerance_;
 
     ros::Subscriber gps_sub_;
     bool has_message_;
-
-    StampedPoint cur_point_;
-    std::list<StampedPoint> points_;
 
     swri_transform_util::LocalXyWgs84Util local_xy_util_;
 

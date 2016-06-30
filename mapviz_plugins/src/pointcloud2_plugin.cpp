@@ -322,6 +322,7 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
+<<<<<<< HEAD
       pc2_sub_.shutdown();
 
       topic_ = topic;
@@ -337,6 +338,16 @@ namespace mapviz_plugins
         min_.clear();
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
+=======
+      PointCloud2_sub_.shutdown();
+      PointCloud2_sub_ = node_.subscribe(
+          topic_, 100, &PointCloud2Plugin::PointCloud2Callback, this);
+      new_topic_ = true;
+      need_new_list_ = true;
+      max_.clear();
+      min_.clear();
+      ROS_INFO("Subscribing to %s", topic_.c_str());
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
     }
   }
 
@@ -611,6 +622,7 @@ namespace mapviz_plugins
 
       for (scan_it = scans_.begin(); scan_it != scans_.end(); scan_it++)
       {
+<<<<<<< HEAD
         if (scan_it->transformed)
         {
           for (point_it = scan_it->points.begin(); point_it != scan_it->points.end(); ++point_it)
@@ -624,6 +636,16 @@ namespace mapviz_plugins
                 point_it->transformed_point.getX(),
                 point_it->transformed_point.getY());
           }
+=======
+        std::vector<StampedPoint>::const_iterator point_it;
+        for (point_it = scan_it->points.begin();
+             point_it != scan_it->points.end(); ++point_it)
+        {
+          glColor4f(point_it->color.redF(), point_it->color.greenF(),
+                    point_it->color.blueF(), alpha_);
+          glVertex2f(point_it->transformed_point.getX(),
+                     point_it->transformed_point.getY());
+>>>>>>> Removed commented code and unified formatting within mapviz_plugings
         }
       }
     }
