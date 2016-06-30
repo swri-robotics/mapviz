@@ -45,22 +45,19 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    tf_frame,
-    mapviz_plugins::TfFramePlugin,
-    mapviz::MapvizPlugin);
+PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
+                        tf_frame,
+                        mapviz_plugins::TfFramePlugin,
+                        mapviz::MapvizPlugin);
 
 namespace mapviz_plugins
 {
-  TfFramePlugin::TfFramePlugin() :
-    config_widget_(new QWidget()),
-    draw_style_(LINES)
+  TfFramePlugin::TfFramePlugin() : config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 
     ui_.color->setColor(Qt::green);
-    
+
     // Set background white
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
@@ -71,57 +68,22 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.selectframe, SIGNAL(clicked()), this, SLOT(SelectFrame()));
-    QObject::connect(ui_.frame, SIGNAL(editingFinished()), this, SLOT(FrameEdited()));
-    QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this, SLOT(PositionToleranceChanged(double)));
-    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this, SLOT(BufferSizeChanged(int)));
-    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this, SLOT(SetDrawStyle(QString)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor &)),
-            this, SLOT(DrawIcon()));
+    QObject::connect(ui_.selectframe, SIGNAL(clicked()), this,
+                     SLOT(SelectFrame()));
+    QObject::connect(ui_.frame, SIGNAL(editingFinished()), this,
+                     SLOT(FrameEdited()));
+    QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this,
+                     SLOT(PositionToleranceChanged(double)));
+    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this,
+                     SLOT(BufferSizeChanged(int)));
+    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
+                     SLOT(SetDrawStyle(QString)));
+    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+            SLOT(DrawIcon()));
   }
 
   TfFramePlugin::~TfFramePlugin()
   {
-  }
-
-  void TfFramePlugin::DrawIcon()
-  {
-    if (icon_)
-    {
-      QPixmap icon(16, 16);
-      icon.fill(Qt::transparent);
-      
-      QPainter painter(&icon);
-      painter.setRenderHint(QPainter::Antialiasing, true);
-      
-      QPen pen(ui_.color->color());
-      
-      if (draw_style_ == POINTS)
-      {
-        pen.setWidth(7);
-        pen.setCapStyle(Qt::RoundCap);
-        painter.setPen(pen);
-        painter.drawPoint(8, 8);
-      }
-      else if (draw_style_ == LINES)
-      {
-        pen.setWidth(3);
-        pen.setCapStyle(Qt::FlatCap);
-        painter.setPen(pen);
-        painter.drawLine(1, 14, 14, 1);
-      }
-      else if (draw_style_ == ARROWS)
-      {
-        pen.setWidth(2);
-        pen.setCapStyle(Qt::SquareCap);
-        painter.setPen(pen);
-        painter.drawLine(2, 13, 13, 2);
-        painter.drawLine(13, 2, 13, 8);
-        painter.drawLine(13, 2, 7, 2);
-      }
-      
-      icon_->SetPixmap(icon);
-    }
   }
 
   void TfFramePlugin::SelectFrame()
@@ -143,25 +105,7 @@ namespace mapviz_plugins
 
     initialized_ = true;
   }
-  
-  void TfFramePlugin::SetDrawStyle(QString style)
-  {
-    if (style == "lines")
-    {
-      draw_style_ = LINES;
-    }
-    else if (style == "points")
-    {
-      draw_style_ = POINTS;
-    }
-    else if (style == "arrows")
-    {
-      draw_style_ = ARROWS;
-    }
 
-    DrawIcon();
-  }
-    
   void TfFramePlugin::PositionToleranceChanged(double value)
   {
     position_tolerance_ = value;
@@ -179,7 +123,7 @@ namespace mapviz_plugins
       }
     }
   }
-  
+
   void TfFramePlugin::TimerCallback(const ros::TimerEvent& event)
   {
     swri_transform_util::Transform transform;
@@ -188,13 +132,13 @@ namespace mapviz_plugins
       StampedPoint stamped_point;
       stamped_point.point = transform.GetOrigin();
       stamped_point.orientation = transform.GetOrientation();
-      stamped_point.frame = target_frame_;
+      stamped_point.source_frame = target_frame_;
       stamped_point.stamp = transform.GetStamp();
       stamped_point.transformed = false;
 
       double distance = std::sqrt(
-        std::pow(stamped_point.point.x() - points_.back().point.x(), 2) + 
-        std::pow(stamped_point.point.y() - points_.back().point.y(), 2));
+          std::pow(stamped_point.point.x() - points_.back().point.x(), 2) +
+          std::pow(stamped_point.point.y() - points_.back().point.y(), 2));
 
       if (points_.empty() || distance >= position_tolerance_)
       {
@@ -208,7 +152,7 @@ namespace mapviz_plugins
           points_.pop_front();
         }
       }
-    
+
       cur_point_ = stamped_point;
     }
   }
@@ -260,7 +204,8 @@ namespace mapviz_plugins
   {
     canvas_ = canvas;
 
-    timer_ = node_.createTimer(ros::Duration(0.1), &TfFramePlugin::TimerCallback, this);
+    timer_ = node_.createTimer(ros::Duration(0.1),
+                               &TfFramePlugin::TimerCallback, this);
 
     DrawIcon();
 
@@ -269,153 +214,14 @@ namespace mapviz_plugins
 
   void TfFramePlugin::Draw(double x, double y, double scale)
   {
-    QColor color = ui_.color->color();
-    
-    bool transformed = false;
-
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
-
-    if (draw_style_ == ARROWS)
-    {
-      transformed = DrawArrows();
-    }
-    else
-    {
-      if (draw_style_ == LINES)
-      {
-        glLineWidth(3);
-        glBegin(GL_LINE_STRIP);
-      }
-      else
-      {
-        glPointSize(6);
-        glBegin(GL_POINTS);
-      }
-
-      std::list<StampedPoint>::iterator it = points_.begin();
-      for (; it != points_.end(); ++it)
-      {
-        if (it->transformed)
-        {
-          glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-
-          transformed = true;
-        }
-      }
-
-      if (cur_point_.transformed)
-      {
-        glVertex2f(
-          cur_point_.transformed_point.getX(),
-          cur_point_.transformed_point.getY());
-
-        transformed = true;
-      }
-
-      glEnd();
-    }
-
-    if (transformed)
+    color_ = ui_.color->color();
+    if (DrawPoints())
     {
       PrintInfo("OK");
     }
   }
-  
-  bool TfFramePlugin::DrawArrows()
-  {
-    bool transformed = false;
-    glLineWidth(2);
-    glBegin(GL_LINES);
-
-    std::list<StampedPoint>::iterator it = points_.begin();
-    for (; it != points_.end(); ++it)
-    {
-      if (it->transformed)
-      {
-        glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-        glVertex2f(it->transformed_arrow_left.getX(), it->transformed_arrow_left.getY());
-
-        glVertex2f(it->transformed_arrow_point.getX(), it->transformed_arrow_point.getY());
-        glVertex2f(it->transformed_arrow_right.getX(), it->transformed_arrow_right.getY());
-
-        transformed = true;
-      }
-    }
-
-    if (cur_point_.transformed)
-    {
-      glVertex2f(
-        cur_point_.transformed_point.getX(),
-        cur_point_.transformed_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_left.getX(),
-        cur_point_.transformed_arrow_left.getY());
-
-      glVertex2f(
-        cur_point_.transformed_arrow_point.getX(),
-        cur_point_.transformed_arrow_point.getY());
-      glVertex2f(
-        cur_point_.transformed_arrow_right.getX(),
-        cur_point_.transformed_arrow_right.getY());
-
-      transformed = true;
-    }
-
-
-    glEnd();
-
-    return transformed;
-  }
-
-  bool TfFramePlugin::TransformPoint(StampedPoint& point)
-  {
-    swri_transform_util::Transform transform;
-    if (GetTransform(point.frame, point.stamp, transform))
-    {
-      point.transformed_point = transform * point.point;
-
-      tf::Transform orientation(tf::Transform(transform.GetOrientation()) * point.orientation);
-      point.transformed_arrow_point = point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
-      point.transformed_arrow_left = point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
-      point.transformed_arrow_right = point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
-
-      point.transformed = true;
-      return true;
-    }
-
-     point.transformed = false;
-     return false;
-  }
-
-  void TfFramePlugin::Transform()
-  {
-    bool transformed = false;
-
-    std::list<StampedPoint>::iterator points_it = points_.begin();
-    for (; points_it != points_.end(); ++points_it)
-    {
-      transformed = transformed | TransformPoint(*points_it);
-    }
-
-    transformed = transformed | TransformPoint(cur_point_);
-
-    if (!points_.empty() && !transformed)
-    {
-      PrintError("No transform error.");
-    }
-  }
-
-  void TfFramePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void TfFramePlugin::LoadConfig(const YAML::Node& node,
+                                 const std::string& path)
   {
     if (node["frame"])
     {
@@ -462,17 +268,20 @@ namespace mapviz_plugins
     FrameEdited();
   }
 
-  void TfFramePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void TfFramePlugin::SaveConfig(YAML::Emitter& emitter,
+                                 const std::string& path)
   {
-    emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->text().toStdString();    
-    emitter << YAML::Key << "color" << YAML::Value << ui_.color->color().name().toStdString();
+    emitter << YAML::Key << "frame" << YAML::Value
+            << ui_.frame->text().toStdString();
+    emitter << YAML::Key << "color" << YAML::Value
+            << ui_.color->color().name().toStdString();
 
     std::string draw_style = ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
-    emitter << YAML::Key << "position_tolerance" << YAML::Value << position_tolerance_;
+    emitter << YAML::Key << "position_tolerance" <<
+               YAML::Value << position_tolerance_;
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
   }
 }
-
