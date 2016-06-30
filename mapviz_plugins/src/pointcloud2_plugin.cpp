@@ -74,7 +74,12 @@ namespace mapviz_plugins
       alpha_(1.0),
       min_value_(0.0),
       max_value_(100.0),
-      point_size_(3)
+      point_size_(3),
+      new_topic_(true),
+      has_message_(false),
+      num_of_feats_(0),
+      need_new_list_(true),
+      need_minmax_(false)
   {
     ui_.setupUi(config_widget_);
 
