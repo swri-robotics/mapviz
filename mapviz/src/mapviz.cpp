@@ -99,6 +99,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   ui_.statusbar->addPermanentWidget(spacer1_);
   
   screenshot_button_ = new QPushButton();
+  screenshot_button_->setMinimumSize(22, 22);
   screenshot_button_->setMaximumSize(22,22);
   screenshot_button_->setIcon(QIcon(":/images/image-x-generic.png"));
   screenshot_button_->setFlat(true);
@@ -109,8 +110,9 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   spacer2_->setMaximumSize(22,22);
   spacer2_->setMinimumSize(22,22);
   ui_.statusbar->addPermanentWidget(spacer2_);
-  
+
   rec_button_ = new QPushButton();
+  rec_button_->setMinimumSize(22, 22);
   rec_button_->setMaximumSize(22,22);
   rec_button_->setIcon(QIcon(":/images/media-record.png"));
   rec_button_->setCheckable(true);
@@ -119,18 +121,27 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   ui_.statusbar->addPermanentWidget(rec_button_);
   
   stop_button_ = new QPushButton();
+  stop_button_->setMinimumSize(22, 22);
   stop_button_->setMaximumSize(22,22);
   stop_button_->setIcon(QIcon(":/images/media-playback-stop.png"));
   stop_button_->setToolTip("Stop recording video of display canvas");
   stop_button_->setEnabled(false);
   stop_button_->setFlat(true);
   ui_.statusbar->addPermanentWidget(stop_button_);
-  
+
   spacer3_ = new QWidget(ui_.statusbar);
   spacer3_->setMaximumSize(22,22);
   spacer3_->setMinimumSize(22,22);
   ui_.statusbar->addPermanentWidget(spacer3_);
-  
+
+  recenter_button_ = new QPushButton();
+  recenter_button_->setMinimumSize(22, 22);
+  recenter_button_->setMaximumSize(22, 22);
+  recenter_button_->setIcon(QIcon(":/images/arrow_in.png"));
+  recenter_button_->setToolTip("Reset the viewport to the default location and zoom level");
+  recenter_button_->setFlat(true);
+  ui_.statusbar->addPermanentWidget(recenter_button_);
+
   ui_.statusbar->setVisible(true);
 
   QActionGroup* group = new QActionGroup(this);
@@ -149,6 +160,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
   connect(ui_.bg_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectBackgroundColor(const QColor &)));
 
+  connect(recenter_button_, SIGNAL(clicked()), this, SLOT(Recenter()));
   connect(rec_button_, SIGNAL(toggled(bool)), this, SLOT(ToggleRecord(bool)));
   connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
   connect(screenshot_button_, SIGNAL(clicked()), this, SLOT(Screenshot()));
@@ -1247,6 +1259,11 @@ void Mapviz::CaptureVideoFrame()
   {
     ROS_ERROR("Failed to get capture buffer");
   }
+}
+
+void Mapviz::Recenter()
+{
+  canvas_->ResetLocation();
 }
 
 void Mapviz::StopRecord()
