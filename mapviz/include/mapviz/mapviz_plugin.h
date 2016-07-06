@@ -256,6 +256,7 @@ namespace mapviz
 
   Q_SIGNALS:
     void DrawOrderChanged(int draw_order);
+    void SizeChanged();
     void TargetFrameChanged(const std::string& target_frame);
     void UseLatestTransformsChanged(bool use_latest_transforms);
     void VisibleChanged(bool visible);

@@ -123,6 +123,7 @@ namespace mapviz_plugins
       double PointFeature(const uint8_t*, const Field_info&);
       void PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& scan);
       QColor CalculateColor(const StampedPoint& point);
+      void UpdateMinMaxWidgets();
 
       Ui::PointCloud2_config ui_;
       QWidget* config_widget_;
