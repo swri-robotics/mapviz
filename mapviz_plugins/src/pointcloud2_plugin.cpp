@@ -635,52 +635,19 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::UseRainbowChanged(int check_state)
   {
-    if (check_state == Qt::Checked)
-    {
-      ui_.max_color->setVisible(false);
-      ui_.min_color->setVisible(false);
-      ui_.maxColorLabel->setVisible(false);
-      ui_.minColorLabel->setVisible(false);
-    }
-    else
-    {
-      ui_.max_color->setVisible(true);
-      ui_.min_color->setVisible(true);
-      ui_.maxColorLabel->setVisible(true);
-      ui_.minColorLabel->setVisible(true);
-    }
+    UpdateMinMaxWidgets();
+
     UpdateColors();
   }
 
   void PointCloud2Plugin::UseAutomaxminChanged(int check_state)
   {
-    if (check_state == Qt::Checked)
-    {
-      ui_.max_color->setVisible(true);
-      ui_.min_color->setVisible(true);
-      ui_.maxColorLabel->setVisible(true);
-      ui_.minColorLabel->setVisible(true);
-      ui_.minValueLabel->setVisible(false);
-      ui_.maxValueLabel->setVisible(false);
-      ui_.minValue->setVisible(false);
-      ui_.maxValue->setVisible(false);
-
+    if (check_state == need_minmax_) {
       need_minmax_ = true;
-
     }
-    else
-    {
-      ui_.max_color->setVisible(true);
-      ui_.min_color->setVisible(true);
-      ui_.maxColorLabel->setVisible(true);
-      ui_.minColorLabel->setVisible(true);
-      ui_.minValueLabel->setVisible(true);
-      ui_.maxValueLabel->setVisible(true);
-      ui_.minValue->setVisible(true);
-      ui_.maxValue->setVisible(true);
 
-      need_minmax_ = false;
-    }
+    UpdateMinMaxWidgets();
+
     UpdateColors();
   }
 
@@ -811,33 +778,39 @@ namespace mapviz_plugins
   void PointCloud2Plugin::ColorTransformerChanged(int index)
   {
     ROS_DEBUG("Color transformer changed to %d", index);
-    switch (index)
-    {
-      case COLOR_FLAT:
-        ui_.min_color->setVisible(true);
-        ui_.max_color->setVisible(false);
-        ui_.maxColorLabel->setVisible(false);
-        ui_.minColorLabel->setVisible(false);
-        ui_.minValueLabel->setVisible(false);
-        ui_.maxValueLabel->setVisible(false);
-        ui_.minValue->setVisible(false);
-        ui_.maxValue->setVisible(false);
-        ui_.use_rainbow->setVisible(true);
-        ui_.use_automaxmin->setVisible(true);
-        break;
-      default:
-        ui_.min_color->setVisible(!ui_.use_rainbow->isChecked());
-        ui_.max_color->setVisible(!ui_.use_rainbow->isChecked());
-        ui_.maxColorLabel->setVisible(!ui_.use_rainbow->isChecked());
-        ui_.minColorLabel->setVisible(!ui_.use_rainbow->isChecked());
-        ui_.minValueLabel->setVisible(true);
-        ui_.maxValueLabel->setVisible(true);
-        ui_.minValue->setVisible(true);
-        ui_.maxValue->setVisible(true);
-        ui_.use_rainbow->setVisible(true);
-        ui_.use_automaxmin->setVisible(true);
-    }
+    UpdateMinMaxWidgets();
     UpdateColors();
+  }
+
+  void PointCloud2Plugin::UpdateMinMaxWidgets()
+  {
+    bool color_is_flat = ui_.color_transformer->currentIndex() == COLOR_FLAT;
+
+    if (color_is_flat) 
+    {
+      ui_.maxColorLabel->hide();
+      ui_.max_color->hide();
+      ui_.minColorLabel->hide();
+      ui_.min_max_color_widget->show();
+      ui_.min_max_value_widget->hide();
+      ui_.use_automaxmin->hide();
+      ui_.use_rainbow->hide();
+    }
+    else
+    {
+      ui_.maxColorLabel->show();
+      ui_.max_color->show();
+      ui_.minColorLabel->show();
+      ui_.min_max_color_widget->setVisible(!ui_.use_rainbow->isChecked());
+      ui_.min_max_value_widget->setVisible(!ui_.use_automaxmin->isChecked());
+      ui_.use_automaxmin->show();
+      ui_.use_rainbow->show();
+    }
+
+    config_widget_->updateGeometry();
+    config_widget_->adjustSize();
+
+    Q_EMIT SizeChanged();
   }
 
   /**
