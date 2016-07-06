@@ -554,6 +554,12 @@ void MapCanvas::UpdateView()
   }
 }
 
+void MapCanvas::ResetLocation()
+{
+  SetTargetFrame(target_frame_);
+  SetViewScale(1.0);
+}
+
 void MapCanvas::ReorderDisplays()
 {
   plugins_.sort(compare_plugins);
