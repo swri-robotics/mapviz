@@ -56,12 +56,14 @@
 #include <QMessageBox>
 #include <QProcessEnvironment>
 #include <QFileInfo>
+#include <QListWidgetItem>
 
 #include <swri_math_util/constants.h>
 #include <swri_transform_util/frames.h>
 #include <swri_yaml_util/yaml_util.h>
 
 #include <mapviz/config_item.h>
+#include <QtGui/QtGui>
 
 namespace mapviz
 {
@@ -1070,6 +1072,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
   connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
   connect(plugin.get(), SIGNAL(VisibleChanged(bool)), config_item, SLOT(ToggleDraw(bool)));
+  connect(plugin.get(), SIGNAL(SizeChanged()), this, SLOT(UpdateSizeHints()));
 
   if (draw_order == 0)
   {
@@ -1312,10 +1315,16 @@ void Mapviz::Screenshot()
 
 void Mapviz::UpdateSizeHints()
 {
-  ROS_INFO("Updating size hints");
   for (int i = 0; i < ui_.configs->count(); i++)
   {
-    ui_.configs->item(i)->setSizeHint(ui_.configs->itemWidget(ui_.configs->item(i))->sizeHint());
+    QListWidgetItem* item = ui_.configs->item(i);
+    ConfigItem* widget = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
+    if (widget) {
+      // Make sure the ConfigItem in the QListWidgetItem we're getting really
+      // exists; if this method is called before it's been initialized, it would
+      // cause a crash.
+      item->setSizeHint(widget->sizeHint());
+    }
   }
 }
 
