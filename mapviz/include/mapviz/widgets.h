@@ -52,7 +52,7 @@ namespace mapviz
     
     void UpdateIndices()
     {
-      for (size_t i = 0; i < count(); i++)
+      for (int i = 0; i < count(); i++)
       {
         item(i)->setData(Qt::UserRole, QVariant((float)i));
       }
