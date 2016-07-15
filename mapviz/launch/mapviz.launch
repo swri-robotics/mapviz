@@ -24,4 +24,7 @@
 
   <node pkg="tf" type="static_transform_publisher" name="swri_transform" args="0 0 0 0 0 0 /far_field /origin 100"  />
 
+  <!-- Needed only for searching for services -->
+  <node pkg="rosapi" type="rosapi_node" name="rosapi"/>
+
 </launch>
