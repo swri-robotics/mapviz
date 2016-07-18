@@ -159,4 +159,10 @@ namespace tile_map
       cache_.insert(texture->url_hash, texture_ptr);
     }
   }
+
+  void TextureCache::Clear()
+  {
+    image_cache_->Clear();
+    cache_.clear();
+  }
 }

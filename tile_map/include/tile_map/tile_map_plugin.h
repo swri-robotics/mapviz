@@ -32,6 +32,7 @@
 
 // C++ standard libraries
 #include <string>
+#include <map>
 
 // Boost libraries
 #include <boost/filesystem.hpp>
@@ -51,6 +52,8 @@
 
 namespace tile_map
 {
+  class TileSource;
+
   class TileMapPlugin : public mapviz::MapvizPlugin
   {
     Q_OBJECT
@@ -77,9 +80,16 @@ namespace tile_map
     void PrintWarning(const std::string& message);
 
   protected Q_SLOTS:
-    void SelectSource(QString style);
+    void DeleteTileSource();
+    void SelectSource(QString source_name);
+    void SaveCustomSource();
+    void ResetTileCache();
 
   private:
+    void selectTileSource(const TileSource& tile_source);
+    void startCustomEditing();
+    void stopCustomEditing();
+
     Ui::tile_map_config ui_;
     QWidget* config_widget_;
 
@@ -89,6 +99,18 @@ namespace tile_map
     bool transformed_;
     
     TileMapView tile_map_;
+    std::map<QString, TileSource> tile_sources_;
+
+    static std::string BASE_URL_KEY;
+    static std::string COORD_ORDER_KEY;
+    static std::string CUSTOM_SOURCES_KEY;
+    static std::string MAX_ZOOM_KEY;
+    static std::string NAME_KEY;
+    static std::string SOURCE_KEY;
+    static std::string SUFFIX_KEY;
+    static QString STAMEN_TERRAIN_NAME;
+    static QString STAMEN_TONER_NAME;
+    static QString STAMEN_WATERCOLOR_NAME;
   };
 }
 

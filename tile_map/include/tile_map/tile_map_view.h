@@ -36,10 +36,14 @@
 
 #include <tile_map/texture_cache.h>
 
+#include <tile_map/tile_source.h>
+
 #include <swri_transform_util/transform.h>
 
 namespace tile_map
 {
+  class TileSource;
+
   struct Tile
   {
   public:
@@ -59,13 +63,11 @@ namespace tile_map
   {
   public:
     TileMapView();
-    
-    void SetBaseUrl(const std::string& url);
-    
-    void SetMaxLevel(int32_t level);
-    
-    void SetExtension(const std::string& extension);
-    
+
+    void ResetCache();
+
+    void SetTileSource(const TileSource& tile_source);
+
     void SetTransform(const swri_transform_util::Transform& transform);
     
     void SetView(
@@ -78,13 +80,9 @@ namespace tile_map
     void Draw();
     
   private:
-    std::string base_url_;
-    
-    std::string extension_;
-    
+    TileSource tile_source_;
+
     swri_transform_util::Transform transform_;
-    
-    int32_t max_level_;
     
     int32_t level_;
     
