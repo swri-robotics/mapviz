@@ -56,6 +56,8 @@ namespace tile_map
 
     TexturePtr GetTexture(size_t url_hash, const std::string& url, bool& failed);
     void AddTexture(const TexturePtr& texture);
+
+    void Clear();
     
   private:
     QCache<size_t, TexturePtr> cache_;

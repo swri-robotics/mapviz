@@ -104,6 +104,12 @@ namespace tile_map
     delete cache_thread_;
   }
 
+  void ImageCache::Clear()
+  {
+    cache_.clear();
+    network_manager_.cache()->clear();
+  }
+
   ImagePtr ImageCache::GetImage(size_t uri_hash, const std::string& uri, int32_t priority)
   {
     ImagePtr image;
@@ -160,11 +166,15 @@ namespace tile_map
     request.setUrl(QUrl(uri));
     request.setRawHeader("User-Agent", "mapviz-1.0");
     request.setAttribute(
-    QNetworkRequest::CacheLoadControlAttribute,
-    QNetworkRequest::PreferCache);
+        QNetworkRequest::CacheLoadControlAttribute,
+        QNetworkRequest::PreferCache);
+    request.setAttribute(
+        QNetworkRequest::HttpPipeliningAllowedAttribute,
+        true);
         
     QNetworkReply *reply = network_manager_.get(request);
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
+            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
   } 
   
   void ImageCache::ProcessReply(QNetworkReply* reply)
