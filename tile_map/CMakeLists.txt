@@ -41,15 +41,18 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 file (GLOB TILE_SRC_FILES 
-   src/image_cache.cpp
-   src/texture_cache.cpp
-   src/tile_map_view.cpp)
+  src/image_cache.cpp
+  src/texture_cache.cpp
+  src/tile_map_view.cpp)
 QT4_WRAP_CPP(TILE_SRC_FILES include/tile_map/image_cache.h)
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${catkin_LIBRARIES})
 
-file (GLOB PLUGIN_SRC_FILES src/tile_map_plugin.cpp)
-file (GLOB PLUGIN_UI_FILES src/*.ui)
+file (GLOB PLUGIN_SRC_FILES
+  src/tile_map_plugin.cpp
+  src/tile_source.cpp)
+file (GLOB PLUGIN_UI_FILES
+  src/tile_map_config.ui)
 QT4_WRAP_UI(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
 QT4_WRAP_CPP(PLUGIN_SRC_FILES include/tile_map/tile_map_plugin.h)
 

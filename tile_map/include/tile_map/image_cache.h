@@ -99,6 +99,7 @@ namespace tile_map
     void ProcessRequest(QString uri);
     void ProcessReply(QNetworkReply* reply);
     void NetworkError(QNetworkReply::NetworkError error);
+    void Clear();
   
   private:
     QNetworkAccessManager network_manager_;
