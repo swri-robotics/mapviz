@@ -31,7 +31,6 @@
 
 #include <cmath>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 
 #include <GL/gl.h>
@@ -47,9 +46,7 @@
 namespace tile_map
 {
   TileMapView::TileMapView() :
-    base_url_("localhost"),
-    extension_(".jpg"),
-    max_level_(19),
+    tile_source_("localhost", "localhost", TileSource::ZXY, true, 19, ".jpg"),
     level_(-1),
     width_(100),
     height_(100)
@@ -57,26 +54,18 @@ namespace tile_map
     ImageCachePtr image_cache = boost::make_shared<ImageCache>("/tmp/tile_map");
     tile_cache_ = boost::make_shared<TextureCache>(image_cache);
   }
-  
-  void TileMapView::SetMaxLevel(int32_t level)
+
+  void TileMapView::ResetCache()
   {
-    max_level_ = level;
+    tile_cache_->Clear();
   }
-  
-  void TileMapView::SetExtension(const std::string& extension)
+
+  void TileMapView::SetTileSource(const TileSource& tile_source)
   {
-    extension_ = extension;
+    tile_source_ = tile_source;
+    level_ = -1;
   }
-  
-  void TileMapView::SetBaseUrl(const std::string& url)
-  {
-    if (base_url_ != url)
-    {
-      base_url_ = url;
-      level_ = -1;
-    }
-  }
-  
+
   void TileMapView::SetTransform(const swri_transform_util::Transform& transform)
   {
     if (transform.GetOrigin() == transform_.GetOrigin() &&
@@ -126,7 +115,7 @@ namespace tile_map
     //
     double lat_circumference = 
       swri_transform_util::_earth_equator_circumference * std::cos(lat) / scale;
-    int32_t level = std::min(max_level_, std::max(0, static_cast<int32_t>(
+    int32_t level = std::min(tile_source_.GetMaxZoom(), std::max(0, static_cast<int32_t>(
       std::ceil(std::log(lat_circumference) / std::log(2) - 8))));
     
     int64_t max_size = std::pow(2, level);
@@ -228,8 +217,8 @@ namespace tile_map
         texture = tile_cache_->GetTexture(precache_[i].url_hash, precache_[i].url, failed);
         if (failed)
         {
-          max_level_ = std::min(max_level_, precache_[i].level - 1);
-          ROS_WARN("===== SETTING MAX LEVEL TO %d =====", max_level_);
+          tile_source_.SetMaxZoom(std::min(tile_source_.GetMaxZoom(), precache_[i].level - 1));
+          ROS_WARN("===== SETTING MAX LEVEL TO %d =====", tile_source_.GetMaxZoom());
         }
       }
     
@@ -283,8 +272,8 @@ namespace tile_map
         texture = tile_cache_->GetTexture(tiles_[i].url_hash, tiles_[i].url, failed);
         if (failed)
         {
-          max_level_ = std::min(max_level_, tiles_[i].level - 1);
-          ROS_WARN("===== SETTING MAX LEVEL TO %d =====", max_level_);
+          tile_source_.SetMaxZoom(std::min(tile_source_.GetMaxZoom(), tiles_[i].level - 1));
+          ROS_WARN("===== SETTING MAX LEVEL TO %d =====", tile_source_.GetMaxZoom());
         }
       }
     
@@ -342,11 +331,7 @@ namespace tile_map
   
   void TileMapView::InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile)
   {
-    tile.url = base_url_ + 
-      boost::lexical_cast<std::string>(level) + "/" +
-      boost::lexical_cast<std::string>(x) + "/" +
-      boost::lexical_cast<std::string>(y) + extension_;
-  
+    tile.url = tile_source_.GenerateTileUrl(level, x, y);
   
     tile.url_hash = hash_function_(tile.url);
   
@@ -356,8 +341,8 @@ namespace tile_map
     tile.texture = tile_cache_->GetTexture(tile.url_hash, tile.url, failed);
     if (failed)
     {
-      max_level_ = std::min(max_level_, level - 1);
-      ROS_WARN("===== SETTING MAX LEVEL TO %d =====", max_level_);
+      tile_source_.SetMaxZoom(std::min(tile_source_.GetMaxZoom(), level - 1));
+      ROS_WARN("===== SETTING MAX LEVEL TO %d =====", tile_source_.GetMaxZoom());
     }
   
     int32_t subdivs = std::max(0, 4 - level);
