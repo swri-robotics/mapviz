@@ -28,57 +28,59 @@
 //
 // *****************************************************************************
 
-#include <tile_map/tile_source.h>
+#ifndef TILE_MAP_WMTS_SOURCE_H
+#define TILE_MAP_WMTS_SOURCE_H
+
+#include "tile_source.h"
+
+#include <boost/functional/hash.hpp>
 
 namespace tile_map
 {
-  const QString& TileSource::GetBaseUrl() const
+  class WmtsSource : public TileSource
   {
-    return base_url_;
-  }
+  Q_OBJECT
+  public:
+    /**
+     * Creates a new tile source from a set of known parameters.
+     *
+     * @param[in] name A user-friendly display name
+     * @param[in] base_url The base HTTP URL of the data source; e. g.:
+     *   "http://tile.stamen.com/terrain/"
+     * @param[in] is_custom If this is a custom (i. e. not one of the default)
+     *   tile source; custom sources are saved and loaded from our settings
+     * @param[in] max_zoom The maximum zoom level
+     */
+    explicit WmtsSource(const QString& name,
+               const QString& base_url,
+               bool is_custom,
+               int32_t max_zoom);
 
-  void TileSource::SetBaseUrl(const QString& base_url)
-  {
-    base_url_ = base_url;
-  }
+    virtual size_t GenerateTileHash(int32_t level, int64_t x, int64_t y);
 
-  bool TileSource::IsCustom() const
-  {
-    return is_custom_;
-  }
+    /**
+     * Given a zoom level and x and y coordinates appropriate for the tile source's
+     * projection, this will generate a URL that points to an image tile for that
+     * location.
+     *
+     * This expects the URL to have three strings in it, "{level}", "{x}", and "{y}",
+     * which will be replaced with the passed values.  See tile_map_plugin.cpp for
+     * example URLs.
+     *
+     * @param[in] level The zoom level
+     * @param[in] x The X coordinate of the tile
+     * @param[in] y The Y coordinate of the tile
+     * @return A URL that references that tile
+     */
+    virtual QString GenerateTileUrl(int32_t level, int64_t x, int64_t y);
 
-  void TileSource::SetCustom(bool is_custom)
-  {
-    is_custom_ = is_custom;
-  }
+    virtual QString GetType() const;
 
-  int32_t TileSource::GetMaxZoom() const
-  {
-    return max_zoom_;
-  }
+    static const QString WMTS_TYPE;
 
-  void TileSource::SetMaxZoom(int32_t max_zoom)
-  {
-    max_zoom_ = max_zoom;
-  }
-
-  int32_t TileSource::GetMinZoom() const
-  {
-    return min_zoom_;
-  }
-
-  void TileSource::SetMinZoom(int32_t min_zoom)
-  {
-    min_zoom_ = min_zoom;
-  }
-
-  const QString& TileSource::GetName() const
-  {
-    return name_;
-  }
-
-  void TileSource::SetName(const QString& name)
-  {
-    name_ = name;
-  }
+  private:
+    boost::hash<std::string> hash_;
+  };
 }
+
+#endif //TILE_MAP_WMTS_SOURCE_H

@@ -29,6 +29,8 @@
 
 #include <tile_map/tile_map_plugin.h>
 #include <tile_map/tile_source.h>
+#include <tile_map/bing_source.h>
+#include <tile_map/wmts_source.h>
 
 // QT libraries
 #include <QGLWidget>
@@ -50,40 +52,45 @@ PLUGINLIB_DECLARE_CLASS(mapviz_plugins, tile_map, tile_map::TileMapPlugin, mapvi
 namespace tile_map
 {
   std::string TileMapPlugin::BASE_URL_KEY = "base_url";
-  std::string TileMapPlugin::COORD_ORDER_KEY = "coord_order";
+  std::string TileMapPlugin::BING_API_KEY = "bing_api_key";
   std::string TileMapPlugin::CUSTOM_SOURCES_KEY = "custom_sources";
   std::string TileMapPlugin::MAX_ZOOM_KEY = "max_zoom";
   std::string TileMapPlugin::NAME_KEY = "name";
   std::string TileMapPlugin::SOURCE_KEY = "source";
-  std::string TileMapPlugin::SUFFIX_KEY = "suffix";
+  std::string TileMapPlugin::TYPE_KEY = "type";
+  QString TileMapPlugin::BING_NAME = "Bing Maps (terrain)";
   QString TileMapPlugin::STAMEN_TERRAIN_NAME = "Stamen (terrain)";
   QString TileMapPlugin::STAMEN_TONER_NAME = "Stamen (toner)";
   QString TileMapPlugin::STAMEN_WATERCOLOR_NAME = "Stamen (watercolor)";
 
   TileMapPlugin::TileMapPlugin() :
     config_widget_(new QWidget()),
-    transformed_(false)
+    transformed_(false),
+    last_center_x_(0.0),
+    last_center_y_(0.0),
+    last_scale_(0.0),
+    last_height_(0),
+    last_width_(0)
   {
     ui_.setupUi(config_widget_);
 
-    tile_sources_[STAMEN_TERRAIN_NAME] = TileSource(STAMEN_TERRAIN_NAME,
-                                                    "http://tile.stamen.com/terrain/",
-                                                    TileSource::ZXY,
-                                                    false,
-                                                    15,
-                                                    ".png");
-    tile_sources_[STAMEN_TONER_NAME] = TileSource(STAMEN_TONER_NAME,
-                                                  "http://tile.stamen.com/toner/",
-                                                  TileSource::ZXY,
-                                                  false,
-                                                  19,
-                                                  ".png");
-    tile_sources_[STAMEN_WATERCOLOR_NAME] = TileSource(STAMEN_WATERCOLOR_NAME,
-                                                       "http://tile.stamen.com/watercolor/",
-                                                       TileSource::ZXY,
-                                                       false,
-                                                       19,
-                                                       ".jpg");
+    tile_sources_[STAMEN_TERRAIN_NAME] =
+        boost::make_shared<WmtsSource>(STAMEN_TERRAIN_NAME,
+                                       "http://tile.stamen.com/terrain/{level}/{x}/{y}.png",
+                                       false,
+                                       15);
+    tile_sources_[STAMEN_TONER_NAME] =
+        boost::make_shared<WmtsSource>(STAMEN_TONER_NAME,
+                                       "http://tile.stamen.com/toner/{level}/{x}/{y}.png",
+                                       false,
+                                       19);
+    tile_sources_[STAMEN_WATERCOLOR_NAME] =
+        boost::make_shared<WmtsSource>(STAMEN_WATERCOLOR_NAME,
+                                       "http://tile.stamen.com/watercolor/{level}/{x}/{y}.jpg",
+                                       false,
+                                       19);
+    boost::shared_ptr<BingSource> bing = boost::make_shared<BingSource>(BING_NAME);
+    tile_sources_[BING_NAME] = bing;
 
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
@@ -95,8 +102,12 @@ namespace tile_map
 
     source_frame_ = swri_transform_util::_wgs84_frame;
 
+    QObject::connect(bing.get(), SIGNAL(ErrorMessage(const std::string&)),
+                     this, SLOT(PrintError(const std::string&)));
+    QObject::connect(bing.get(), SIGNAL(InfoMessage(const std::string&)),
+                     this, SLOT(PrintInfo(const std::string&)));
     QObject::connect(ui_.delete_button, SIGNAL(clicked()), this, SLOT(DeleteTileSource()));
-    QObject::connect(ui_.source_combo, SIGNAL(activated(QString)), this, SLOT(SelectSource(QString)));
+    QObject::connect(ui_.source_combo, SIGNAL(activated(const QString&)), this, SLOT(SelectSource(const QString&)));
     QObject::connect(ui_.save_button, SIGNAL(clicked()), this, SLOT(SaveCustomSource()));
     QObject::connect(ui_.reset_cache_button, SIGNAL(clicked()), this, SLOT(ResetTileCache()));
   }
@@ -126,11 +137,12 @@ namespace tile_map
     }
   }
 
-  void TileMapPlugin::SelectSource(QString source)
+  void TileMapPlugin::SelectSource(const QString& source)
   {
     if (source == STAMEN_TERRAIN_NAME ||
         source == STAMEN_WATERCOLOR_NAME ||
-        source == STAMEN_TONER_NAME)
+        source == STAMEN_TONER_NAME ||
+        source == BING_NAME)
     {
       stopCustomEditing();
     }
@@ -139,10 +151,27 @@ namespace tile_map
       startCustomEditing();
     }
 
-    if (tile_sources_.find(source) != tile_sources_.end())
+    std::map<QString, boost::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(source);
+
+    // If the previously selected source was Bing, these will have been changed, so
+    // they should be changed back.  There's not an easy way to know here what the
+    // previously selected item was, so just always change them.
+    ui_.url_label->setText("Base URL:");
+    ui_.save_button->setText("Save...");
+    if (iter != tile_sources_.end())
     {
-      selectTileSource(tile_sources_[source]);
+      selectTileSource(iter->second);
       initialized_ = true;
+      // For the Bing map type, change a couple of the fields to have more appropriate
+      // labels.  There should probably be a cleaner way to do this if we end up adding
+      // more tile source types....
+      if (iter->second->GetType() == BingSource::BING_TYPE)
+      {
+        ui_.url_label->setText("API Key:");
+        ui_.save_button->setText("Save");
+        ui_.base_url_text->setEnabled(true);
+        ui_.save_button->setEnabled(true);
+      }
     }
     else
     {
@@ -158,13 +187,24 @@ namespace tile_map
     // should leave the default blank.
     QString current_source = ui_.source_combo->currentText();
     QString default_name = "";
-    if (tile_sources_.find(current_source) != tile_sources_.end())
+
+    std::map<QString, boost::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(current_source);
+    if (iter != tile_sources_.end())
     {
-      if (tile_sources_[current_source].IsCustom())
+      if (iter->second->IsCustom())
       {
         default_name = current_source;
       }
+      else if (iter->second->GetType() == BingSource::BING_TYPE)
+      {
+        // If the user has picked Bing as they're source, we're not actually
+        // saving a custom map source, just updating the API key
+        BingSource* bing_source = static_cast<BingSource*>(iter->second.get());
+        bing_source->SetApiKey(ui_.base_url_text->text());
+        return;
+      }
     }
+
     bool ok;
     QString name = QInputDialog::getText(config_widget_,
                                          tr("Save New Tile Source"),
@@ -175,12 +215,10 @@ namespace tile_map
     name = name.trimmed();
     if (ok && !name.isEmpty())
     {
-      TileSource source(name,
+      boost::shared_ptr<WmtsSource> source = boost::make_shared<WmtsSource>(name,
                         ui_.base_url_text->text(),
-                        static_cast<TileSource::COORD_ORDER>(ui_.coord_order_combo_box->currentIndex()),
                         true,
-                        ui_.max_zoom_spin_box->value(),
-                        ui_.suffix_text->text());
+                        ui_.max_zoom_spin_box->value());
       int existing_index = ui_.source_combo->findText(name);
       if (existing_index != -1)
       {
@@ -258,7 +296,21 @@ namespace tile_map
     {
       tf::Vector3 center(x, y, 0);
       center = to_wgs84 * center;
-      tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+      if (center.y() != last_center_y_ ||
+          center.x() != last_center_x_ ||
+          scale != last_scale_ ||
+          canvas_->width() != last_width_ ||
+          canvas_->height() != last_height_)
+      {
+        // Draw() is called very frequently, and SetView is a fairly expensive operation, so we
+        // can save some CPU time by only calling it when the relevant parameters have changed.
+        last_center_y_ = center.y();
+        last_center_x_ = center.x();
+        last_scale_ = scale;
+        last_width_ = canvas_->width();
+        last_height_ = canvas_->height();
+        tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+      }
       tile_map_.Draw();
     }
   }
@@ -285,16 +337,36 @@ namespace tile_map
       YAML::Node::const_iterator source_iter;
       for (source_iter = sources.begin(); source_iter != sources.end(); source_iter++)
       {
-        TileSource source(QString::fromStdString(((*source_iter)[NAME_KEY]).as<std::string>()),
-                          QString::fromStdString((*source_iter)[BASE_URL_KEY].as<std::string>()),
-                          static_cast<TileSource::COORD_ORDER>((*source_iter)[COORD_ORDER_KEY].as<int32_t>()),
-                          true,
-                          (*source_iter)[MAX_ZOOM_KEY].as<int>(),
-                          QString::fromStdString((*source_iter)[SUFFIX_KEY].as<std::string>())
-                          );
-        tile_sources_[source.GetName()] = source;
-        ui_.source_combo->addItem(source.GetName());
+        std::string type = "";
+        if ((*source_iter)[TYPE_KEY])
+        {
+          // If the type isn't set, we'll assume it's WMTS
+          type = ((*source_iter)[TYPE_KEY]).as<std::string>();
+        }
+        boost::shared_ptr<TileSource> source;
+        if (type == "wmts" || type.empty())
+        {
+          source = boost::make_shared<WmtsSource>(
+              QString::fromStdString(((*source_iter)[NAME_KEY]).as<std::string>()),
+              QString::fromStdString((*source_iter)[BASE_URL_KEY].as<std::string>()),
+              true,
+              (*source_iter)[MAX_ZOOM_KEY].as<int>());
+        }
+        else if (type == "bing")
+        {
+          source = boost::make_shared<BingSource>(
+              QString::fromStdString(((*source_iter)[NAME_KEY]).as<std::string>()));
+        }
+        tile_sources_[source->GetName()] = source;
+        ui_.source_combo->addItem(source->GetName());
       }
+    }
+
+    if (node[BING_API_KEY])
+    {
+      std::string key = node[BING_API_KEY].as<std::string>();
+      BingSource* source = static_cast<BingSource*>(tile_sources_[BING_NAME].get());
+      source->SetApiKey(QString::fromStdString(key));
     }
     
     if (node[SOURCE_KEY])
@@ -316,39 +388,48 @@ namespace tile_map
   {
     emitter << YAML::Key << CUSTOM_SOURCES_KEY << YAML::Value << YAML::BeginSeq;
 
-    std::map<QString, TileSource>::iterator iter;
+    std::map<QString, boost::shared_ptr<TileSource> >::iterator iter;
     for (iter = tile_sources_.begin(); iter != tile_sources_.end(); iter++)
     {
-      if (iter->second.IsCustom())
+      if (iter->second->IsCustom())
       {
         emitter << YAML::BeginMap;
-        emitter << YAML::Key << BASE_URL_KEY << YAML::Value << iter->second.GetBaseUrl().toStdString();
-        emitter << YAML::Key << COORD_ORDER_KEY << YAML::Value << (int) iter->second.GetCoordOrder();
-        emitter << YAML::Key << MAX_ZOOM_KEY << YAML::Value << iter->second.GetMaxZoom();
-        emitter << YAML::Key << NAME_KEY << YAML::Value << iter->second.GetName().toStdString();
-        emitter << YAML::Key << SUFFIX_KEY << YAML::Value << iter->second.GetSuffix().toStdString();
+        emitter << YAML::Key << BASE_URL_KEY << YAML::Value << iter->second->GetBaseUrl().toStdString();
+        emitter << YAML::Key << MAX_ZOOM_KEY << YAML::Value << iter->second->GetMaxZoom();
+        emitter << YAML::Key << NAME_KEY << YAML::Value << iter->second->GetName().toStdString();
+        emitter << YAML::Key << TYPE_KEY << YAML::Value << iter->second->GetType().toStdString();
         emitter << YAML::EndMap;
       }
     }
     emitter << YAML::EndSeq;
 
-    emitter << YAML::Key << SOURCE_KEY << YAML::Value << boost::trim_copy(ui_.source_combo->currentText().toStdString());
+    BingSource* bing_source = static_cast<BingSource*>(tile_sources_[BING_NAME].get());
+    emitter << YAML::Key << BING_API_KEY <<
+               YAML::Value << boost::trim_copy(bing_source->GetApiKey().toStdString());
+
+    emitter << YAML::Key << SOURCE_KEY <<
+               YAML::Value << boost::trim_copy(ui_.source_combo->currentText().toStdString());
   }
 
-  void TileMapPlugin::selectTileSource(const TileSource& tile_source)
+  void TileMapPlugin::selectTileSource(const boost::shared_ptr<TileSource>& tile_source)
   {
+    last_height_ = 0; // This will force us to recalculate our view
     tile_map_.SetTileSource(tile_source);
-    ui_.base_url_text->setText(tile_source.GetBaseUrl());
-    ui_.suffix_text->setText(tile_source.GetSuffix());
-    ui_.coord_order_combo_box->setCurrentIndex((int) tile_source.GetCoordOrder());
-    ui_.max_zoom_spin_box->setValue(tile_source.GetMaxZoom());
+    if (tile_source->GetType() == BingSource::BING_TYPE)
+    {
+      BingSource* bing_source = static_cast<BingSource*>(tile_source.get());
+      ui_.base_url_text->setText(bing_source->GetApiKey());
+    }
+    else
+    {
+      ui_.base_url_text->setText(tile_source->GetBaseUrl());
+    }
+    ui_.max_zoom_spin_box->setValue(tile_source->GetMaxZoom());
   }
 
   void TileMapPlugin::startCustomEditing()
   {
     ui_.base_url_text->setEnabled(true);
-    ui_.suffix_text->setEnabled(true);
-    ui_.coord_order_combo_box->setEnabled(true);
     ui_.delete_button->setEnabled(true);
     ui_.max_zoom_spin_box->setEnabled(true);
     ui_.save_button->setEnabled(true);
@@ -357,8 +438,6 @@ namespace tile_map
   void TileMapPlugin::stopCustomEditing()
   {
     ui_.base_url_text->setEnabled(false);
-    ui_.suffix_text->setEnabled(false);
-    ui_.coord_order_combo_box->setEnabled(false);
     ui_.delete_button->setEnabled(false);
     ui_.max_zoom_spin_box->setEnabled(false);
     ui_.save_button->setEnabled(false);
