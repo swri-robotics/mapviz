@@ -38,7 +38,11 @@ add_definitions(
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
+find_package(PkgConfig REQUIRED)
+
 find_package(GLU REQUIRED)
+
+pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -55,7 +59,7 @@ catkin_package(
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -63,14 +67,20 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 file (GLOB TILE_SRC_FILES 
   src/image_cache.cpp
   src/texture_cache.cpp
+  src/bing_source.cpp
+  src/tile_source.cpp
+  src/wmts_source.cpp
   src/tile_map_view.cpp)
-qt5_wrap_cpp(TILE_SRC_FILES include/tile_map/image_cache.h)
+qt5_wrap_cpp(TILE_SRC_FILES 
+  include/tile_map/image_cache.h
+  include/tile_map/tile_source.h
+  include/tile_map/wmts_source.h
+  include/tile_map/bing_source.h)
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${JSONCPP_LIBRARIES} ${catkin_LIBRARIES})
 
 file (GLOB PLUGIN_SRC_FILES
-  src/tile_map_plugin.cpp
-  src/tile_source.cpp)
+  src/tile_map_plugin.cpp)
 file (GLOB PLUGIN_UI_FILES
   src/tile_map_config.ui)
 qt5_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
