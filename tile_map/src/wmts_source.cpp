@@ -28,57 +28,43 @@
 //
 // *****************************************************************************
 
-#include <tile_map/tile_source.h>
+#include <tile_map/wmts_source.h>
+
+#include <boost/functional/hash.hpp>
 
 namespace tile_map
 {
-  const QString& TileSource::GetBaseUrl() const
-  {
-    return base_url_;
-  }
+  const QString WmtsSource::WMTS_TYPE = "wmts";
 
-  void TileSource::SetBaseUrl(const QString& base_url)
-  {
-    base_url_ = base_url;
-  }
-
-  bool TileSource::IsCustom() const
-  {
-    return is_custom_;
-  }
-
-  void TileSource::SetCustom(bool is_custom)
-  {
-    is_custom_ = is_custom;
-  }
-
-  int32_t TileSource::GetMaxZoom() const
-  {
-    return max_zoom_;
-  }
-
-  void TileSource::SetMaxZoom(int32_t max_zoom)
-  {
-    max_zoom_ = max_zoom;
-  }
-
-  int32_t TileSource::GetMinZoom() const
-  {
-    return min_zoom_;
-  }
-
-  void TileSource::SetMinZoom(int32_t min_zoom)
-  {
-    min_zoom_ = min_zoom;
-  }
-
-  const QString& TileSource::GetName() const
-  {
-    return name_;
-  }
-
-  void TileSource::SetName(const QString& name)
+  WmtsSource::WmtsSource(const QString& name,
+                         const QString& base_url,
+                         bool is_custom,
+                         int32_t max_zoom)
   {
     name_ = name;
+    base_url_ = base_url;
+    is_custom_ = is_custom;
+    max_zoom_ = max_zoom;
+    min_zoom_ = 1;
+  }
+
+  QString WmtsSource::GetType() const
+  {
+    return WMTS_TYPE;
+  }
+
+  size_t WmtsSource::GenerateTileHash(int32_t level, int64_t x, int64_t y)
+  {
+    return hash_(GenerateTileUrl(level, x, y).toStdString());
+  }
+
+  QString WmtsSource::GenerateTileUrl(int32_t level, int64_t x, int64_t y)
+  {
+    QString url(base_url_);
+    url.replace(QString::fromStdString("{level}"), QString::number(level));
+    url.replace(QString::fromStdString("{x}"), QString::number(x));
+    url.replace(QString::fromStdString("{y}"), QString::number(y));
+
+    return url;
   }
 }

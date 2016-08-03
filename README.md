@@ -269,7 +269,7 @@ Textured markers follow the same general approach as traditional markers, but ca
  * Topic: The textured marker topic
 
 ### Tile Map
-Projects a geo-referenced multi-resolution image tile map into the scene.  Data is automatically streamed from [OpenMapQuest](http://open.mapquest.com/) (satellite and roads) or [Stamen Design] (http://maps.stamen.com/) (terrain, watercolor, and toner).  Custom or local map servers can also be specified.  Map data is cached to disk which enables some limited use completely offline.
+Projects a geo-referenced multi-resolution image tile map into the scene.  Map tiles can be obtained from [Bing Maps](https://www.bing.com/mapspreview) or any [WMTS Tile Service](http://www.opengeospatial.org/standards/wmts).  Pre-defined services that access [Stamen Design](http://maps.stamen.com/) (terrain, watercolor, and toner) are provided.  Custom or local WMTS map servers can also be specified.  Map data is cached to disk which enables some limited use completely offline.
 
 <img src="https://github.com/swri-robotics/mapviz/wiki/satellite.png" width="200" height="200" />
 <img src="https://github.com/swri-robotics/mapviz/wiki/roads.png" width="200" height="200" />
@@ -278,7 +278,10 @@ Projects a geo-referenced multi-resolution image tile map into the scene.  Data 
 <img src="https://github.com/swri-robotics/mapviz/wiki/toner.png" width="200" height="200" />
 
 **Parameters**
- * Source: The source of the tile data.
+ * Source: The name of source of the tile data.
+ * Base URL: A template URL used to obtain map tiles.  When obtaining map tiles, parameters labeled `{level}`, `{x}`, and `{y}` in the URL will be replaced with appropriate values.  For example, `http://tile.stamen.com/terrain/{level}/{x}/{y}.png` is appropriate for retrieving terrain tiles from Stamen Design.
+ * API Key: When the `Bing Maps (terrain)` source is selected, you must enter a Bing Maps access key here and click the `Save` button in order for tiles to be available.  You can get a Bing Maps Key from the [Microsoft Developer Network](https://msdn.microsoft.com/en-us/library/ff428642.aspx).
+ * Max Zoom: The maximum zoom level that will be used when requesting tiles.
 
 ### TF Frame
 

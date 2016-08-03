@@ -36,6 +36,7 @@
 
 // Boost libraries
 #include <boost/filesystem.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <mapviz/mapviz_plugin.h>
 
@@ -74,19 +75,18 @@ namespace tile_map
 
     QWidget* GetConfigWidget(QWidget* parent);
 
-  protected:
+  protected Q_SLOTS:
     void PrintError(const std::string& message);
     void PrintInfo(const std::string& message);
     void PrintWarning(const std::string& message);
 
-  protected Q_SLOTS:
     void DeleteTileSource();
-    void SelectSource(QString source_name);
+    void SelectSource(const QString& source_name);
     void SaveCustomSource();
     void ResetTileCache();
 
   private:
-    void selectTileSource(const TileSource& tile_source);
+    void selectTileSource(const boost::shared_ptr<TileSource>& tile_source);
     void startCustomEditing();
     void stopCustomEditing();
 
@@ -99,15 +99,22 @@ namespace tile_map
     bool transformed_;
     
     TileMapView tile_map_;
-    std::map<QString, TileSource> tile_sources_;
+    std::map<QString, boost::shared_ptr<TileSource> > tile_sources_;
+
+    double last_center_x_;
+    double last_center_y_;
+    double last_scale_;
+    int32_t last_height_;
+    int32_t last_width_;
 
     static std::string BASE_URL_KEY;
-    static std::string COORD_ORDER_KEY;
+    static std::string BING_API_KEY;
     static std::string CUSTOM_SOURCES_KEY;
     static std::string MAX_ZOOM_KEY;
     static std::string NAME_KEY;
     static std::string SOURCE_KEY;
-    static std::string SUFFIX_KEY;
+    static std::string TYPE_KEY;
+    static QString BING_NAME;
     static QString STAMEN_TERRAIN_NAME;
     static QString STAMEN_TONER_NAME;
     static QString STAMEN_WATERCOLOR_NAME;
