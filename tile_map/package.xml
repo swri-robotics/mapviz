@@ -15,11 +15,12 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>libjsoncpp-dev</build_depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
   <depend>libqt5-network</depend>
   <depend>libqt5-opengl</depend>
-  <build_depend>libqt5-opengl-dev</build_depend>
   <depend>libqt5-widgets</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
@@ -28,6 +29,7 @@
   <depend>swri_transform_util</depend>
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
+  <exec_depend>libjsoncpp</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

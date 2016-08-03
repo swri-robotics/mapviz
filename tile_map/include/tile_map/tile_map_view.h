@@ -32,11 +32,10 @@
 
 #include <string>
 
-#include <boost/functional/hash.hpp>
-
-#include <tile_map/texture_cache.h>
+#include <boost/shared_ptr.hpp>
 
 #include <tile_map/tile_source.h>
+#include <tile_map/texture_cache.h>
 
 #include <swri_transform_util/transform.h>
 
@@ -47,7 +46,7 @@ namespace tile_map
   struct Tile
   {
   public:
-    std::string url;
+    QString url;
     size_t url_hash;
     int32_t level;
     int32_t subdiv_count;
@@ -66,7 +65,7 @@ namespace tile_map
 
     void ResetCache();
 
-    void SetTileSource(const TileSource& tile_source);
+    void SetTileSource(const boost::shared_ptr<TileSource>& tile_source);
 
     void SetTransform(const swri_transform_util::Transform& transform);
     
@@ -80,7 +79,7 @@ namespace tile_map
     void Draw();
     
   private:
-    TileSource tile_source_;
+    boost::shared_ptr<TileSource> tile_source_;
 
     swri_transform_util::Transform transform_;
     
@@ -96,8 +95,7 @@ namespace tile_map
     
     std::vector<Tile> tiles_;
     std::vector<Tile> precache_;
-    
-    boost::hash<std::string> hash_function_;
+
     TextureCachePtr tile_cache_;
     
     void ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude);
