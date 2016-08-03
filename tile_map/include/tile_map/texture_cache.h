@@ -54,7 +54,7 @@ namespace tile_map
   public:
     explicit TextureCache(ImageCachePtr image_cache, size_t size = 512);
 
-    TexturePtr GetTexture(size_t url_hash, const std::string& url, bool& failed);
+    TexturePtr GetTexture(size_t url_hash, const QString& url, bool& failed);
     void AddTexture(const TexturePtr& texture);
 
     void Clear();

@@ -31,6 +31,7 @@
 #ifndef TILE_MAP_TILE_SOURCE_H
 #define TILE_MAP_TILE_SOURCE_H
 
+#include <QObject>
 #include <QString>
 
 namespace tile_map
@@ -39,70 +40,74 @@ namespace tile_map
    * Represents a network source for map tiles; contains information about how to
    * connect to the source and how to retrieve tiles from it.
    *
-   * Currently this implementation is fairly WMTS-centric, but there's no reason
-   * this couldn't be made a bit more generate for supporting other service formats
-   * in the future.
+   * Implementations of this should be specific to a type of map server such as
+   * WMS, WMTS, or TMS, and implement the appropriate methods for retrieiving tiles
+   * from those servers.
    */
-  class TileSource
+  class TileSource : public QObject
   {
+  Q_OBJECT
   public:
-    enum COORD_ORDER
-    {
-      // The order of the listing here should match the order listed
-      // in the combo box in tile_map_config.ui
-      ZXY,
-      ZYX,
-      XYZ,
-      XZY,
-      YXZ,
-      YZX
-    };
+    virtual ~TileSource() {};
 
-    TileSource();
+    virtual const QString& GetBaseUrl() const;
 
-    TileSource(const QString& name,
-               const QString& base_url,
-               COORD_ORDER coord_order,
-               bool is_custom,
-               int32_t max_zoom,
-               const QString& suffix
-               );
+    virtual void SetBaseUrl(const QString& base_url);
 
-    TileSource(const TileSource& tile_source);
+    virtual bool IsCustom() const;
 
-    const QString& GetBaseUrl() const;
+    virtual void SetCustom(bool is_custom);
 
-    void SetBaseUrl(const QString& base_url);
+    virtual int32_t GetMaxZoom() const;
 
-    COORD_ORDER GetCoordOrder() const;
+    virtual void SetMaxZoom(int32_t max_zoom);
 
-    void SetCoordOrder(COORD_ORDER coord_order);
+    virtual int32_t GetMinZoom() const;
 
-    bool IsCustom() const;
+    virtual void SetMinZoom(int32_t min_zoom);
 
-    void SetCustom(bool is_custom);
+    virtual const QString& GetName() const;
 
-    int32_t GetMaxZoom() const;
+    virtual void SetName(const QString& name);
 
-    void SetMaxZoom(int32_t max_zoom);
+    /**
+     * Generates a hash that uniquely identifies the tile from this source at the
+     * specified level and coordinates.
+     * @param level The zoom level
+     * @param x The X coordinate
+     * @param y The Y coordinate
+     * @return A hash identifying the tile
+     */
+    virtual size_t GenerateTileHash(int32_t level, int64_t x, int64_t y) = 0;
 
-    const QString& GetName() const;
+    /**
+     * Generates an HTTP or HTTPS URL that refers to a map tile from this source
+     * at the given level and x and y coordinates.
+     * @param level The zoom level
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @return A URL referring to the map tile
+     */
+    virtual QString GenerateTileUrl(int32_t level, int64_t x, int64_t y) = 0;
 
-    void SetName(const QString& name);
+    /**
+     * Returns a string identifying the type of map source ("wmts", "bing", etc.)
+     * @return
+     */
+    virtual QString GetType() const = 0;
 
-    const QString& GetSuffix() const;
+  Q_SIGNALS:
+    void ErrorMessage(const std::string& error_msg) const;
+    void InfoMessage(const std::string& info_msg) const;
 
-    void SetSuffix(const QString& suffix);
+  protected:
+    TileSource() {};
 
-    std::string GenerateTileUrl(int32_t level, int64_t x, int64_t y) const;
-
-  private:
     QString base_url_;
-    COORD_ORDER coord_order_;
     bool is_custom_;
     int32_t max_zoom_;
+    int32_t min_zoom_;
     QString name_;
-    QString suffix_;
   };
 }
 

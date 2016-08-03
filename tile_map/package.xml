@@ -15,7 +15,9 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>libqt4-dev</depend>
+  <build_depend>libjsoncpp-dev</build_depend>
+  <build_depend>libqt4-dev</build_depend>
+  <build_depend>libqt4-opengl-dev</build_depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>qt4-qmake</depend>
@@ -23,6 +25,9 @@
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
   <depend>tf</depend>
+  <exec_depend>libjsoncpp</exec_depend>
+  <exec_depend>libqt4</exec_depend>
+  <exec_depend>libqt4-opengl</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
