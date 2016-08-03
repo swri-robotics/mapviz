@@ -300,7 +300,7 @@ namespace mapviz_plugins
     transformed = transformed | TransformPoint(cur_point_);
     if (laps_.size() > 0)
     {
-      for (int i = 0; i < laps_.size(); i++)
+      for (size_t i = 0; i < laps_.size(); i++)
       {
         std::list<StampedPoint>::iterator lap_it = laps_[i].begin();
         for (; lap_it != laps_[i].end(); ++lap_it)
@@ -324,7 +324,7 @@ namespace mapviz_plugins
     QColor base_color = color_;
     if (laps_.size() != 0)
     {
-      for (int i = 0; i < laps_.size(); i++)
+      for (size_t i = 0; i < laps_.size(); i++)
       {
         UpdateColor(base_color,i);
         if (draw_style_ == LINES)
@@ -403,7 +403,7 @@ namespace mapviz_plugins
     QColor base_color = color_;
     if (laps_.size() != 0)
     {
-      for (int i = 0; i < laps_.size(); i++)
+      for (size_t i = 0; i < laps_.size(); i++)
       {
         UpdateColor(base_color,i);
         std::list<StampedPoint>::iterator it = laps_[i].begin();
