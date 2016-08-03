@@ -196,7 +196,7 @@ std::vector<ros::master::TopicInfo> SelectTopicDialog::selectedTopics() const
 
   std::vector<ros::master::TopicInfo> selection;
   selection.resize(qt_selection.size());
-  for (size_t i = 0; i < qt_selection.size(); i++) {
+  for (int i = 0; i < qt_selection.size(); i++) {
     if (!qt_selection[i].isValid()) {
       continue;
     }
