@@ -57,9 +57,9 @@
 #include <QProcessEnvironment>
 #include <QFileInfo>
 
-#include <math_util/constants.h>
-#include <transform_util/frames.h>
-#include <yaml_util/yaml_util.h>
+#include <swri_math_util/constants.h>
+#include <swri_transform_util/frames.h>
+#include <swri_yaml_util/yaml_util.h>
 
 #include <mapviz/config_item.h>
 
@@ -447,7 +447,7 @@ void Mapviz::Open(const std::string& filename)
   setWindowTitle(QString::fromStdString(title));
 
   YAML::Node doc;
-  if (!yaml_util::LoadFile(filename, doc))
+  if (!swri_yaml_util::LoadFile(filename, doc))
   {
     ROS_ERROR("Failed to load file: %s", filename.c_str());
     return;
@@ -462,103 +462,103 @@ void Mapviz::Open(const std::string& filename)
 
     ClearDisplays();
 
-    if (yaml_util::FindValue(doc, "capture_directory"))
+    if (swri_yaml_util::FindValue(doc, "capture_directory"))
     {
       doc["capture_directory"] >> capture_directory_;
     }
 
-    if (yaml_util::FindValue(doc, "fixed_frame"))
+    if (swri_yaml_util::FindValue(doc, "fixed_frame"))
     {
       std::string fixed_frame;
       doc["fixed_frame"] >> fixed_frame;
       ui_.fixedframe->setEditText(fixed_frame.c_str());
     }
 
-    if (yaml_util::FindValue(doc, "target_frame"))
+    if (swri_yaml_util::FindValue(doc, "target_frame"))
     {
       std::string target_frame;
       doc["target_frame"] >> target_frame;
       ui_.targetframe->setEditText(target_frame.c_str());
     }
 
-    if (yaml_util::FindValue(doc, "fix_orientation"))
+    if (swri_yaml_util::FindValue(doc, "fix_orientation"))
     {
       bool fix_orientation = false;
       doc["fix_orientation"] >> fix_orientation;
       ui_.actionFix_Orientation->setChecked(fix_orientation);
     }
     
-    if (yaml_util::FindValue(doc, "rotate_90"))
+    if (swri_yaml_util::FindValue(doc, "rotate_90"))
     {
       bool rotate_90 = false;
       doc["rotate_90"] >> rotate_90;
       ui_.actionRotate_90->setChecked(rotate_90);
     }
 
-    if (yaml_util::FindValue(doc, "show_displays"))
+    if (swri_yaml_util::FindValue(doc, "show_displays"))
     {
       bool show_displays = false;
       doc["show_displays"] >> show_displays;
       ui_.actionConfig_Dock->setChecked(show_displays);
     }
 
-    if (yaml_util::FindValue(doc, "show_capture_tools"))
+    if (swri_yaml_util::FindValue(doc, "show_capture_tools"))
     {
       bool show_capture_tools = false;
       doc["show_capture_tools"] >> show_capture_tools;
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
     
-    if (yaml_util::FindValue(doc, "show_status_bar"))
+    if (swri_yaml_util::FindValue(doc, "show_status_bar"))
     {
       bool show_status_bar = false;
       doc["show_status_bar"] >> show_status_bar;
       ui_.actionShow_Status_Bar->setChecked(show_status_bar);
     }
 
-    if (yaml_util::FindValue(doc, "show_capture_tools"))
+    if (swri_yaml_util::FindValue(doc, "show_capture_tools"))
     {
       bool show_capture_tools = false;
       doc["show_capture_tools"] >> show_capture_tools;
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
-    if (yaml_util::FindValue(doc, "window_width"))
+    if (swri_yaml_util::FindValue(doc, "window_width"))
     {
       int window_width = 0;
       doc["window_width"] >> window_width;
       resize(window_width, height());
     }
 
-    if (yaml_util::FindValue(doc, "window_height"))
+    if (swri_yaml_util::FindValue(doc, "window_height"))
     {
       int window_height = 0;
       doc["window_height"] >> window_height;
       resize(width(), window_height);
     }
 
-    if (yaml_util::FindValue(doc, "view_scale"))
+    if (swri_yaml_util::FindValue(doc, "view_scale"))
     {
       float scale = 0;
       doc["view_scale"] >> scale;
       canvas_->SetViewScale(scale);
     }
 
-    if (yaml_util::FindValue(doc, "offset_x"))
+    if (swri_yaml_util::FindValue(doc, "offset_x"))
     {
       float x = 0;
       doc["offset_x"] >> x;
       canvas_->SetOffsetX(x);
     }
 
-    if (yaml_util::FindValue(doc, "offset_x"))
+    if (swri_yaml_util::FindValue(doc, "offset_x"))
     {
       float y = 0;
       doc["offset_y"] >> y;
       canvas_->SetOffsetY(y);
     }
 
-    if (yaml_util::FindValue(doc, "force_720p"))
+    if (swri_yaml_util::FindValue(doc, "force_720p"))
     {
       bool force_720p;
       doc["force_720p"] >> force_720p;
@@ -569,7 +569,7 @@ void Mapviz::Open(const std::string& filename)
       }
     }
     
-    if (yaml_util::FindValue(doc, "force_480p"))
+    if (swri_yaml_util::FindValue(doc, "force_480p"))
     {
       bool force_480p;
       doc["force_480p"] >> force_480p;
@@ -581,14 +581,14 @@ void Mapviz::Open(const std::string& filename)
     }
 
     bool use_latest_transforms = true;
-    if (yaml_util::FindValue(doc, "use_latest_transforms"))
+    if (swri_yaml_util::FindValue(doc, "use_latest_transforms"))
     {
       doc["use_latest_transforms"] >> use_latest_transforms;
     }
     ui_.uselatesttransforms->setChecked(use_latest_transforms);
     canvas_->ToggleUseLatestTransforms(use_latest_transforms);
 
-    if (yaml_util::FindValue(doc, "background"))
+    if (swri_yaml_util::FindValue(doc, "background"))
     {
       std::string color;
       doc["background"] >> color;
@@ -597,7 +597,7 @@ void Mapviz::Open(const std::string& filename)
       canvas_->SetBackground(background_);
     }
 
-    if (yaml_util::FindValue(doc, "displays"))
+    if (swri_yaml_util::FindValue(doc, "displays"))
     {
       const YAML::Node& displays = doc["displays"];
       for (uint32_t i = 0; i < displays.size(); i++)
@@ -879,12 +879,12 @@ void Mapviz::Hover(double x, double y, double scale)
     xy_pos_label_->setVisible(true);
     xy_pos_label_->update();
     
-    transform_util::Transform transform;
+    swri_transform_util::Transform transform;
     if (tf_manager_.SupportsTransform(
-           transform_util::_wgs84_frame, 
+           swri_transform_util::_wgs84_frame, 
            ui_.fixedframe->currentText().toStdString()) &&
         tf_manager_.GetTransform(
-           transform_util::_wgs84_frame, 
+           swri_transform_util::_wgs84_frame, 
            ui_.fixedframe->currentText().toStdString(),
            transform))
     {
@@ -903,7 +903,7 @@ void Mapviz::Hover(double x, double y, double scale)
       
       lat_lon_text += ", ";
     
-      double lon_scale = (1.0 / (111111.0 * std::cos(point.y() * math_util::_deg_2_rad))) * scale;
+      double lon_scale = (1.0 / (111111.0 * std::cos(point.y() * swri_math_util::_deg_2_rad))) * scale;
       int32_t lon_precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / lon_scale))));
       
       std::ostringstream lon_ss;

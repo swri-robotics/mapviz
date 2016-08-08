@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mapviz)
 
-find_package(catkin REQUIRED COMPONENTS roscpp rqt_gui rqt_gui_cpp pluginlib tf transform_util yaml_util)
+find_package(catkin REQUIRED COMPONENTS
+  pluginlib
+  roscpp
+  rqt_gui
+  rqt_gui_cpp
+  swri_transform_util
+  swri_yaml_util
+  tf
+)
 
 find_package(Boost REQUIRED system filesystem)
 find_package(OpenCV REQUIRED)
@@ -18,7 +26,14 @@ pkg_check_modules(GLEW glew)
 catkin_package(
   INCLUDE_DIRS include
   DEPENDS libqt4
-  CATKIN_DEPENDS roscpp rqt_gui rqt_gui_cpp pluginlib tf transform_util yaml_util
+  CATKIN_DEPENDS
+    pluginlib
+    roscpp
+    rqt_gui
+    rqt_gui_cpp
+    swri_transform_util
+    swri_yaml_util
+    tf
 )
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz

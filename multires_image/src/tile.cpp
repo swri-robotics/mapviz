@@ -39,7 +39,7 @@
 #include <QGLWidget>
 #include <QFile>
 
-#include <math_util/math_util.h>
+#include <swri_math_util/math_util.h>
 
 namespace multires_image
 {
@@ -96,7 +96,7 @@ namespace multires_image
             int height = m_image.height();
 
             float max_dim = std::max(width, height);
-            m_dimension = math_util::Round(
+            m_dimension = swri_math_util::Round(
               std::pow(2.0f, std::ceil(std::log(max_dim)/std::log(2.0f))));
 
             if (width != m_dimension || height != m_dimension)
@@ -208,7 +208,7 @@ namespace multires_image
     }
   }
 
-  void Tile::Transform(const transform_util::Transform& transform)
+  void Tile::Transform(const swri_transform_util::Transform& transform)
   {
     m_transformed_top_left = transform * m_top_left;
     m_transformed_top_right = transform * m_top_right;

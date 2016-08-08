@@ -36,7 +36,7 @@
 
 #include <tf/transform_datatypes.h>
 
-#include <transform_util/georeference.h>
+#include <swri_transform_util/georeference.h>
 
 #include <multires_image/tile.h>
 
@@ -46,7 +46,7 @@ namespace multires_image
   {
   public:
     TileSetLayer(
-      const transform_util::GeoReference& geo,
+      const swri_transform_util::GeoReference& geo,
       const std::string& path,
       int tileSize, int layer);
 
@@ -69,7 +69,7 @@ namespace multires_image
     int ColumnCount() { return m_columns; }
 
   private:
-    const transform_util::GeoReference& m_geo;
+    const swri_transform_util::GeoReference& m_geo;
     const std::string      m_path;
     const int              m_tileSize;
     const int              m_layer;

@@ -44,7 +44,7 @@
 // ROS libraries
 #include <ros/master.h>
 
-#include <math_util/constants.h>
+#include <swri_math_util/constants.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -182,7 +182,7 @@ namespace mapviz_plugins
                                      marker->pose.orientation.w);
       }
       
-      markerData.local_transform =  transform_util::Transform(
+      markerData.local_transform =  swri_transform_util::Transform(
         tf::Transform(
           orientation,
           tf::Vector3(marker->pose.position.x,
@@ -192,7 +192,7 @@ namespace mapviz_plugins
       markerData.points.clear();
       markerData.text = std::string();
 
-      transform_util::Transform transform;
+      swri_transform_util::Transform transform;
       if (!GetTransform(marker->header.stamp, transform))
       {
         markerData.transformed = false;
@@ -452,7 +452,7 @@ namespace mapviz_plugins
 
                 for (int32_t i = 0; i <= 360; i += 10)
                 {
-                  float radians = static_cast<float>(i) * math_util::_deg_2_rad;
+                  float radians = static_cast<float>(i) * swri_math_util::_deg_2_rad;
                   // Spheres may be specified w/ only one scale value
                   if(marker.scale_y == 0.0)
                   {
@@ -534,7 +534,7 @@ namespace mapviz_plugins
       {
         MarkerData& marker = markerIter->second;
 
-        transform_util::Transform transform;
+        swri_transform_util::Transform transform;
         if (GetTransform(marker.stamp, transform))
         {
           marker.transformed = true;

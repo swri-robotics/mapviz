@@ -37,8 +37,8 @@
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 
-#include <transform_util/frames.h>
-#include <yaml_util/yaml_util.h>
+#include <swri_transform_util/frames.h>
+#include <swri_yaml_util/yaml_util.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -60,7 +60,7 @@ namespace tile_map
     p2.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p2);
 
-    source_frame_ = transform_util::_wgs84_frame;
+    source_frame_ = swri_transform_util::_wgs84_frame;
     
     QObject::connect(ui_.source_combo, SIGNAL(activated(QString)), this, SLOT(SelectSource(QString)));
   }
@@ -169,7 +169,7 @@ namespace tile_map
   void TileMapPlugin::Draw(double x, double y, double scale)
   {
     //ROS_ERROR("Draw(%lf, %lf, %lf)", x, y, scale);
-    transform_util::Transform to_wgs84;
+    swri_transform_util::Transform to_wgs84;
     if (tf_manager_.GetTransform(source_frame_, target_frame_, to_wgs84))
     {
       //ROS_ERROR("%s -> %s", target_frame_.c_str(), source_frame_.c_str());
@@ -182,7 +182,7 @@ namespace tile_map
 
   void TileMapPlugin::Transform()
   {
-    transform_util::Transform to_target;
+    swri_transform_util::Transform to_target;
     if (tf_manager_.GetTransform(target_frame_, source_frame_, to_target))
     {
       tile_map_.SetTransform(to_target);
@@ -196,7 +196,7 @@ namespace tile_map
 
   void TileMapPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    if (yaml_util::FindValue(node, "custom_sources"))
+    if (swri_yaml_util::FindValue(node, "custom_sources"))
     {
       const YAML::Node& sources = node["custom_sources"];
       for (uint32_t i = 0; i < sources.size(); i++)
@@ -207,7 +207,7 @@ namespace tile_map
       }
     }
     
-    if (yaml_util::FindValue(node, "source"))
+    if (swri_yaml_util::FindValue(node, "source"))
     {
       std::string source;
       node["source"] >> source;

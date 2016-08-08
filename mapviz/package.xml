@@ -13,16 +13,16 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>libqt4-dev</depend>
+  <depend>opencv2</depend>
+  <depend>pluginlib</depend>
+  <depend>qt4-qmake</depend>
   <depend>roscpp</depend>
   <depend>rqt_gui</depend>
   <depend>rqt_gui_cpp</depend>
-  <depend>opencv2</depend>
-  <depend>pluginlib</depend>
+  <depend>swri_transform_util</depend>
+  <depend>swri_yaml_util</depend>
   <depend>tf</depend>
-  <depend>transform_util</depend>
-  <depend>libqt4-dev</depend>
-  <depend>qt4-qmake</depend>
-  <depend>yaml_util</depend>
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
