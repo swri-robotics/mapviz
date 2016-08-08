@@ -118,7 +118,7 @@ namespace mapviz_plugins
     std::list<tf::Point> transformed_left_points_;
     std::list<tf::Point> transformed_right_points_;
 
-    transform_util::Transform transform_;
+    swri_transform_util::Transform transform_;
 
     void RecalculateGrid();
     void Transform(std::list<tf::Point>& src, std::list<tf::Point>& dst);

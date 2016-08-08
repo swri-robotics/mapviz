@@ -46,9 +46,9 @@
 // ROS libraries
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
-#include <transform_util/transform.h>
-#include <transform_util/transform_manager.h>
-#include <yaml_util/yaml_util.h>
+#include <swri_transform_util/transform.h>
+#include <swri_transform_util/transform_manager.h>
+#include <swri_yaml_util/yaml_util.h>
 
 #include <mapviz/widgets.h>
 
@@ -123,7 +123,7 @@ namespace mapviz
       visible_ = visible;
     }
 
-    bool GetTransform(const ros::Time& stamp, transform_util::Transform& transform)
+    bool GetTransform(const ros::Time& stamp, swri_transform_util::Transform& transform)
     {
       if (!initialized_)
         return false;
@@ -159,7 +159,7 @@ namespace mapviz
       return false;
     }
     
-    bool GetTransform(const std::string& source, const ros::Time& stamp, transform_util::Transform& transform)
+    bool GetTransform(const std::string& source, const ros::Time& stamp, swri_transform_util::Transform& transform)
     {
       if (!initialized_)
         return false;
@@ -220,7 +220,7 @@ namespace mapviz
     ros::NodeHandle node_;
 
     boost::shared_ptr<tf::TransformListener> tf_;
-    transform_util::TransformManager tf_manager_;
+    swri_transform_util::TransformManager tf_manager_;
     
     std::string target_frame_;
     std::string source_frame_;

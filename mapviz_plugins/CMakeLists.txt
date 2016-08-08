@@ -2,23 +2,24 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mapviz_plugins)
 
 find_package(catkin REQUIRED COMPONENTS 
-  roscpp 
-  pluginlib 
-  tf 
-  std_msgs 
+  cv_bridge
+  gps_common
+  mapviz
+  marti_visualization_msgs
+  multires_image
   nav_msgs
+  pluginlib 
+  roscpp 
   sensor_msgs
   stereo_msgs
+  std_msgs 
+  swri_image_util
+  swri_math_util
+  swri_transform_util
+  swri_yaml_util
+  tf 
   visualization_msgs
-  gps_common
-  marti_visualization_msgs
-  mapviz
-  multires_image
-  cv_bridge
-  transform_util
-  math_util
-  image_util
-  yaml_util)
+)
 
 find_package(Qt4 REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -43,10 +44,10 @@ catkin_package(
     mapviz
     multires_image
     cv_bridge
-    transform_util
-    math_util
-    image_util
-    yaml_util
+    swri_image_util
+    swri_math_util
+    swri_transform_util
+    swri_yaml_util
 )
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz

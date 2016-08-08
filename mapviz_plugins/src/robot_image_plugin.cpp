@@ -244,7 +244,7 @@ namespace mapviz_plugins
   {
     transformed_ = false;
 
-    transform_util::Transform transform;
+    swri_transform_util::Transform transform;
     if (GetTransform(ros::Time(), transform))
     {
       top_left_transformed_ = transform * top_left_;

@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include <transform_util/georeference.h>
+#include <swri_transform_util/georeference.h>
 
 #include <multires_image/tile_set_layer.h>
 
@@ -45,8 +45,8 @@ namespace multires_image
   public:
     explicit TileSet(const std::string& geofile);
     TileSet(const std::string& geofile, const std::string extension);
-    explicit TileSet(const transform_util::GeoReference& georeference);
-    TileSet(const transform_util::GeoReference& georeference,
+    explicit TileSet(const swri_transform_util::GeoReference& georeference);
+    TileSet(const swri_transform_util::GeoReference& georeference,
             const std::string extension);
 
     ~TileSet(void);
@@ -56,12 +56,12 @@ namespace multires_image
     int LayerCount() { return m_layerCount; }
     int TileSize() { return m_tileSize; }
 
-    transform_util::GeoReference& GeoReference() { return m_geo; }
+    swri_transform_util::GeoReference& GeoReference() { return m_geo; }
 
     TileSetLayer* GetLayer(int layer) { return m_layers[layer]; }
 
   private:
-    transform_util::GeoReference  m_geo;
+    swri_transform_util::GeoReference  m_geo;
     int                           m_tileSize;
     int                           m_width;
     int                           m_height;

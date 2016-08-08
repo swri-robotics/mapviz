@@ -6,8 +6,8 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib 
   tf 
   mapviz
-  transform_util
-  math_util)
+  swri_math_util
+  swri_transform_util)
 
 find_package(Qt4 REQUIRED QtCore QtGui QtNetwork QtOpenGl)
 
@@ -21,8 +21,8 @@ catkin_package(
     pluginlib 
     tf 
     mapviz
-    transform_util
-    math_util
+    swri_math_util
+    swri_transform_util
 )
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz

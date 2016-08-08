@@ -41,7 +41,7 @@
 #include <QGLWidget>
 #include <QImage>
 
-#include <math_util/math_util.h>
+#include <swri_math_util/math_util.h>
 
 namespace tile_map
 {
@@ -117,7 +117,7 @@ namespace tile_map
           texture = *texture_ptr;
 
           float max_dim = std::max(qimage.width(), qimage.height());
-          int32_t dimension = math_util::Round(
+          int32_t dimension = swri_math_util::Round(
             std::pow(2, std::ceil(std::log(max_dim) / std::log(2.0f))));
 
           if (qimage.width() != dimension || qimage.height() != dimension)

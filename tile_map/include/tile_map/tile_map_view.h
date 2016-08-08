@@ -36,7 +36,7 @@
 
 #include <tile_map/texture_cache.h>
 
-#include <transform_util/transform.h>
+#include <swri_transform_util/transform.h>
 
 namespace tile_map
 {
@@ -66,7 +66,7 @@ namespace tile_map
     
     void SetExtension(const std::string& extension);
     
-    void SetTransform(const transform_util::Transform& transform);
+    void SetTransform(const swri_transform_util::Transform& transform);
     
     void SetView(
       double latitude, 
@@ -82,7 +82,7 @@ namespace tile_map
     
     std::string extension_;
     
-    transform_util::Transform transform_;
+    swri_transform_util::Transform transform_;
     
     int32_t max_level_;
     

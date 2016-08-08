@@ -287,7 +287,7 @@ namespace mapviz_plugins
   {
     transformed_ = false;
 
-    transform_util::Transform transform;
+    swri_transform_util::Transform transform;
     if (GetTransform(stamp_, transform))
     {
       std::list<tf::Point>::iterator points_it = points_.begin();
@@ -313,7 +313,7 @@ namespace mapviz_plugins
     node["topic"] >> topic;
     ui_.topic->setText(topic.c_str());
 
-    if (yaml_util::FindValue(node, "color"))
+    if (swri_yaml_util::FindValue(node, "color"))
     {
       std::string color;
       node["color"] >> color;

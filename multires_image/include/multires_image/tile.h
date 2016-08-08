@@ -39,7 +39,7 @@
 
 #include <tf/transform_datatypes.h>
 
-#include <transform_util/transform.h>
+#include <swri_transform_util/transform.h>
 
 #ifndef GL_CLAMP_TO_EDGE
 #define GL_CLAMP_TO_EDGE 0x812F
@@ -76,7 +76,7 @@ namespace multires_image
 
     void Draw();
 
-    void Transform(const transform_util::Transform& transform);
+    void Transform(const swri_transform_util::Transform& transform);
 
   private:
     const std::string   m_path;

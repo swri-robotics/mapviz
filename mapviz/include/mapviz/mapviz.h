@@ -67,7 +67,7 @@
 #include "ui_mapviz.h"
 #include "ui_pluginselect.h"
 
-#include <transform_util/transform_manager.h>
+#include <swri_transform_util/transform_manager.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 
@@ -149,7 +149,7 @@ namespace mapviz
 
     ros::NodeHandle* node_;
     boost::shared_ptr<tf::TransformListener> tf_;
-    transform_util::TransformManager tf_manager_;
+    swri_transform_util::TransformManager tf_manager_;
 
     pluginlib::ClassLoader<MapvizPlugin>* loader_;
     MapCanvas* canvas_;

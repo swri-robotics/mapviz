@@ -38,9 +38,9 @@
 
 #include <ros/ros.h>
 
-#include <math_util/constants.h>
-#include <math_util/trig_util.h>
-#include <transform_util/earth_constants.h>
+#include <swri_math_util/constants.h>
+#include <swri_math_util/trig_util.h>
+#include <swri_transform_util/earth_constants.h>
 
 #include <tile_map/image_cache.h>
 
@@ -77,7 +77,7 @@ namespace tile_map
     }
   }
   
-  void TileMapView::SetTransform(const transform_util::Transform& transform)
+  void TileMapView::SetTransform(const swri_transform_util::Transform& transform)
   {
     if (transform.GetOrigin() == transform_.GetOrigin() &&
         transform.GetOrientation() == transform_.GetOrientation())
@@ -114,7 +114,7 @@ namespace tile_map
     latitude = std::max(-90.0, std::min(90.0, latitude));
     longitude = std::max(-180.0, std::min(180.0, longitude));
   
-    double lat = math_util::ToRadians(latitude);
+    double lat = swri_math_util::ToRadians(latitude);
   
     // Calculate the current zoom level:
     // 
@@ -125,7 +125,7 @@ namespace tile_map
     //   level = log2(earth_circumference * cos(lat) / meters_per_pixel) - 8
     //
     double lat_circumference = 
-      transform_util::_earth_equator_circumference * std::cos(lat) / scale;
+      swri_transform_util::_earth_equator_circumference * std::cos(lat) / scale;
     int32_t level = std::min(max_level_, std::max(0, static_cast<int32_t>(
       std::ceil(std::log(lat_circumference) / std::log(2) - 8))));
     
@@ -134,14 +134,14 @@ namespace tile_map
     int64_t center_x = std::min(max_size - 1, static_cast<int64_t>(
       std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level))));
     int64_t center_y = std::min(max_size - 1, static_cast<int64_t>(
-      std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / math_util::_pi) / 2.0 * std::pow(2.0, level)))); 
+      std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / swri_math_util::_pi) / 2.0 * std::pow(2.0, level)))); 
         
     width_ = width;
     height_ = height;
     
     double max_dimension = std::max(width, height);
     
-    double meters_per_pixel = transform_util::_earth_equator_circumference * std::cos(lat) / std::pow(2, level + 8);    
+    double meters_per_pixel = swri_transform_util::_earth_equator_circumference * std::cos(lat) / std::pow(2, level + 8);    
     double tile_size = 256.0 * (meters_per_pixel / scale);
     
     int64_t size = std::max(1L, std::min(max_size, static_cast<int64_t>(
@@ -191,7 +191,7 @@ namespace tile_map
       if (level_ > 0)
       {
         int64_t precache_x = std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level - 1));
-        int64_t precache_y = std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / math_util::_pi) / 2.0 * std::pow(2.0, level - 1)); 
+        int64_t precache_y = std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / swri_math_util::_pi) / 2.0 * std::pow(2.0, level - 1)); 
         
         int64_t precache_max_size = std::pow(2, level - 1);
         
@@ -336,8 +336,8 @@ namespace tile_map
     double n = std::pow(2, level);
     longitude = x / n * 360.0 - 180.0;
     
-    double r = math_util::_pi - math_util::_2pi * y / n;
-    latitude = math_util::_rad_2_deg * std::atan(0.5 * (std::exp(r) - std::exp(-r)));
+    double r = swri_math_util::_pi - swri_math_util::_2pi * y / n;
+    latitude = swri_math_util::_rad_2_deg * std::atan(0.5 * (std::exp(r) - std::exp(-r)));
   }
   
   void TileMapView::InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile)

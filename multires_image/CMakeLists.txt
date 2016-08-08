@@ -2,11 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(multires_image)
 
 find_package(catkin REQUIRED COMPONENTS 
-  roscpp 
   pluginlib 
-  tf 
-  transform_util 
-  math_util)
+  roscpp
+  swri_math_util
+  swri_transform_util 
+  tf
+)
 
 find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
@@ -17,7 +18,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} multires_widget
   DEPENDS libqt4
-  CATKIN_DEPENDS roscpp pluginlib tf transform_util yaml_util
+  CATKIN_DEPENDS roscpp pluginlib swri_math_util swri_transform_util tf
 )
 
 include(${QT_USE_FILE})
