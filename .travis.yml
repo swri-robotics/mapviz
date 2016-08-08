@@ -12,10 +12,6 @@ env:
   global:
     - USE_DEB=true
     - ROS_DISTRO="hydro"
-    # marti_common does not use opencv3, but having it installed will cause
-    # packages that depend on opencv2 to fail if they aren't explicit about
-    # which version they depend on.
-    - ADDITIONAL_DEBS="ros-indigo-opencv3"
   matrix:
     - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
 matrix:
