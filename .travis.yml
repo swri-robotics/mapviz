@@ -1,0 +1,30 @@
+sudo: required 
+dist: precise 
+language: generic
+compiler:
+  - clang
+  - gcc
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+env:
+  global:
+    - USE_DEB=true
+    - ROS_DISTRO="hydro"
+    # marti_common does not use opencv3, but having it installed will cause
+    # packages that depend on opencv2 to fail if they aren't explicit about
+    # which version they depend on.
+    - ADDITIONAL_DEBS="ros-indigo-opencv3"
+  matrix:
+    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+matrix:
+  allow_failures:
+    - env: ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+install:
+  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+  - git clone https://github.com/swri-robotics/marti_messages.git --branch hydro-devel
+  - git clone https://github.com/swri-robotics/marti_common.git --branch hydro-devel
+script: 
+  - source .ci_config/travis.sh
+#  - source ./travis.sh  # Enable this when you have a package-local script 
