@@ -14,9 +14,6 @@ env:
     - ROS_DISTRO="hydro"
   matrix:
     - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-matrix:
-  allow_failures:
-    - env: ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
   - git clone https://github.com/swri-robotics/marti_messages.git --branch hydro-devel
