@@ -23,7 +23,26 @@
    <property name="margin">
     <number>2</number>
    </property>
-   <item row="7" column="0">
+   <item row="3" column="1">
+    <widget class="mapviz::ColorButton" name="color">
+     <property name="maximumSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
@@ -36,7 +55,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="1" colspan="2">
+   <item row="8" column="1" colspan="2">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
@@ -113,7 +132,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_4">
      <property name="font">
       <font>
@@ -126,7 +145,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QDoubleSpinBox" name="positiontolerance">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -145,26 +164,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="mapviz::ColorButton" name="color">
-     <property name="maximumSize">
-      <size>
-       <width>24</width>
-       <height>24</height>
-      </size>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
+   <item row="7" column="0">
     <widget class="QLabel" name="label_6">
      <property name="font">
       <font>
@@ -177,7 +177,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="7" column="1">
     <widget class="QSpinBox" name="buffersize">
      <property name="buttonSymbols">
       <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -229,6 +229,26 @@
        <string>arrows</string>
       </property>
      </item>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Scaled Arrows:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QCheckBox" name="scale_arrows">
+     <property name="text">
+      <string/>
+     </property>
     </widget>
    </item>
   </layout>

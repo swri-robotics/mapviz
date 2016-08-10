@@ -52,9 +52,12 @@ namespace mapviz_plugins
         new_lap_(true),
         lap_checked_(false),
         buffer_holder_(false),
+        scale_(1.0),
+        scale_arrows_(false),
         got_begin_(false)
   {
   }
+
   void PointDrawingPlugin::DrawIcon()
   {
     if (icon_)
@@ -94,6 +97,7 @@ namespace mapviz_plugins
       icon_->SetPixmap(icon);
     }
   }
+
   void PointDrawingPlugin::SetDrawStyle(QString style)
   {
     if (style == "lines")
@@ -112,20 +116,27 @@ namespace mapviz_plugins
     DrawIcon();
   }
 
-  bool PointDrawingPlugin::DrawPoints()
+  void PointDrawingPlugin::SetScaledArrows(bool isChecked)
   {
-    bool transformed = false;
+    ROS_INFO("Scale arrows? %d", isChecked);
+    scale_arrows_ = isChecked;
+  }
+
+  bool PointDrawingPlugin::DrawPoints(double scale)
+  {
+    scale_ = scale;
+    bool transformed = true;
     if (lap_checked_)
     {
       CollectLaps();
 
       if (draw_style_ == ARROWS)
       {
-        transformed = DrawLapsArrows();
+        transformed &= DrawLapsArrows();
       }
       else
       {
-        transformed = DrawLaps();
+        transformed &= DrawLaps();
       }
     }
     else if (buffer_size_ == INT_MAX)
@@ -136,14 +147,16 @@ namespace mapviz_plugins
     }
     if (draw_style_ == ARROWS)
     {
-      transformed = DrawArrows();
+      transformed &= DrawArrows();
     }
     else
     {
-      transformed = DrawLines();
+      transformed &= DrawLines();
     }
+
     return transformed;
   }
+
   void PointDrawingPlugin::CollectLaps()
   {
     if (!got_begin_)
@@ -177,7 +190,7 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawLines()
   {
-    bool transformed = false;
+    bool success = cur_point_.transformed;
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
     if (draw_style_ == LINES)
     {
@@ -193,11 +206,10 @@ namespace mapviz_plugins
     std::list<StampedPoint>::iterator it = points_.begin();
     for (; it != points_.end(); ++it)
     {
+      success &= it->transformed;
       if (it->transformed)
       {
         glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
-
-        transformed = true;
       }
     }
 
@@ -205,14 +217,13 @@ namespace mapviz_plugins
     {
       glVertex2f(cur_point_.transformed_point.getX(),
                  cur_point_.transformed_point.getY());
-
-      transformed = true;
     }
 
     glEnd();
 
-    return transformed;
+    return success;
   }
+
   bool PointDrawingPlugin::DrawArrow(const StampedPoint& it)
   {
       if (it.transformed)
@@ -239,22 +250,23 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawArrows()
   {
-    bool transformed = false;
+    bool success = true;
     glLineWidth(2);
     glBegin(GL_LINES);
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     std::list<StampedPoint>::iterator it = points_.begin();
     for (; it != points_.end(); ++it)
     {
-      transformed = DrawArrow(*it);
+      success &= DrawArrow(*it);
     }
 
-    transformed = DrawArrow(cur_point_);
+    success &= DrawArrow(cur_point_);
 
     glEnd();
 
-    return transformed;
+    return success;
   }
+
   bool PointDrawingPlugin::TransformPoint(StampedPoint& point)
   {
     swri_transform_util::Transform transform;
@@ -264,12 +276,24 @@ namespace mapviz_plugins
 
       tf::Transform orientation(tf::Transform(transform.GetOrientation()) *
                                 point.orientation);
-      point.transformed_arrow_point =
-          point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
-      point.transformed_arrow_left =
-          point.transformed_point + orientation * tf::Point(0.75, -0.2, 0.0);
-      point.transformed_arrow_right =
-          point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
+      if (!scale_arrows_)
+      {
+        point.transformed_arrow_point =
+            point.transformed_point + orientation * tf::Point(25.0 * scale_, 0.0, 0.0);
+        point.transformed_arrow_left =
+            point.transformed_point + orientation * tf::Point(18.75 * scale_, -5.0 * scale_, 0.0);
+        point.transformed_arrow_right =
+            point.transformed_point + orientation * tf::Point(18.75 * scale_, 5.0 * scale_, 0.0);
+      }
+      else
+      {
+        point.transformed_arrow_point =
+            point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
+        point.transformed_arrow_left =
+            point.transformed_point + orientation * tf::Point(0.75 , -0.2, 0.0);
+        point.transformed_arrow_right =
+            point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
+      }
 
       if (covariance_checked_)
       {
@@ -318,7 +342,7 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawLaps()
   {
-    bool transformed = false;
+    bool transformed = points_.size() != 0;
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(3);
     QColor base_color = color_;
@@ -369,11 +393,11 @@ namespace mapviz_plugins
       std::list<StampedPoint>::iterator it = points_.begin();
       for (; it != points_.end(); ++it)
       {
+        transformed &= it->transformed;
         if (it->transformed)
         {
           glVertex2f(it->transformed_point.getX(),
                      it->transformed_point.getY());
-          transformed = true;
         }
       }
     }
@@ -381,6 +405,7 @@ namespace mapviz_plugins
     glEnd();
     return transformed;
   }
+
   void PointDrawingPlugin::UpdateColor(QColor base_color, int i)
   {
       int hue = color_.hue() + (i + 1) * 10 * M_PI;
@@ -397,7 +422,7 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawLapsArrows()
   {
-    bool transformed = false;
+    bool success = laps_.size() != 0 && points_.size() != 0;
     glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(2);
     QColor base_color = color_;
@@ -410,7 +435,7 @@ namespace mapviz_plugins
         for (; it != laps_[i].end(); ++it)
         {
           glBegin(GL_LINE_STRIP);
-          transformed = DrawArrow(*it);
+          success &= DrawArrow(*it);
           glEnd();
         }
       }
@@ -430,11 +455,11 @@ namespace mapviz_plugins
       for (; it != points_.end(); ++it)
       {
         glBegin(GL_LINE_STRIP);
-        transformed = DrawArrow(*it);
+        success &= DrawArrow(*it);
         glEnd();
       }
     }
 
-    return transformed;
+    return success;
   }
 }
