@@ -81,7 +81,7 @@ namespace mapviz_plugins
     {
     }
     virtual void Transform();
-    virtual bool DrawPoints();
+    virtual bool DrawPoints(double scale);
     virtual bool DrawArrows();
     virtual bool DrawArrow(const StampedPoint& point);
     virtual bool DrawLaps();
@@ -94,6 +94,7 @@ namespace mapviz_plugins
    protected Q_SLOTS:
     virtual void DrawIcon();
     virtual void SetDrawStyle(QString style);
+    virtual void SetScaledArrows(bool isChecked);
 
    protected:
     DrawStyle draw_style_;
@@ -106,6 +107,8 @@ namespace mapviz_plugins
     QColor color_;
     bool lap_checked_;
     int buffer_holder_;
+    double scale_;
+    bool scale_arrows_;
 
    private:
     std::vector<std::list<StampedPoint> > laps_;
