@@ -95,8 +95,10 @@ namespace mapviz_plugins
     virtual void DrawIcon();
     virtual void SetDrawStyle(QString style);
     virtual void SetScaledArrows(bool isChecked);
+    virtual void SetArrowSize(int arrowSize);
 
    protected:
+    int arrow_size_;
     DrawStyle draw_style_;
     StampedPoint cur_point_;
     std::list<StampedPoint> points_;
