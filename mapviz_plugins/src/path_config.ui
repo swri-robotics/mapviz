@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>79</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
    <property name="margin">
     <number>2</number>
    </property>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
@@ -48,7 +48,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="2" colspan="2">
+   <item row="6" column="2" colspan="2">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
@@ -124,6 +124,19 @@
       <string/>
      </property>
     </widget>
+   </item>
+   <item row="5" column="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

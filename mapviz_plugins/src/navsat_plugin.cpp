@@ -75,6 +75,8 @@ namespace mapviz_plugins
                      SLOT(SetDrawStyle(QString)));
     QObject::connect(ui_.scale_arrows, SIGNAL(clicked(bool)),
                      this, SLOT(SetScaledArrows(bool)));
+    QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
+                     this, SLOT(SetArrowSize(int)));
     connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(DrawIcon()));
   }
@@ -289,6 +291,11 @@ namespace mapviz_plugins
       SetScaledArrows(scale_arrows);
     }
 
+    if (node["arrow_size"])
+    {
+      ui_.arrow_size->setValue(node["arrow_size"].as<int>());
+    }
+
     TopicEdited();
   }
 
@@ -309,5 +316,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
 
     emitter << YAML::Key << "scale_arrows" << YAML::Value << ui_.scale_arrows->isChecked();
+
+    emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
   }
 }

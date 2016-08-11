@@ -45,7 +45,8 @@
 namespace mapviz_plugins
 {
   PointDrawingPlugin::PointDrawingPlugin()
-      : draw_style_(LINES),
+      : arrow_size_(25),
+        draw_style_(LINES),
         position_tolerance_(0.0),
         buffer_size_(0),
         covariance_checked_(false),
@@ -98,6 +99,11 @@ namespace mapviz_plugins
     }
   }
 
+  void PointDrawingPlugin::SetArrowSize(int arrowSize)
+  {
+    arrow_size_ = arrowSize;
+  }
+
   void PointDrawingPlugin::SetDrawStyle(QString style)
   {
     if (style == "lines")
@@ -118,7 +124,6 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::SetScaledArrows(bool isChecked)
   {
-    ROS_INFO("Scale arrows? %d", isChecked);
     scale_arrows_ = isChecked;
   }
 
@@ -276,24 +281,25 @@ namespace mapviz_plugins
 
       tf::Transform orientation(tf::Transform(transform.GetOrientation()) *
                                 point.orientation);
-      if (!scale_arrows_)
+
+      double size = static_cast<double>(arrow_size_);
+      if (scale_arrows_)
       {
-        point.transformed_arrow_point =
-            point.transformed_point + orientation * tf::Point(25.0 * scale_, 0.0, 0.0);
-        point.transformed_arrow_left =
-            point.transformed_point + orientation * tf::Point(18.75 * scale_, -5.0 * scale_, 0.0);
-        point.transformed_arrow_right =
-            point.transformed_point + orientation * tf::Point(18.75 * scale_, 5.0 * scale_, 0.0);
+        size /= 10.0;
       }
       else
       {
-        point.transformed_arrow_point =
-            point.transformed_point + orientation * tf::Point(1.0, 0.0, 0.0);
-        point.transformed_arrow_left =
-            point.transformed_point + orientation * tf::Point(0.75 , -0.2, 0.0);
-        point.transformed_arrow_right =
-            point.transformed_point + orientation * tf::Point(0.75, 0.2, 0.0);
+        size *= scale_;
       }
+      double arrow_width = size / 5.0;
+      double head_length = size * 0.75;
+
+      point.transformed_arrow_point =
+          point.transformed_point + orientation * tf::Point(size, 0.0, 0.0);
+      point.transformed_arrow_left =
+          point.transformed_point + orientation * tf::Point(head_length, -arrow_width, 0.0);
+      point.transformed_arrow_right =
+          point.transformed_point + orientation * tf::Point(head_length, arrow_width, 0.0);
 
       if (covariance_checked_)
       {

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>197</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,31 @@
    <property name="margin">
     <number>2</number>
    </property>
-   <item row="8" column="0">
+   <item row="5" column="1" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="scale_arrows">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="arrow_size">
+       <property name="maximum">
+        <number>500</number>
+       </property>
+       <property name="value">
+        <number>25</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="9" column="0">
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
@@ -36,7 +60,7 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="1" colspan="2">
+   <item row="9" column="1" colspan="2">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
@@ -239,12 +263,18 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QCheckBox" name="scale_arrows">
-     <property name="text">
-      <string/>
+   <item row="8" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
