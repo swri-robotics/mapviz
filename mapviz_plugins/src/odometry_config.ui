@@ -29,7 +29,7 @@
       <number>6</number>
      </property>
      <item>
-      <widget class="QCheckBox" name="scale_arrows">
+      <widget class="QCheckBox" name="static_arrow_sizes">
        <property name="text">
         <string/>
        </property>
@@ -37,6 +37,9 @@
      </item>
      <item>
       <widget class="QSlider" name="arrow_size">
+       <property name="minimum">
+        <number>1</number>
+       </property>
        <property name="maximum">
         <number>500</number>
        </property>
@@ -62,7 +65,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Scaled Arrows:</string>
+      <string>Static Arrow Sizes:</string>
      </property>
     </widget>
    </item>
