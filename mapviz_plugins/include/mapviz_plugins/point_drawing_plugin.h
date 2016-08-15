@@ -94,7 +94,7 @@ namespace mapviz_plugins
    protected Q_SLOTS:
     virtual void DrawIcon();
     virtual void SetDrawStyle(QString style);
-    virtual void SetScaledArrows(bool isChecked);
+    virtual void SetStaticArrowSizes(bool isChecked);
     virtual void SetArrowSize(int arrowSize);
 
    protected:
@@ -110,7 +110,7 @@ namespace mapviz_plugins
     bool lap_checked_;
     int buffer_holder_;
     double scale_;
-    bool scale_arrows_;
+    bool static_arrow_sizes_;
 
    private:
     std::vector<std::list<StampedPoint> > laps_;

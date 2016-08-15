@@ -54,7 +54,7 @@ namespace mapviz_plugins
         lap_checked_(false),
         buffer_holder_(false),
         scale_(1.0),
-        scale_arrows_(false),
+        static_arrow_sizes_(false),
         got_begin_(false)
   {
   }
@@ -122,9 +122,9 @@ namespace mapviz_plugins
     DrawIcon();
   }
 
-  void PointDrawingPlugin::SetScaledArrows(bool isChecked)
+  void PointDrawingPlugin::SetStaticArrowSizes(bool isChecked)
   {
-    scale_arrows_ = isChecked;
+    static_arrow_sizes_ = isChecked;
   }
 
   bool PointDrawingPlugin::DrawPoints(double scale)
@@ -283,13 +283,13 @@ namespace mapviz_plugins
                                 point.orientation);
 
       double size = static_cast<double>(arrow_size_);
-      if (scale_arrows_)
+      if (static_arrow_sizes_)
       {
-        size /= 10.0;
+        size *= scale_;
       }
       else
       {
-        size *= scale_;
+        size /= 10.0;
       }
       double arrow_width = size / 5.0;
       double head_length = size * 0.75;

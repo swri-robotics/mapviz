@@ -83,8 +83,8 @@ namespace mapviz_plugins
                      SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
                      SLOT(SetDrawStyle(QString)));
-    QObject::connect(ui_.scale_arrows, SIGNAL(clicked(bool)),
-                     this, SLOT(SetScaledArrows(bool)));
+    QObject::connect(ui_.static_arrow_sizes, SIGNAL(clicked(bool)),
+                     this, SLOT(SetStaticArrowSizes(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
     connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
@@ -385,11 +385,11 @@ namespace mapviz_plugins
       ui_.show_laps->setChecked(show_laps);
     }
 
-    if (node["scale_arrows"])
+    if (node["static_arrow_sizes"])
     {
-      bool scale_arrows = node["scale_arrows"].as<bool>();
-      ui_.scale_arrows->setChecked(scale_arrows);
-      SetScaledArrows(scale_arrows);
+      bool static_arrow_sizes = node["static_arrow_sizes"].as<bool>();
+      ui_.static_arrow_sizes->setChecked(static_arrow_sizes);
+      SetStaticArrowSizes(static_arrow_sizes);
     }
 
     if (node["arrow_size"])
@@ -428,7 +428,7 @@ namespace mapviz_plugins
     bool show_covariance = ui_.show_covariance->isChecked();
     emitter << YAML::Key << "show_covariance" << YAML::Value << show_covariance;
 
-    emitter << YAML::Key << "scale_arrows" << YAML::Value << ui_.scale_arrows->isChecked();
+    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
   }
