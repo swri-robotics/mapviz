@@ -2,6 +2,37 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.6 (2016-08-14)
+------------------
+* Fixes several reorder and signed comparison warnings in the mapviz
+  package.
+* Adds a dialog for selecting services by type
+  This dialog is similar to the ones for listing topics or TF frames, but it is
+  a little different under the hood.  Notably:
+  
+  - It relies on the rosapi node in order to be able to search for services
+  - Since searching is done via a service call, ROS communication is handled
+    on a separate thread that will not block the GUI
+  - Unlike topics, only searching for a single service type is supported
+
+* Adds a way for plugin config widgets to resize and modifies the PCL2 plugin
+  as an example of this behavior.
+  Fixes `#393 <https://github.com/swri-robotics/mapviz/issues/393>`_
+* Adds  an icon on the right side of Mapviz's status bar tthat will reset
+  the view to the default zoom level and center it on the origin of the target
+  frame.
+  Resolves `#371 <https://github.com/swri-robotics/mapviz/issues/371>`_
+* The MapvizPlugin class now emits signals when any of the following settings change:
+
+  - Draw Order
+  - Target Frame
+  - Use Latest Transforms
+  - Visibility
+  
+  Note that the signals will only be emitted if the setting actually *changes*, not
+  if it is somehow set to the same value that it was previously.
+* Contributors: Ed Venator, Edward Venator, Marc Alban, P. J. Reed
+
 0.0.5 (2016-05-20)
 ------------------
 * Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.

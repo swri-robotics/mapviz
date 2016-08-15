@@ -2,6 +2,9 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.6 (2016-08-14)
+------------------
+
 0.0.5 (2016-05-20)
 ------------------
 * Add helper node to automatically add relevant multires_image display to mapviz based on a GPS message.

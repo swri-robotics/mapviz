@@ -2,6 +2,40 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.6 (2016-08-14)
+------------------
+* Fixes signed comparison warnings in mapviz_plugins
+* Adds a way for plugin config widgets to resize
+
+  - Adding an event plugins can emit to indicate their geometry has changed
+  - Modifying the PCL2 plugin to use it as an example
+  
+  Fixes `#393 <https://github.com/swri-robotics/mapviz/issues/393>`_
+* Sets default values for uninitialized variables
+  Resolves `#372 <https://github.com/swri-robotics/mapviz/issues/372>`_
+* Creates and implements an abstract class for drawing point paths
+  Updates gps, navsat, odometry, path, and tf_frame plugins to use the
+  abstract point drawing class.
+* Adds the draw laps functionality, which allows the user to change the color
+  of the path as it passes a base point for ease of visibility. This option
+  is implemented for the gps and odometry plugins.
+* Implements support for the ARROW marker type
+  Resolves `#365 <https://github.com/swri-robotics/mapviz/issues/365>`_
+* Ensures that Mapviz won't subscribe to empty topic names. This involved
+  cleaning up the code for handling subscriptions for all topics. The behavior
+  is now:
+  
+  - All input is trimmed before processing
+  - If a topic name is empty, the old subscriber will be shut down and will not subscribe to the empty topic
+  
+  Resolves `#327 <https://github.com/swri-robotics/mapviz/issues/327>`_
+* Fixes a crash in the PointCloud2 plugin
+* Caches transformed pointclouds to improve performance
+* PointCloud2 plugin "Color Transformer" combo box now properly saves its value
+* Return "false" if no other code handles the mouse event
+  Fixes `#360 <https://github.com/swri-robotics/mapviz/issues/360>`_
+* Contributors: Ed Venator, Marc Alban, P. J. Reed
+
 0.0.5 (2016-05-20)
 ------------------
 * Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.
