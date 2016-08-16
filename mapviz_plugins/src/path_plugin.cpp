@@ -184,15 +184,15 @@ namespace mapviz_plugins
 
   void PathPlugin::Draw(double x, double y, double scale)
   {
-    bool lines, points;
-    lines = points = false;
+    bool lines;
+    bool points;
     color_ = ui_.path_color->color();
     draw_style_ = LINES;
-    lines = DrawPoints();
+    lines = DrawPoints(scale);
     color_ = color_.dark(200);
     draw_style_ = POINTS;
-    points = DrawPoints();
-    if (lines == true && points == true)
+    points = DrawPoints(scale);
+    if (lines && points)
     {
       PrintInfo("OK");
     }

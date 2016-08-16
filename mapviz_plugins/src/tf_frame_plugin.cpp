@@ -78,6 +78,10 @@ namespace mapviz_plugins
                      SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
                      SLOT(SetDrawStyle(QString)));
+    QObject::connect(ui_.static_arrow_sizes, SIGNAL(clicked(bool)),
+                     this, SLOT(SetStaticArrowSizes(bool)));
+    QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
+                     this, SLOT(SetArrowSize(int)));
     connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(DrawIcon()));
   }
@@ -215,7 +219,7 @@ namespace mapviz_plugins
   void TfFramePlugin::Draw(double x, double y, double scale)
   {
     color_ = ui_.color->color();
-    if (DrawPoints())
+    if (DrawPoints(scale))
     {
       PrintInfo("OK");
     }
@@ -265,6 +269,18 @@ namespace mapviz_plugins
       ui_.buffersize->setValue(buffer_size_);
     }
 
+    if (node["static_arrow_sizes"])
+    {
+      bool static_arrow_sizes = node["static_arrow_sizes"].as<bool>();
+      ui_.static_arrow_sizes->setChecked(static_arrow_sizes);
+      SetStaticArrowSizes(static_arrow_sizes);
+    }
+
+    if (node["arrow_size"])
+    {
+      ui_.arrow_size->setValue(node["arrow_size"].as<int>());
+    }
+
     FrameEdited();
   }
 
@@ -283,5 +299,9 @@ namespace mapviz_plugins
                YAML::Value << position_tolerance_;
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
+
+    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
+
+    emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
   }
 }
