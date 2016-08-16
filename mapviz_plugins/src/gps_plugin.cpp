@@ -72,6 +72,10 @@ namespace mapviz_plugins
                      SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
                      SLOT(SetDrawStyle(QString)));
+    QObject::connect(ui_.static_arrow_sizes, SIGNAL(clicked(bool)),
+                     this, SLOT(SetStaticArrowSizes(bool)));
+    QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
+                     this, SLOT(SetArrowSize(int)));
     connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(DrawIcon()));
   }
@@ -232,7 +236,7 @@ namespace mapviz_plugins
   void GpsPlugin::Draw(double x, double y, double scale)
   {
     color_ = ui_.color->color();
-    if (DrawPoints())
+    if (DrawPoints(scale))
     {
       PrintInfo("OK");
     }
@@ -288,11 +292,23 @@ namespace mapviz_plugins
       ui_.buffersize->setValue(buffer_size_);
     }
 
-    if (swri_yaml_util::FindValue(node, "show_laps"))
+    if (node["show_laps"])
     {
       bool show_laps = false;
       node["show_laps"] >> show_laps;
       ui_.show_laps->setChecked(show_laps);
+    }
+
+    if (node["static_arrow_sizes"])
+    {
+      bool static_arrow_sizes = node["static_arrow_sizes"].as<bool>();
+      ui_.static_arrow_sizes->setChecked(static_arrow_sizes);
+      SetStaticArrowSizes(static_arrow_sizes);
+    }
+
+    if (node["arrow_size"])
+    {
+      ui_.arrow_size->setValue(node["arrow_size"].as<int>());
     }
 
     TopicEdited();
@@ -323,5 +339,9 @@ namespace mapviz_plugins
 
     bool show_laps = ui_.show_laps->isChecked();
     emitter << YAML::Key << "show_laps" << YAML::Value << show_laps;
+
+    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
+
+    emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
   }
 }
