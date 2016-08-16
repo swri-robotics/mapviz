@@ -107,7 +107,8 @@ namespace mapviz_plugins
     {
       ui_.topic->setText(QString::fromStdString(topic.name));
 
-      if (topic.datatype == "marti_visualization_msgs/TexturedMarkerArray") {
+      if (topic.datatype == "marti_visualization_msgs/TexturedMarkerArray")
+      {
         is_marker_array_ = true;
       }
 
@@ -247,7 +248,7 @@ namespace mapviz_plugins
         //  Free the current texture.
         if (markerData.texture_id_ != -1)
         {
-          ids[0] = markerData.texture_id_;
+          ids[0] = static_cast<GLuint>(markerData.texture_id_);
           glDeleteTextures(1, &ids[0]);
         }
         
@@ -256,21 +257,21 @@ namespace mapviz_plugins
         markerData.texture_id_ = ids[0];
 
         // Bind the texture with the correct size and null memory.
-        glBindTexture(GL_TEXTURE_2D, markerData.texture_id_);
+        glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(markerData.texture_id_));
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
         if (markerData.encoding_ == sensor_msgs::image_encodings::BGRA8)
         {
-          markerData.texture_.resize(markerData.texture_size_ * markerData.texture_size_ * 4);
+          markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 4));
         }
         else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8)
         {
-          markerData.texture_.resize(markerData.texture_size_ * markerData.texture_size_ * 3);
+          markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 3));
         }
         else if (markerData.encoding_ == sensor_msgs::image_encodings::MONO8)
         {
-          markerData.texture_.resize(markerData.texture_size_ * markerData.texture_size_);
+          markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_));
         }
         else
         {
@@ -288,7 +289,7 @@ namespace mapviz_plugins
         glBindTexture(GL_TEXTURE_2D, 0);
       }
       
-      glBindTexture(GL_TEXTURE_2D, markerData.texture_id_);
+      glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(markerData.texture_id_));
       
       if (markerData.encoding_ == sensor_msgs::image_encodings::BGRA8)
       {
@@ -401,7 +402,9 @@ namespace mapviz_plugins
   void TexturedMarkerPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -413,7 +416,9 @@ namespace mapviz_plugins
   void TexturedMarkerPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -425,7 +430,9 @@ namespace mapviz_plugins
   void TexturedMarkerPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -466,22 +473,22 @@ namespace mapviz_plugins
           {
             glEnable(GL_TEXTURE_2D);
 
-            glBindTexture(GL_TEXTURE_2D, marker.texture_id_);
+            glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(marker.texture_id_));
           
             glBegin(GL_TRIANGLES);
             
             glColor4f(1.0f, 1.0f, 1.0f, marker.alpha_);
 
-            double x = marker.texture_x_;
-            double y = marker.texture_y_;
+            double marker_x = marker.texture_x_;
+            double marker_y = marker.texture_y_;
 
-            glTexCoord2f(0, 0); glVertex2d(marker.transformed_quad_[0].x(), marker.transformed_quad_[0].y());
-            glTexCoord2f(x, 0); glVertex2d(marker.transformed_quad_[1].x(), marker.transformed_quad_[1].y());
-            glTexCoord2f(x, y); glVertex2d(marker.transformed_quad_[2].x(), marker.transformed_quad_[2].y());
+            glTexCoord2d(0, 0); glVertex2d(marker.transformed_quad_[0].x(), marker.transformed_quad_[0].y());
+            glTexCoord2d(marker_x, 0); glVertex2d(marker.transformed_quad_[1].x(), marker.transformed_quad_[1].y());
+            glTexCoord2d(marker_x, marker_y); glVertex2d(marker.transformed_quad_[2].x(), marker.transformed_quad_[2].y());
 
-            glTexCoord2f(0, 0); glVertex2d(marker.transformed_quad_[3].x(), marker.transformed_quad_[3].y());
-            glTexCoord2f(x, y); glVertex2d(marker.transformed_quad_[4].x(), marker.transformed_quad_[4].y());
-            glTexCoord2f(0, y); glVertex2d(marker.transformed_quad_[5].x(), marker.transformed_quad_[5].y());
+            glTexCoord2d(0, 0); glVertex2d(marker.transformed_quad_[3].x(), marker.transformed_quad_[3].y());
+            glTexCoord2d(marker_x, marker_y); glVertex2d(marker.transformed_quad_[4].x(), marker.transformed_quad_[4].y());
+            glTexCoord2d(0, marker_y); glVertex2d(marker.transformed_quad_[5].x(), marker.transformed_quad_[5].y());
 
             glEnd();
             

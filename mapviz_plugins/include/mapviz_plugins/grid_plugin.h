@@ -101,8 +101,6 @@ namespace mapviz_plugins
     int rows_;
     int columns_;
 
-    bool exit_;
-
     bool transformed_;
 
     std::list<tf::Point> top_points_;

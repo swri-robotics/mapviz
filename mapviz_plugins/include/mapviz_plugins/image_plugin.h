@@ -71,7 +71,8 @@ namespace mapviz_plugins
       CENTER_RIGHT,
       BOTTOM_LEFT,
       BOTTOM_CENTER,
-      BOTTOM_RIGHT};
+      BOTTOM_RIGHT
+    };
 
     enum Units {PIXELS, PERCENT};
 
@@ -129,8 +130,8 @@ namespace mapviz_plugins
     bool force_resubscribe_;
     bool has_image_;
 
-    int last_width_;
-    int last_height_;
+    double last_width_;
+    double last_height_;
 
     ros::NodeHandle local_node_;
     image_transport::Subscriber image_sub_;
@@ -143,7 +144,7 @@ namespace mapviz_plugins
 
     void imageCallback(const sensor_msgs::ImageConstPtr& image);
 
-    void ScaleImage(int width, int height);
+    void ScaleImage(double width, double height);
     void DrawIplImage(cv::Mat *image);
 
     std::string AnchorToString(Anchor anchor);
