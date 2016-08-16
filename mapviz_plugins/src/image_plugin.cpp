@@ -208,14 +208,14 @@ namespace mapviz_plugins
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
       "sensor_msgs/Image");
 
-
     if(topic.name.empty())
     {
       topic.name.clear();
       TopicEdited();
 
     }
-    if (!topic.name.empty()) {
+    if (!topic.name.empty())
+    {
       ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
@@ -306,7 +306,9 @@ namespace mapviz_plugins
   void ImagePlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -318,7 +320,9 @@ namespace mapviz_plugins
   void ImagePlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -330,7 +334,9 @@ namespace mapviz_plugins
   void ImagePlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -353,23 +359,24 @@ namespace mapviz_plugins
     return true;
   }
 
-  void ImagePlugin::ScaleImage(int width, int height)
+  void ImagePlugin::ScaleImage(double width, double height)
   {
     if (!has_image_)
+    {
       return;
+    }
 
-    cv::resize(cv_image_->image, scaled_image_, cvSize(width, height), 0, 0, CV_INTER_AREA);
+    cv::resize(cv_image_->image, scaled_image_, cvSize2D32f(width, height), 0, 0, CV_INTER_AREA);
   }
 
   void ImagePlugin::DrawIplImage(cv::Mat *image)
   {
     // TODO(malban) glTexture2D may be more efficient than glDrawPixels
 
-    if (image == NULL)
+    if (image == NULL || image->cols == 0 || image->rows == 0)
+    {
       return;
-
-    if (image->cols == 0 || image->rows == 0)
-      return;
+    }
 
     GLenum format;
     switch (image->channels())
@@ -387,7 +394,7 @@ namespace mapviz_plugins
         return;
     }
 
-    glPixelZoom(1.0, -1.0);
+    glPixelZoom(1.0f, -1.0f);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glDrawPixels(image->cols, image->rows, format, GL_UNSIGNED_BYTE, image->ptr());
 
@@ -397,10 +404,10 @@ namespace mapviz_plugins
   void ImagePlugin::Draw(double x, double y, double scale)
   {
     // Calculate the correct offsets and dimensions
-    int x_offset = offset_x_;
-    int y_offset = offset_y_;
-    int width = width_;
-    int height = height_;
+    double x_offset = offset_x_;
+    double y_offset = offset_y_;
+    double width = width_;
+    double height = height_;
     if (units_ == PERCENT)
     {
       x_offset = offset_x_ * canvas_->width() / 100.0;
@@ -416,8 +423,8 @@ namespace mapviz_plugins
     }
 
     // Calculate the correct render position
-    int x_pos = 0;
-    int y_pos = 0;
+    double x_pos = 0;
+    double y_pos = 0;
     if (anchor_ == TOP_LEFT)
     {
       x_pos = x_offset;
@@ -469,7 +476,7 @@ namespace mapviz_plugins
     glLoadIdentity();
     glOrtho(0, canvas_->width(), canvas_->height(), 0, -0.5f, 0.5f);
 
-    glRasterPos2f(x_pos, y_pos);
+    glRasterPos2d(x_pos, y_pos);
 
     DrawIplImage(&scaled_image_);
 

@@ -93,7 +93,8 @@ namespace mapviz_plugins
 
   PlanRoutePlugin::~PlanRoutePlugin()
   {
-    if (map_canvas_) {
+    if (map_canvas_)
+    {
       map_canvas_->removeEventFilter(this);
     }
   }
@@ -128,7 +129,7 @@ namespace mapviz_plugins
     mnm::PlanRoute plan_route;
     plan_route.request.header.frame_id = stu::_wgs84_frame;
     plan_route.request.header.stamp = ros::Time::now();
-    plan_route.request.plan_from_vehicle = start_from_vehicle;
+    plan_route.request.plan_from_vehicle = static_cast<unsigned char>(start_from_vehicle);
     plan_route.request.waypoints = waypoints_;
 
     if (client.call(plan_route))
@@ -165,7 +166,9 @@ namespace mapviz_plugins
   void PlanRoutePlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR_THROTTLE(1.0, "Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -177,7 +180,9 @@ namespace mapviz_plugins
   void PlanRoutePlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO_THROTTLE(1.0, "%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -189,7 +194,9 @@ namespace mapviz_plugins
   void PlanRoutePlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN_THROTTLE(1.0, "%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -234,7 +241,7 @@ namespace mapviz_plugins
   bool PlanRoutePlugin::handleMousePress(QMouseEvent* event)
   {
     selected_point_ = -1;
-    size_t closest_point = 0;
+    int closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();
 
     QPointF point = event->localPos();
@@ -256,7 +263,7 @@ namespace mapviz_plugins
         if (distance < closest_distance)
         {
           closest_distance = distance;
-          closest_point = i;
+          closest_point = static_cast<int>(i);
         }
       }
     }
@@ -291,7 +298,7 @@ namespace mapviz_plugins
 
   bool PlanRoutePlugin::handleMouseRelease(QMouseEvent* event)
   {
-    if (selected_point_ >= 0 && selected_point_ < waypoints_.size())
+    if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < waypoints_.size())
     {
       QPointF point = event->localPos();
       stu::Transform transform;
@@ -345,7 +352,7 @@ namespace mapviz_plugins
 
   bool PlanRoutePlugin::handleMouseMove(QMouseEvent* event)
   {
-    if (selected_point_ >= 0 && selected_point_ < waypoints_.size())
+    if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < waypoints_.size())
     {
       QPointF point = event->localPos();
       stu::Transform transform;
@@ -378,12 +385,12 @@ namespace mapviz_plugins
 
           glLineWidth(2);
           const QColor color = ui_.color->color();
-          glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
+          glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
           glBegin(GL_LINE_STRIP);
 
           for (size_t i = 0; i < route.points.size(); i++)
           {
-            glVertex2f(route.points[i].position().x(), route.points[i].position().y());
+            glVertex2d(route.points[i].position().x(), route.points[i].position().y());
           }
 
           glEnd();
@@ -402,7 +409,7 @@ namespace mapviz_plugins
       {
         tf::Vector3 point(waypoints_[i].position.x, waypoints_[i].position.y, 0);
         point = transform * point;
-        glVertex2f(point.x(), point.y());
+        glVertex2d(point.x(), point.y());
       }
       glEnd();
     }
@@ -429,7 +436,7 @@ namespace mapviz_plugins
         tf::Vector3 point(waypoints_[i].position.x, waypoints_[i].position.y, 0);
         point = transform * point;
         QPointF gl_point = map_canvas_->FixedFrameToMapGlCoord(QPointF(point.x(), point.y()));
-        QPoint corner(gl_point.x() - 20, gl_point.y() - 20);
+        QPointF corner(gl_point.x() - 20, gl_point.y() - 20);
         QRectF rect(corner, QSizeF(40, 40));
         painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, QString::fromStdString(boost::lexical_cast<std::string>(i + 1)));
       }

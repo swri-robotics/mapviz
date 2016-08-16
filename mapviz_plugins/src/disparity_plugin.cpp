@@ -49,6 +49,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
+
 PLUGINLIB_DECLARE_CLASS(
     mapviz_plugins,
     disparity,
@@ -212,7 +213,7 @@ namespace mapviz_plugins
     }
   }
 
-  void DisparityPlugin::disparityCallback(const stereo_msgs::DisparityImageConstPtr disparity)
+  void DisparityPlugin::disparityCallback(const stereo_msgs::DisparityImageConstPtr& disparity)
   {
     if (!has_message_)
     {
@@ -251,12 +252,12 @@ namespace mapviz_plugins
       const float* d = cv_disparity->image.ptr<float>(row);
       for (int col = 0; col < disparity_color_.cols; col++)
       {
-        int index = (d[col] - min_disparity) * multiplier + 0.5;
+        int index = static_cast<int>((d[col] - min_disparity) * multiplier + 0.5);
         index = std::min(255, std::max(0, index));
         // Fill as BGR
-        disparity_color_(row, col)[2] = colormap[3*index + 0];
-        disparity_color_(row, col)[1] = colormap[3*index + 1];
-        disparity_color_(row, col)[0] = colormap[3*index + 2];
+        disparity_color_(row, col)[2] = COLOR_MAP[3*index + 0];
+        disparity_color_(row, col)[1] = COLOR_MAP[3*index + 1];
+        disparity_color_(row, col)[0] = COLOR_MAP[3*index + 2];
       }
     }
 
@@ -316,12 +317,14 @@ namespace mapviz_plugins
     return true;
   }
 
-  void DisparityPlugin::ScaleImage(int width, int height)
+  void DisparityPlugin::ScaleImage(double width, double height)
   {
     if (!has_image_)
+    {
       return;
+    }
 
-    cv::resize(disparity_color_, scaled_image_, cvSize(width, height), 0, 0, CV_INTER_AREA);
+    cv::resize(disparity_color_, scaled_image_, cvSize2D32f(width, height), 0, 0, CV_INTER_AREA);
   }
 
   void DisparityPlugin::DrawIplImage(cv::Mat *image)
@@ -353,7 +356,7 @@ namespace mapviz_plugins
         return;
     }
 
-    glPixelZoom(1.0, -1.0);
+    glPixelZoom(1.0, -1.0f);
     glDrawPixels(image->cols, image->rows, format, GL_UNSIGNED_BYTE, image->ptr());
 
     PrintInfo("OK");
@@ -362,10 +365,10 @@ namespace mapviz_plugins
   void DisparityPlugin::Draw(double x, double y, double scale)
   {
     // Calculate the correct offsets and dimensions
-    int x_offset = offset_x_;
-    int y_offset = offset_y_;
-    int width = width_;
-    int height = height_;
+    double x_offset = offset_x_;
+    double y_offset = offset_y_;
+    double width = width_;
+    double height = height_;
     if (units_ == PERCENT)
     {
       x_offset = offset_x_ * canvas_->width() / 100.0;
@@ -381,8 +384,8 @@ namespace mapviz_plugins
     }
 
     // Calculate the correct render position
-    int x_pos = 0;
-    int y_pos = 0;
+    double x_pos = 0;
+    double y_pos = 0;
     if (anchor_ == TOP_LEFT)
     {
       x_pos = x_offset;
@@ -434,7 +437,7 @@ namespace mapviz_plugins
     glLoadIdentity();
     glOrtho(0, canvas_->width(), canvas_->height(), 0, -0.5f, 0.5f);
 
-    glRasterPos2f(x_pos, y_pos);
+    glRasterPos2d(x_pos, y_pos);
 
     DrawIplImage(&scaled_image_);
 
@@ -473,25 +476,25 @@ namespace mapviz_plugins
     if (node["offset_x"])
     {
       node["offset_x"] >> offset_x_;
-      ui_.offsetx->setValue(offset_x_);
+      ui_.offsetx->setValue(static_cast<int>(offset_x_));
     }
 
     if (node["offset_y"])
     {
       node["offset_y"] >> offset_y_;
-      ui_.offsety->setValue(offset_y_);
+      ui_.offsety->setValue(static_cast<int>(offset_y_));
     }
 
     if (node["width"])
     {
       node["width"] >> width_;
-      ui_.width->setValue(width_);
+      ui_.width->setValue(static_cast<int>(width_));
     }
 
     if (node["height"])
     {             
       node["height"] >> height_;
-      ui_.height->setValue(height_);
+      ui_.height->setValue(static_cast<int>(height_));
     }
   }
 
@@ -566,7 +569,7 @@ namespace mapviz_plugins
     return units_string;
   }
 
-  unsigned char DisparityPlugin::colormap[768] =
+  const unsigned char DisparityPlugin::COLOR_MAP[768] =
     { 150, 150, 150,
       107, 0, 12,
       106, 0, 18,

@@ -53,6 +53,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
+
 PLUGINLIB_DECLARE_CLASS(mapviz_plugins, route, mapviz_plugins::RoutePlugin,
                         mapviz::MapvizPlugin);
 
@@ -149,6 +150,7 @@ namespace mapviz_plugins
     ui_.topic->setText(QString::fromStdString(topic.name));
     TopicEdited();
   }
+
   void RoutePlugin::SelectPositionTopic()
   {
     ros::master::TopicInfo topic =
@@ -203,12 +205,12 @@ namespace mapviz_plugins
   }
 
   void RoutePlugin::PositionCallback(
-      const marti_nav_msgs::RoutePositionConstPtr &msg)
+      const marti_nav_msgs::RoutePositionConstPtr& msg)
   {
     src_route_position_ = msg;
   }
 
-  void RoutePlugin::RouteCallback(const marti_nav_msgs::RouteConstPtr &msg)
+  void RoutePlugin::RouteCallback(const marti_nav_msgs::RouteConstPtr& msg)
   {
     src_route_ = sru::Route(*msg);
   }
@@ -216,7 +218,9 @@ namespace mapviz_plugins
   void RoutePlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR_THROTTLE(1.0, "Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -228,7 +232,9 @@ namespace mapviz_plugins
   void RoutePlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO_THROTTLE(1.0, "%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -240,7 +246,9 @@ namespace mapviz_plugins
   void RoutePlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN_THROTTLE(1.0, "%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -268,18 +276,21 @@ namespace mapviz_plugins
 
   void RoutePlugin::Draw(double x, double y, double scale)
   {
-    if (!src_route_.valid()) {
+    if (!src_route_.valid())
+    {
       PrintError("No valid route received.");
       return;
     }
 
     sru::Route route = src_route_;
-    if (route.header.frame_id.empty()) {
+    if (route.header.frame_id.empty())
+    {
       route.header.frame_id = "/wgs84";
     }
 
     stu::Transform transform;
-    if (!GetTransform(route.header.frame_id, ros::Time(), transform)) {
+    if (!GetTransform(route.header.frame_id, ros::Time(), transform))
+    {
       PrintError("Failed to transform route");
       return;
     }
@@ -291,19 +302,24 @@ namespace mapviz_plugins
     DrawRoute(route);
 
     bool ok = true;
-    if (route.valid() && src_route_position_) {
+    if (route.valid() && src_route_position_)
+    {
       sru::RoutePoint point;
-      if (sru::interpolateRoutePosition(point, route, *src_route_position_, true)) {
+      if (sru::interpolateRoutePosition(point, route, *src_route_position_, true))
+      {
         DrawRoutePoint(point);
-      } else {
+      }
+      else
+      {
         PrintError("Failed to find route position in route.");
         ok = false;
       }
     }
 
-    if (ok) {
+    if (ok)
+    {
       PrintInfo("OK");
-    }        
+    }
   }
 
   void RoutePlugin::DrawStopWaypoint(double x, double y)
@@ -315,22 +331,22 @@ namespace mapviz_plugins
 
     glColor3f(1.0, 0.0, 0.0);
 
-    glVertex2f(x + S / 2.0, y - a / 2.0);
-    glVertex2f(x + S / 2.0, y + a / 2.0);
-    glVertex2f(x + a / 2.0, y + S / 2.0);
-    glVertex2f(x - a / 2.0, y + S / 2.0);
-    glVertex2f(x - S / 2.0, y + a / 2.0);
-    glVertex2f(x - S / 2.0, y - a / 2.0);
-    glVertex2f(x - a / 2.0, y - S / 2.0);
-    glVertex2f(x + a / 2.0, y - S / 2.0);
+    glVertex2d(x + S / 2.0, y - a / 2.0);
+    glVertex2d(x + S / 2.0, y + a / 2.0);
+    glVertex2d(x + a / 2.0, y + S / 2.0);
+    glVertex2d(x - a / 2.0, y + S / 2.0);
+    glVertex2d(x - S / 2.0, y + a / 2.0);
+    glVertex2d(x - S / 2.0, y - a / 2.0);
+    glVertex2d(x - a / 2.0, y - S / 2.0);
+    glVertex2d(x + a / 2.0, y - S / 2.0);
 
     glEnd();
   }
 
-  void RoutePlugin::DrawRoute(const sru::Route &route)
+  void RoutePlugin::DrawRoute(const sru::Route& route)
   {
     const QColor color = ui_.color->color();
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
+    glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
 
     if (draw_style_ == LINES)
     {
@@ -343,39 +359,40 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-    for (size_t i = 0; i < route.points.size(); i++) {
-      glVertex2f(route.points[i].position().x(),
+    for (size_t i = 0; i < route.points.size(); i++)
+    {
+      glVertex2d(route.points[i].position().x(),
                  route.points[i].position().y());
     }
     glEnd();
   }
 
-  void RoutePlugin::DrawRoutePoint(const sru::RoutePoint &point)
+  void RoutePlugin::DrawRoutePoint(const sru::RoutePoint& point)
   {
     const double arrow_size = ui_.iconsize->value();
 
     tf::Vector3 v1(arrow_size, 0.0, 0.0);
-    tf::Vector3 v2(0.0,  arrow_size/2.0, 0.0);
-    tf::Vector3 v3(0.0, -arrow_size/2.0, 0.0);
+    tf::Vector3 v2(0.0, arrow_size / 2.0, 0.0);
+    tf::Vector3 v3(0.0, -arrow_size / 2.0, 0.0);
 
     tf::Transform point_g(point.orientation(), point.position());
 
-    v1 = point_g*v1;
-    v2 = point_g*v2;
-    v3 = point_g*v3;
+    v1 = point_g * v1;
+    v2 = point_g * v2;
+    v3 = point_g * v3;
 
     const QColor color = ui_.positioncolor->color();
     glLineWidth(3);
     glBegin(GL_POLYGON);
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0);
-    glVertex2f(v1.x(), v1.y());
-    glVertex2f(v2.x(), v2.y());
-    glVertex2f(v3.x(), v3.y());
+    glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
+    glVertex2d(v1.x(), v1.y());
+    glVertex2d(v2.x(), v2.y());
+    glVertex2d(v3.x(), v3.y());
     glEnd();
   }
 
   void RoutePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
-  {    
+  {
     if (node["topic"])
     {
       std::string route_topic;

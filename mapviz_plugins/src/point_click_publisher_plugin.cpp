@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include "include/mapviz_plugins/point_click_publisher_plugin.h"
+#include "mapviz_plugins/point_click_publisher_plugin.h"
 #include <geometry_msgs/PointStamped.h>
 #include <swri_yaml_util/yaml_util.h>
 
@@ -41,11 +41,11 @@ PLUGINLIB_DECLARE_CLASS(
     mapviz_plugins::PointClickPublisherPlugin,
     mapviz::MapvizPlugin)
 
-namespace mapviz_plugins {
-
+namespace mapviz_plugins
+{
   PointClickPublisherPlugin::PointClickPublisherPlugin() :
-  config_widget_(new QWidget()),
-  canvas_(NULL)
+    config_widget_(new QWidget()),
+    canvas_(NULL)
   {
     ui_.setupUi(config_widget_);
 
@@ -60,7 +60,8 @@ namespace mapviz_plugins {
 
   PointClickPublisherPlugin::~PointClickPublisherPlugin()
   {
-    if (canvas_) {
+    if (canvas_)
+    {
       canvas_->removeEventFilter(&click_filter_);
     }
   }
@@ -116,13 +117,16 @@ namespace mapviz_plugins {
 
     std::string output_frame = ui_.outputframe->currentText().toStdString();
 
-    if (target_frame_ != output_frame) {
+    if (target_frame_ != output_frame)
+    {
       swri_transform_util::Transform tf;
       tf::Point tfPoint(transformed.x(), transformed.y(), 0.0);
-      if (tf_manager_.GetTransform(output_frame, target_frame_, tf)) {
+      if (tf_manager_.GetTransform(output_frame, target_frame_, tf))
+      {
         tfPoint = tf * tfPoint;
       }
-      else {
+      else
+      {
         std::stringstream error;
         error << "Unable to find transform from " << target_frame_ << " to " << output_frame << ".";
         PrintError(error.str());
@@ -221,7 +225,7 @@ namespace mapviz_plugins {
       bool changed = false;
       for (size_t i = 0; i < frames.size(); i++)
       {
-        if (frames[i] != ui_.outputframe->itemText(i).toStdString())
+        if (frames[i] != ui_.outputframe->itemText(static_cast<int>(i)).toStdString())
         {
           changed = true;
         }

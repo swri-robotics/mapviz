@@ -197,7 +197,7 @@ namespace mapviz_plugins
       bool has_intensity)
   {
     double val;
-    unsigned int color_transformer = ui_.color_transformer->currentIndex();
+    int color_transformer = ui_.color_transformer->currentIndex();
     if (color_transformer == COLOR_RANGE)
     {
       val = point.range;
@@ -228,7 +228,7 @@ namespace mapviz_plugins
     if (ui_.use_rainbow->isChecked())
     {
       // Hue Interpolation
-      int hue = val * 255;
+      int hue = static_cast<int>(val * 255);
       return QColor::fromHsl(hue, 255, 127, 255);
     }
     else
@@ -237,9 +237,9 @@ namespace mapviz_plugins
       const QColor max_color = ui_.max_color->color();
       // RGB Interpolation
       int red, green, blue;
-      red =   val * max_color.red()   + ((1.0 - val) * min_color.red());
-      green = val * max_color.green() + ((1.0 - val) * min_color.green());
-      blue =  val * max_color.blue()  + ((1.0 - val) * min_color.blue());
+      red = static_cast<int>(val * max_color.red()   + ((1.0 - val) * min_color.red()));
+      green = static_cast<int>(val * max_color.green() + ((1.0 - val) * min_color.green()));
+      blue = static_cast<int>(val * max_color.blue()  + ((1.0 - val) * min_color.blue()));
       return QColor(red, green, blue, 255);
     }
   }
@@ -308,7 +308,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::BufferSizeChanged(int value)
   {
-    buffer_size_ = value;
+    buffer_size_ = static_cast<size_t>(value);
 
     if (buffer_size_ > 0)
     {
@@ -321,7 +321,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::PointSizeChanged(int value)
   {
-    point_size_ = value;
+    point_size_ = static_cast<size_t>(value);
   }
 
   void LaserScanPlugin::laserScanCallback(const sensor_msgs::LaserScanConstPtr& msg)
@@ -390,7 +390,9 @@ namespace mapviz_plugins
   void LaserScanPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -402,7 +404,9 @@ namespace mapviz_plugins
   void LaserScanPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -414,7 +418,9 @@ namespace mapviz_plugins
   void LaserScanPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -441,8 +447,6 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::Draw(double x, double y, double scale)
   {
-    ros::Time now = ros::Time::now();
-
     glPointSize(point_size_);
     glBegin(GL_POINTS);
 
@@ -454,12 +458,12 @@ namespace mapviz_plugins
         std::vector<StampedPoint>::const_iterator point_it = scan_it->points.begin();
         for (; point_it != scan_it->points.end(); ++point_it)
         {
-          glColor4f(
+          glColor4d(
               point_it->color.redF(),
               point_it->color.greenF(),
               point_it->color.blueF(),
               alpha_);
-          glVertex2f(
+          glVertex2d(
               point_it->transformed_point.getX(),
               point_it->transformed_point.getY());
         }
@@ -539,13 +543,13 @@ namespace mapviz_plugins
     if (node["size"])
     {
       node["size"] >> point_size_;
-      ui_.pointSize->setValue(point_size_);
+      ui_.pointSize->setValue(static_cast<int>(point_size_));
     }
 
     if (node["buffer_size"])
     {
       node["buffer_size"] >> buffer_size_;
-      ui_.bufferSize->setValue(buffer_size_);
+      ui_.bufferSize->setValue(static_cast<int>(buffer_size_));
     }
 
     if (node["color_transformer"])

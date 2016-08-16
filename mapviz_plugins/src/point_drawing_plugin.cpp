@@ -127,6 +127,24 @@ namespace mapviz_plugins
     static_arrow_sizes_ = isChecked;
   }
 
+  void PointDrawingPlugin::PositionToleranceChanged(double value)
+  {
+    position_tolerance_ = value;
+  }
+
+  void PointDrawingPlugin::BufferSizeChanged(int value)
+  {
+    buffer_size_ = value;
+
+    if (buffer_size_ > 0)
+    {
+      while (static_cast<int>(points_.size()) > buffer_size_)
+      {
+        points_.pop_front();
+      }
+    }
+  }
+
   bool PointDrawingPlugin::DrawPoints(double scale)
   {
     scale_ = scale;
@@ -174,7 +192,7 @@ namespace mapviz_plugins
     }
     tf::Point check = begin_ - cur_point_.point;
     if (((std::fabs(check.x()) <= 3) && (std::fabs(check.y()) <= 3)) &&
-        (new_lap_ == false))
+        !new_lap_)
     {
       new_lap_ = true;
       if (points_.size() > 0)
@@ -187,7 +205,7 @@ namespace mapviz_plugins
     }
 
     if (((std::fabs(check.x()) > 25) && (std::fabs(check.y()) > 25)) &&
-        (new_lap_ == true))
+        new_lap_)
     {
       new_lap_ = false;
     }
@@ -196,7 +214,7 @@ namespace mapviz_plugins
   bool PointDrawingPlugin::DrawLines()
   {
     bool success = cur_point_.transformed;
-    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
+    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
     if (draw_style_ == LINES)
     {
       glLineWidth(3);
@@ -214,13 +232,13 @@ namespace mapviz_plugins
       success &= it->transformed;
       if (it->transformed)
       {
-        glVertex2f(it->transformed_point.getX(), it->transformed_point.getY());
+        glVertex2d(it->transformed_point.getX(), it->transformed_point.getY());
       }
     }
 
     if (cur_point_.transformed)
     {
-      glVertex2f(cur_point_.transformed_point.getX(),
+      glVertex2d(cur_point_.transformed_point.getX(),
                  cur_point_.transformed_point.getY());
     }
 
@@ -233,20 +251,20 @@ namespace mapviz_plugins
   {
       if (it.transformed)
       {
-        glVertex2f(it.transformed_point.getX(),
+        glVertex2d(it.transformed_point.getX(),
                    it.transformed_point.getY());
 
-        glVertex2f(it.transformed_arrow_point.getX(),
+        glVertex2d(it.transformed_arrow_point.getX(),
                    it.transformed_arrow_point.getY());
 
-        glVertex2f(it.transformed_arrow_point.getX(),
+        glVertex2d(it.transformed_arrow_point.getX(),
                    it.transformed_arrow_point.getY());
-        glVertex2f(it.transformed_arrow_left.getX(),
+        glVertex2d(it.transformed_arrow_left.getX(),
                    it.transformed_arrow_left.getY());
 
-        glVertex2f(it.transformed_arrow_point.getX(),
+        glVertex2d(it.transformed_arrow_point.getX(),
                    it.transformed_arrow_point.getY());
-        glVertex2f(it.transformed_arrow_right.getX(),
+        glVertex2d(it.transformed_arrow_right.getX(),
                    it.transformed_arrow_right.getY());
         return true;
        }
@@ -258,7 +276,7 @@ namespace mapviz_plugins
     bool success = true;
     glLineWidth(2);
     glBegin(GL_LINES);
-    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
+    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     std::list<StampedPoint>::iterator it = points_.begin();
     for (; it != points_.end(); ++it)
     {
@@ -358,14 +376,14 @@ namespace mapviz_plugins
   bool PointDrawingPlugin::DrawLaps()
   {
     bool transformed = points_.size() != 0;
-    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
+    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(3);
     QColor base_color = color_;
     if (laps_.size() != 0)
     {
       for (size_t i = 0; i < laps_.size(); i++)
       {
-        UpdateColor(base_color,i);
+        UpdateColor(base_color, static_cast<int>(i));
         if (draw_style_ == LINES)
         {
           glLineWidth(3);
@@ -382,7 +400,7 @@ namespace mapviz_plugins
         {
           if (it->transformed)
           {
-            glVertex2f(it->transformed_point.getX(),
+            glVertex2d(it->transformed_point.getX(),
                        it->transformed_point.getY());
           }
         }
@@ -401,7 +419,7 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-    glColor4f(base_color.redF(), base_color.greenF(), base_color.blueF(), 0.5);
+    glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(), 0.5);
 
     if (points_.size() > 0)
     {
@@ -411,7 +429,7 @@ namespace mapviz_plugins
         transformed &= it->transformed;
         if (it->transformed)
         {
-          glVertex2f(it->transformed_point.getX(),
+          glVertex2d(it->transformed_point.getX(),
                      it->transformed_point.getY());
         }
       }
@@ -423,7 +441,7 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::UpdateColor(QColor base_color, int i)
   {
-      int hue = color_.hue() + (i + 1) * 10 * M_PI;
+      int hue = static_cast<int>(color_.hue() + (i + 1.0) * 10.0 * M_PI);
       if (hue > 360)
       {
         hue %= 360;
@@ -431,21 +449,21 @@ namespace mapviz_plugins
       int sat = color_.saturation();
       int v = color_.value();
       base_color.setHsv(hue, sat, v);
-      glColor4f(base_color.redF(), base_color.greenF(), base_color.blueF(),
+      glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(),
                 0.5);
   }
 
   bool PointDrawingPlugin::DrawLapsArrows()
   {
     bool success = laps_.size() != 0 && points_.size() != 0;
-    glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
+    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(2);
     QColor base_color = color_;
     if (laps_.size() != 0)
     {
       for (size_t i = 0; i < laps_.size(); i++)
       {
-        UpdateColor(base_color,i);
+        UpdateColor(base_color, static_cast<int>(i));
         std::list<StampedPoint>::iterator it = laps_[i].begin();
         for (; it != laps_[i].end(); ++it)
         {
@@ -456,11 +474,11 @@ namespace mapviz_plugins
       }
       glEnd();
 
-      int hue = color_.hue() + laps_.size() * 10 * M_PI;
+      int hue = static_cast<int>(color_.hue() + laps_.size() * 10.0 * M_PI);
       int sat = color_.saturation();
       int v = color_.value();
       base_color.setHsv(hue, sat, v);
-      glColor4f(base_color.redF(), base_color.greenF(), base_color.blueF(),
+      glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(),
                 0.5);
     }
 

@@ -5,9 +5,9 @@ set(DEPENDENCIES
   cv_bridge
   image_transport
   mapviz
-  marti_visualization_msgs
   marti_common_msgs
   marti_nav_msgs
+  marti_visualization_msgs
   nav_msgs
   pluginlib 
   roscpp 
@@ -64,14 +64,34 @@ catkin_package(
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIR})
+include_directories(include
+    ${catkin_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIR}
+    ${PROJECT_BINARY_DIR}
+)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-file (GLOB UI_FILES src/*.ui)
+set(UI_FILES
+    ui/attitude_indicator_config.ui
+    ui/disparity_config.ui
+    ui/grid_config.ui
+    ui/image_config.ui
+    ui/laserscan_config.ui
+    ui/marker_config.ui
+    ui/navsat_config.ui
+    ui/odometry_config.ui
+    ui/path_config.ui
+    ui/plan_route_config.ui
+    ui/point_click_publisher_config.ui
+    ui/pointcloud2_config.ui
+    ui/robot_image_config.ui
+    ui/route_config.ui
+    ui/string_config.ui
+    ui/tf_frame_config.ui
+    ui/topic_select.ui
+)
 
-file (GLOB SRC_FILES
-    src/attitude_indicator_plugin.cpp
+set(SRC_FILES
+    src/attitude_indicator_plugin.cpp 
     src/canvas_click_filter.cpp
     src/disparity_plugin.cpp 
     src/grid_plugin.cpp
@@ -85,41 +105,57 @@ file (GLOB SRC_FILES
     src/plan_route_plugin.cpp
     src/point_click_publisher_plugin.cpp
     src/pointcloud2_plugin.cpp
+    src/point_drawing_plugin.cpp
     src/robot_image_plugin.cpp
     src/route_plugin.cpp
     src/string_plugin.cpp
     src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
-    src/point_drawing_plugin.cpp
+)
+
+set(HEADER_FILES
+    include/${PROJECT_NAME}/attitude_indicator_plugin.h
+    include/${PROJECT_NAME}/canvas_click_filter.h
+    include/${PROJECT_NAME}/disparity_plugin.h
+    include/${PROJECT_NAME}/grid_plugin.h
+    include/${PROJECT_NAME}/image_plugin.h
+    include/${PROJECT_NAME}/path_plugin.h
+    include/${PROJECT_NAME}/placeable_window_proxy.h
+    include/${PROJECT_NAME}/laserscan_plugin.h
+    include/${PROJECT_NAME}/marker_plugin.h
+    include/${PROJECT_NAME}/navsat_plugin.h
+    include/${PROJECT_NAME}/odometry_plugin.h
+    include/${PROJECT_NAME}/path_plugin.h
+    include/${PROJECT_NAME}/plan_route_plugin.h
+    include/${PROJECT_NAME}/point_click_publisher_plugin.h
+    include/${PROJECT_NAME}/pointcloud2_plugin.h
+    include/${PROJECT_NAME}/robot_image_plugin.h
+    include/${PROJECT_NAME}/route_plugin.h
+    include/${PROJECT_NAME}/string_plugin.h
+    include/${PROJECT_NAME}/textured_marker_plugin.h
+    include/${PROJECT_NAME}/tf_frame_plugin.h
+    include/${PROJECT_NAME}/point_drawing_plugin.h
 )
     
-qt5_wrap_ui(SRC_FILES ${UI_FILES})
+qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
 
-qt5_wrap_cpp(SRC_FILES
-    include/mapviz_plugins/attitude_indicator_plugin.h
-    include/mapviz_plugins/canvas_click_filter.h
-    include/mapviz_plugins/disparity_plugin.h
-    include/mapviz_plugins/grid_plugin.h
-    include/mapviz_plugins/image_plugin.h
-    include/mapviz_plugins/laserscan_plugin.h
-    include/mapviz_plugins/marker_plugin.h 
-    include/mapviz_plugins/navsat_plugin.h
-    include/mapviz_plugins/odometry_plugin.h 
-    include/mapviz_plugins/path_plugin.h
-    include/mapviz_plugins/placeable_window_proxy.h
-    include/mapviz_plugins/plan_route_plugin.h    
-    include/mapviz_plugins/point_click_publisher_plugin.h
-    include/mapviz_plugins/pointcloud2_plugin.h
-    include/mapviz_plugins/robot_image_plugin.h
-    include/mapviz_plugins/route_plugin.h
-    include/mapviz_plugins/string_plugin.h
-    include/mapviz_plugins/textured_marker_plugin.h
-    include/mapviz_plugins/tf_frame_plugin.h
-    include/mapviz_plugins/point_drawing_plugin.h
+qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
+
+add_library(${PROJECT_NAME}
+    ${MOC_FILES}
+    ${SRC_FILES}
+    ${UI_SRC_FILES}
 )
 
-add_library(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+    ${GLU_LIBRARY}
+    ${GLUT_LIBRARY}
+    ${OpenCV_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${QT_QTOPENGL_LIBRARIES}
+)
+
 add_dependencies(${PROJECT_NAME} marti_visualization_msgs_generate_messages_cpp)
 
 install(DIRECTORY include/${PROJECT_NAME}/
@@ -133,6 +169,7 @@ install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-install(FILES mapviz_plugins.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(FILES ${PROJECT_NAME}.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
