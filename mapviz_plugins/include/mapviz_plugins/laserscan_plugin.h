@@ -126,8 +126,9 @@ namespace mapviz_plugins
 
       std::string topic_;
       double alpha_;
-      double min_value_, max_value_;
-      unsigned int point_size_;
+      double min_value_;
+      double max_value_;
+      size_t point_size_;
       size_t buffer_size_;
 
       bool has_message_;

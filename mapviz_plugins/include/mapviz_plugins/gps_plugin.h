@@ -20,9 +20,12 @@
 #ifndef MAPVIZ_PLUGINS_GPS_PLUGIN_H_
 #define MAPVIZ_PLUGINS_GPS_PLUGIN_H_
 
+// Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.h>
+
 #include <mapviz/map_canvas.h>
 #include <mapviz_plugins/point_drawing_plugin.h>
+
 // C++ standard libraries
 #include <list>
 #include <string>
@@ -72,9 +75,6 @@ namespace mapviz_plugins
    protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
-    void PositionToleranceChanged(double value);
-    void AngleToleranceChanged(double value);
-    void BufferSizeChanged(int value);
 
    private:
     Ui::gps_config ui_;
@@ -82,14 +82,12 @@ namespace mapviz_plugins
 
     std::string topic_;
 
-    float angle_tolerance_;
-
     ros::Subscriber gps_sub_;
     bool has_message_;
 
     swri_transform_util::LocalXyWgs84Util local_xy_util_;
 
-    void GPSFixCallback(const gps_common::GPSFixConstPtr gps);
+    void GPSFixCallback(const gps_common::GPSFixConstPtr& gps);
   };
 }
 
