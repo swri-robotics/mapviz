@@ -42,7 +42,6 @@
 
 #include <rosapi/Services.h>
 #include <rosapi/ServicesForType.h>
-#include <QtGui/QMessageBox>
 
 namespace mapviz
 {
