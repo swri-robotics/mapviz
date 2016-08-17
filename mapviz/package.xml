@@ -28,6 +28,8 @@
   <depend>libxmu-dev</depend>
   <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
+  <depend>qt4-qmake</depend>
+  <depend>rosapi</depend>
   <depend>roscpp</depend>
   <depend>rqt_gui_cpp</depend>
   <depend>rqt_gui</depend>

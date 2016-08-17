@@ -4,6 +4,7 @@ project(mapviz)
 find_package(catkin REQUIRED COMPONENTS
   marti_common_msgs
   message_generation
+  rosapi
   roscpp
   #rqt_gui
   rqt_gui_cpp
@@ -95,6 +96,7 @@ file (GLOB HEADER_FILES
   include/mapviz/mapviz_plugin.h
   include/mapviz/rqt_mapviz.h
   include/mapviz/select_frame_dialog.h
+  include/mapviz/select_service_dialog.h
   include/mapviz/select_topic_dialog.h
   include/mapviz/widgets.h
 )
@@ -106,6 +108,7 @@ file (GLOB SRC_FILES
   src/map_canvas.cpp
   src/rqt_mapviz.cpp
   src/select_frame_dialog.cpp
+  src/select_service_dialog.cpp
   src/select_topic_dialog.cpp
 )
 qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
