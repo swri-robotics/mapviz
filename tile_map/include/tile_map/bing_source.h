@@ -126,7 +126,7 @@ namespace tile_map
     QString api_key_;
     boost::hash<std::string> hash_;
     QNetworkAccessManager network_manager_;
-    boost::random::mt19937 rng_;
+    boost::mt19937 rng_;
     std::vector<QString> subdomains_;
     QString tile_url_;
 

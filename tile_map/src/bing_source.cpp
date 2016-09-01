@@ -71,7 +71,7 @@ namespace tile_map
     QString url = tile_url_;
     if (!subdomains_.empty())
     {
-      boost::random::uniform_int_distribution<> random(0, (int) subdomains_.size() - 1);
+      boost::uniform_int<> random(0, (int) subdomains_.size() - 1);
       url.replace(QString::fromStdString("{subdomain}"), subdomains_[random(rng_)]);
     }
     url.replace(QString::fromStdString("{quadkey}"), GenerateQuadKey(level, x, y));

@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Qt4 REQUIRED QtCore QtGui QtNetwork QtOpenGl)
 
+find_package(Boost REQUIRED random)
+
 find_package(PkgConfig REQUIRED)
 
 find_package(GLU REQUIRED)
