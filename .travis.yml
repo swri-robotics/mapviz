@@ -15,6 +15,7 @@ env:
   matrix:
     - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
 install:
+  - sudo pip install -U setuptools
   - sudo pip install -U catkin_pkg catkin-tools
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
   - git clone https://github.com/swri-robotics/marti_messages.git --branch hydro-devel
