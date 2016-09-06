@@ -47,7 +47,7 @@ namespace tile_map
     return left->Priority() > right->Priority();
   }
 
-  Image::Image(const std::string& uri, size_t uri_hash, uint64_t priority) :
+  Image::Image(const QString& uri, size_t uri_hash, uint64_t priority) :
     uri_(uri),
     uri_hash_(uri_hash),
     loading_(false),
@@ -104,7 +104,13 @@ namespace tile_map
     delete cache_thread_;
   }
 
-  ImagePtr ImageCache::GetImage(size_t uri_hash, const std::string& uri, int32_t priority)
+  void ImageCache::Clear()
+  {
+    cache_.clear();
+    network_manager_.cache()->clear();
+  }
+
+  ImagePtr ImageCache::GetImage(size_t uri_hash, const QString& uri, int32_t priority)
   {
     ImagePtr image;
     
@@ -118,7 +124,7 @@ namespace tile_map
       image = *image_ptr;
       if (!cache_.insert(uri_hash, image_ptr))
       {
-        ROS_ERROR("FAILED TO CREATE HANDLE: %s", uri.c_str());
+        ROS_ERROR("FAILED TO CREATE HANDLE: %s", uri.toStdString().c_str());
         image_ptr = 0;
       }
     }
@@ -141,11 +147,12 @@ namespace tile_map
         {
           image->SetPriority(tick_++);
           unprocessed_[uri_hash] = image;
+          uri_to_hash_map_[uri] = uri_hash;
         }
       }
       else
       {
-        ROS_ERROR("To many failures for image: %s", uri.c_str());
+        ROS_ERROR("To many failures for image: %s", uri.toStdString().c_str());
       }
     }
 
@@ -160,21 +167,25 @@ namespace tile_map
     request.setUrl(QUrl(uri));
     request.setRawHeader("User-Agent", "mapviz-1.0");
     request.setAttribute(
-    QNetworkRequest::CacheLoadControlAttribute,
-    QNetworkRequest::PreferCache);
+        QNetworkRequest::CacheLoadControlAttribute,
+        QNetworkRequest::PreferCache);
+    request.setAttribute(
+        QNetworkRequest::HttpPipeliningAllowedAttribute,
+        true);
         
     QNetworkReply *reply = network_manager_.get(request);
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
+            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
   } 
   
   void ImageCache::ProcessReply(QNetworkReply* reply)
   {
-    std::string url = reply->url().toString().toStdString();
-    size_t hash = hash_function_(url);
+    QString url = reply->url().toString();
     
     ImagePtr image;
     unprocessed_mutex_.lock();
-    
+
+    size_t hash = uri_to_hash_map_[url];
     image = unprocessed_[hash];
     if (image)
     {
@@ -184,19 +195,20 @@ namespace tile_map
         image->InitializeImage();
         if (!image->GetImage()->loadFromData(data))
         {
-          ROS_ERROR("FAILED TO CREATE IMAGE FROM REPLY: %s", url.c_str());
+          ROS_ERROR("FAILED TO CREATE IMAGE FROM REPLY: %s", url.toStdString().c_str());
           image->ClearImage();
           image->AddFailure();
         }
       }
       else
       {
-        ROS_ERROR("============ AN ERROR OCCURRED ==============: %s", url.c_str());
+        ROS_ERROR("============ AN ERROR OCCURRED ==============: %s", url.toStdString().c_str());
         image->AddFailure();
       }
     }
     
     unprocessed_.remove(hash);
+    uri_to_hash_map_.remove(url);
     if (image)
     {
       image->SetLoading(false);
@@ -207,8 +219,6 @@ namespace tile_map
     unprocessed_mutex_.unlock();
     
     reply->deleteLater();
-    
-    
     
     // Condition variable?
   }
@@ -243,7 +253,7 @@ namespace tile_map
           image->SetLoading(true);
           images.pop_front();
         
-          Q_EMIT RequestImage(QString::fromStdString(image->Uri()));
+          Q_EMIT RequestImage(image->Uri());
         
           p->pending_++;
           count++;
@@ -262,6 +272,7 @@ namespace tile_map
         ImagePtr image = images.back();
         images.pop_back();
         p->unprocessed_.remove(image->UriHash());
+        p->uri_to_hash_map_.remove(image->Uri());
       }
       p->unprocessed_mutex_.unlock();
     

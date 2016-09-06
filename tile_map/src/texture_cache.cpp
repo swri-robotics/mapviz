@@ -69,7 +69,7 @@ namespace tile_map
   
   }
 
-  TexturePtr TextureCache::GetTexture(size_t url_hash, const std::string& url, bool& failed)
+  TexturePtr TextureCache::GetTexture(size_t url_hash, const QString& url, bool& failed)
   {
     TexturePtr texture;
 
@@ -158,5 +158,11 @@ namespace tile_map
       TexturePtr* texture_ptr = new TexturePtr(texture);
       cache_.insert(texture->url_hash, texture_ptr);
     }
+  }
+
+  void TextureCache::Clear()
+  {
+    image_cache_->Clear();
+    cache_.clear();
   }
 }

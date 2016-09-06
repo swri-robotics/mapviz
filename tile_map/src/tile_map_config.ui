@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>395</width>
-    <height>300</height>
+    <width>305</width>
+    <height>141</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
     <number>2</number>
    </property>
    <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="url_label">
      <property name="font">
       <font>
        <family>Sans Serif</family>
@@ -32,11 +32,24 @@
       </font>
      </property>
      <property name="text">
-      <string>Status:</string>
+      <string>Base URL:</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1" colspan="3">
+   <item row="2" column="0">
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Source:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1" colspan="3">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
@@ -55,8 +68,8 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label">
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_6">
      <property name="font">
       <font>
        <family>Sans Serif</family>
@@ -64,23 +77,31 @@
       </font>
      </property>
      <property name="text">
-      <string>Source:</string>
+      <string>Max Zoom:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="3">
+    <widget class="QPushButton" name="reset_cache_button">
+     <property name="text">
+      <string>Reset Cache</string>
      </property>
     </widget>
    </item>
    <item row="2" column="1" colspan="3">
     <widget class="QComboBox" name="source_combo">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>27</height>
+      </size>
+     </property>
      <property name="editable">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <item>
       <property name="text">
-       <string>MapQuest (satellite)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>MapQuest (roads)</string>
+       <string>Stamen (terrain)</string>
       </property>
      </item>
      <item>
@@ -90,14 +111,84 @@
      </item>
      <item>
       <property name="text">
-       <string>Stamen (terrain)</string>
+       <string>Stamen (toner)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Stamen (toner)</string>
+       <string>Bing Maps (terrain)</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>Custom WMTS Source...</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="3">
+    <widget class="QLineEdit" name="base_url_text">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>http://tile.stamen.com/terrain/</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="3">
+    <widget class="QPushButton" name="delete_button">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Delete</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2">
+    <widget class="QPushButton" name="save_button">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Save...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Status:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QSpinBox" name="max_zoom_spin_box">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>50</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="value">
+      <number>15</number>
+     </property>
     </widget>
    </item>
   </layout>
