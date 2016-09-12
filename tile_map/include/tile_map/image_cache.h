@@ -31,6 +31,7 @@
 #define TILE_MAP_IMAGE_CACHE_H_
 
 #include <string>
+#include <limits>
 
 #include <boost/cstdint.hpp>
 #include <boost/shared_ptr.hpp>
@@ -41,7 +42,9 @@
 #include <QMutex>
 #include <QNetworkReply>
 #include <QObject>
+#include <QSemaphore>
 #include <QThread>
+#include <set>
 
 namespace tile_map
 {
@@ -64,6 +67,13 @@ namespace tile_map
     void AddFailure();
     bool Failed() const { return failed_; }
 
+    void IncreasePriority()
+    {
+      if (priority_ < std::numeric_limits<uint64_t>::max())
+      {
+        priority_++;
+      }
+    }
     void SetPriority(uint64_t priority) { priority_ = priority; }
     uint64_t Priority() const { return priority_; }
 
@@ -81,6 +91,8 @@ namespace tile_map
     uint64_t priority_;
     
     mutable boost::shared_ptr<QImage> image_;
+
+    static const int MAXIMUM_FAILURES;
   };
   typedef boost::shared_ptr<Image> ImagePtr;
 
@@ -112,28 +124,36 @@ namespace tile_map
     QMutex cache_mutex_;
     QMutex unprocessed_mutex_;
     bool exit_;
-    
-    int32_t pending_;
+
     uint64_t tick_;
     
     CacheThread* cache_thread_;
-    
+
+    QSemaphore network_request_semaphore_;
+
     friend class CacheThread;
+
+    static const int MAXIMUM_NETWORK_REQUESTS;
   };
   
   class CacheThread : public QThread
   {
     Q_OBJECT
     public:
-      explicit CacheThread(ImageCache* parent) : p(parent) {}
+      explicit CacheThread(ImageCache* parent);
       
       virtual void run();
+
+      void notify();
 
     Q_SIGNALS:
       void RequestImage(QString);
 
     private:
       ImageCache* p;
+      QMutex waiting_mutex_;
+
+      static const int MAXIMUM_SEQUENTIAL_REQUESTS;
   };
     
   
