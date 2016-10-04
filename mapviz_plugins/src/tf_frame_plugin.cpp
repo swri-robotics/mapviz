@@ -83,7 +83,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
     connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
-            SLOT(DrawIcon()));
+            SLOT(SetColor(const QColor&)));
   }
 
   TfFramePlugin::~TfFramePlugin()
@@ -211,14 +211,13 @@ namespace mapviz_plugins
     timer_ = node_.createTimer(ros::Duration(0.1),
                                &TfFramePlugin::TimerCallback, this);
 
-    DrawIcon();
+    SetColor(ui_.color->color());
 
     return true;
   }
 
   void TfFramePlugin::Draw(double x, double y, double scale)
   {
-    color_ = ui_.color->color();
     if (DrawPoints(scale))
     {
       PrintInfo("OK");
@@ -237,7 +236,8 @@ namespace mapviz_plugins
     {
       std::string color;
       node["color"] >> color;
-      ui_.color->setColor(QColor(color.c_str()));
+      SetColor(QColor(color.c_str()));
+      ui_.color->setColor(color_);
     }
 
     if (node["draw_style"])

@@ -272,6 +272,15 @@ namespace mapviz_plugins
     return success;
   }
 
+  void PointDrawingPlugin::SetColor(const QColor& color)
+  {
+    if (color != color_)
+    {
+      color_ = color;
+      DrawIcon();
+    }
+  }
+
   bool PointDrawingPlugin::TransformPoint(StampedPoint& point)
   {
     swri_transform_util::Transform transform;
