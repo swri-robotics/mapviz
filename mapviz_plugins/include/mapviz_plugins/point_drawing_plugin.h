@@ -93,6 +93,7 @@ namespace mapviz_plugins
 
    protected Q_SLOTS:
     virtual void DrawIcon();
+    virtual void SetColor(const QColor& color);
     virtual void SetDrawStyle(QString style);
     virtual void SetStaticArrowSizes(bool isChecked);
     virtual void SetArrowSize(int arrowSize);
