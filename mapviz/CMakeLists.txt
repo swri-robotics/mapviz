@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mapviz)
 
 find_package(catkin REQUIRED COMPONENTS
+  image_transport
   marti_common_msgs
   message_generation
   rosapi
