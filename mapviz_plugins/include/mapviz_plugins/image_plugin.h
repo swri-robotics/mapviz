@@ -83,6 +83,9 @@ namespace mapviz_plugins
 
     void Draw(double x, double y, double scale);
 
+    void CreateLocalNode();
+    virtual void SetNode(const ros::NodeHandle& node);
+
     void Transform() {}
 
     void LoadConfig(const YAML::Node& node, const std::string& path);
@@ -95,6 +98,9 @@ namespace mapviz_plugins
     void PrintInfo(const std::string& message);
     void PrintWarning(const std::string& message);
 
+  public Q_SLOTS:
+    void Resubscribe();
+
   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
@@ -105,6 +111,7 @@ namespace mapviz_plugins
     void SetWidth(int width);
     void SetHeight(int height);
     void SetSubscription(bool visible);
+    void SetTransport(const QString& transport);
 
   private:
     Ui::image_config ui_;
@@ -117,12 +124,15 @@ namespace mapviz_plugins
     int offset_y_;
     int width_;
     int height_;
+    QString transport_;
 
+    bool force_resubscribe_;
     bool has_image_;
 
     int last_width_;
     int last_height_;
 
+    ros::NodeHandle local_node_;
     image_transport::Subscriber image_sub_;
     bool has_message_;
 

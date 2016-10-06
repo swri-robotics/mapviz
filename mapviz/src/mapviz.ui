@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>732</width>
+    <width>600</width>
     <height>600</height>
    </rect>
   </property>
@@ -30,7 +30,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>732</width>
+     <width>600</width>
      <height>27</height>
     </rect>
    </property>
@@ -60,6 +60,7 @@
     <addaction name="actionConfig_Dock"/>
     <addaction name="actionShow_Status_Bar"/>
     <addaction name="actionShow_Capture_Tools"/>
+    <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_View"/>
@@ -452,18 +453,23 @@
    </property>
   </action>
   <action name="actionEnable_Antialiasing">
-    <property name="checkable">
-      <bool>true</bool>
-    </property>
-    <property name="checked">
-      <bool>true</bool>
-    </property>
-    <property name="text">
-      <string>Enable Antialiasing</string>
-    </property>
-    <property name="statusTip">
-      <string>Enable antialiasing on the GL surface</string>
-    </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Antialiasing</string>
+   </property>
+   <property name="statusTip">
+    <string>Enable antialiasing on the GL surface</string>
+   </property>
+  </action>
+  <action name="actionImage_Transport">
+   <property name="text">
+    <string>Image Transport</string>
+   </property>
   </action>
  </widget>
  <customwidgets>

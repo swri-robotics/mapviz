@@ -260,7 +260,7 @@ namespace mapviz
     void TargetFrameChanged(const std::string& target_frame);
     void UseLatestTransformsChanged(bool use_latest_transforms);
     void VisibleChanged(bool visible);
-    
+
 
   protected:
     bool initialized_;
