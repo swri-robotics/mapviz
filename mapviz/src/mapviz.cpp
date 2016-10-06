@@ -65,10 +65,13 @@
 #include <mapviz/config_item.h>
 #include <QtGui/QtGui>
 
+#include <image_transport/image_transport.h>
+
 namespace mapviz
 {
 const QString Mapviz::ROS_WORKSPACE_VAR = "ROS_WORKSPACE";
 const QString Mapviz::MAPVIZ_CONFIG_FILE = "/.mapviz_config";
+const std::string Mapviz::IMAGE_TRANSPORT_PARAM = "image_transport";
 
 Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::WFlags flags) :
     QMainWindow(parent, flags),
@@ -167,6 +170,11 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
   connect(screenshot_button_, SIGNAL(clicked()), this, SLOT(Screenshot()));
 
+  image_transport_menu_ = new QMenu("Default Image Transport", ui_.menu_View);
+  ui_.menu_View->addMenu(image_transport_menu_);
+
+  connect(image_transport_menu_, SIGNAL(aboutToShow()), this, SLOT(UpdateImageTransportMenu()));
+
   ui_.bg_color->setColor(background_);
   canvas_->SetBackground(background_);
 }
@@ -201,7 +209,23 @@ void Mapviz::Initialize()
       connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
     }
 
-    node_ = new ros::NodeHandle("mapviz");
+    node_ = new ros::NodeHandle("~");
+
+    // Create a sub-menu that lists all available Image Transports
+    image_transport::ImageTransport it(*node_);
+    std::vector<std::string> transports = it.getLoadableTransports();
+    QActionGroup* group = new QActionGroup(image_transport_menu_);
+    for (std::vector<std::string>::iterator iter = transports.begin(); iter != transports.end(); iter++)
+    {
+      QString transport = QString::fromStdString(*iter).replace(
+          QString::fromStdString(IMAGE_TRANSPORT_PARAM) + "/", "");
+      QAction* action = image_transport_menu_->addAction(transport);
+      action->setCheckable(true);
+      group->addAction(action);
+    }
+
+    connect(group, SIGNAL(triggered(QAction*)), this, SLOT(SetImageTransport(QAction*)));
+
     tf_ = boost::make_shared<tf::TransformListener>();
     tf_manager_.Initialize(tf_);
 
@@ -604,6 +628,14 @@ void Mapviz::Open(const std::string& filename)
       }
     }
 
+    if (swri_yaml_util::FindValue(doc, IMAGE_TRANSPORT_PARAM))
+    {
+      std::string image_transport;
+      doc[IMAGE_TRANSPORT_PARAM] >> image_transport;
+
+      node_->setParam(IMAGE_TRANSPORT_PARAM, image_transport);
+    }
+
     bool use_latest_transforms = true;
     if (swri_yaml_util::FindValue(doc, "use_latest_transforms"))
     {
@@ -706,6 +738,11 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "offset_y" << YAML::Value << canvas_->OffsetY();
   out << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.uselatesttransforms->isChecked();
   out << YAML::Key << "background" << YAML::Value << background_.name().toStdString();
+  std::string image_transport;
+  if (node_->getParam(IMAGE_TRANSPORT_PARAM, image_transport))
+  {
+    out << YAML::Key << IMAGE_TRANSPORT_PARAM << YAML::Value << image_transport;
+  }
 
   if (force_720p_)
   {
@@ -1074,6 +1111,16 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   connect(plugin.get(), SIGNAL(VisibleChanged(bool)), config_item, SLOT(ToggleDraw(bool)));
   connect(plugin.get(), SIGNAL(SizeChanged()), this, SLOT(UpdateSizeHints()));
 
+  if (real_type == "mapviz_plugins/image")
+  {
+    // This is a little kludgey because we're relying on hard-coding a
+    // plugin type here... feel free to suggest a better way.
+    // If the default image transport has changed, we want to notify all of our
+    // image plugins of it so that they will resubscribe appropriately.
+    connect(this, SIGNAL(ImageTransportChanged()),
+            plugin.get(), SLOT(Resubscribe()));
+  }
+
   if (draw_order == 0)
   {
     ui_.configs->addItem(item);
@@ -1242,6 +1289,34 @@ void Mapviz::ToggleRecord(bool on)
     rec_button_->setToolTip("Continue recording video of display canvas");
     record_timer_.stop();
   }
+}
+
+void Mapviz::SetImageTransport(QAction* transport_action)
+{
+  std::string transport = transport_action->text().toStdString();
+  ROS_INFO("Setting %s to %s", IMAGE_TRANSPORT_PARAM.c_str(), transport.c_str());
+  node_->setParam(IMAGE_TRANSPORT_PARAM, transport);
+
+  Q_EMIT(ImageTransportChanged());
+}
+
+void Mapviz::UpdateImageTransportMenu()
+{
+  QList<QAction*> actions = image_transport_menu_->actions();
+
+  std::string current_transport;
+  node_->param<std::string>(IMAGE_TRANSPORT_PARAM, current_transport, "raw");
+  Q_FOREACH(QAction* action, actions)
+  {
+    if (action->text() == QString::fromStdString(current_transport))
+    {
+      action->setChecked(true);
+      return;
+    }
+  }
+
+  ROS_WARN("%s param was set to an unrecognized value: %s",
+           IMAGE_TRANSPORT_PARAM.c_str(), current_transport.c_str());
 }
 
 void Mapviz::CaptureVideoFrame()
