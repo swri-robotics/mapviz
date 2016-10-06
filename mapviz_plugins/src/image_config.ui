@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>334</width>
+    <height>262</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,16 +23,32 @@
    <property name="margin">
     <number>2</number>
    </property>
-   <item row="9" column="0">
-    <widget class="QLabel" name="label_2">
+   <item row="7" column="1">
+    <widget class="QSpinBox" name="height">
+     <property name="maximum">
+      <number>2000</number>
+     </property>
+     <property name="value">
+      <number>240</number>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1" colspan="2">
+    <widget class="QLabel" name="status">
      <property name="font">
       <font>
        <family>Sans Serif</family>
        <pointsize>8</pointsize>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="text">
-      <string>Status:</string>
+      <string>No topic</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -58,13 +74,29 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="topic">
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_3">
      <property name="font">
       <font>
        <family>Sans Serif</family>
        <pointsize>8</pointsize>
       </font>
+     </property>
+     <property name="text">
+      <string>Anchor:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Width:</string>
      </property>
     </widget>
    </item>
@@ -78,6 +110,60 @@
      </property>
      <property name="text">
       <string>Topic:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QComboBox" name="transport_combo_box">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>25</height>
+      </size>
+     </property>
+     <item>
+      <property name="text">
+       <string>default</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Offset X:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="label_8">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Units:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Status:</string>
      </property>
     </widget>
    </item>
@@ -142,91 +228,6 @@
      </item>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Anchor:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Offset X:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QSpinBox" name="offsetx">
-     <property name="maximum">
-      <number>2000</number>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="1" colspan="2">
-    <widget class="QLabel" name="status">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>No topic</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Offset Y:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QSpinBox" name="offsety">
-     <property name="maximum">
-      <number>2000</number>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_6">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Width:</string>
-     </property>
-    </widget>
-   </item>
    <item row="6" column="1">
     <widget class="QSpinBox" name="width">
      <property name="maximum">
@@ -234,6 +235,16 @@
      </property>
      <property name="value">
       <number>320</number>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="topic">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
      </property>
     </widget>
    </item>
@@ -250,18 +261,8 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
-    <widget class="QSpinBox" name="height">
-     <property name="maximum">
-      <number>2000</number>
-     </property>
-     <property name="value">
-      <number>240</number>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label_8">
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_5">
      <property name="font">
       <font>
        <family>Sans Serif</family>
@@ -269,7 +270,14 @@
       </font>
      </property>
      <property name="text">
-      <string>Units:</string>
+      <string>Offset Y:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QSpinBox" name="offsetx">
+     <property name="maximum">
+      <number>2000</number>
      </property>
     </widget>
    </item>
@@ -298,6 +306,39 @@
       </property>
      </item>
     </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_9">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Transport:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QSpinBox" name="offsety">
+     <property name="maximum">
+      <number>2000</number>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
