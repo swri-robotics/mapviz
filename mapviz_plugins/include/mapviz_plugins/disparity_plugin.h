@@ -30,24 +30,25 @@
 #ifndef MAPVIZ_PLUGINS_DISPARITY_PLUGIN_H_
 #define MAPVIZ_PLUGINS_DISPARITY_PLUGIN_H_
 
-// C++ standard libraries
-#include <string>
-#include <list>
-
+// Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.h>
 
+// C++ standard libraries
+#include <list>
+#include <string>
+
 // QT libraries
+#include <QColor>
 #include <QGLWidget>
 #include <QObject>
 #include <QWidget>
-#include <QColor>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
-#include <stereo_msgs/DisparityImage.h>
-#include <opencv/highgui.h>
 #include <cv_bridge/cv_bridge.h>
+#include <opencv/highgui.h>
+#include <ros/ros.h>
+#include <stereo_msgs/DisparityImage.h>
+#include <tf/transform_datatypes.h>
 
 #include <mapviz/map_canvas.h>
 
@@ -112,15 +113,15 @@ namespace mapviz_plugins
     std::string topic_;
     Anchor anchor_;
     Units units_;
-    int offset_x_;
-    int offset_y_;
-    int width_;
-    int height_;
+    double offset_x_;
+    double offset_y_;
+    double width_;
+    double height_;
 
     bool has_image_;
 
-    int last_width_;
-    int last_height_;
+    double last_width_;
+    double last_height_;
 
     ros::Subscriber disparity_sub_;
     bool has_message_;
@@ -130,15 +131,15 @@ namespace mapviz_plugins
     cv::Mat_<cv::Vec3b> disparity_color_;
     cv::Mat scaled_image_;
 
-    void disparityCallback(const stereo_msgs::DisparityImageConstPtr image);
+    void disparityCallback(const stereo_msgs::DisparityImageConstPtr& image);
 
-    void ScaleImage(int width, int height);
+    void ScaleImage(double width, double height);
     void DrawIplImage(cv::Mat *image);
 
     std::string AnchorToString(Anchor anchor);
     std::string UnitsToString(Units units);
 
-    static unsigned char colormap[];
+    const static unsigned char COLOR_MAP[];
   };
 }
 

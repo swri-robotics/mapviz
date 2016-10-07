@@ -90,7 +90,6 @@ namespace mapviz_plugins
 
   StringPlugin::~StringPlugin()
   {
-
   }
 
   bool StringPlugin::Initialize(QGLWidget* canvas)
@@ -112,7 +111,8 @@ namespace mapviz_plugins
       painter->resetTransform();
       painter->setFont(font_);
 
-      if (!has_painted_) {
+      if (!has_painted_)
+      {
         // After the first time we get a new message, we do not know how wide it's
         // going to be when rendered, so we can't accurately calculate the top left
         // coordinate if it's offset from the right or bottom borders.
@@ -134,7 +134,7 @@ namespace mapviz_plugins
     }
     else
     {
-      PrintWarning("No messages received. :-(");
+      PrintWarning("No messages received.");
     }
   }
 
@@ -145,14 +145,14 @@ namespace mapviz_plugins
     int y_offset = offset_y_;
     if (units_ == PERCENT)
     {
-      x_offset = (int)((float)(offset_x_ * canvas_->width()) / 100.0);
-      y_offset = (int)((float)(offset_y_ * canvas_->height()) / 100.0);
+      x_offset = static_cast<int>((float)(offset_x_ * canvas_->width()) / 100.0);
+      y_offset = static_cast<int>((float)(offset_y_ * canvas_->height()) / 100.0);
     }
 
-    int right = (int)((float)canvas_->width() - message_.size().width()) - x_offset;
-    int bottom = (int)((float)canvas_->height() - message_.size().height()) - y_offset;
-    int yCenter = (int)((float)canvas_->height() / 2.0 - message_.size().height()/2.0);
-    int xCenter = (int)((float)canvas_->width() / 2.0 - message_.size().width()/2.0);
+    int right = static_cast<int>((float)canvas_->width() - message_.size().width()) - x_offset;
+    int bottom = static_cast<int>((float)canvas_->height() - message_.size().height()) - y_offset;
+    int yCenter = static_cast<int>((float)canvas_->height() / 2.0 - message_.size().height()/2.0);
+    int xCenter = static_cast<int>((float)canvas_->width() / 2.0 - message_.size().width()/2.0);
 
     QPoint ulPoint;
 
@@ -266,7 +266,9 @@ namespace mapviz_plugins
   void StringPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -278,7 +280,9 @@ namespace mapviz_plugins
   void StringPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -290,7 +294,9 @@ namespace mapviz_plugins
   void StringPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -322,7 +328,8 @@ namespace mapviz_plugins
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
         "std_msgs/String");
 
-    if (!topic.name.empty()) {
+    if (!topic.name.empty())
+    {
       ui_.topic->setText(QString::fromStdString(topic.name));
       TopicEdited();
     }
@@ -411,7 +418,7 @@ namespace mapviz_plugins
     offset_y_ = offset;
   }
 
-  void StringPlugin::stringCallback(const std_msgs::StringPtr& str)
+  void StringPlugin::stringCallback(const std_msgs::StringConstPtr& str)
   {
     message_.setText(QString(str->data.c_str()));
     message_.prepare(QTransform(), font_);

@@ -96,7 +96,6 @@ namespace mapviz_plugins
     void TopicEdited();
     void PositionTopicEdited();
     void SetDrawStyle(QString style);
-    void SetIconSize();
     void DrawIcon();
 
    private:
@@ -110,7 +109,6 @@ namespace mapviz_plugins
 
     ros::Subscriber route_sub_;
     ros::Subscriber position_sub_;
-    bool has_message_;
 
     swri_route_util::Route src_route_;
     marti_nav_msgs::RoutePositionConstPtr src_route_position_;

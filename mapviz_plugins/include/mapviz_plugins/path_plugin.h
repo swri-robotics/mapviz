@@ -92,7 +92,7 @@ namespace mapviz_plugins
     ros::Subscriber path_sub_;
     bool has_message_;
 
-    void pathCallback(const nav_msgs::PathConstPtr path);
+    void pathCallback(const nav_msgs::PathConstPtr& path);
   };
 }
 

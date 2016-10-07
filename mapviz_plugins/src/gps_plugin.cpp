@@ -118,7 +118,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::GPSFixCallback(const gps_common::GPSFixConstPtr gps)
+  void GpsPlugin::GPSFixCallback(const gps_common::GPSFixConstPtr& gps)
   {
     if (!local_xy_util_.Initialized())
     {
@@ -164,28 +164,12 @@ namespace mapviz_plugins
     cur_point_ = stamped_point;
   }
 
-  void GpsPlugin::PositionToleranceChanged(double value)
-  {
-    position_tolerance_ = value;
-  }
-
-  void GpsPlugin::BufferSizeChanged(int value)
-  {
-    buffer_size_ = value;
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) > buffer_size_)
-      {
-        points_.pop_front();
-      }
-    }
-  }
-
   void GpsPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -197,7 +181,9 @@ namespace mapviz_plugins
   void GpsPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -209,7 +195,9 @@ namespace mapviz_plugins
   void GpsPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());

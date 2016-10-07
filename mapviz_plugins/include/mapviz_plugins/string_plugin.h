@@ -67,9 +67,13 @@ namespace mapviz_plugins
       CENTER_RIGHT,
       BOTTOM_LEFT,
       BOTTOM_CENTER,
-      BOTTOM_RIGHT};
+      BOTTOM_RIGHT
+    };
 
-    enum Units {PIXELS, PERCENT};
+    enum Units {
+      PIXELS,
+      PERCENT
+    };
 
     StringPlugin();
     virtual ~StringPlugin();
@@ -117,11 +121,6 @@ namespace mapviz_plugins
     Units units_;
     int offset_x_;
     int offset_y_;
-    int width_;
-    int height_;
-
-    int last_width_;
-    int last_height_;
 
     ros::Subscriber string_sub_;
     bool has_message_;
@@ -131,7 +130,7 @@ namespace mapviz_plugins
     QFont font_;
     QStaticText message_;
 
-    void stringCallback(const std_msgs::StringPtr& str);
+    void stringCallback(const std_msgs::StringConstPtr& str);
 
     std::string AnchorToString(Anchor anchor);
     std::string UnitsToString(Units units);

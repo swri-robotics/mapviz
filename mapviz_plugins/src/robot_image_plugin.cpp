@@ -150,7 +150,9 @@ namespace mapviz_plugins
   void RobotImagePlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -162,7 +164,9 @@ namespace mapviz_plugins
   void RobotImagePlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -174,7 +178,9 @@ namespace mapviz_plugins
   void RobotImagePlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -203,15 +209,15 @@ namespace mapviz_plugins
     {
       glColor3f(1.0f, 1.0f, 1.0f);
       glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, texture_id_);
+      glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture_id_));
 
       glBegin(GL_QUADS);
 
 
-      glTexCoord2f(0, 1); glVertex2f(top_left_transformed_.x(), top_left_transformed_.y());
-      glTexCoord2f(1, 1); glVertex2f(top_right_transformed_.x(), top_right_transformed_.y());
-      glTexCoord2f(1, 0); glVertex2f(bottom_right_transformed_.x(), bottom_right_transformed_.y());
-      glTexCoord2f(0, 0); glVertex2f(bottom_left_transformed_.x(), bottom_left_transformed_.y());
+      glTexCoord2f(0, 1); glVertex2d(top_left_transformed_.x(), top_left_transformed_.y());
+      glTexCoord2f(1, 1); glVertex2d(top_right_transformed_.x(), top_right_transformed_.y());
+      glTexCoord2f(1, 0); glVertex2d(bottom_right_transformed_.x(), bottom_right_transformed_.y());
+      glTexCoord2f(0, 0); glVertex2d(bottom_left_transformed_.x(), bottom_left_transformed_.y());
 
       glEnd();
 
@@ -251,7 +257,7 @@ namespace mapviz_plugins
       if (texture_loaded_)
       {
         GLuint ids[1];
-        ids[0] = texture_id_;
+        ids[0] = static_cast<GLuint>(texture_id_);
         glDeleteTextures(1, &ids[0]);
         texture_loaded_ = false;
       }
@@ -262,7 +268,7 @@ namespace mapviz_plugins
         int height = image_.height();
 
         float max_dim = std::max(width, height);
-        dimension_ = std::pow(2, std::ceil(std::log(max_dim) / std::log(2.0f)));
+        dimension_ = static_cast<int>(std::pow(2, std::ceil(std::log(max_dim) / std::log(2.0f))));
 
         if (width != dimension_ || height != dimension_)
         {
@@ -275,7 +281,7 @@ namespace mapviz_plugins
         glGenTextures(1, &ids[0]);
         texture_id_ = ids[0];
 
-        glBindTexture(GL_TEXTURE_2D, texture_id_);
+        glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture_id_));
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dimension_, dimension_, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_.bits());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
