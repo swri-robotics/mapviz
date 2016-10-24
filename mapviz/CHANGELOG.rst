@@ -2,6 +2,60 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add a GUI for controlling the Image Transport (`#432 <https://github.com/swri-robotics/mapviz/issues/432>`_)
+  This will add a sub-menu under the "View" menu that will:
+  - List all available image transports
+  - Indicate which one is currently the default
+  - Allow the user to choose which one will be used for new ImageTransport subscriptions
+  - Save and restore this setting to Mapviz's config file
+  - Cause any `image` plugins using the default transport to resubscribe
+  In addition, the image plugin now has a menu that can be used to change the
+  transport for that specific plugin so that it is different from the default.
+  Fixes `#430 <https://github.com/swri-robotics/mapviz/issues/430>`_
+* Fix icon colors for point drawing plugins (`#433 <https://github.com/swri-robotics/mapviz/issues/433>`_)
+  This was probably broken back when all of these were refactored to have a
+  single base class.  It looks like the member variable that holds the color
+  used to draw the icon was never actually being updated.
+  Fixes `#426 <https://github.com/swri-robotics/mapviz/issues/426>`_
+* Fix warnings in mapviz.
+  Fix several reorder and signed comparison warnings in the mapviz
+  package.
+* Giving `tile_map` an interface overhaul
+  MapQuest has turned off their public API for map tiles, so this plugin needed some work.  I have:
+  - Removed the MapQuest sources
+  - Made the interface for adding new sources more powerful
+  - Overhauled how sources are saved and loaded under the hood
+  - Added a button to reset the current tile cache
+  Resolves `#402 <https://github.com/swri-robotics/mapviz/issues/402>`_
+* Adding a dialog for selecting services by type
+  This dialog is similar to the ones for listing topics or TF frames, but it is
+  a little different under the hood.  Notably:
+  - It relies on the rosapi node in order to be able to search for services
+  - Since searching is done via a service call, ROS communication is handled
+  on a separate thread that will not block the GUI
+  - Unlike topics, only searching for a single service type is supported
+* Adding a way for plugin config widgets to resize
+  - Adding an event plugins can emit to indicate their geometry has changed
+  - Modifying the PCL2 plugin to use it as an example
+  Fixes `#393 <https://github.com/swri-robotics/mapviz/issues/393>`_
+* Adding a button to reset the location and zoom level
+  This adds an icon on the right side of Mapviz's status bar tthat will reset
+  the view to the default zoom level and center it on the origin of the target
+  frame.
+  Resolves `#371 <https://github.com/swri-robotics/mapviz/issues/371>`_
+* Adding a Q_OBJECT declaration to MapvizPlugin
+* Adding signals for various plugin events
+  The MapvizPlugin class will now emit signals when any of the following settings change:
+  - Draw Order
+  - Target Frame
+  - Use Latest Transforms
+  - Visibility
+  Note that the signals will only be emitted if the setting actually *changes*, not
+  if it is somehow set to the same value that it was previously.
+* Contributors: Ed Venator, Marc Alban, P. J. Reed
+
 0.1.3 (2016-05-20)
 ------------------
 * Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.
