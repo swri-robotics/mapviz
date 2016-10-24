@@ -2,6 +2,23 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Rewrite tile_map loading to be more reliable
+  This changes how the tile_map plugin handles making network requires for tiles.
+  It will now:
+  - Use thread conditions to prompt loading rather than spinning
+  - Prioritize loading tiles in the visible area
+  - Retry a failed network request up to 5 times
+  - Not discard tile requests if there are more than 100 in the queue
+  This changes should significantly reduce (if not completely eliminate) the
+  number of tiles that fail to load and hopefully make tiles within the visible
+  area appear faster when there are many in the queue.
+  Fixes `#342 <https://github.com/swri-robotics/mapviz/issues/342>`_ and `#421 <https://github.com/swri-robotics/mapviz/issues/421>`_.
+* Use Saucy-compatible YAML API for Indigo
+  Fixes `#420 <https://github.com/swri-robotics/mapviz/issues/420>`_
+* Contributors: P. J. Reed
+
 0.0.6 (2016-08-14)
 ------------------
 * Adds support for Bing Maps (`#407 <https://github.com/swri-robotics/mapviz/issues/407>`_)

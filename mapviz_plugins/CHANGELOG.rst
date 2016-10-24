@@ -2,6 +2,39 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* General code cleanup of mapviz_plugins
+  This doesn't change any functionality; it's just cleaning up code.  Notably, this will:
+  - Fix all warnings (notably lots of ones about type casting)
+  - Move all .ui files to their own directory
+  - Remove unused variables
+  - Remove commented-out code
+  - Make spacing and indentation consistent
+  - Make brace style consistent
+* Add a GUI for controlling the Image Transport (`#432 <https://github.com/swri-robotics/mapviz/issues/432>`_)
+  This will add a sub-menu under the "View" menu that will:
+  - List all available image transports
+  - Indicate which one is currently the default
+  - Allow the user to choose which one will be used for new ImageTransport subscriptions
+  - Save and restore this setting to Mapviz's config file
+  - Cause any `image` plugins using the default transport to resubscribe
+  In addition, the image plugin now has a menu that can be used to change the
+  transport for that specific plugin so that it is different from the default.
+  Fixes `#430 <https://github.com/swri-robotics/mapviz/issues/430>`_
+* Fix icon colors for point drawing plugins (`#433 <https://github.com/swri-robotics/mapviz/issues/433>`_)
+  This was probably broken back when all of these were refactored to have a
+  single base class.  It looks like the member variable that holds the color
+  used to draw the icon was never actually being updated.
+  Fixes `#426 <https://github.com/swri-robotics/mapviz/issues/426>`_
+* Add option to not scale arrows with zoom level
+  This adds a checkbox to all of the plugins that can draw a series of
+  coordinates as arrows; i. e., the GPS, NavSatFix, Odometry, and TF Frame
+  plugins.  This checkbox will control whether the arrows are drawn at a fixed
+  size regardless of zoom level or whether they are scaled with the zoom level.
+  Resolves `#414 <https://github.com/swri-robotics/mapviz/issues/414>`_
+* Contributors: P. J. Reed
+
 0.0.6 (2016-08-14)
 ------------------
 * Fixes signed comparison warnings in mapviz_plugins
