@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.7 (2016-10-23)
+------------------
 * General code cleanup of mapviz_plugins
   This doesn't change any functionality; it's just cleaning up code.  Notably, this will:
   - Fix all warnings (notably lots of ones about type casting)

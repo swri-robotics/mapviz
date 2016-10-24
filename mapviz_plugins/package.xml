@@ -1,6 +1,6 @@
 <package format="2">
   <name>mapviz_plugins</name>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <description>
 
     Common plugins for the Mapviz visualization tool
