@@ -2,6 +2,59 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add a GUI for controlling the Image Transport (`#432 <https://github.com/swri-robotics/mapviz/issues/432>`_)
+  This will add a sub-menu under the "View" menu that will:
+  - List all available image transports
+  - Indicate which one is currently the default
+  - Allow the user to choose which one will be used for new ImageTransport subscriptions
+  - Save and restore this setting to Mapviz's config file
+  - Cause any `image` plugins using the default transport to resubscribe
+  In addition, the image plugin now has a menu that can be used to change the
+  transport for that specific plugin so that it is different from the default.
+  Fixes `#430 <https://github.com/swri-robotics/mapviz/issues/430>`_
+  Conflicts:
+  mapviz/package.xml
+* Fix icon colors for point drawing plugins (`#433 <https://github.com/swri-robotics/mapviz/issues/433>`_)
+  This was probably broken back when all of these were refactored to have a
+  single base class.  It looks like the member variable that holds the color
+  used to draw the icon was never actually being updated.
+  Fixes `#426 <https://github.com/swri-robotics/mapviz/issues/426>`_
+* Add option to not scale arrows with zoom level
+  This adds a checkbox to all of the plugins that can draw a series of
+  coordinates as arrows; i. e., the NavSatFix, Odometry, and TF Frame
+  plugins.  This checkbox will control whether the arrows are drawn at a fixed
+  size regardless of zoom level or whether they are scaled with the zoom level.
+  Resolves `#414 <https://github.com/swri-robotics/mapviz/issues/414>`_
+* Fix signed comparison warnings in mapviz_plugins
+* Adding a way for plugin config widgets to resize
+  - Adding an event plugins can emit to indicate their geometry has changed
+  - Modifying the PCL2 plugin to use it as an example
+  Fixes `#393 <https://github.com/swri-robotics/mapviz/issues/393>`_
+* Adding default values for uninitialized variables
+  Resolves `#372 <https://github.com/swri-robotics/mapviz/issues/372>`_
+* Creates and implements an abstract class for drawing point paths
+  Updates gps,navsat,odometry,path, and tf_frame plugins to use the
+  abstract point drawing class. Also adds the draw laps functionality
+  which will change the color of the path as it passes a base point for
+  ease of visibility, currently implemented on gps and odometry plugins.
+  Conflicts:
+  mapviz_plugins/CMakeLists.txt
+  mapviz_plugins/include/mapviz_plugins/gps_plugin.h
+  mapviz_plugins/src/gps_config.ui
+  mapviz_plugins/src/gps_plugin.cpp
+* Ensuring that Mapviz won't subscribe to empty topic names (`#379 <https://github.com/swri-robotics/mapviz/issues/379>`_)
+  Clean up and made more consistent the code for handling subscriptions for all topics.
+  The behavior is now:
+  - All input is trimmed before processing
+  - If a topic name is empty, the old subscriber will be shut down and will not subscribe to the empty topic
+  Resolves `#327 <https://github.com/swri-robotics/mapviz/issues/327>`_
+* Fixing some typos in documentation.
+* Implementing support for the ARROW marker type
+  Resolves `#365 <https://github.com/swri-robotics/mapviz/issues/365>`_
+* Contributors: Ed Venator, Marc Alban, P. J. Reed
+
 0.2.0 (2016-06-23)
 ------------------
 * Update Qt to version 5
