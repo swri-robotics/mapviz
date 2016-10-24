@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.1 (2016-10-23)
+------------------
 * Rewrite tile_map loading to be more reliable
   This changes how the tile_map plugin handles making network requires for tiles.
   It will now:
