@@ -58,7 +58,7 @@ PLUGINLIB_DECLARE_CLASS(
 
 namespace mapviz_plugins
 {
-#define IS_INSTANCE(msg, type)                                  \
+#define IS_INSTANCE(msg, type) \
   (msg->getDataType() == ros::message_traits::datatype<type>())
 
   MarkerPlugin::MarkerPlugin() :
@@ -93,7 +93,8 @@ namespace mapviz_plugins
       "visualization_msgs/Marker",
       "visualization_msgs/MarkerArray");
 
-    if (topic.name.empty()) {
+    if (topic.name.empty())
+    {
       return;
     }
 
@@ -128,11 +129,16 @@ namespace mapviz_plugins
   void MarkerPlugin::handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg)
   {
     connected_ = true;
-    if (IS_INSTANCE(msg, visualization_msgs::Marker)) {
+    if (IS_INSTANCE(msg, visualization_msgs::Marker))
+    {
       handleMarker(*(msg->instantiate<visualization_msgs::Marker>()));
-    } else if (IS_INSTANCE(msg, visualization_msgs::MarkerArray)) {
+    }
+    else if (IS_INSTANCE(msg, visualization_msgs::MarkerArray))
+    {
       handleMarkerArray(*(msg->instantiate<visualization_msgs::MarkerArray>()));
-    } else {
+    }
+    else
+    {
       PrintError("Unknown message type: " + msg->getDataType());
     }    
   }
@@ -140,7 +146,8 @@ namespace mapviz_plugins
   void MarkerPlugin::handleMarker(const visualization_msgs::Marker &marker)
   {
     if (marker.type == visualization_msgs::Marker::ARROW &&
-        marker.points.size() == 1) {
+        marker.points.size() == 1)
+    {
       // Arrow markers must have either 0 or >1 points; exactly one point is
       // invalid.  If we get one with 1 point, assume it's corrupt and ignore it.
       return;
@@ -162,11 +169,11 @@ namespace mapviz_plugins
       markerData.stamp = marker.header.stamp;
       markerData.display_type = marker.type;
       markerData.color = QColor::fromRgbF(marker.color.r, marker.color.g, marker.color.b, marker.color.a);
-      markerData.scale_x = marker.scale.x;
-      markerData.scale_y = marker.scale.y;
-      markerData.scale_z = marker.scale.z;
+      markerData.scale_x = static_cast<float>(marker.scale.x);
+      markerData.scale_y = static_cast<float>(marker.scale.y);
+      markerData.scale_z = static_cast<float>(marker.scale.z);
       markerData.transformed = true;
-      markerData.source_frame_ = marker.header.frame_id;
+      markerData.source_frame = marker.header.frame_id;
 
 
       // Since orientation was not implemented, many markers publish
@@ -195,10 +202,10 @@ namespace mapviz_plugins
       markerData.text = std::string();
 
       swri_transform_util::Transform transform;
-      if (!GetTransform(markerData.source_frame_, marker.header.stamp, transform))
+      if (!GetTransform(markerData.source_frame, marker.header.stamp, transform))
       {
         markerData.transformed = false;
-        PrintError("No transform between " + markerData.source_frame_ + " and " + target_frame_);
+        PrintError("No transform between " + markerData.source_frame + " and " + target_frame_);
       }
 
       // Handle lifetime parameter
@@ -236,7 +243,8 @@ namespace mapviz_plugins
 
         markerData.points.push_back(point);
 
-        if (!marker.points.empty()) {
+        if (!marker.points.empty())
+        {
           // The point we just pushed back has both the start and end of the
           // arrow, so the point we're pushing here is useless; we use it later
           // only to indicate whether the original message had two points or not.
@@ -355,7 +363,9 @@ namespace mapviz_plugins
   void MarkerPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -367,7 +377,9 @@ namespace mapviz_plugins
   void MarkerPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -379,7 +391,9 @@ namespace mapviz_plugins
   void MarkerPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -566,22 +580,22 @@ namespace mapviz_plugins
                 glBegin(GL_TRIANGLE_FAN);
 
 
-                float x = point_it->transformed_point.getX();
-                float y = point_it->transformed_point.getY();
+                double marker_x = point_it->transformed_point.getX();
+                double marker_y = point_it->transformed_point.getY();
 
-                glVertex2d(x, y);
+                glVertex2d(marker_x, marker_y);
 
                 for (int32_t i = 0; i <= 360; i += 10)
                 {
-                  float radians = static_cast<float>(i) * swri_math_util::_deg_2_rad;
+                  double radians = static_cast<double>(i) * static_cast<double>(swri_math_util::_deg_2_rad);
                   // Spheres may be specified w/ only one scale value
                   if(marker.scale_y == 0.0)
                   {
                     marker.scale_y = marker.scale_x;
                   }
                   glVertex2d(
-                      x + std::sin(radians) * marker.scale_x,
-                      y + std::cos(radians) * marker.scale_y);
+                      marker_x + std::sin(radians) * marker.scale_x,
+                      marker_y + std::cos(radians) * marker.scale_y);
                 }
 
                 glEnd();
@@ -603,13 +617,13 @@ namespace mapviz_plugins
                 glBegin(GL_TRIANGLE_FAN);
 
 
-                float x = point_it->transformed_point.getX();
-                float y = point_it->transformed_point.getY();
+                double marker_x = point_it->transformed_point.getX();
+                double marker_y = point_it->transformed_point.getY();
 
-                glVertex2d(x + marker.scale_x / 2, y + marker.scale_x / 2);
-                glVertex2d(x - marker.scale_x / 2, y + marker.scale_x / 2);
-                glVertex2d(x - marker.scale_x / 2, y - marker.scale_x / 2);
-                glVertex2d(x + marker.scale_x / 2, y - marker.scale_x / 2);
+                glVertex2d(marker_x + marker.scale_x / 2, marker_y + marker.scale_x / 2);
+                glVertex2d(marker_x - marker.scale_x / 2, marker_y + marker.scale_x / 2);
+                glVertex2d(marker_x - marker.scale_x / 2, marker_y - marker.scale_x / 2);
+                glVertex2d(marker_x + marker.scale_x / 2, marker_y - marker.scale_x / 2);
 
                 glEnd();
               }
@@ -621,7 +635,8 @@ namespace mapviz_plugins
         else
         {
           PrintInfo("OK");
-          ROS_ERROR("Not displaying expired marker[%s:%d]: %lf < %lf (now)", topic_.c_str(), markerIter->first, marker.expire_time.toSec(), now.toSec());
+          ROS_ERROR("Not displaying expired marker[%s:%d]: %lf < %lf (now)",
+                    topic_.c_str(), markerIter->first, marker.expire_time.toSec(), now.toSec());
         }
       }
     }
@@ -686,7 +701,7 @@ namespace mapviz_plugins
         MarkerData& marker = markerIter->second;
 
         swri_transform_util::Transform transform;
-        if (GetTransform(marker.source_frame_, marker.stamp, transform))
+        if (GetTransform(marker.source_frame, marker.stamp, transform))
         {
           marker.transformed = true;
 
@@ -733,7 +748,8 @@ namespace mapviz_plugins
   void MarkerPlugin::timerEvent(QTimerEvent *event)
   {
     bool new_connected = (marker_sub_.getNumPublishers() > 0);
-    if (connected_ && !new_connected) {
+    if (connected_ && !new_connected)
+    {
       marker_sub_.shutdown();
       if (!topic_.empty())
       {

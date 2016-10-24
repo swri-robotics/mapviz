@@ -3,7 +3,7 @@
   <version>0.1.4</version>
   <description>
 
-     mapviz_plugins
+    Common plugins for the Mapviz visualization tool
 
   </description>
   <author>Marc Alban</author>
@@ -11,18 +11,17 @@
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
+  <build_depend>libqt4-dev</build_depend>
+  <build_depend>libqt4-opengl-dev</build_depend>
+
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>libqt4</exec_depend>
-  <build_depend>libqt4-dev</build_depend>
-  <exec_depend>libqt4-opengl</exec_depend>
-  <build_depend>libqt4-opengl-dev</build_depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>mapviz</depend>
-  <depend>marti_visualization_msgs</depend>
   <depend>marti_common_msgs</depend>
   <depend>marti_nav_msgs</depend>
+  <depend>marti_visualization_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
   <depend>qt4-qmake</depend>
@@ -37,6 +36,9 @@
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
   <depend>visualization_msgs</depend>
+
+  <exec_depend>libqt4</exec_depend>
+  <exec_depend>libqt4-opengl</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

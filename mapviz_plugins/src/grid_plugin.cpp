@@ -181,7 +181,9 @@ namespace mapviz_plugins
   void GridPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -193,7 +195,9 @@ namespace mapviz_plugins
   void GridPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -205,7 +209,9 @@ namespace mapviz_plugins
   void GridPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -237,15 +243,15 @@ namespace mapviz_plugins
       QColor color = ui_.color->color();
       
       glLineWidth(3);
-      glColor4f(color.redF(), color.greenF(), color.blueF(), alpha_);
+      glColor4d(color.redF(), color.greenF(), color.blueF(), alpha_);
       glBegin(GL_LINES);
 
         std::list<tf::Point>::iterator transformed_left_it = transformed_left_points_.begin();
         std::list<tf::Point>::iterator transformed_right_it = transformed_right_points_.begin();
         for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it)
         {
-          glVertex2f(transformed_left_it->getX(), transformed_left_it->getY());
-          glVertex2f(transformed_right_it->getX(), transformed_right_it->getY());
+          glVertex2d(transformed_left_it->getX(), transformed_left_it->getY());
+          glVertex2d(transformed_right_it->getX(), transformed_right_it->getY());
 
           ++transformed_right_it;
         }
@@ -254,8 +260,8 @@ namespace mapviz_plugins
         std::list<tf::Point>::iterator transformed_bottom_it = transformed_bottom_points_.begin();
         for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it)
         {
-          glVertex2f(transformed_top_it->getX(), transformed_top_it->getY());
-          glVertex2f(transformed_bottom_it->getX(), transformed_bottom_it->getY());
+          glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
+          glVertex2d(transformed_bottom_it->getX(), transformed_bottom_it->getY());
 
           ++transformed_bottom_it;
         }

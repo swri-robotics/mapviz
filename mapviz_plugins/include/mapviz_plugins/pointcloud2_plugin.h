@@ -53,101 +53,105 @@ namespace mapviz_plugins
 {
   class PointCloud2Plugin : public mapviz::MapvizPlugin
   {
-    Q_OBJECT
+  Q_OBJECT
 
-    public:
-      enum
-      {
-        COLOR_FLAT = 0,
-        COLOR_Z = 3
-      };
-      PointCloud2Plugin();
-      virtual ~PointCloud2Plugin();
+  public:
+    struct FieldInfo
+    {
+      uint8_t datatype;
+      uint32_t offset;
+    };
 
-      bool Initialize(QGLWidget* canvas);
-      void Shutdown()
-      {
-      }
-      struct Field_info
-      {
-        uint8_t datatype_;
-        uint32_t offset;
-      };
-      void Draw(double x, double y, double scale);
+    enum
+    {
+      COLOR_FLAT = 0,
+      COLOR_Z = 3
+    };
 
-      void Transform();
+    PointCloud2Plugin();
+    virtual ~PointCloud2Plugin();
 
-      void LoadConfig(const YAML::Node& node, const std::string& path);
-      void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+    bool Initialize(QGLWidget* canvas);
+    void Shutdown()
+    {
+    }
+    void Draw(double x, double y, double scale);
 
-      QWidget* GetConfigWidget(QWidget* parent);
+    void Transform();
 
-    protected:
-      void PrintError(const std::string& message);
-      void PrintInfo(const std::string& message);
-      void PrintWarning(const std::string& message);
+    void LoadConfig(const YAML::Node& node, const std::string& path);
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
 
-    protected Q_SLOTS:
-      void SelectTopic();
-      void TopicEdited();
-      void AlphaEdited();
-      void ColorTransformerChanged(int index);
-      void MinValueChanged(double value);
-      void MaxValueChanged(double value);
-      void PointSizeChanged(int value);
-      void BufferSizeChanged(int value);
-      void UseRainbowChanged(int check_state);
-      void UseAutomaxminChanged(int check_state);
-      void UpdateColors();
-      void DrawIcon();
-      void ResetTransformedPointClouds();
+    QWidget* GetConfigWidget(QWidget* parent);
 
-    private:
-      struct StampedPoint
-      {
-        tf::Point point;
-        tf::Point transformed_point;
-        QColor color;
-        std::vector<double> features;
-      };
+  protected:
+    void PrintError(const std::string& message);
+    void PrintInfo(const std::string& message);
+    void PrintWarning(const std::string& message);
 
-      struct Scan
-      {
-        ros::Time stamp;
-        QColor color;
-        std::deque<StampedPoint> points;
-        std::string source_frame;
-        bool transformed;
-        std::map<std::string, Field_info> new_features;
-      };
-      double PointFeature(const uint8_t*, const Field_info&);
-      void PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& scan);
-      QColor CalculateColor(const StampedPoint& point);
-      void UpdateMinMaxWidgets();
+  protected Q_SLOTS:
+    void SelectTopic();
+    void TopicEdited();
+    void AlphaEdited();
+    void ColorTransformerChanged(int index);
+    void MinValueChanged(double value);
+    void MaxValueChanged(double value);
+    void PointSizeChanged(int value);
+    void BufferSizeChanged(int value);
+    void UseRainbowChanged(int check_state);
+    void UseAutomaxminChanged(int check_state);
+    void UpdateColors();
+    void DrawIcon();
+    void ResetTransformedPointClouds();
 
-      Ui::PointCloud2_config ui_;
-      QWidget* config_widget_;
+  private:
+    struct StampedPoint
+    {
+      tf::Point point;
+      tf::Point transformed_point;
+      QColor color;
+      std::vector<double> features;
+    };
 
-      std::string topic_;
-      double alpha_;
-      double min_value_, max_value_;
-      size_t point_size_;
-      size_t buffer_size_;
-      bool new_topic_;
-      bool has_message_;
-      size_t num_of_feats_;
-      bool need_new_list_;
-      std::string saved_color_transformer_;
-      bool need_minmax_;
-      std::vector<double> max_;
-      std::vector<double> min_;
-      // Use a list instead of a deque for scans to facilitate removing
-      // timed-out scans in the middle of the list in case I ever re-implement
-      // decay time (evenator)
-      std::deque<Scan> scans_;
-      ros::Subscriber pc2_sub_;
+    struct Scan
+    {
+      ros::Time stamp;
+      QColor color;
+      std::deque<StampedPoint> points;
+      std::string source_frame;
+      bool transformed;
+      std::map<std::string, FieldInfo> new_features;
+    };
 
-      QMutex scan_mutex_;
+    double PointFeature(const uint8_t*, const FieldInfo&);
+    void PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& scan);
+    QColor CalculateColor(const StampedPoint& point);
+    void UpdateMinMaxWidgets();
+
+    Ui::PointCloud2_config ui_;
+    QWidget* config_widget_;
+
+    std::string topic_;
+    double alpha_;
+    double max_value_;
+    double min_value_;
+    size_t point_size_;
+    size_t buffer_size_;
+    bool new_topic_;
+    bool has_message_;
+    size_t num_of_feats_;
+    bool need_new_list_;
+    std::string saved_color_transformer_;
+    bool need_minmax_;
+    std::vector<double> max_;
+    std::vector<double> min_;
+    // Use a list instead of a deque for scans to facilitate removing
+    // timed-out scans in the middle of the list in case I ever re-implement
+    // decay time (evenator)
+    std::deque<Scan> scans_;
+    ros::Subscriber pc2_sub_;
+
+    QMutex scan_mutex_;
   };
 }
 

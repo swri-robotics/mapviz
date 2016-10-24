@@ -55,69 +55,68 @@ QT_END_NAMESPACE;
  */
 namespace mapviz_plugins
 {
-class PlaceableWindowProxy : public QObject
-{
+  class PlaceableWindowProxy : public QObject
+  {
   Q_OBJECT
 
- public:
-  PlaceableWindowProxy();
-  ~PlaceableWindowProxy();
+  public:
+    PlaceableWindowProxy();
+    ~PlaceableWindowProxy();
 
-  void setContainer(QWidget *);  
-  
-  QRect rect() const;
-  
- Q_SIGNALS:
-  void rectChanged(const QRect &);
+    void setContainer(QWidget *);
 
- public Q_SLOTS:
-  void setRect(const QRect &);
-  void setVisible(bool visible);
+    QRect rect() const;
 
- protected:
-  bool eventFilter(QObject *object, QEvent *event);
-  
-  bool handleMousePress(QMouseEvent *);
-  bool handleMouseRelease(QMouseEvent *);
-  bool handleMouseMove(QMouseEvent *);
-  bool handleResize(QResizeEvent *);
-  
-  void timerEvent(QTimerEvent *);
+  Q_SIGNALS:
+    void rectChanged(const QRect &);
 
-  void rectResize(int dx, int dy);
-  void winResize(const QSize &);
+  public Q_SLOTS:
+    void setRect(const QRect &);
+    void setVisible(bool visible);
 
-  QRectF resizeHelper(const QRectF &rect,
-                      const QPointF &p1,
-                      const QPointF &p2,
-                      const QPointF &p3) const;
+  protected:
+    bool eventFilter(QObject *object, QEvent *event);
 
-                      
-                      
- private:
-  enum State {
-    INACTIVE = 0,
-    MOVE_ALL,
-    MOVE_TOP_LEFT,
-    MOVE_BOTTOM_LEFT,
-    MOVE_BOTTOM_RIGHT,
-    MOVE_TOP_RIGHT
-  };    
+    bool handleMousePress(QMouseEvent *);
+    bool handleMouseRelease(QMouseEvent *);
+    bool handleMouseMove(QMouseEvent *);
+    bool handleResize(QResizeEvent *);
 
-  QWidget *target_;
-  bool visible_;
+    void timerEvent(QTimerEvent *);
 
-  bool has_cursor_;
-  State state_;
-  QRectF rect_;
-  
-  QRectF start_rect_;
-  QPoint start_point_;
+    void rectResize(int dx, int dy);
+    void winResize(const QSize &);
 
-  int win_resize_timer_;
-  QSize start_size_;
+    QRectF resizeHelper(const QRectF &rect,
+                        const QPointF &p1,
+                        const QPointF &p2,
+                        const QPointF &p3) const;
 
-  State getNextState(const QPointF &pt) const;  
-};  // class PlaceableWindowProxy
+
+
+  private:
+    enum State {
+      INACTIVE = 0,
+      MOVE_ALL,
+      MOVE_TOP_LEFT,
+      MOVE_BOTTOM_LEFT,
+      MOVE_BOTTOM_RIGHT,
+      MOVE_TOP_RIGHT
+    };
+
+    QWidget *target_;
+    bool visible_;
+
+    bool has_cursor_;
+    State state_;
+    QRectF rect_;
+
+    QRectF start_rect_;
+    QPoint start_point_;
+
+    int win_resize_timer_;
+
+    State getNextState(const QPointF &pt) const;
+  };  // class PlaceableWindowProxy
 }  // namespace mapviz_plugins
 #endif //MAPVIZ_PLUGINS_CANVAS_CLICK_FILTER_H

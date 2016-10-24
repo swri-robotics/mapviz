@@ -82,17 +82,10 @@ namespace mapviz_plugins
    protected Q_SLOTS:
     void SelectFrame();
     void FrameEdited();
-    void PositionToleranceChanged(double value);
-    void BufferSizeChanged(int value);
 
    private:
     Ui::tf_frame_config ui_;
     QWidget* config_widget_;
-
-    std::string topic_;
-
-    ros::Subscriber odometry_sub_;
-    bool has_message_;
 
     ros::Timer timer_;
 
