@@ -50,7 +50,7 @@ add_definitions(
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-find_package(OpenCV 2 REQUIRED)
+find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
 find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
 
@@ -119,7 +119,7 @@ qt5_wrap_cpp(SRC_FILES
 )
 
 add_library(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${GLUT_LIBRARY} ${OpenCV_LIBS} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} marti_visualization_msgs_generate_messages_cpp)
 
 install(DIRECTORY include/${PROJECT_NAME}/

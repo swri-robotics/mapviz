@@ -44,8 +44,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+// OpenCV libraries
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
 
 // QT libraries
 #include <QtWidgets/QApplication>

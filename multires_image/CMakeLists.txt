@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
-find_package(OpenCV 2 REQUIRED)
+find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
@@ -62,7 +62,7 @@ file (GLOB TILE_SRC_FILES
    src/tile_set_layer.cpp)
 qt5_wrap_cpp(TILE_SRC_FILES include/multires_image/tile_cache.h)
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBS})
 
 # Build libmultires_widget
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
