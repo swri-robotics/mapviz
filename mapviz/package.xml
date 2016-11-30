@@ -21,7 +21,7 @@
   <depend>glut</depend>
   <depend>image_transport</depend>
   <depend>libglew-dev</depend>
-  <depend>libopencv-dev</depend>
+  <depend>opencv3</depend>
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
   <depend>libqt5-opengl</depend>
