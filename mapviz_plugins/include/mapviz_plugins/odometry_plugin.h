@@ -81,16 +81,13 @@ namespace mapviz_plugins
    protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
-    void PositionToleranceChanged(double value);
-    void AngleToleranceChanged(double value);
-    void BufferSizeChanged(int value);
+
    private:
     void DrawCovariance();
 
     Ui::odometry_config ui_;
     QWidget* config_widget_;
     std::string topic_;
-    float angle_tolerance_;
     ros::Subscriber odometry_sub_;
     bool has_message_;
     void odometryCallback(const nav_msgs::OdometryConstPtr odometry);

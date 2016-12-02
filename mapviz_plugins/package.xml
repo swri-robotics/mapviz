@@ -3,13 +3,15 @@
   <version>0.2.1</version>
   <description>
 
-     mapviz_plugins
+    Common plugins for the Mapviz visualization tool
 
   </description>
   <author>Marc Alban</author>
   <maintainer email="malban@swri.org">Marc Alban</maintainer>
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
+
+  <build_depend>libqt5-opengl-dev</build_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
@@ -18,12 +20,11 @@
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
   <depend>libqt5-opengl</depend>
-  <build_depend>libqt5-opengl-dev</build_depend>
   <depend>libqt5-widgets</depend>
   <depend>mapviz</depend>
-  <depend>marti_visualization_msgs</depend>
   <depend>marti_common_msgs</depend>
   <depend>marti_nav_msgs</depend>
+  <depend>marti_visualization_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>

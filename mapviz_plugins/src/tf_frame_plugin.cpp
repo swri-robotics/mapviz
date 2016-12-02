@@ -110,24 +110,6 @@ namespace mapviz_plugins
     initialized_ = true;
   }
 
-  void TfFramePlugin::PositionToleranceChanged(double value)
-  {
-    position_tolerance_ = value;
-  }
-
-  void TfFramePlugin::BufferSizeChanged(int value)
-  {
-    buffer_size_ = value;
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) > buffer_size_)
-      {
-        points_.pop_front();
-      }
-    }
-  }
-
   void TfFramePlugin::TimerCallback(const ros::TimerEvent& event)
   {
     swri_transform_util::Transform transform;
@@ -164,7 +146,9 @@ namespace mapviz_plugins
   void TfFramePlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -176,7 +160,9 @@ namespace mapviz_plugins
   void TfFramePlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -188,7 +174,9 @@ namespace mapviz_plugins
   void TfFramePlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());

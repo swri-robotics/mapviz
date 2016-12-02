@@ -30,7 +30,7 @@
 #include <QMouseEvent>
 #include <QLineF>
 #include <QDateTime>
-#include "include/mapviz_plugins/canvas_click_filter.h"
+#include "mapviz_plugins/canvas_click_filter.h"
 
 namespace mapviz_plugins
 {
@@ -52,13 +52,15 @@ namespace mapviz_plugins
 
   bool CanvasClickFilter::eventFilter(QObject* object, QEvent* event)
   {
-    if (event->type() == QEvent::MouseButtonPress) {
+    if (event->type() == QEvent::MouseButtonPress)
+    {
       is_mouse_down_ = true;
       QMouseEvent* me = static_cast<QMouseEvent*>(event);
       mouse_down_pos_ = me->localPos();
       mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
     }
-    else if (event->type() == QEvent::MouseButtonRelease) {
+    else if (event->type() == QEvent::MouseButtonRelease)
+    {
       if (is_mouse_down_)
       {
         QMouseEvent* me = static_cast<QMouseEvent*>(event);

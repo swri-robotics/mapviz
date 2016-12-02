@@ -210,34 +210,12 @@ namespace mapviz_plugins
     }
   }
 
-  void OdometryPlugin::PositionToleranceChanged(double value)
-  {
-    position_tolerance_ = value;
-  }
-
-  void OdometryPlugin::BufferSizeChanged(int value)
-  {
-    if (!lap_checked_)
-    {
-      buffer_size_ = value;
-      if (buffer_size_ > 0)
-      {
-        while (static_cast<int>(points_.size()) > buffer_size_)
-        {
-          points_.pop_front();
-        }
-      }
-    }
-    else
-    {
-      buffer_holder_ = value;
-    }
-  }
-
   void OdometryPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -249,7 +227,9 @@ namespace mapviz_plugins
   void OdometryPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -261,7 +241,9 @@ namespace mapviz_plugins
   void OdometryPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -307,11 +289,11 @@ namespace mapviz_plugins
 
       for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
       {
-        glVertex2f(cur_point_.transformed_cov_points[i].getX(),
+        glVertex2d(cur_point_.transformed_cov_points[i].getX(),
                    cur_point_.transformed_cov_points[i].getY());
       }
 
-      glVertex2f(cur_point_.transformed_cov_points.front().getX(),
+      glVertex2d(cur_point_.transformed_cov_points.front().getX(),
                  cur_point_.transformed_cov_points.front().getY());
 
       glEnd();

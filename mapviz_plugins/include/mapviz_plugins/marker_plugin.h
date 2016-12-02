@@ -80,7 +80,8 @@ namespace mapviz_plugins
 
     QWidget* GetConfigWidget(QWidget* parent);
 
-    bool SupportsPainting() {
+    bool SupportsPainting()
+    {
       return true;
     }
 
@@ -125,7 +126,7 @@ namespace mapviz_plugins
       float scale_y;
       float scale_z;
 
-      std::string source_frame_;
+      std::string source_frame;
       swri_transform_util::Transform local_transform;
       
       bool transformed;
