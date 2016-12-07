@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Boost REQUIRED system filesystem)
-find_package(OpenCV 2 REQUIRED)
+find_package(OpenCV 3.1 COMPONENTS core imgcodecs imgproc videoio REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
@@ -117,13 +117,15 @@ qt5_wrap_ui(SRC_FILES ${UI_FILES})
 qt5_wrap_cpp(SRC_FILES ${HEADER_FILES})
 
 add_library(rqt_${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
-target_link_libraries(rqt_${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+link_directories(${OpenCV_LIBRARY_DIRS})
+target_link_libraries(rqt_${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBS} ${catkin_LIBRARIES})
 add_dependencies(rqt_${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 add_dependencies(rqt_${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
 
 add_executable(${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS} src/mapviz_main.cpp)
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${Boost_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+link_directories(${OpenCV_LIBRARY_DIRS})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${Boost_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBS} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
