@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.2 (2016-12-07)
+------------------
 * Migrated OpenCV to 3.1 (default in Kinetic)
 * General code cleanup of mapviz_plugins
   This doesn't change any functionality; it's just cleaning up code.  Notably, this will:
