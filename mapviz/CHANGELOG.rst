@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Migrated OpenCV to 3.1 (default in Kinetic)
+* Contributors: Brian Holt
+
 0.2.1 (2016-10-23)
 ------------------
 * Add a GUI for controlling the Image Transport (`#432 <https://github.com/swri-robotics/mapviz/issues/432>`_)

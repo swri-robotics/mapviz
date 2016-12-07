@@ -2,6 +2,11 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Migrated OpenCV to 3.1 (default in Kinetic)
+* Contributors: Brian Holt
+
 0.2.1 (2016-10-23)
 ------------------
 

@@ -2,6 +2,19 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Migrated OpenCV to 3.1 (default in Kinetic)
+* General code cleanup of mapviz_plugins
+  This doesn't change any functionality; it's just cleaning up code.  Notably, this will:
+  - Fix all warnings (notably lots of ones about type casting)
+  - Move all .ui files to their own directory
+  - Remove unused variables
+  - Remove commented-out code
+  - Make spacing and indentation consistent
+  - Make brace style consistent
+* Contributors: Brian Holt, Marc Alban, P. J. Reed
+
 0.2.1 (2016-10-23)
 ------------------
 * Add a GUI for controlling the Image Transport (`#432 <https://github.com/swri-robotics/mapviz/issues/432>`_)

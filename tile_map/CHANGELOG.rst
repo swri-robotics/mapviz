@@ -2,6 +2,9 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.1 (2016-10-23)
 ------------------
 * Rewrite tile_map loading to be more reliable
