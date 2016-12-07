@@ -110,7 +110,7 @@ namespace mapviz_plugins
     }
   }
 
-  void PathPlugin::pathCallback(const nav_msgs::PathConstPtr path)
+  void PathPlugin::pathCallback(const nav_msgs::PathConstPtr& path)
   {
     if (!has_message_)
     {
@@ -135,7 +135,9 @@ namespace mapviz_plugins
   void PathPlugin::PrintError(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_ERROR("Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -147,7 +149,9 @@ namespace mapviz_plugins
   void PathPlugin::PrintInfo(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_INFO("%s", message.c_str());
     QPalette p(ui_.status->palette());
@@ -159,7 +163,9 @@ namespace mapviz_plugins
   void PathPlugin::PrintWarning(const std::string& message)
   {
     if (message == ui_.status->text().toStdString())
+    {
       return;
+    }
 
     ROS_WARN("%s", message.c_str());
     QPalette p(ui_.status->palette());
