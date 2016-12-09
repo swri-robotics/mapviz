@@ -26,6 +26,7 @@
   <depend>libqt5-gui</depend>
   <depend>libqt5-opengl</depend>
   <depend>libqt5-widgets</depend>
+  <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
   <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
