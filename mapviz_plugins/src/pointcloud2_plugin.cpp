@@ -473,37 +473,40 @@ namespace mapviz_plugins
       }
     }
 
-    const uint8_t* ptr = &msg->data.front();
-    const uint8_t* ptr_end = &msg->data.back();
-    const uint32_t point_step = msg->point_step;
-    const uint32_t xoff = msg->fields[xi].offset;
-    const uint32_t yoff = msg->fields[yi].offset;
-    const uint32_t zoff = msg->fields[zi].offset;
-    for (; ptr < ptr_end; ptr += point_step)
+    if (!msg->data.empty())
     {
-      float x = *reinterpret_cast<const float*>(ptr + xoff);
-      float y = *reinterpret_cast<const float*>(ptr + yoff);
-      float z = *reinterpret_cast<const float*>(ptr + zoff);
-
-      StampedPoint point;
-      point.point = tf::Point(x, y, z);
-      point.features.resize(scan.new_features.size());
-      int count = 0;
-      std::map<std::string, FieldInfo>::const_iterator it;
-      for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
+      const uint8_t* ptr = &msg->data.front();
+      const uint8_t* ptr_end = &msg->data.back();
+      const uint32_t point_step = msg->point_step;
+      const uint32_t xoff = msg->fields[xi].offset;
+      const uint32_t yoff = msg->fields[yi].offset;
+      const uint32_t zoff = msg->fields[zi].offset;
+      for (; ptr < ptr_end; ptr += point_step)
       {
-        point.features[count] = PointFeature(ptr, (it->second));
-        count++;
+        float x = *reinterpret_cast<const float*>(ptr + xoff);
+        float y = *reinterpret_cast<const float*>(ptr + yoff);
+        float z = *reinterpret_cast<const float*>(ptr + zoff);
+
+        StampedPoint point;
+        point.point = tf::Point(x, y, z);
+        point.features.resize(scan.new_features.size());
+        int count = 0;
+        std::map<std::string, FieldInfo>::const_iterator it;
+        for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
+        {
+          point.features[count] = PointFeature(ptr, (it->second));
+          count++;
+        }
+
+        if (scan.transformed)
+        {
+          point.transformed_point = transform * point.point;
+        }
+
+        point.color = CalculateColor(point);
+
+        scan.points.push_back(point);
       }
-
-      if (scan.transformed)
-      {
-        point.transformed_point = transform * point.point;
-      }
-
-      point.color = CalculateColor(point);
-
-      scan.points.push_back(point);
     }
 
     {
