@@ -424,7 +424,7 @@ namespace mapviz_plugins
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
       std::map<int, MarkerData>::iterator markerIter;
-      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
+      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end();)
       {
         MarkerData& marker = markerIter->second;
 
@@ -631,12 +631,13 @@ namespace mapviz_plugins
 
             PrintInfo("OK");
           }
+
+          ++markerIter;
         }
         else
         {
           PrintInfo("OK");
-          ROS_ERROR("Not displaying expired marker[%s:%d]: %lf < %lf (now)",
-                    topic_.c_str(), markerIter->first, marker.expire_time.toSec(), now.toSec());
+          markerIter = nsIter->second.erase(markerIter);
         }
       }
     }
