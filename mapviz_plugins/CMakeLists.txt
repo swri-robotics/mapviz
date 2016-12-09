@@ -144,6 +144,7 @@ target_link_libraries(${PROJECT_NAME}
     ${QT_LIBRARIES}
     ${QT_QTOPENGL_LIBRARIES}
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 
 add_dependencies(${PROJECT_NAME} marti_visualization_msgs_generate_messages_cpp)
 
