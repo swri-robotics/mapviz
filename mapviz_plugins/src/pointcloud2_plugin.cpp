@@ -75,6 +75,7 @@ namespace mapviz_plugins
       min_value_(0.0),
       max_value_(100.0),
       point_size_(3),
+      buffer_size_(1),
       new_topic_(true),
       has_message_(false),
       num_of_feats_(0),
