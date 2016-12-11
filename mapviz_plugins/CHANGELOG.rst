@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.3 (2016-12-10)
+------------------
 * Delete markers that have expired and remove error message. (`#454 <https://github.com/evenator/mapviz/issues/454>`_)
 * Fix segfault in pointcloud2 plug-in when pointcloud is empty. (`#450 <https://github.com/evenator/mapviz/issues/450>`_)
 * Initialize buffer size variable. (`#447 <https://github.com/evenator/mapviz/issues/447>`_)

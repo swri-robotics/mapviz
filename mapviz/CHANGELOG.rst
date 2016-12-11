@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.3 (2016-12-10)
+------------------
 * Fix mapviz kinetic build. (`#456 <https://github.com/evenator/mapviz/issues/456>`_)
   Add a missing rosdep dependency on libxi-dev.
 * Contributors: Edward Venator
