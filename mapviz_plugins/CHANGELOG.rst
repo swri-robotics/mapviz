@@ -2,6 +2,13 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Delete markers that have expired and remove error message. (`#454 <https://github.com/evenator/mapviz/issues/454>`_)
+* Fix segfault in pointcloud2 plug-in when pointcloud is empty. (`#450 <https://github.com/evenator/mapviz/issues/450>`_)
+* Initialize buffer size variable. (`#447 <https://github.com/evenator/mapviz/issues/447>`_)
+* Contributors: Marc Alban
+
 0.2.2 (2016-12-07)
 ------------------
 * Migrated OpenCV to 3.1 (default in Kinetic)
