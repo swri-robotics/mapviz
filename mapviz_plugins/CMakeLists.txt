@@ -59,6 +59,7 @@ set(QT_USE_QTGUI TRUE)
 set(UI_FILES
     ui/attitude_indicator_config.ui
     ui/disparity_config.ui
+    ui/draw_polygon_config.ui
     ui/gps_config.ui
     ui/grid_config.ui
     ui/image_config.ui
@@ -80,7 +81,8 @@ set(UI_FILES
 set(SRC_FILES
     src/attitude_indicator_plugin.cpp 
     src/canvas_click_filter.cpp
-    src/disparity_plugin.cpp 
+    src/disparity_plugin.cpp
+    src/draw_polygon_plugin.cpp
     src/gps_plugin.cpp
     src/grid_plugin.cpp
     src/image_plugin.cpp
@@ -105,6 +107,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/attitude_indicator_plugin.h
     include/${PROJECT_NAME}/canvas_click_filter.h
     include/${PROJECT_NAME}/disparity_plugin.h
+    include/${PROJECT_NAME}/draw_polygon_plugin.h
     include/${PROJECT_NAME}/gps_plugin.h
     include/${PROJECT_NAME}/grid_plugin.h
     include/${PROJECT_NAME}/image_plugin.h
