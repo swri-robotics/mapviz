@@ -270,14 +270,20 @@ void Mapviz::Initialize()
     std::string config;
     priv.param("config", config, default_path.toStdString());
 
+    bool auto_save;
+    priv.param("auto_save_backup", auto_save, true);
+
     Open(config);
 
     UpdateFrames();
     frame_timer_.start(1000);
     connect(&frame_timer_, SIGNAL(timeout()), this, SLOT(UpdateFrames()));
 
-    save_timer_.start(10000);
-    connect(&save_timer_, SIGNAL(timeout()), this, SLOT(AutoSave()));
+    if (auto_save)
+    {
+      save_timer_.start(10000);
+      connect(&save_timer_, SIGNAL(timeout()), this, SLOT(AutoSave()));
+    }
     
     connect(&record_timer_, SIGNAL(timeout()), this, SLOT(CaptureVideoFrame()));
 
