@@ -230,15 +230,15 @@ namespace mapviz_plugins
         {
           // If the "points" array is empty, we'll use the pose as the base of
           // the arrow and scale its size based on the scale_x value.
-          point.point = tf::Point(0.0, 0.0, 0.0);
-          point.arrow_point = tf::Point(1.0, 0.0, 0.0);
+          point.point = markerData.local_transform * tf::Point(0.0, 0.0, 0.0);
+          point.arrow_point = markerData.local_transform * tf::Point(1.0, 0.0, 0.0);
         }
         else
         {
           // Otherwise the "points" array should have exactly two values, the
           // start and end of the arrow.
-          point.point = tf::Point(marker.points[0].x, marker.points[0].y, marker.points[0].z);
-          point.arrow_point = tf::Point(marker.points[1].x, marker.points[1].y, marker.points[1].z);
+          point.point = markerData.local_transform * tf::Point(marker.points[0].x, marker.points[0].y, marker.points[0].z);
+          point.arrow_point = markerData.local_transform * tf::Point(marker.points[1].x, marker.points[1].y, marker.points[1].z);
         }
 
         markerData.points.push_back(point);
@@ -254,13 +254,47 @@ namespace mapviz_plugins
         transformArrow(markerData, transform);
       }
       else if (markerData.display_type == visualization_msgs::Marker::CYLINDER ||
-          markerData.display_type == visualization_msgs::Marker::CUBE)
+          markerData.display_type == visualization_msgs::Marker::SPHERE ||
+          markerData.display_type == visualization_msgs::Marker::SPHERE_LIST)
       {
         StampedPoint point;
-        point.point = tf::Point(0.0, 0.0, 0.0);
-        point.transformed_point = transform * (markerData.local_transform * point.point);
+        point.color = markerData.color;
+        if (markerData.display_type == visualization_msgs::Marker::CYLINDER ||
+            markerData.display_type == visualization_msgs::Marker::SPHERE)
+        {
+          point.point = tf::Point(0.0, 0.0, 0.0);
+          point.transformed_point = transform * (markerData.local_transform * point.point);
+          markerData.points.push_back(point);
+        }
+        else
+        {
+          Q_FOREACH (const geometry_msgs::Point& markerPoint, marker.points)
+          {
+            point.point = tf::Point(markerPoint.x, markerPoint.y, markerPoint.z);
+            point.transformed_point = transform * (markerData.local_transform * point.point);
+            markerData.points.push_back(point);
+          }
+        }
+      }
+      else if (markerData.display_type == visualization_msgs::Marker::CUBE)
+      {
+        StampedPoint point;
         point.color = markerData.color;
 
+        point.point = tf::Point(marker.scale.x / 2, marker.scale.y / 2, 0.0);
+        point.transformed_point = transform * (markerData.local_transform * point.point);
+        markerData.points.push_back(point);
+
+        point.point = tf::Point(-marker.scale.x / 2, marker.scale.y / 2, 0.0);
+        point.transformed_point = transform * (markerData.local_transform * point.point);
+        markerData.points.push_back(point);
+
+        point.point = tf::Point(-marker.scale.x / 2, -marker.scale.y / 2, 0.0);
+        point.transformed_point = transform * (markerData.local_transform * point.point);
+        markerData.points.push_back(point);
+
+        point.point = tf::Point(marker.scale.x / 2, -marker.scale.y / 2, 0.0);
+        point.transformed_point = transform * (markerData.local_transform * point.point);
         markerData.points.push_back(point);
       }
       else if (markerData.display_type == visualization_msgs::Marker::TEXT_VIEW_FACING)
@@ -605,6 +639,7 @@ namespace mapviz_plugins
                 marker.display_type == visualization_msgs::Marker::CUBE_LIST)
             {
               std::list<StampedPoint>::iterator point_it = marker.points.begin();
+              glBegin(GL_TRIANGLE_FAN);
               for (; point_it != marker.points.end(); ++point_it)
               {
                 glColor4d(
@@ -613,20 +648,9 @@ namespace mapviz_plugins
                     point_it->color.blueF(),
                     point_it->color.alphaF());
 
-
-                glBegin(GL_TRIANGLE_FAN);
-
-
-                double marker_x = point_it->transformed_point.getX();
-                double marker_y = point_it->transformed_point.getY();
-
-                glVertex2d(marker_x + marker.scale_x / 2, marker_y + marker.scale_x / 2);
-                glVertex2d(marker_x - marker.scale_x / 2, marker_y + marker.scale_x / 2);
-                glVertex2d(marker_x - marker.scale_x / 2, marker_y - marker.scale_x / 2);
-                glVertex2d(marker_x + marker.scale_x / 2, marker_y - marker.scale_x / 2);
-
-                glEnd();
+                glVertex2d(point_it->transformed_point.getX(), point_it->transformed_point.getY());
               }
+              glEnd();
             }
 
             PrintInfo("OK");
