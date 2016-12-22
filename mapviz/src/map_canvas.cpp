@@ -472,6 +472,8 @@ void MapCanvas::TransformTarget(QPainter* painter)
     return;
   }
 
+  bool success = false;
+
   try
   {
     tf_->lookupTransform(fixed_frame_, target_frame_, ros::Time(0), transform_);
@@ -519,6 +521,8 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
       Q_EMIT Hover(hover.x(), hover.y(), view_scale_);
     }
+
+    success = true;
   }
   catch (const tf::LookupException& e)
   {
@@ -535,6 +539,12 @@ void MapCanvas::TransformTarget(QPainter* painter)
   catch (...)
   {
     ROS_ERROR_THROTTLE(2.0, "Error looking up transform");
+  }
+
+  if (!success)
+  {
+    qtransform_ = qtransform_.scale(1, -1);
+    painter->setWorldTransform(qtransform_, false);
   }
 }
 
