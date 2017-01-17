@@ -57,8 +57,9 @@ namespace mapviz_plugins
 {
   RobotImagePlugin::RobotImagePlugin() :
     config_widget_(new QWidget()),
-    width_(1),
-    height_(1),
+    width_(2.0),
+    height_(1.0),
+    left_offset_(1.0),
     texture_loaded_(false),
     transformed_(false)
   {
@@ -81,6 +82,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.frame, SIGNAL(editingFinished()), this, SLOT(FrameEdited()));
     QObject::connect(ui_.width, SIGNAL(valueChanged(double)), this, SLOT(WidthChanged(double)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(double)), this, SLOT(HeightChanged(double)));
+    QObject::connect(ui_.left_offset, SIGNAL(valueChanged(double)), this, SLOT(LeftOffsetChanged(double)));
   }
 
   RobotImagePlugin::~RobotImagePlugin()
@@ -139,12 +141,19 @@ namespace mapviz_plugins
     UpdateShape();
   }
 
+  void RobotImagePlugin::LeftOffsetChanged(double value)
+  {
+    left_offset_ = value;
+
+    UpdateShape();
+  }
+
   void RobotImagePlugin::UpdateShape()
   {
-    top_left_ = tf::Point(-width_ / 2.0, height_ / 2.0, 0);
-    top_right_ = tf::Point(width_ / 2.0, height_ / 2.0, 0);
-    bottom_left_ = tf::Point(-width_ / 2.0, -height_/2.0, 0);
-    bottom_right_ = tf::Point(width_ / 2.0, -height_ / 2.0, 0);
+    top_left_ = tf::Point(-left_offset_, height_ / 2.0, 0);
+    top_right_ = tf::Point(width_ - left_offset_, height_ / 2.0, 0);
+    bottom_left_ = tf::Point(-left_offset_, -height_/2.0, 0);
+    bottom_right_ = tf::Point(width_ - left_offset_, -height_ / 2.0, 0);
   }
 
   void RobotImagePlugin::PrintError(const std::string& message)
@@ -329,6 +338,12 @@ namespace mapviz_plugins
       ui_.height->setValue(height_);
     }
 
+    if (node["left_offset"])
+    {
+      node["left_offset"] >> left_offset_;
+      ui_.left_offset->setValue(left_offset_);
+    }
+
     UpdateShape();
     LoadImage();
     FrameEdited();
@@ -340,6 +355,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "image" << YAML::Value << ui_.image->text().toStdString();
     emitter << YAML::Key << "width" << YAML::Value << width_;
     emitter << YAML::Key << "height" << YAML::Value << height_;
+    emitter << YAML::Key << "left_offset" << YAML::Value << left_offset_;
   }
 }
 
