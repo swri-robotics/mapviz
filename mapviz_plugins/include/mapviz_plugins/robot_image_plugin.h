@@ -83,16 +83,17 @@ namespace mapviz_plugins
     void FrameEdited();
     void WidthChanged(double value);
     void HeightChanged(double value);
-    void LeftOffsetChanged(double value);
+    void OffsetXChanged(double value);
+    void OffsetYChanged(double value);
 
   private:
     Ui::robot_image_config ui_;
     QWidget* config_widget_;
 
-    double width_; //image width, if vehicle frame is x-forward this corresponds to vehicle length
-    double height_; //image height, corresponds to vehicle width
-    double left_offset_; //distance from left side of image to origin,
-    // if vehicle frame is on rear axle this corresponds to the rear overhang
+    double width_; //image width, if robot frame is x-forward this corresponds to robot length
+    double height_; //image height, corresponds to robot width
+    double offset_x_; //offset of image center from robot frame along x axis
+    double offset_y_; //offset of image center from robot frame along y axis
 
     std::string filename_;
     QImage      image_;

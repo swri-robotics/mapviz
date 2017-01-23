@@ -135,7 +135,7 @@
       <string/>
      </property>
      <property name="value">
-      <double>1.000000000000000</double>
+      <double>2.000000000000000</double>
      </property>
     </widget>
    </item>
@@ -172,7 +172,7 @@
     </widget>
    </item>
    <item row="5" column="0">
-    <widget class="QLabel" name="left_offset_label">
+    <widget class="QLabel" name="offset_x_label">
      <property name="font">
       <font>
        <family>Sans Serif</family>
@@ -180,12 +180,12 @@
       </font>
      </property>
      <property name="text">
-      <string>Left Offset:</string>
+      <string>Offset x:</string>
      </property>
     </widget>
    </item>
    <item row="5" column="1" colspan="2">
-    <widget class="QDoubleSpinBox" name="left_offset">
+    <widget class="QDoubleSpinBox" name="offset_x">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -204,6 +204,38 @@
     </widget>
    </item>
    <item row="6" column="0">
+    <widget class="QLabel" name="offset_y_label">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Offset y:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="2">
+    <widget class="QDoubleSpinBox" name="offset_y">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="buttonSymbols">
+      <enum>QAbstractSpinBox::PlusMinus</enum>
+     </property>
+     <property name="suffix">
+      <string/>
+     </property>
+     <property name="value">
+      <double>0.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
     <widget class="QLabel" name="status_label">
      <property name="font">
       <font>
@@ -216,7 +248,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1" colspan="2">
+   <item row="7" column="1" colspan="2">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
