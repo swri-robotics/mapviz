@@ -52,6 +52,8 @@
 
 #include <mapviz/widgets.h>
 
+#include "stopwatch.h"
+
 namespace mapviz
 {
   class MapvizPlugin : public QObject
@@ -121,9 +123,13 @@ namespace mapviz
     {
       if (visible_ && initialized_)
       {
+        meas_transform_.start();
         Transform();
+        meas_transform_.stop();
 
+        meas_draw_.start();
         Draw(x, y, scale);
+        meas_draw_.stop();
       }
     }
     
@@ -131,9 +137,13 @@ namespace mapviz
     {
       if (visible_ && initialized_)
       {
+        meas_transform_.start();
         Transform();
+        meas_transform_.stop();
          
+        meas_paint_.start();
         Paint(painter, x, y, scale);
+        meas_paint_.start();
       }
     }
 
@@ -142,7 +152,11 @@ namespace mapviz
       if (frame_id != target_frame_)
       {
         target_frame_ = frame_id;
+
+        meas_transform_.start();
         Transform();
+        meas_transform_.stop();
+
         Q_EMIT TargetFrameChanged(target_frame_);
       }
     }
@@ -243,6 +257,14 @@ namespace mapviz
 
     void SetIcon(IconWidget* icon) { icon_ = icon; }
 
+    void PrintMeasurements()
+    {
+      std::string header = type_ + " (" + name_ + ")";
+      meas_transform_.printInfo(header + " Transform()");
+      meas_paint_.printInfo(header + " Paint()");
+      meas_draw_.printInfo(header + " Draw()");
+    }
+
   public Q_SLOTS:
     virtual void DrawIcon() {}
 
@@ -296,9 +318,15 @@ namespace mapviz
       source_frame_(""),
       use_latest_transforms_(false),
       draw_order_(0) {}
+
+   private:
+    // Collect basic profiling info to know how much time each plugin
+    // spends in Transform(), Paint(), and Draw().
+    Stopwatch meas_transform_;
+    Stopwatch meas_paint_;
+    Stopwatch meas_draw_;
   };
   typedef boost::shared_ptr<MapvizPlugin> MapvizPluginPtr;
 }
-
 #endif  // MAPVIZ_MAPVIZ_PLUGIN_H_
 
