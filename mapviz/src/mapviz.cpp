@@ -290,6 +290,14 @@ void Mapviz::Initialize()
     
     connect(&record_timer_, SIGNAL(timeout()), this, SLOT(CaptureVideoFrame()));
 
+    bool print_profile_data;
+    priv.param("print_profile_data", print_profile_data, false);
+    if (print_profile_data)
+    {
+      profile_timer_.start(2000);
+      connect(&profile_timer_, SIGNAL(timeout()), this, SLOT(HandleProfileTimer()));
+    }
+
     initialized_ = true;
   }
 }
@@ -298,7 +306,9 @@ void Mapviz::SpinOnce()
 {
   if (ros::ok())
   {
+    meas_spin_.start();
     ros::spinOnce();
+    meas_spin_.stop();
   }
   else
   {
@@ -1468,6 +1478,20 @@ void Mapviz::SetCaptureDirectory()
   if (dialog.result() == QDialog::Accepted && dialog.selectedFiles().count() == 1)
   {
     capture_directory_ = dialog.selectedFiles().first().toStdString();
+  }
+}
+
+void Mapviz::HandleProfileTimer()
+{
+  ROS_INFO("Mapviz Profiling Data");
+  meas_spin_.printInfo("ROS SpinOnce()");
+  for (auto& display: plugins_)
+  {
+    MapvizPluginPtr plugin = display.second;
+    if (plugin)
+    {
+      plugin->PrintMeasurements();
+    }
   }
 }
 }
