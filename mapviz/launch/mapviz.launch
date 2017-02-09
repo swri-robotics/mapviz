@@ -2,7 +2,11 @@
 
   <env name="ROSCONSOLE_FORMAT" value="[${thread}] [${node}/${function}:${line}]: ${message}"/>
 
-  <node pkg="mapviz" type="mapviz" name="$(anon mapviz)" required="true"/>
+  <arg name="print_profile_data" default="false"/>
+
+  <node pkg="mapviz" type="mapviz" name="$(anon mapviz)" required="true">
+    <param name="print_profile_data" value="$(arg print_profile_data)"/>
+  </node>
 
   <node pkg="swri_transform_util" type="initialize_origin.py" name="initialize_origin" >
     <param name="local_xy_frame" value="/far_field"/>
