@@ -57,6 +57,7 @@
 #include <QProcessEnvironment>
 #include <QFileInfo>
 #include <QListWidgetItem>
+#include <QMutexLocker>
 
 #include <swri_math_util/constants.h>
 #include <swri_transform_util/frames.h>
@@ -86,6 +87,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     resizable_(true),
     background_(Qt::gray),
     capture_directory_("~"),
+    vid_writer_(NULL),
     updating_frames_(false),
     node_(NULL),
     canvas_(NULL)
@@ -170,6 +172,16 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
   connect(screenshot_button_, SIGNAL(clicked()), this, SLOT(Screenshot()));
 
+  // Use a separate thread for writing video files so that it won't cause
+  // lag on the main thread.
+  // It's ok for the video writer to be a pointer that we intantiate here and
+  // then forget about; the worker thread will delete it when the thread exits.
+  vid_writer_ = new VideoWriter();
+  vid_writer_->moveToThread(&video_thread_);
+  connect(&video_thread_, SIGNAL(finished()), vid_writer_, SLOT(deleteLater()));
+  connect(this, SIGNAL(FrameGrabbed(QImage)), vid_writer_, SLOT(processFrame(QImage)));
+  video_thread_.start();
+
   image_transport_menu_ = new QMenu("Default Image Transport", ui_.menu_View);
   ui_.menu_View->addMenu(image_transport_menu_);
 
@@ -181,6 +193,8 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
 Mapviz::~Mapviz()
 {
+  video_thread_.quit();
+  video_thread_.wait();
   delete node_;
 }
 
@@ -1265,7 +1279,7 @@ void Mapviz::ToggleRecord(bool on)
   {
     rec_button_->setIcon(QIcon(":/images/media-playback-pause.png"));
     rec_button_->setToolTip("Pause recording video of display canvas");
-    if (!video_writer_)
+    if (!vid_writer_->isRecording())
     {
       // Lock the window size.
       AdjustWindowSize();
@@ -1273,18 +1287,12 @@ void Mapviz::ToggleRecord(bool on)
       canvas_->CaptureFrames(true);
     
       std::string posix_time = boost::posix_time::to_iso_string(ros::WallTime::now().toBoost());
-      boost::replace_all(posix_time, ".", "_");    
+      boost::replace_all(posix_time, ".", "_");
       std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".avi";
       boost::replace_all(filename, "~", getenv("HOME"));
 
-    
-      video_writer_ = boost::make_shared<cv::VideoWriter>(
-        filename, 
-        CV_FOURCC('M', 'J', 'P', 'G'), 
-        30, 
-        cv::Size(canvas_->width(), canvas_->height()));
-        
-      if (!video_writer_->isOpened())
+
+      if (!vid_writer_->initializeWriter(filename, canvas_->width(), canvas_->height()))
       {
         ROS_ERROR("Failed to open video file for writing.");
         StopRecord();
@@ -1337,17 +1345,16 @@ void Mapviz::UpdateImageTransportMenu()
 
 void Mapviz::CaptureVideoFrame()
 {
-  std::vector<uint8_t> frame;
-  if (canvas_->CopyCaptureBuffer(frame))
+  // We need to store the data inside a QImage in order to emit it as a
+  // signal.
+  // Note that the QImage here is set to "ARGB32", but it is actually BGRA.
+  // Qt doesn't have a comparable BGR format, and the cv::VideoWriter this
+  // is going to expects BGR format, but it'd be a waste for us to convert
+  // to RGB and then back to BGR.
+  QImage frame(canvas_->width(), canvas_->height(), QImage::Format_ARGB32);
+  if (canvas_->CopyCaptureBuffer(frame.bits()))
   {
-    cv::Mat image(canvas_->height(), canvas_->width(), CV_8UC4, &frame[0]);
-    
-    cv::Mat video_frame;
-    cvtColor(image, video_frame, CV_BGRA2BGR);
-    
-    cv::flip(video_frame, video_frame, 0);
-    
-    video_writer_->write(video_frame);
+    Q_EMIT(FrameGrabbed(frame));
   }
   else
   {
@@ -1366,7 +1373,10 @@ void Mapviz::StopRecord()
   stop_button_->setEnabled(false);
   
   record_timer_.stop();
-  video_writer_.reset();
+  if (vid_writer_)
+  {
+    vid_writer_->stop();
+  }
   canvas_->CaptureFrames(false);
   
   ui_.statusbar->showMessage(QString(""));
