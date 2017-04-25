@@ -8,6 +8,7 @@
 *.bag
 *~
 .idea
+cmake-build-debug/
 lib/
 _gtest_from_src/
 bin/
