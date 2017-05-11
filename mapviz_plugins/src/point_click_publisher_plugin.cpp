@@ -29,6 +29,7 @@
 
 #include "mapviz_plugins/point_click_publisher_plugin.h"
 #include <geometry_msgs/PointStamped.h>
+#include <swri_transform_util/frames.h>
 #include <swri_yaml_util/yaml_util.h>
 
 #include <boost/shared_ptr.hpp>
@@ -218,6 +219,15 @@ namespace mapviz_plugins
   {
     std::vector<std::string> frames;
     tf_->getFrameStrings(frames);
+
+    bool supports_wgs84 = tf_manager_.SupportsTransform(
+        swri_transform_util::_local_xy_frame,
+        swri_transform_util::_wgs84_frame);
+
+    if (supports_wgs84)
+    {
+      frames.push_back(swri_transform_util::_wgs84_frame);
+    }
 
     if (ui_.outputframe->count() >= 0 &&
         static_cast<size_t>(ui_.outputframe->count()) == frames.size())
