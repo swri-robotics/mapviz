@@ -295,11 +295,11 @@ namespace mapviz_plugins
     painter->resetTransform();
 
     //set the draw color for the text to be the same as the rest
-	QPen pen(QBrush(ui_.color->color()), 1);
+    QPen pen(QBrush(ui_.color->color()), 1);
     painter->setPen(pen);
 
-	std::list<StampedPoint>::iterator it = points_.begin();
-	int i = 0;//used to alternate between rendering text on some points
+    std::list<StampedPoint>::iterator it = points_.begin();
+    int i = 0;//used to alternate between rendering text on some points
     for (; it != points_.end(); ++it)
     {
       if (it->transformed && i++ % interval == 0)
