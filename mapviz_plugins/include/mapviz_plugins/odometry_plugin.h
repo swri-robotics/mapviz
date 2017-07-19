@@ -67,11 +67,17 @@ namespace mapviz_plugins
     {
     }
 
+    void Paint(QPainter* painter, double x, double y, double scale);
     void Draw(double x, double y, double scale);
     void LoadConfig(const YAML::Node& node, const std::string& path);
     void SaveConfig(YAML::Emitter& emitter, const std::string& path);
 
     QWidget* GetConfigWidget(QWidget* parent);
+
+    bool SupportsPainting()
+    {
+      return true;
+    }
 
    protected:
     void PrintError(const std::string& message);
