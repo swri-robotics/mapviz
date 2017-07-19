@@ -417,8 +417,8 @@ namespace mapviz_plugins
       ui_.arrow_size->setValue(node["arrow_size"].as<int>());
     }
 
-	if (node["show_timestamps"])
-	{
+    if (node["show_timestamps"])
+    {
       ui_.show_timestamps->setValue(node["show_timestamps"].as<int>());
     }
 
@@ -457,6 +457,6 @@ namespace mapviz_plugins
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
 
-	emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
+    emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
   }
 }
