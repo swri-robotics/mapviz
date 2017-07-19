@@ -283,6 +283,8 @@ namespace mapviz_plugins
   {
     glLineWidth(4);
 
+    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
+
     if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
     {
       glBegin(GL_LINE_STRIP);
