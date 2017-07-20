@@ -195,8 +195,8 @@ namespace mapviz_plugins
     }
 
     if (points_.empty() ||
-        stamped_point.point.distance(points_.back().point) >=
-            position_tolerance_)
+        (stamped_point.point.distance(points_.back().point) >=
+            position_tolerance_))
     {
       points_.push_back(cur_point_);
     }
@@ -328,7 +328,9 @@ namespace mapviz_plugins
     {
       auto cur_point = *it;
       if (ui_.show_all_covariance->isChecked() == false)
+      {
         cur_point = cur_point_;
+      }
       if (it->transformed && !it->transformed_cov_points.empty())
       {
         glBegin(GL_LINE_STRIP);
@@ -345,7 +347,9 @@ namespace mapviz_plugins
         glEnd();
       }
       if (ui_.show_all_covariance->isChecked() == false)
+      {
         break;
+      }
     }
   }
 
