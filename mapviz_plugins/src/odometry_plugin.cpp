@@ -278,6 +278,44 @@ namespace mapviz_plugins
       PrintInfo("OK");
     }
   }
+  
+
+  void OdometryPlugin::Paint(QPainter* painter, double x, double y, double scale)
+  {
+    //dont render any timestamps if the show_timestamps is set to 0
+    int interval = ui_.show_timestamps->value();
+    if (interval == 0)
+    {
+      return;
+    }
+
+    QTransform tf = painter->worldTransform();
+    QFont font("Helvetica", 10);
+    painter->setFont(font);
+    painter->save();
+    painter->resetTransform();
+
+    //set the draw color for the text to be the same as the rest
+    QPen pen(QBrush(ui_.color->color()), 1);
+    painter->setPen(pen);
+
+    std::list<StampedPoint>::iterator it = points_.begin();
+    int counter = 0;//used to alternate between rendering text on some points
+    for (; it != points_.end(); ++it)
+    {
+      if (it->transformed && counter % interval == 0)//this renders a timestamp every 'interval' points
+      {
+        QPointF point = tf.map(QPointF(it->transformed_point.getX(),
+                                       it->transformed_point.getY()));
+        QString time;
+        time.setNum(it->stamp.toSec(), 'g', 12);
+        painter->drawText(point, time);
+      }
+      counter++;
+    }
+
+    painter->restore();
+  }
 
   void OdometryPlugin::DrawCovariance()
   {
