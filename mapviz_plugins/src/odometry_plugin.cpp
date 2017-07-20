@@ -73,8 +73,6 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.show_timestamps, SIGNAL(valueChanged(int)), this,
-                     SLOT(TopicEditor()));
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this,
                      SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
@@ -159,21 +157,6 @@ namespace mapviz_plugins
         odometry->pose.pose.orientation.z,
         odometry->pose.pose.orientation.w);
 
-    if (points_.empty() ||
-        stamped_point.point.distance(points_.back().point) >=
-            position_tolerance_)
-    {
-      points_.push_back(stamped_point);
-    }
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) > buffer_size_)
-      {
-        points_.pop_front();
-      }
-    }
-
     cur_point_ = stamped_point;
     covariance_checked_ = ui_.show_covariance->isChecked();
     lap_checked_ = ui_.show_laps->isChecked();
@@ -208,6 +191,21 @@ namespace mapviz_plugins
         {
           ROS_ERROR("Failed to project x, y, z covariance to xy-plane.");
         }
+      }
+    }
+
+    if (points_.empty() ||
+        stamped_point.point.distance(points_.back().point) >=
+            position_tolerance_)
+    {
+      points_.push_back(cur_point_);
+    }
+
+    if (buffer_size_ > 0)
+    {
+      while (static_cast<int>(points_.size()) > buffer_size_)
+      {
+        points_.pop_front();
       }
     }
   }
@@ -304,8 +302,6 @@ namespace mapviz_plugins
     {
       if (it->transformed && i++ % interval == 0)
       {
-        
-
         QPointF point = tf.map(QPointF(it->transformed_point.getX(),
                                        it->transformed_point.getY()));
 		QString time;
@@ -321,20 +317,31 @@ namespace mapviz_plugins
   {
     glLineWidth(4);
 
-    if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
+    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
+
+    std::list<StampedPoint>::iterator it = points_.begin();
+    for (; it != points_.end(); ++it)
     {
-      glBegin(GL_LINE_STRIP);
-
-      for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
+      auto cur_point = *it;
+      if (ui_.show_all_covariance->isChecked() == false)
+        cur_point = cur_point_;
+      if (it->transformed && !it->transformed_cov_points.empty())
       {
-        glVertex2d(cur_point_.transformed_cov_points[i].getX(),
-                   cur_point_.transformed_cov_points[i].getY());
+        glBegin(GL_LINE_STRIP);
+
+        for (uint32_t i = 0; i < cur_point.transformed_cov_points.size(); i++)
+        {
+          glVertex2d(cur_point.transformed_cov_points[i].getX(),
+                     cur_point.transformed_cov_points[i].getY());
+        }
+
+        glVertex2d(cur_point.transformed_cov_points.front().getX(),
+                   cur_point.transformed_cov_points.front().getY());
+
+        glEnd();
       }
-
-      glVertex2d(cur_point_.transformed_cov_points.front().getX(),
-                 cur_point_.transformed_cov_points.front().getY());
-
-      glEnd();
+      if (ui_.show_all_covariance->isChecked() == false)
+        break;
     }
   }
 
@@ -420,6 +427,12 @@ namespace mapviz_plugins
       ui_.show_timestamps->setValue(node["show_timestamps"].as<int>());
     }
 
+    if (node["show_all_covariance"])
+    {
+      bool show_all_covariance = node["show_all_covariance"].as<bool>();
+      ui_.show_all_covariance->setChecked(show_all_covariance);
+    }
+
     TopicEdited();
   }
 
@@ -456,6 +469,8 @@ namespace mapviz_plugins
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
 
     emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
+	
+    emitter << YAML::Key << "show_all_covariance" << YAML::Value << ui_.show_all_covariance->isChecked();
   }
 }
 
