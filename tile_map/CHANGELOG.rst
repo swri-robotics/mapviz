@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2017-08-11)
+------------------
 * Add missing boost header.
 * Contributors: Marc Alban
 

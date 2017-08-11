@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2017-08-11)
+------------------
 * Add basic profiling to mapviz.
 * Handle GL canvas transforms with an invalid target frame
 * Add parameter to disable auto-saving functionality.

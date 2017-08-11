@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2017-08-11)
+------------------
 * Add /wgs84 frame to point click publisher when available.
 * replaced left_offset with offset_x, offset_y in robot image plugin
 * added left_offset to robot image plugin config

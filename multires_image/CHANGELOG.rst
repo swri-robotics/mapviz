@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2017-08-11)
+------------------
 * Install mapviz_tile_loader (`#499 <https://github.com/swri-robotics/mapviz/issues/499>`_)
 * Contributors: Matthew
 
