@@ -2,6 +2,12 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add /wgs84 frame to point click publisher when available.
+* Transform cube and arrow markers properly
+* Contributors: Marc Alban, P. J. Reed
+
 0.2.3 (2016-12-10)
 ------------------
 * Delete markers that have expired and remove error message. (`#454 <https://github.com/evenator/mapviz/issues/454>`_)

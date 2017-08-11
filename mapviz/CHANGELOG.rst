@@ -2,6 +2,13 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add basic profiling to mapviz.
+* Handle GL canvas transforms with an invalid target frame
+* Add parameter to disable auto-saving functionality.
+* Contributors: Elliot Johnson, Marc Alban, P. J. Reed
+
 0.2.3 (2016-12-10)
 ------------------
 * Fix mapviz kinetic build. (`#456 <https://github.com/evenator/mapviz/issues/456>`_)
