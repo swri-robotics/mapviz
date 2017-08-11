@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.4 (2017-08-11)
+------------------
 * add include for boost::algorithm::trim_copy to fix tile_map_plugin.cpp:408:31: error: ‘trim_copy’ is not a member of ‘boost’ (`#497 <https://github.com/swri-robotics/mapviz/issues/497>`_)
 * Contributors: Austin Deric
 

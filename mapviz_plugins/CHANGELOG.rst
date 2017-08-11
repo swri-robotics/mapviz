@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.4 (2017-08-11)
+------------------
 * Add /wgs84 frame to point click publisher when available.
 * Transform cube and arrow markers properly
 * Contributors: Marc Alban, P. J. Reed
