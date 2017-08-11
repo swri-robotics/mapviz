@@ -2,6 +2,18 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add /wgs84 frame to point click publisher when available.
+* replaced left_offset with offset_x, offset_y in robot image plugin
+* added left_offset to robot image plugin config
+* Add plug-in for drawing and publishing a polygon.
+* Transform cube and arrow markers properly
+* Delete markers that have expired and remove error message.
+* Fix segfault in pointcloud2 plug-in when pointcloud is empty.
+* Initialize buffer size variable.
+* Contributors: Marc Alban, Neal Seegmiller, P. J. Reed
+
 0.0.7 (2016-10-23)
 ------------------
 * General code cleanup of mapviz_plugins

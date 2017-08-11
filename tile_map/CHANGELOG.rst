@@ -2,6 +2,11 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing boost header.
+* Contributors: Marc Alban
+
 0.0.7 (2016-10-23)
 ------------------
 * Rewrite tile_map loading to be more reliable
