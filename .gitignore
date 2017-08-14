@@ -17,3 +17,4 @@ msg_gen/
 srv_gen/
 *.cfgc
 version.txt
+cmake-build-debug/
