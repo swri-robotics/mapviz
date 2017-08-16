@@ -117,6 +117,30 @@ namespace mapviz
       update();
     }
 
+    /**
+     * Copies the current capture buffer into the target buffer.  The target
+     * buffer must already be initialized to a size of:
+     * height * width * 4
+     * @param buffer An initialize buffer to copy data into
+     * @return false if the current capture buffer is empty
+     */
+    bool CopyCaptureBuffer(uchar* buffer)
+    {
+      if (!capture_buffer_.empty())
+      {
+        memcpy(&buffer[0], &capture_buffer_[0], capture_buffer_.size());
+        return true;
+      }
+
+      return false;
+    }
+
+    /**
+     * Resizes a vector to be large enough to hold the current capture buffer
+     * and then copies the capture buffer into it.
+     * @param buffer A vector to copy the capture buffer into.
+     * @return false if the current capture buffer is empty
+     */
     bool CopyCaptureBuffer(std::vector<uint8_t>& buffer)
     {
       buffer.clear();

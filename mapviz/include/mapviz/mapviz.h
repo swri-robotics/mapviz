@@ -39,8 +39,6 @@
 
 #include <GL/glew.h>
 
-#include <opencv2/highgui/highgui.hpp>
-
 // QT libraries
 #include <QtGui/QtGui>
 #include <QDialog>
@@ -72,6 +70,7 @@
 #include <mapviz/AddMapvizDisplay.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
+#include <mapviz/video_writer.h>
 
 #include "stopwatch.h"
 
@@ -123,6 +122,13 @@ namespace mapviz
     void HandleProfileTimer();
 
   Q_SIGNALS:
+    /**
+     * Emitted every time a frame is grabbed when Mapviz is in video recording
+     * mode, typically at a rate of 30 FPS.
+     * Note that the QImage emitted says its format is ARGB, but its pixel
+     * order is actually BGRA.
+     */
+    void FrameGrabbed(QImage);
     void ImageTransportChanged();
 
   protected:
@@ -146,8 +152,6 @@ namespace mapviz
     QPushButton* rec_button_;
     QPushButton* stop_button_;
     QPushButton* screenshot_button_;
-    
-    boost::shared_ptr<cv::VideoWriter> video_writer_;
 
     int    argc_;
     char** argv_;
@@ -160,6 +164,8 @@ namespace mapviz
     QColor background_;
     
     std::string capture_directory_;
+    QThread video_thread_;
+    VideoWriter* vid_writer_;
     
     bool updating_frames_;
 

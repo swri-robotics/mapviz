@@ -190,7 +190,6 @@ void MapCanvas::CaptureFrame(bool force)
     GLubyte* data = reinterpret_cast<GLubyte*>(glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
     if(data)
     {
-      capture_buffer_.clear();
       capture_buffer_.resize(pixel_buffer_size_);
 
       memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
