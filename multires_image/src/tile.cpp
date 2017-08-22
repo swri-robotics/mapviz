@@ -149,7 +149,7 @@ namespace multires_image
         m_textureId = ids[0];
 
         glBindTexture(GL_TEXTURE_2D, m_textureId);
-        glTexImage2D(GL_TEXTURE_2D, 0, 3, m_dimension, m_dimension, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_dimension, m_dimension, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
 
         // TODO(malban): check for GL error
 
