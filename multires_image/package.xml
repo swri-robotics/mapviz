@@ -13,7 +13,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>libopencv-dev</depend>
   <exec_depend>libqt4</exec_depend>
   <build_depend>libqt4-dev</build_depend>
   <exec_depend>libqt4-opengl</exec_depend>
