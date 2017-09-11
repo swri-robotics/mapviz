@@ -24,16 +24,13 @@ Note that for ROS Lunar, you can use the `kinetic-devel` branch, as there are no
 If you're using wstool, add these repositories to your wstool workspace:
 
     wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v $ROS_DISTRO-devel
-    wstool set marti_common --git https://github.com/swri-robotics/marti_common.git -v $ROS_DISTRO-devel
-    wstool set marti_messages --git https://github.com/swri-robotics/marti_messages.git -v indigo-devel
+    wstool update mapviz
 
 ### Checking out the source code (git)
 
 If you're not using wstool, you can check out the repositories directly with git:
 
     git clone https://github.com/swri-robotics/mapviz.git --branch $ROS_DISTRO-devel
-    git clone https://github.com/swri-robotics/marti_common.git --branch $ROS_DISTRO-devel
-    git clone https://github.com/swri-robotics/marti_messages.git --branch indigo-devel
 
 ### Installing dependencies and building
 
