@@ -21,14 +21,14 @@ These directions assume you have already set up a catkin workspace. See [this tu
 
 ### Checking out the source code (wstool)
 
-If you're using wstool, add these repositories to your wstool workspace:
+If you're using wstool, add this repository to your wstool workspace:
 
     wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v $ROS_DISTRO-devel
     wstool update mapviz
 
 ### Checking out the source code (git)
 
-If you're not using wstool, you can check out the repositories directly with git:
+If you're not using wstool, you can check out the repository directly with git:
 
     git clone https://github.com/swri-robotics/mapviz.git --branch $ROS_DISTRO-devel
 
