@@ -15,11 +15,11 @@ You can install mapviz using apt-get from the ROS apt repository:
 Building From Source
 ------------
 
+Note that for ROS Lunar, you can use the `kinetic-devel` branch, as there are no changes to Mapviz between Kinetic and Lunar.
+
 These directions assume you have already set up a catkin workspace. See [this tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) on the ROS Wiki for help setting up a catkin workspace.
 
 ### Checking out the source code (wstool)
-
-Note that for ROS Lunar, you can use the `kinetic-devel` branch, as there are no changes to Mpaviz between Kinetic and Lunar.
 
 If you're using wstool, add these repositories to your wstool workspace:
 
