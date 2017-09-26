@@ -9,7 +9,6 @@ import fnmatch
 import math
 import os
 import pyproj
-import roslib; roslib.load_manifest('multires_image')
 import rospy
 import yaml
 from collections import namedtuple
