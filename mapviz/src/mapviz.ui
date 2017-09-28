@@ -595,7 +595,7 @@
   </connection>
   <connection>
    <sender>actionOpen_config</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>mapviz</receiver>
    <slot>OpenConfig()</slot>
    <hints>
@@ -611,7 +611,7 @@
   </connection>
   <connection>
    <sender>actionSave_config</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>mapviz</receiver>
    <slot>SaveConfig()</slot>
    <hints>
@@ -691,7 +691,7 @@
   </connection>
   <connection>
    <sender>actionSet_Capture_Directory</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>mapviz</receiver>
    <slot>SetCaptureDirectory()</slot>
    <hints>
