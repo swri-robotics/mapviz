@@ -73,6 +73,8 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
+    QObject::connect(ui_.show_timestamps, SIGNAL(valueChanged(int)), this,
+                     SLOT(TopicEditor()));
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this,
                      SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
@@ -278,6 +280,44 @@ namespace mapviz_plugins
       PrintInfo("OK");
     }
   }
+  
+
+  void OdometryPlugin::Paint(QPainter* painter, double x, double y, double scale)
+  {
+    //dont render any timestamps if the show_timestamps is set to 0
+    int interval = ui_.show_timestamps->value();
+    if (interval == 0)
+    {
+      return;
+    }
+
+    QTransform tf = painter->worldTransform();
+    QFont font("Helvetica", 10);
+    painter->setFont(font);
+    painter->save();
+    painter->resetTransform();
+
+    //set the draw color for the text to be the same as the rest
+    QPen pen(QBrush(ui_.color->color()), 1);
+    painter->setPen(pen);
+
+    std::list<StampedPoint>::iterator it = points_.begin();
+    int counter = 0;//used to alternate between rendering text on some points
+    for (; it != points_.end(); ++it)
+    {
+      if (it->transformed && counter % interval == 0)//this renders a timestamp every 'interval' points
+      {
+        QPointF point = tf.map(QPointF(it->transformed_point.getX(),
+                                       it->transformed_point.getY()));
+        QString time;
+        time.setNum(it->stamp.toSec(), 'g', 12);
+        painter->drawText(point, time);
+      }
+      counter++;
+    }
+
+    painter->restore();
+  }
 
   void OdometryPlugin::DrawCovariance()
   {
@@ -379,6 +419,11 @@ namespace mapviz_plugins
       ui_.arrow_size->setValue(node["arrow_size"].as<int>());
     }
 
+    if (node["show_timestamps"])
+    {
+      ui_.show_timestamps->setValue(node["show_timestamps"].as<int>());
+    }
+
     TopicEdited();
   }
 
@@ -413,5 +458,8 @@ namespace mapviz_plugins
     emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
+
+    emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
   }
 }
+
