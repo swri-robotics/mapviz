@@ -302,19 +302,18 @@ namespace mapviz_plugins
     painter->setPen(pen);
 
     std::list<StampedPoint>::iterator it = points_.begin();
-    int i = 0;//used to alternate between rendering text on some points
+    int counter = 0;//used to alternate between rendering text on some points
     for (; it != points_.end(); ++it)
     {
-      if (it->transformed && i++ % interval == 0)
+      if (it->transformed && counter % interval == 0)//this renders a timestamp every 'interval' points
       {
-        
-
         QPointF point = tf.map(QPointF(it->transformed_point.getX(),
                                        it->transformed_point.getY()));
         QString time;
         time.setNum(it->stamp.toSec(), 'g', 12);
         painter->drawText(point, time);
       }
+      counter++;
     }
 
     painter->restore();
@@ -461,4 +460,5 @@ namespace mapviz_plugins
     emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
   }
 }
+
 
