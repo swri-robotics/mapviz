@@ -646,19 +646,19 @@ namespace mapviz_plugins
   void PointCloud2Plugin::UseRainbowChanged(int check_state)
   {
     UpdateMinMaxWidgets();
-
     UpdateColors();
   }
 
   void PointCloud2Plugin::UseAutomaxminChanged(int check_state)
   {
-    if (check_state == need_minmax_)
+    need_minmax_ = check_state == Qt::Checked;
+    if(!need_minmax_ )
     {
-      need_minmax_ = true;
+        min_value_ = ui_.minValue->value();
+        max_value_ = ui_.maxValue->value();
     }
 
     UpdateMinMaxWidgets();
-
     UpdateColors();
   }
 
