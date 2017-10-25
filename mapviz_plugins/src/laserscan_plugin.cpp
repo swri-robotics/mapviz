@@ -107,9 +107,9 @@ namespace mapviz_plugins
         this,
         SLOT(TopicEdited()));
     QObject::connect(ui_.alpha,
-        SIGNAL(editingFinished()),
+        SIGNAL(valueChanged(double)),
         this,
-        SLOT(AlphaEdited()));
+        SLOT(AlphaEdited(double)));
     QObject::connect(ui_.color_transformer,
         SIGNAL(currentIndexChanged(int)),
         this,
@@ -600,7 +600,6 @@ namespace mapviz_plugins
     {
       node["alpha"] >> alpha_;
       ui_.alpha->setValue(alpha_);
-      AlphaEdited();
     }
 
     if (node["use_rainbow"])
@@ -655,10 +654,9 @@ namespace mapviz_plugins
   /**
    * Coerces alpha to [0.0, 1.0] and stores it in alpha_
    */
-  void LaserScanPlugin::AlphaEdited()
+  void LaserScanPlugin::AlphaEdited(double val)
   {
-    alpha_ = std::max(0.0f, std::min(ui_.alpha->text().toFloat(), 1.0f));
-    ui_.alpha->setValue(alpha_);
+    alpha_ = std::max(0.0f, std::min((float)val, 1.0f));
   }
 
   void LaserScanPlugin::SaveConfig(YAML::Emitter& emitter,

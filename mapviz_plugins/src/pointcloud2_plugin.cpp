@@ -652,7 +652,7 @@ namespace mapviz_plugins
   void PointCloud2Plugin::UseAutomaxminChanged(int check_state)
   {
     need_minmax_ = check_state == Qt::Checked;
-    if(!need_minmax_ )
+    if( !need_minmax_ )
     {
         min_value_ = ui_.minValue->value();
         max_value_ = ui_.maxValue->value();
