@@ -109,9 +109,9 @@ namespace mapviz_plugins
                      this,
                      SLOT(TopicEdited()));
     QObject::connect(ui_.alpha,
-                     SIGNAL(editingFinished()),
+                     SIGNAL(valueChanged(double)),
                      this,
-                     SLOT(AlphaEdited()));
+                     SLOT(AlphaEdited(double)));
     QObject::connect(ui_.color_transformer,
                      SIGNAL(currentIndexChanged(int)),
                      this,
@@ -761,7 +761,6 @@ namespace mapviz_plugins
     {      
       node["alpha"] >> alpha_;
       ui_.alpha->setValue(alpha_);
-      AlphaEdited();
     }
 
     if (node["use_rainbow"])
@@ -827,10 +826,9 @@ namespace mapviz_plugins
   /**
    * Coerces alpha to [0.0, 1.0] and stores it in alpha_
    */
-  void PointCloud2Plugin::AlphaEdited()
+  void PointCloud2Plugin::AlphaEdited(double value)
   {
-    alpha_ = std::max(0.0f, std::min(ui_.alpha->text().toFloat(), 1.0f));
-    ui_.alpha->setValue(alpha_);
+    alpha_ = std::max(0.0f, std::min((float)value, 1.0f));
   }
 
   void PointCloud2Plugin::SaveConfig(YAML::Emitter& emitter,
@@ -851,9 +849,9 @@ namespace mapviz_plugins
     emitter << YAML::Key << "max_color" <<
       YAML::Value << ui_.max_color->color().name().toStdString();
     emitter << YAML::Key << "value_min" <<
-      YAML::Value << ui_.minValue->text().toDouble();
+      YAML::Value << ui_.minValue->value();
     emitter << YAML::Key << "value_max" <<
-      YAML::Value << ui_.maxValue->text().toDouble();
+      YAML::Value << ui_.maxValue->value();
     emitter << YAML::Key << "use_rainbow" <<
       YAML::Value << ui_.use_rainbow->isChecked();
     emitter << YAML::Key << "use_automaxmin" <<
