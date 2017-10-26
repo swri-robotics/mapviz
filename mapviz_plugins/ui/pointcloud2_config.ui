@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>306</width>
+    <width>307</width>
     <height>341</height>
    </rect>
   </property>
@@ -17,11 +17,20 @@
    <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
+   </property>
    <property name="verticalSpacing">
     <number>4</number>
-   </property>
-   <property name="margin">
-    <number>2</number>
    </property>
    <item row="14" column="0">
     <widget class="QLabel" name="label_2">
@@ -102,8 +111,11 @@
    </item>
    <item row="3" column="1">
     <widget class="QSpinBox" name="bufferSize">
+     <property name="minimum">
+      <number>1</number>
+     </property>
      <property name="maximum">
-      <number>99999999</number>
+      <number>100</number>
      </property>
      <property name="value">
       <number>1</number>
@@ -116,7 +128,7 @@
       <double>1.000000000000000</double>
      </property>
      <property name="singleStep">
-      <double>0.010000000000000</double>
+      <double>0.100000000000000</double>
      </property>
      <property name="value">
       <double>1.000000000000000</double>
@@ -247,7 +259,16 @@
      <item>
       <widget class="QWidget" name="min_max_color_widget" native="true">
        <layout class="QHBoxLayout" name="horizontalLayout">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -336,11 +357,20 @@
       </size>
      </property>
      <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1,1">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <property name="verticalSpacing">
        <number>4</number>
-      </property>
-      <property name="margin">
-       <number>0</number>
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="minValueLabel">
