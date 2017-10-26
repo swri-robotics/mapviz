@@ -88,7 +88,7 @@ namespace mapviz_plugins
     protected Q_SLOTS:
       void SelectTopic();
       void TopicEdited();
-      void AlphaEdited();
+      void AlphaEdited(double val);
       void ColorTransformerChanged(int index);
       void MinValueChanged(double value);
       void MaxValueChanged(double value);
