@@ -47,7 +47,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, tile_map, tile_map::TileMapPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(tile_map::TileMapPlugin, mapviz::MapvizPlugin)
 
 namespace tile_map
 {
