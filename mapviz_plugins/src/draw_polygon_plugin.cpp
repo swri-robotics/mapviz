@@ -51,8 +51,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, draw_polygon, mapviz_plugins::DrawPolygonPlugin,
-                        mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DrawPolygonPlugin, mapviz::MapvizPlugin)
 
 namespace stu = swri_transform_util;
 
