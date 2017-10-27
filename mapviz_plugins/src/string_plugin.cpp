@@ -35,11 +35,7 @@
 
 #include <QFontDialog>
 
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    string,
-    mapviz_plugins::StringPlugin,
-    mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::StringPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {

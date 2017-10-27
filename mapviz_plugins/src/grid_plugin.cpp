@@ -43,11 +43,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    grid,
-    mapviz_plugins::GridPlugin,
-    mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GridPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {

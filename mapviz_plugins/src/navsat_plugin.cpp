@@ -40,10 +40,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
-                        navsat,
-                        mapviz_plugins::NavSatPlugin,
-                        mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::NavSatPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {

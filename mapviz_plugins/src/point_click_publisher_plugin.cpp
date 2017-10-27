@@ -36,11 +36,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    point_click_publisher,
-    mapviz_plugins::PointClickPublisherPlugin,
-    mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointClickPublisherPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {

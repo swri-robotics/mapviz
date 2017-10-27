@@ -44,10 +44,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
-                        path,
-                        mapviz_plugins::PathPlugin,
-                        mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PathPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
