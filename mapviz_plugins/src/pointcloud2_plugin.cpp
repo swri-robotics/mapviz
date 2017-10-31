@@ -142,6 +142,10 @@ namespace mapviz_plugins
                      SIGNAL(stateChanged(int)),
                      this,
                      SLOT(UseRainbowChanged(int)));
+    QObject::connect(ui_.unpack_rgb,
+                     SIGNAL(stateChanged(int)),
+                     this,
+                     SLOT(UseRainbowChanged(int)));
     QObject::connect(ui_.use_automaxmin,
                      SIGNAL(stateChanged(int)),
                      this,
@@ -213,7 +217,7 @@ namespace mapviz_plugins
 
   QColor PointCloud2Plugin::CalculateColor(const StampedPoint& point)
   {
-    double val;
+    float val;
     unsigned int color_transformer = static_cast<unsigned int>(ui_.color_transformer->currentIndex());
     if (num_of_feats_ > 0 && color_transformer > 0)
     {
@@ -236,11 +240,17 @@ namespace mapviz_plugins
       return ui_.min_color->color();
     }
 
+    if (ui_.unpack_rgb->isChecked())
+    {
+        uint8_t* pixelColor = reinterpret_cast<uint8_t*>(&val);
+        return QColor(pixelColor[2], pixelColor[1], pixelColor[0], 255);
+    }
+
     if (max_value_ > min_value_)
     {
       val = (val - min_value_) / (max_value_ - min_value_);
     }
-    val = std::max(0.0, std::min(val, 1.0));
+    val = std::max(0.0f, std::min(val, 1.0f));
 
     if (ui_.use_automaxmin->isChecked())
     {
@@ -521,7 +531,7 @@ namespace mapviz_plugins
     canvas_->update();
   }
 
-  double PointCloud2Plugin::PointFeature(const uint8_t* data, const FieldInfo& feature_info)
+  float PointCloud2Plugin::PointFeature(const uint8_t* data, const FieldInfo& feature_info)
   {
     switch (feature_info.datatype)
     {
@@ -650,8 +660,8 @@ namespace mapviz_plugins
     need_minmax_ = check_state == Qt::Checked;
     if( !need_minmax_ )
     {
-        min_value_ = ui_.minValue->value();
-        max_value_ = ui_.maxValue->value();
+      min_value_ = ui_.minValue->value();
+      max_value_ = ui_.maxValue->value();
     }
 
     UpdateMinMaxWidgets();
@@ -765,6 +775,13 @@ namespace mapviz_plugins
       node["use_rainbow"] >> use_rainbow;
       ui_.use_rainbow->setChecked(use_rainbow);
     }
+
+    if (node["unpack_rgb"])
+    {
+      bool unpack_rgb;
+      node["unpack_rgb"] >> unpack_rgb;
+      ui_.unpack_rgb->setChecked(unpack_rgb);
+    }
     
     // UseRainbowChanged must be called *before* ColorTransformerChanged
     UseRainbowChanged(ui_.use_rainbow->checkState());
@@ -852,6 +869,8 @@ namespace mapviz_plugins
       YAML::Value << ui_.use_rainbow->isChecked();
     emitter << YAML::Key << "use_automaxmin" <<
       YAML::Value << ui_.use_automaxmin->isChecked();
+    emitter << YAML::Key << "unpack_rgb" <<
+      YAML::Value << ui_.unpack_rgb->isChecked();
   }
 }
 
