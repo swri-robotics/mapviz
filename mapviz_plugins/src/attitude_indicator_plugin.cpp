@@ -47,11 +47,7 @@
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    attitude_indicator,
-    mapviz_plugins::AttitudeIndicatorPlugin,
-    mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {

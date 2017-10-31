@@ -63,4 +63,4 @@ namespace mapviz
   }
 }
 
-PLUGINLIB_DECLARE_CLASS(mapviz, rqt_mapviz, mapviz::RqtMapviz, rqt_gui_cpp::Plugin)
+PLUGINLIB_EXPORT_CLASS(mapviz::RqtMapviz, rqt_gui_cpp::Plugin)
