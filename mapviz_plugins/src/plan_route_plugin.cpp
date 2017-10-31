@@ -54,8 +54,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, plan_route, mapviz_plugins::PlanRoutePlugin,
-                        mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PlanRoutePlugin, mapviz::MapvizPlugin)
 
 namespace mnm = marti_nav_msgs;
 namespace sru = swri_route_util;

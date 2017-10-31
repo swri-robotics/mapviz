@@ -58,11 +58,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    laserscan,
-    mapviz_plugins::LaserScanPlugin,
-    mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::LaserScanPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {

@@ -39,10 +39,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
-                        gps,
-                        mapviz_plugins::GpsPlugin,
-                        mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GpsPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {

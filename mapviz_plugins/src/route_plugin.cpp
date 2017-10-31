@@ -54,8 +54,7 @@
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins, route, mapviz_plugins::RoutePlugin,
-                        mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RoutePlugin, mapviz::MapvizPlugin)
 
 namespace sru = swri_route_util;
 namespace stu = swri_transform_util;

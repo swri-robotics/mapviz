@@ -45,10 +45,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
-                        tf_frame,
-                        mapviz_plugins::TfFramePlugin,
-                        mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TfFramePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
