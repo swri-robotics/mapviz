@@ -97,16 +97,18 @@ Overlays a [sensor_msgs::DisparityImage](http://docs.ros.org/api/stereo_msgs/htm
 * Height: Display height
 * Units: (pixels | percent of window)
 
-### NavSat (GPS)
+### GPS
 
-Projects [sensor_msgs::NavSatFix](http://http://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene.
+Projects [gps_common::GPSFix](http://docs.ros.org/kinetic/api/gps_common/html/msg/GPSFix.html) message data into the scene.
 
 **Parameters**
  * Topic: The GPS topic
  * Color: The color of the GPS data
- * Draw Style: (lines | points)
+ * Draw Style: (lines | points | arrows)
+ * Static Arrow Sizes: If checked, draw arrows the same size regardless of zoom level; slider adjusts size
  * Position Tolerance: Distance threshold for adding new GPS points to visualization
  * Buffer Size: Size of circular buffer of GPS points
+ * Show Laps: If checked, multiple loops of GPS coordinates will have different colors
 
 ### Grid
 Projects a 2D grid into the scene.
@@ -185,6 +187,17 @@ The map tiles are stored in directories for each resolution starting with layer0
 Tiles are named using the following format: 
 
     tile%05dx%05d.png % (row, column)
+
+### NavSat
+
+Projects [sensor_msgs::NavSatFix](http://http://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene.
+
+**Parameters**
+ * Topic: The GPS topic
+ * Color: The color of the GPS data
+ * Draw Style: (lines | points)
+ * Position Tolerance: Distance threshold for adding new GPS points to visualization
+ * Buffer Size: Size of circular buffer of GPS points
 
 ### Odometry
 
