@@ -82,6 +82,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
   QObject::connect(&frame_rate_timer_, SIGNAL(timeout()), this, SLOT(update()));
   setFrameRate(50.0);
   frame_rate_timer_.start();
+  setFocusPolicy(Qt::StrongFocus);
 }
 
 MapCanvas::~MapCanvas()
@@ -318,6 +319,15 @@ void MapCanvas::mousePressEvent(QMouseEvent* e)
   drag_y_ = 0;
   mouse_pressed_ = true;
   mouse_button_ = e->button();
+}
+
+void MapCanvas::keyPressEvent(QKeyEvent* event)
+{
+  std::list<MapvizPluginPtr>::iterator it;
+  for (it = plugins_.begin(); it != plugins_.end(); ++it)
+  {
+    (*it)->event(event);
+  }
 }
 
 QPointF MapCanvas::MapGlCoordToFixedFrame(const QPointF& point)
