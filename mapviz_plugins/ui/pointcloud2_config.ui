@@ -257,6 +257,18 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="unpack_rgb">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Unpack RGB</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QWidget" name="min_max_color_widget" native="true">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <property name="leftMargin">
