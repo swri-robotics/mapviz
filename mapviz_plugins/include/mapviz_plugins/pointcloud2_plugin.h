@@ -110,7 +110,7 @@ namespace mapviz_plugins
       tf::Point point;
       tf::Point transformed_point;
       QColor color;
-      std::vector<double> features;
+      std::vector<float> features;
     };
 
     struct Scan
@@ -123,7 +123,7 @@ namespace mapviz_plugins
       std::map<std::string, FieldInfo> new_features;
     };
 
-    double PointFeature(const uint8_t*, const FieldInfo&);
+    float PointFeature(const uint8_t*, const FieldInfo&);
     void PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& scan);
     QColor CalculateColor(const StampedPoint& point);
     void UpdateMinMaxWidgets();
