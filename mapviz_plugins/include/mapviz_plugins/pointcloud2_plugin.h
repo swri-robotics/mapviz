@@ -117,7 +117,7 @@ namespace mapviz_plugins
     {
       ros::Time stamp;
       QColor color;
-      std::deque<StampedPoint> points;
+      std::vector<StampedPoint> points;
       std::string source_frame;
       bool transformed;
       std::map<std::string, FieldInfo> new_features;
