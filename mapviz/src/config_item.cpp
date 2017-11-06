@@ -42,7 +42,7 @@ namespace mapviz
     ui_.setupUi(this);
 
     edit_name_action_   = new  QAction("Edit Name", this);
-    remove_item_action_ = new  QAction("Remobe", this);
+    remove_item_action_ = new  QAction("Remove", this);
     remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
 
     connect(edit_name_action_, SIGNAL(triggered()), this, SLOT(EditName()));
