@@ -396,6 +396,7 @@ namespace mapviz_plugins
 
     Scan scan;
     {
+        // recycle already allocated memory, reusing an old scan
       QMutexLocker locker(&scan_mutex_);
       if (buffer_size_ > 0 )
       {
@@ -422,7 +423,6 @@ namespace mapviz_plugins
       PrintError("No transform between " + scan.source_frame + " and " + target_frame_);
     }
 
-
     int32_t xi = findChannelIndex(msg, "x");
     int32_t yi = findChannelIndex(msg, "y");
     int32_t zi = findChannelIndex(msg, "z");
@@ -434,7 +434,6 @@ namespace mapviz_plugins
 
     if (new_topic_)
     {
-
       for (size_t i = 0; i < msg->fields.size(); ++i)
       {
         FieldInfo input;
@@ -463,7 +462,6 @@ namespace mapviz_plugins
         {
           ui_.color_transformer->removeItem(static_cast<int>(num_of_feats_));
           num_of_feats_--;
-
         }
 
         for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
@@ -527,13 +525,6 @@ namespace mapviz_plugins
     {
       QMutexLocker locker(&scan_mutex_);
       scans_.push_back( std::move(scan) );
-      if (buffer_size_ > 0)
-      {
-        while (scans_.size() > buffer_size_)
-        {
-          scans_.pop_front();
-        }
-      }
     }
     new_topic_ = true;
     canvas_->update();
