@@ -120,6 +120,7 @@ namespace mapviz_plugins
 
       void laserScanCallback(const sensor_msgs::LaserScanConstPtr& scan);
       QColor CalculateColor(const StampedPoint& point, bool has_intensity);
+      void updatePreComputedTriginometic(const sensor_msgs::LaserScanConstPtr& msg);
 
       Ui::laserscan_config ui_;
       QWidget* config_widget_;
@@ -138,6 +139,8 @@ namespace mapviz_plugins
       // decay time (evenator)
       std::deque<Scan> scans_;
       ros::Subscriber laserscan_sub_;
+      std::vector<double> precomputed_cos_;
+      std::vector<double> precomputed_sin_;
   };
 }
 

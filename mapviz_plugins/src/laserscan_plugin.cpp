@@ -324,6 +324,31 @@ namespace mapviz_plugins
     point_size_ = static_cast<size_t>(value);
   }
 
+  void LaserScanPlugin::updatePreComputedTriginometic(const sensor_msgs::LaserScanConstPtr& msg)
+  {
+      static size_t prev_size      = 0;
+      static float  prev_angle_min = msg->angle_min;
+      static float  prev_increment = msg->angle_increment;
+
+      if( msg->ranges.size() != prev_size ||
+          msg->angle_min !=  prev_angle_min  ||
+          msg->angle_increment != prev_increment   )
+      {
+          prev_size = msg->ranges.size();
+          prev_angle_min = msg->angle_min;
+          prev_increment = msg->angle_increment;
+          precomputed_cos_.resize( prev_size );
+          precomputed_sin_.resize( prev_size );
+
+          for (size_t i = 0; i < prev_size; i++)
+          {
+              double angle = msg->angle_min + msg->angle_increment * i;
+              precomputed_cos_[i] = cos(angle);
+              precomputed_sin_[i] = sin(angle);
+          }
+      }
+  }
+
   void LaserScanPlugin::laserScanCallback(const sensor_msgs::LaserScanConstPtr& msg)
   {
     if (!has_message_)
@@ -344,7 +369,7 @@ namespace mapviz_plugins
     scan.transformed = true;
     scan.has_intensity = !msg->intensities.empty();
 
-    scan.points.clear();
+    scan.points.reserve( msg->ranges.size() );
 
     swri_transform_util::Transform transform;
     if (!GetTransform(scan.source_frame_, msg->header.stamp, transform))
@@ -352,7 +377,10 @@ namespace mapviz_plugins
       scan.transformed = false;
       PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
-    double angle, x, y;
+    double x, y;
+
+    updatePreComputedTriginometic(msg);
+
     for (size_t i = 0; i < msg->ranges.size(); i++)
     {
       // Discard the point if it's out of range
@@ -361,9 +389,8 @@ namespace mapviz_plugins
         continue;
       }
       StampedPoint point;
-      angle = msg->angle_min + msg->angle_increment * i;
-      x = cos(angle) * msg->ranges[i];
-      y = sin(angle) * msg->ranges[i];
+      x = precomputed_cos_[i] * msg->ranges[i];
+      y = precomputed_sin_[i] * msg->ranges[i];
       point.point = tf::Point(x, y, 0.0f);
       point.range = msg->ranges[i];
       if (i < msg->intensities.size())
