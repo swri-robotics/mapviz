@@ -72,7 +72,10 @@ namespace mapviz_plugins
           alpha_(1.0),
           min_value_(0.0),
           max_value_(100.0),
-          point_size_(3)
+          point_size_(3),
+          prev_ranges_size_(0),
+          prev_angle_min_(0.0),
+          prev_increment_(0.0)
   {
     ui_.setupUi(config_widget_);
 
@@ -326,21 +329,18 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::updatePreComputedTriginometic(const sensor_msgs::LaserScanConstPtr& msg)
   {
-      static size_t prev_size      = 0;
-      static float  prev_angle_min = msg->angle_min;
-      static float  prev_increment = msg->angle_increment;
-
-      if( msg->ranges.size() != prev_size ||
-          msg->angle_min !=  prev_angle_min  ||
-          msg->angle_increment != prev_increment   )
+      if( msg->ranges.size() != prev_ranges_size_ ||
+          msg->angle_min !=  prev_angle_min_  ||
+          msg->angle_increment != prev_increment_   )
       {
-          prev_size = msg->ranges.size();
-          prev_angle_min = msg->angle_min;
-          prev_increment = msg->angle_increment;
-          precomputed_cos_.resize( prev_size );
-          precomputed_sin_.resize( prev_size );
+          prev_ranges_size_ = msg->ranges.size();
+          prev_angle_min_ = msg->angle_min;
+          prev_increment_ = msg->angle_increment;
 
-          for (size_t i = 0; i < prev_size; i++)
+          precomputed_cos_.resize( msg->ranges.size() );
+          precomputed_sin_.resize( msg->ranges.size() );
+
+          for (size_t i = 0; i < msg->ranges.size(); i++)
           {
               double angle = msg->angle_min + msg->angle_increment * i;
               precomputed_cos_[i] = cos(angle);
