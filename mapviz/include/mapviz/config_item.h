@@ -66,16 +66,23 @@ namespace mapviz
   Q_SIGNALS:
     void UpdateSizeHint();
     void ToggledDraw(QListWidgetItem* plugin, bool visible);
+    void RemoveRequest(QListWidgetItem* plugin);
 
   public Q_SLOTS:
     void Hide();
     void EditName();
+    void Remove();
     void ToggleDraw(bool toggled);
+
+  private:
+    virtual void contextMenuEvent(QContextMenuEvent *event) override;
 
   protected:
     QListWidgetItem* item_;
     QString name_;
     QString type_;
+    QAction *edit_name_action_;
+    QAction *remove_item_action_;
     bool visible_;
   };
 }
