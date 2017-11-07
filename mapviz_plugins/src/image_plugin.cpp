@@ -216,6 +216,8 @@ namespace mapviz_plugins
 
     std::string topic = ui_.topic->text().trimmed().toStdString();
 
+    const bool comboWasBlocked = ui_.transport_combo_box->blockSignals(true);
+
     for( ros::master::TopicInfo& info: topics_info)
     {
       if( info.name == topic)
@@ -226,6 +228,7 @@ namespace mapviz_plugins
           if( combo_index >=0 )
           {
             ui_.transport_combo_box->setCurrentIndex(combo_index);
+            transport_ = "raw";
           }
         }
         else if( info.datatype == "sensor_msgs/CompressedImage") // compressed
@@ -238,12 +241,14 @@ namespace mapviz_plugins
           if( combo_index >=0 )
           {
             ui_.transport_combo_box->setCurrentIndex(combo_index);
+            transport_ = QString::fromStdString(suffix);
             topic = topic.substr(0,last_separator);
           }
         }
         break;
       }
     }
+    ui_.transport_combo_box->blockSignals(comboWasBlocked);
 
     if(!this->Visible())
     {
