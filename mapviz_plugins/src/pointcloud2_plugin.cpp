@@ -298,7 +298,7 @@ namespace mapviz_plugins
       std::deque<Scan>::iterator scan_it = scans_.begin();
       for (; scan_it != scans_.end(); ++scan_it)
       {
-        std::deque<StampedPoint>::iterator point_it = scan_it->points.begin();
+        std::vector<StampedPoint>::iterator point_it = scan_it->points.begin();
         for (; point_it != scan_it->points.end(); point_it++)
         {
           point_it->color = CalculateColor(*point_it);
@@ -401,11 +401,26 @@ namespace mapviz_plugins
     // them individually.
 
     Scan scan;
+    {
+        // recycle already allocated memory, reusing an old scan
+      QMutexLocker locker(&scan_mutex_);
+      if (buffer_size_ > 0 )
+      {
+          if( scans_.size() >= buffer_size_)
+          {
+              scan = std::move( scans_.front() );
+          }
+          while (scans_.size() >= buffer_size_)
+          {
+            scans_.pop_front();
+          }
+      }
+    }
+
     scan.stamp = msg->header.stamp;
     scan.color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
     scan.source_frame = msg->header.frame_id;
     scan.transformed = true;
-    scan.points.clear();
 
     swri_transform_util::Transform transform;
     if (!GetTransform(scan.source_frame, msg->header.stamp, transform))
@@ -413,7 +428,6 @@ namespace mapviz_plugins
       scan.transformed = false;
       PrintError("No transform between " + scan.source_frame + " and " + target_frame_);
     }
-
 
     int32_t xi = findChannelIndex(msg, "x");
     int32_t yi = findChannelIndex(msg, "y");
@@ -426,7 +440,6 @@ namespace mapviz_plugins
 
     if (new_topic_)
     {
-
       for (size_t i = 0; i < msg->fields.size(); ++i)
       {
         FieldInfo input;
@@ -455,7 +468,6 @@ namespace mapviz_plugins
         {
           ui_.color_transformer->removeItem(static_cast<int>(num_of_feats_));
           num_of_feats_--;
-
         }
 
         for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
@@ -483,19 +495,22 @@ namespace mapviz_plugins
     if (!msg->data.empty())
     {
       const uint8_t* ptr = &msg->data.front();
-      const uint8_t* ptr_end = &msg->data.back();
       const uint32_t point_step = msg->point_step;
       const uint32_t xoff = msg->fields[xi].offset;
       const uint32_t yoff = msg->fields[yi].offset;
       const uint32_t zoff = msg->fields[zi].offset;
-      for (; ptr < ptr_end; ptr += point_step)
+      const size_t N_POINTS = msg->data.size() / point_step;
+      scan.points.resize(N_POINTS);
+
+      for (size_t i = 0; i < N_POINTS; i++, ptr += point_step)
       {
         float x = *reinterpret_cast<const float*>(ptr + xoff);
         float y = *reinterpret_cast<const float*>(ptr + yoff);
         float z = *reinterpret_cast<const float*>(ptr + zoff);
 
-        StampedPoint point;
+        StampedPoint& point = scan.points[i];
         point.point = tf::Point(x, y, z);
+
         point.features.resize(scan.new_features.size());
         int count = 0;
         std::map<std::string, FieldInfo>::const_iterator it;
@@ -509,23 +524,13 @@ namespace mapviz_plugins
         {
           point.transformed_point = transform * point.point;
         }
-
         point.color = CalculateColor(point);
-
-        scan.points.push_back(point);
       }
     }
 
     {
       QMutexLocker locker(&scan_mutex_);
-      scans_.push_back(scan);
-      if (buffer_size_ > 0)
-      {
-        while (scans_.size() > buffer_size_)
-        {
-          scans_.pop_front();
-        }
-      }
+      scans_.push_back( std::move(scan) );
     }
     new_topic_ = true;
     canvas_->update();
@@ -621,7 +626,7 @@ namespace mapviz_plugins
     glBegin(GL_POINTS);
 
     std::deque<Scan>::const_iterator scan_it;
-    std::deque<StampedPoint>::const_iterator point_it;
+    std::vector<StampedPoint>::const_iterator point_it;
     {
       QMutexLocker locker(&scan_mutex_);
 
@@ -686,7 +691,7 @@ namespace mapviz_plugins
           if (GetTransform(scan.source_frame, scan.stamp, transform))
           {
             scan.transformed = true;
-            std::deque<StampedPoint>::iterator point_it = scan.points.begin();
+            std::vector<StampedPoint>::iterator point_it = scan.points.begin();
             for (; point_it != scan.points.end(); ++point_it)
             {
               point_it->transformed_point = transform * point_it->point;

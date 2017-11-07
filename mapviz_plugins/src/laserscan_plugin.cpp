@@ -68,7 +68,10 @@ namespace mapviz_plugins
           alpha_(1.0),
           min_value_(0.0),
           max_value_(100.0),
-          point_size_(3)
+          point_size_(3),
+          prev_ranges_size_(0),
+          prev_angle_min_(0.0),
+          prev_increment_(0.0)
   {
     ui_.setupUi(config_widget_);
 
@@ -320,6 +323,28 @@ namespace mapviz_plugins
     point_size_ = static_cast<size_t>(value);
   }
 
+  void LaserScanPlugin::updatePreComputedTriginometic(const sensor_msgs::LaserScanConstPtr& msg)
+  {
+      if( msg->ranges.size() != prev_ranges_size_ ||
+          msg->angle_min !=  prev_angle_min_  ||
+          msg->angle_increment != prev_increment_   )
+      {
+          prev_ranges_size_ = msg->ranges.size();
+          prev_angle_min_ = msg->angle_min;
+          prev_increment_ = msg->angle_increment;
+
+          precomputed_cos_.resize( msg->ranges.size() );
+          precomputed_sin_.resize( msg->ranges.size() );
+
+          for (size_t i = 0; i < msg->ranges.size(); i++)
+          {
+              double angle = msg->angle_min + msg->angle_increment * i;
+              precomputed_cos_[i] = cos(angle);
+              precomputed_sin_[i] = sin(angle);
+          }
+      }
+  }
+
   void LaserScanPlugin::laserScanCallback(const sensor_msgs::LaserScanConstPtr& msg)
   {
     if (!has_message_)
@@ -340,7 +365,7 @@ namespace mapviz_plugins
     scan.transformed = true;
     scan.has_intensity = !msg->intensities.empty();
 
-    scan.points.clear();
+    scan.points.reserve( msg->ranges.size() );
 
     swri_transform_util::Transform transform;
     if (!GetTransform(scan.source_frame_, msg->header.stamp, transform))
@@ -348,7 +373,10 @@ namespace mapviz_plugins
       scan.transformed = false;
       PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
-    double angle, x, y;
+    double x, y;
+
+    updatePreComputedTriginometic(msg);
+
     for (size_t i = 0; i < msg->ranges.size(); i++)
     {
       // Discard the point if it's out of range
@@ -357,9 +385,8 @@ namespace mapviz_plugins
         continue;
       }
       StampedPoint point;
-      angle = msg->angle_min + msg->angle_increment * i;
-      x = cos(angle) * msg->ranges[i];
-      y = sin(angle) * msg->ranges[i];
+      x = precomputed_cos_[i] * msg->ranges[i];
+      y = precomputed_sin_[i] * msg->ranges[i];
       point.point = tf::Point(x, y, 0.0f);
       point.range = msg->ranges[i];
       if (i < msg->intensities.size())
