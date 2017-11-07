@@ -81,8 +81,8 @@ namespace mapviz
     QListWidgetItem* item_;
     QString name_;
     QString type_;
-    QAction *edit_name_action_;
-    QAction *remove_item_action_;
+    QAction* edit_name_action_;
+    QAction* remove_item_action_;
     bool visible_;
   };
 }
