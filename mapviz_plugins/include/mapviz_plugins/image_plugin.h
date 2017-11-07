@@ -112,7 +112,7 @@ namespace mapviz_plugins
     void SetWidth(int width);
     void SetHeight(int height);
     void SetSubscription(bool visible);
-    void SetTransport(const QString& transport);
+    void SetTransport(int index);
 
   private:
     Ui::image_config ui_;
