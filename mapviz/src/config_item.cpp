@@ -67,7 +67,7 @@ namespace mapviz
     }
   }
 
-  void ConfigItem::contextMenuEvent(QContextMenuEvent *event)
+  void ConfigItem::contextMenuEvent(QContextMenuEvent* event)
   {
     QMenu menu(this);
     menu.addAction(edit_name_action_);
