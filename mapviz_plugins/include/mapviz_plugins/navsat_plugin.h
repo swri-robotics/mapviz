@@ -72,6 +72,7 @@ namespace mapviz_plugins
    protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
+    virtual void SetDrawStyle(QString style) override;
 
    private:
     Ui::navsat_config ui_;

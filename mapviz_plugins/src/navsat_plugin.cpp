@@ -70,6 +70,8 @@ namespace mapviz_plugins
                      SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
                      SLOT(SetDrawStyle(QString)));
+    QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
+                     SLOT(SetDrawStyle2(QString)));
     QObject::connect(ui_.static_arrow_sizes, SIGNAL(clicked(bool)),
                      this, SLOT(SetStaticArrowSizes(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
@@ -113,6 +115,29 @@ namespace mapviz_plugins
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
     }
+  }
+
+  void NavSatPlugin::SetDrawStyle(QString style)
+  {
+    if (style == "lines")
+    {
+      draw_style_ = LINES;
+    }
+    else if (style == "points")
+    {
+      draw_style_ = POINTS;
+    }
+    else if (style == "arrows")
+    {
+      draw_style_ = ARROWS;
+    }
+
+    const bool is_arrow = (draw_style_ == ARROWS);
+    ui_.label_arrow->setVisible(is_arrow);
+    ui_.arrow_size->setVisible(is_arrow);
+    ui_.static_arrow_sizes->setVisible(is_arrow);
+
+    DrawIcon();
   }
 
   void NavSatPlugin::NavSatFixCallback(
@@ -247,14 +272,17 @@ namespace mapviz_plugins
 
       if (draw_style == "lines")
       {
-        draw_style_ = LINES;
         ui_.drawstyle->setCurrentIndex(0);
       }
       else if (draw_style == "points")
       {
-        draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
       }
+      else if (draw_style == "arrows")
+      {
+        ui_.drawstyle->setCurrentIndex(2);
+      }
+      SetDrawStyle(QString::fromStdString(draw_style));
     }
 
     if (node["position_tolerance"])
