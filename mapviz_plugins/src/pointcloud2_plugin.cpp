@@ -450,7 +450,6 @@ namespace mapviz_plugins
         input.offset = offset_value;
         input.datatype = datatype_value;
         scan.new_features.insert(std::pair<std::string, FieldInfo>(name, input));
-
       }
 
       new_topic_ = false;
@@ -492,12 +491,6 @@ namespace mapviz_plugins
       }
     }
 
-    std::vector<FieldInfo> field_infos;
-    for (auto it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
-    {
-      field_infos.push_back(it->second);
-    }
-
     if (!msg->data.empty())
     {
       const uint8_t* ptr = &msg->data.front();
@@ -507,6 +500,13 @@ namespace mapviz_plugins
       const uint32_t zoff = msg->fields[zi].offset;
       const size_t N_POINTS = msg->data.size() / point_step;
       scan.points.resize(N_POINTS);
+
+      std::vector<FieldInfo> field_infos;
+      field_infos.reserve(scan.new_features.size());
+      for (auto it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
+      {
+        field_infos.push_back(it->second);
+      }
 
       for (size_t i = 0; i < N_POINTS; i++, ptr += point_step)
       {
