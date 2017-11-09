@@ -211,44 +211,17 @@ namespace mapviz_plugins
 
   void OdometryPlugin::PrintError(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_ERROR("Error: %s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintErrorHelper(ui_.status, message);
   }
 
   void OdometryPlugin::PrintInfo(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_INFO("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::green);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintInfoHelper(ui_.status, message);
   }
 
   void OdometryPlugin::PrintWarning(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_WARN("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::darkYellow);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintWarningHelper(ui_.status, message);
   }
 
   QWidget* OdometryPlugin::GetConfigWidget(QWidget* parent)
