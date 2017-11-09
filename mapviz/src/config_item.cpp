@@ -28,7 +28,8 @@
 // *****************************************************************************
 
 #include <mapviz/config_item.h>
-
+#include <QMenu>
+#include <QAction>
 #include <QInputDialog>
 
 namespace mapviz
@@ -39,6 +40,13 @@ namespace mapviz
     visible_(true)
   {
     ui_.setupUi(this);
+
+    edit_name_action_   = new  QAction("Edit Name", this);
+    remove_item_action_ = new  QAction("Remove", this);
+    remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
+
+    connect(edit_name_action_, SIGNAL(triggered()), this, SLOT(EditName()));
+    connect(remove_item_action_, SIGNAL(triggered()), this, SLOT(Remove()));
   }
 
   ConfigItem::~ConfigItem()
@@ -57,6 +65,14 @@ namespace mapviz
       
       Q_EMIT ToggledDraw(item_, toggled);
     }
+  }
+
+  void ConfigItem::contextMenuEvent(QContextMenuEvent* event)
+  {
+    QMenu menu(this);
+    menu.addAction(edit_name_action_);
+    menu.addAction(remove_item_action_);
+    menu.exec(event->globalPos());
   }
 
   void ConfigItem::SetName(QString name)
@@ -91,6 +107,11 @@ namespace mapviz
     {
       SetName(text);
     }
+  }
+
+  void ConfigItem::Remove()
+  {
+    Q_EMIT RemoveRequest(item_);
   }
 
   void ConfigItem::Hide()
