@@ -219,19 +219,20 @@ namespace mapviz_plugins
   {
     float val;
     unsigned int color_transformer = static_cast<unsigned int>(ui_.color_transformer->currentIndex());
+    unsigned int transformer_index = color_transformer -1;
     if (num_of_feats_ > 0 && color_transformer > 0)
     {
-      val = point.features[color_transformer - 1];
+      val = point.features[transformer_index];
       if (need_minmax_)
       {
-        if (val > max_[color_transformer - 1])
+        if (val > max_[transformer_index])
         {
-          max_[color_transformer - 1] = val;
+          max_[transformer_index] = val;
         }
 
-        if (val < min_[color_transformer - 1])
+        if (val < min_[transformer_index])
         {
-          min_[color_transformer - 1] = val;
+          min_[transformer_index] = val;
         }
       }
     }
@@ -254,9 +255,8 @@ namespace mapviz_plugins
 
     if (ui_.use_automaxmin->isChecked())
     {
-      max_value_ = max_[ui_.color_transformer->currentIndex() - 1];
-      min_value_ = min_[ui_.color_transformer->currentIndex() - 1];
-
+      max_value_ = max_[transformer_index];
+      min_value_ = min_[transformer_index];
     }
 
     if (ui_.use_rainbow->isChecked())
@@ -492,6 +492,12 @@ namespace mapviz_plugins
       }
     }
 
+    std::vector<FieldInfo> field_infos;
+    for (auto it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
+    {
+      field_infos.push_back(it->second);
+    }
+
     if (!msg->data.empty())
     {
       const uint8_t* ptr = &msg->data.front();
@@ -512,14 +518,11 @@ namespace mapviz_plugins
         point.point = tf::Point(x, y, z);
 
         point.features.resize(scan.new_features.size());
-        int count = 0;
-        std::map<std::string, FieldInfo>::const_iterator it;
-        for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
-        {
-          point.features[count] = PointFeature(ptr, (it->second));
-          count++;
-        }
 
+        for (int count=0; count < field_infos.size(); count++)
+        {
+          point.features[count] = PointFeature(ptr, field_infos[count]);
+        }
         if (scan.transformed)
         {
           point.transformed_point = transform * point.point;
