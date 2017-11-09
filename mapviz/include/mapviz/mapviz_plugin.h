@@ -265,6 +265,10 @@ namespace mapviz
       meas_draw_.printInfo(header + " Draw()");
     }
 
+    static void PrintErrorHelper(QLabel *status_label, const std::string& message, double throttle = 0.0);
+    static void PrintInfoHelper(QLabel *status_label, const std::string& message, double throttle = 0.0);
+    static void PrintWarningHelper(QLabel *status_label, const std::string& message, double throttle = 0.0);
+
   public Q_SLOTS:
     virtual void DrawIcon() {}
 
@@ -327,6 +331,69 @@ namespace mapviz
     Stopwatch meas_draw_;
   };
   typedef boost::shared_ptr<MapvizPlugin> MapvizPluginPtr;
+
+  // Implementation
+
+  inline void MapvizPlugin::PrintErrorHelper(QLabel *status_label, const std::string &message,
+                                             double throttle)
+  {
+      if (message == status_label->text().toStdString())
+      {
+        return;
+      }
+
+      if( throttle > 0.0){
+          ROS_ERROR_THROTTLE(throttle, "Error: %s", message.c_str());
+      }
+      else{
+          ROS_ERROR("Error: %s", message.c_str());
+      }
+      QPalette p(status_label->palette());
+      p.setColor(QPalette::Text, Qt::red);
+      status_label->setPalette(p);
+      status_label->setText(message.c_str());
+  }
+
+  inline void MapvizPlugin::PrintInfoHelper(QLabel *status_label, const std::string &message,
+                                            double throttle)
+  {
+      if (message == status_label->text().toStdString())
+      {
+        return;
+      }
+
+      if( throttle > 0.0){
+          ROS_INFO_THROTTLE(throttle, "%s", message.c_str());
+      }
+      else{
+          ROS_INFO("%s", message.c_str());
+      }
+      QPalette p(status_label->palette());
+      p.setColor(QPalette::Text, Qt::green);
+      status_label->setPalette(p);
+      status_label->setText(message.c_str());
+  }
+
+  inline void MapvizPlugin::PrintWarningHelper(QLabel *status_label, const std::string &message,
+                                               double throttle)
+  {
+      if (message == status_label->text().toStdString())
+      {
+        return;
+      }
+
+      if( throttle > 0.0){
+          ROS_WARN_THROTTLE(throttle, "%s", message.c_str());
+      }
+      else{
+          ROS_WARN("%s", message.c_str());
+      }
+      QPalette p(status_label->palette());
+      p.setColor(QPalette::Text, Qt::darkYellow);
+      status_label->setPalette(p);
+      status_label->setText(message.c_str());
+  }
+
 }
 #endif  // MAPVIZ_MAPVIZ_PLUGIN_H_
 
