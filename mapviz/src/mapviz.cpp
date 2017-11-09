@@ -1138,6 +1138,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   item->setSizeHint(config_item->sizeHint());
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
   connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
+  connect(config_item, SIGNAL(RemoveRequest(QListWidgetItem*)), this, SLOT(RemoveDisplay(QListWidgetItem*)));
   connect(plugin.get(), SIGNAL(VisibleChanged(bool)), config_item, SLOT(ToggleDraw(bool)));
   connect(plugin.get(), SIGNAL(SizeChanged()), this, SLOT(UpdateSizeHints()));
 
@@ -1431,9 +1432,13 @@ void Mapviz::UpdateSizeHints()
 
 void Mapviz::RemoveDisplay()
 {
-  ROS_INFO("Remove display ...");
-
   QListWidgetItem* item = ui_.configs->takeItem(ui_.configs->currentRow());
+  RemoveDisplay(item);
+}
+
+void Mapviz::RemoveDisplay(QListWidgetItem* item)
+{
+  ROS_INFO("Remove display ...");
 
   if (item)
   {
