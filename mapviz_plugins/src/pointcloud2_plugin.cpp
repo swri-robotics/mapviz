@@ -498,17 +498,18 @@ namespace mapviz_plugins
       const uint32_t xoff = msg->fields[xi].offset;
       const uint32_t yoff = msg->fields[yi].offset;
       const uint32_t zoff = msg->fields[zi].offset;
-      const size_t N_POINTS = msg->data.size() / point_step;
-      scan.points.resize(N_POINTS);
+      const size_t num_points = msg->data.size() / point_step;
+      const size_t num_features = scan.new_features.size();
+      scan.points.resize(num_points);
 
       std::vector<FieldInfo> field_infos;
-      field_infos.reserve(scan.new_features.size());
+      field_infos.reserve(num_features);
       for (auto it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
       {
         field_infos.push_back(it->second);
       }
 
-      for (size_t i = 0; i < N_POINTS; i++, ptr += point_step)
+      for (size_t i = 0; i < num_points; i++, ptr += point_step)
       {
         float x = *reinterpret_cast<const float*>(ptr + xoff);
         float y = *reinterpret_cast<const float*>(ptr + yoff);
@@ -517,7 +518,7 @@ namespace mapviz_plugins
         StampedPoint& point = scan.points[i];
         point.point = tf::Point(x, y, z);
 
-        point.features.resize(scan.new_features.size());
+        point.features.resize(num_features);
 
         for (int count=0; count < field_infos.size(); count++)
         {
