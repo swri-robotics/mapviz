@@ -255,6 +255,11 @@ namespace mapviz_plugins
         draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
       }
+      else if (draw_style == "arrows")
+      {
+        draw_style_ = ARROWS;
+        ui_.drawstyle->setCurrentIndex(2);
+      }
     }
 
     if (node["position_tolerance"])

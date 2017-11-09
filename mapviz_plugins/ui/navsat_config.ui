@@ -17,11 +17,20 @@
    <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
+   </property>
    <property name="verticalSpacing">
     <number>4</number>
-   </property>
-   <property name="margin">
-    <number>2</number>
    </property>
    <item row="5" column="1" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -249,6 +258,11 @@
      <item>
       <property name="text">
        <string>points</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>arrows</string>
       </property>
      </item>
     </widget>
