@@ -83,6 +83,9 @@ namespace mapviz_plugins
     void FrameEdited();
     void WidthChanged(double value);
     void HeightChanged(double value);
+    void RatioEqualToggled(bool toggled);
+    void RatioCustomToggled(bool toggled);
+    void RatioOriginalToggled(bool toggled);
 
   private:
     Ui::robot_image_config ui_;
@@ -90,6 +93,7 @@ namespace mapviz_plugins
 
     double width_;
     double height_;
+    double image_ratio_;
 
     std::string filename_;
     QImage      image_;
