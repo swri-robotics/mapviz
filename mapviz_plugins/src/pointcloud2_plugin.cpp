@@ -219,19 +219,20 @@ namespace mapviz_plugins
   {
     float val;
     unsigned int color_transformer = static_cast<unsigned int>(ui_.color_transformer->currentIndex());
+    unsigned int transformer_index = color_transformer -1;
     if (num_of_feats_ > 0 && color_transformer > 0)
     {
-      val = point.features[color_transformer - 1];
+      val = point.features[transformer_index];
       if (need_minmax_)
       {
-        if (val > max_[color_transformer - 1])
+        if (val > max_[transformer_index])
         {
-          max_[color_transformer - 1] = val;
+          max_[transformer_index] = val;
         }
 
-        if (val < min_[color_transformer - 1])
+        if (val < min_[transformer_index])
         {
-          min_[color_transformer - 1] = val;
+          min_[transformer_index] = val;
         }
       }
     }
@@ -254,9 +255,8 @@ namespace mapviz_plugins
 
     if (ui_.use_automaxmin->isChecked())
     {
-      max_value_ = max_[ui_.color_transformer->currentIndex() - 1];
-      min_value_ = min_[ui_.color_transformer->currentIndex() - 1];
-
+      max_value_ = max_[transformer_index];
+      min_value_ = min_[transformer_index];
     }
 
     if (ui_.use_rainbow->isChecked())
@@ -450,7 +450,6 @@ namespace mapviz_plugins
         input.offset = offset_value;
         input.datatype = datatype_value;
         scan.new_features.insert(std::pair<std::string, FieldInfo>(name, input));
-
       }
 
       new_topic_ = false;
@@ -499,10 +498,18 @@ namespace mapviz_plugins
       const uint32_t xoff = msg->fields[xi].offset;
       const uint32_t yoff = msg->fields[yi].offset;
       const uint32_t zoff = msg->fields[zi].offset;
-      const size_t N_POINTS = msg->data.size() / point_step;
-      scan.points.resize(N_POINTS);
+      const size_t num_points = msg->data.size() / point_step;
+      const size_t num_features = scan.new_features.size();
+      scan.points.resize(num_points);
 
-      for (size_t i = 0; i < N_POINTS; i++, ptr += point_step)
+      std::vector<FieldInfo> field_infos;
+      field_infos.reserve(num_features);
+      for (auto it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
+      {
+        field_infos.push_back(it->second);
+      }
+
+      for (size_t i = 0; i < num_points; i++, ptr += point_step)
       {
         float x = *reinterpret_cast<const float*>(ptr + xoff);
         float y = *reinterpret_cast<const float*>(ptr + yoff);
@@ -511,15 +518,12 @@ namespace mapviz_plugins
         StampedPoint& point = scan.points[i];
         point.point = tf::Point(x, y, z);
 
-        point.features.resize(scan.new_features.size());
-        int count = 0;
-        std::map<std::string, FieldInfo>::const_iterator it;
-        for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
-        {
-          point.features[count] = PointFeature(ptr, (it->second));
-          count++;
-        }
+        point.features.resize(num_features);
 
+        for (int count=0; count < field_infos.size(); count++)
+        {
+          point.features[count] = PointFeature(ptr, field_infos[count]);
+        }
         if (scan.transformed)
         {
           point.transformed_point = transform * point.point;
