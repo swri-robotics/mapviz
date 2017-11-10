@@ -465,7 +465,16 @@
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>
@@ -676,7 +685,16 @@
       </sizepolicy>
      </property>
      <layout class="QVBoxLayout" name="content_layout">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>
@@ -767,22 +785,6 @@
     <hint type="destinationlabel">
      <x>401</x>
      <y>210</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>header</sender>
-   <signal>RightClicked()</signal>
-   <receiver>configitem</receiver>
-   <slot>EditName()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>199</x>
-     <y>12</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
     </hint>
    </hints>
   </connection>

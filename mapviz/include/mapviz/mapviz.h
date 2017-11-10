@@ -92,6 +92,7 @@ namespace mapviz
     void SaveConfig();
     void SelectNewDisplay();
     void RemoveDisplay();
+    void RemoveDisplay(QListWidgetItem* item);
     void ReorderDisplays();
     void FixedFrameSelected(const QString& text);
     void TargetFrameSelected(const QString& text);
