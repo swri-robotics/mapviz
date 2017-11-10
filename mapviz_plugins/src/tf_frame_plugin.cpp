@@ -79,8 +79,8 @@ namespace mapviz_plugins
                      this, SLOT(SetStaticArrowSizes(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
-            SLOT(SetColor(const QColor&)));
+    QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+                     SLOT(SetColor(const QColor&)));
   }
 
   TfFramePlugin::~TfFramePlugin()
@@ -239,6 +239,11 @@ namespace mapviz_plugins
       {
         draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
+      }
+      else if (draw_style == "arrows")
+      {
+        draw_style_ = ARROWS;
+        ui_.drawstyle->setCurrentIndex(2);
       }
     }
 
