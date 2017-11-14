@@ -26,7 +26,9 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
+
 #include <mapviz_plugins/attitude_indicator_plugin.h>
+#include <GL/glut.h>
 
 // C++ standard libraries
 #include <algorithm>

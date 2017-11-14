@@ -36,7 +36,6 @@
 #include <map>
 
 #include <mapviz/mapviz_plugin.h>
-#include <GL/glut.h>
 
 // QT libraries
 #include <QGLWidget>
