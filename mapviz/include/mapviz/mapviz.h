@@ -37,8 +37,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <GL/glew.h>
-
 // QT libraries
 #include <QtGui/QtGui>
 #include <QDialog>
