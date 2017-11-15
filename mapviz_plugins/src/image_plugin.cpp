@@ -84,8 +84,8 @@ namespace mapviz_plugins
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
     QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
-    QObject::connect(ui_.transport_combo_box, SIGNAL(activated(const QString&)),
-                     this, SLOT(SetTransport(const QString&)));
+    QObject::connect(ui_.transport_combo_box, SIGNAL(currentIndexChanged(int)),
+                     this, SLOT(SetTransport(int)));
   }
 
   ImagePlugin::~ImagePlugin()
@@ -176,15 +176,15 @@ namespace mapviz_plugins
     }
     else
     {
-      image_transport::ImageTransport it(local_node_);
-      image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
-
+      force_resubscribe_ = true;
+      TopicEdited();
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
   }
 
-  void ImagePlugin::SetTransport(const QString& transport)
+  void ImagePlugin::SetTransport(int index)
   {
+    QString transport = ui_.transport_combo_box->itemText(index);
     ROS_INFO("Changing image_transport to %s.", transport.toStdString().c_str());
     transport_ = transport;
     TopicEdited();
@@ -201,25 +201,55 @@ namespace mapviz_plugins
 
   void ImagePlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "sensor_msgs/Image");
+    const std::vector<std::string> datatypes = {"sensor_msgs/Image", "sensor_msgs/CompressedImage"};
+    const ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(datatypes);
 
-    if(topic.name.empty())
-    {
-      topic.name.clear();
-      TopicEdited();
-
-    }
-    if (!topic.name.empty())
-    {
-      ui_.topic->setText(QString::fromStdString(topic.name));
-      TopicEdited();
-    }
+    ui_.topic->setText(QString::fromStdString(topic.name));
+    TopicEdited();
   }
+
 
   void ImagePlugin::TopicEdited()
   {
+    ros::master::V_TopicInfo topics_info;
+    ros::master::getTopics(topics_info);
+
     std::string topic = ui_.topic->text().trimmed().toStdString();
+
+    const bool comboWasBlocked = ui_.transport_combo_box->blockSignals(true);
+
+    for( ros::master::TopicInfo& info: topics_info)
+    {
+      if( info.name == topic)
+      {
+        if( info.datatype == "sensor_msgs/Image") // raw
+        {
+          int combo_index = ui_.transport_combo_box->findText("raw");
+          if( combo_index >=0 )
+          {
+            ui_.transport_combo_box->setCurrentIndex(combo_index);
+            transport_ = "raw";
+          }
+        }
+        else if( info.datatype == "sensor_msgs/CompressedImage") // compressed
+        {
+          const int last_separator = topic.find_last_of('/');
+          const std::string suffix = topic.substr(last_separator+1);
+
+          int combo_index = ui_.transport_combo_box->findText( suffix.c_str() );
+
+          if( combo_index >=0 )
+          {
+            ui_.transport_combo_box->setCurrentIndex(combo_index);
+            transport_ = QString::fromStdString(suffix);
+            topic = topic.substr(0,last_separator);
+          }
+        }
+        break;
+      }
+    }
+    ui_.transport_combo_box->blockSignals(comboWasBlocked);
+
     if(!this->Visible())
     {
       PrintWarning("Topic is Hidden");
@@ -267,7 +297,6 @@ namespace mapviz_plugins
                                                                      ros::TransportHints(),
                                                                      local_node_));
         }
-
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
     }
