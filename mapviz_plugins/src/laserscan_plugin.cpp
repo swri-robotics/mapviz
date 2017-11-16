@@ -498,24 +498,18 @@ namespace mapviz_plugins
     {
       Scan& scan = *scan_it;
 
-      swri_transform_util::Transform transform;
-
-      bool was_using_latest_transforms = this->use_latest_transforms_;
-      this->use_latest_transforms_ = false;
-      if (GetTransform(scan.source_frame_, scan.stamp, transform))
+      if (!scan_it->transformed)
       {
-        scan.transformed = true;
-        std::vector<StampedPoint>::iterator point_it = scan.points.begin();
-        for (; point_it != scan.points.end(); ++point_it)
+        swri_transform_util::Transform transform;
+        if (GetTransform(scan.source_frame_, scan.stamp, transform))
         {
-          point_it->transformed_point = transform * point_it->point;
+          scan.transformed = true;
+          for (size_t i=0; i < scan.points.size(); ++i)
+          {
+            point_it->transformed_point = transform * scan.points[i].point;
+          }
         }
       }
-      else
-      {
-        scan.transformed = false;
-      }
-      this->use_latest_transforms_ = was_using_latest_transforms;
     }
     // Z color is based on transformed color, so it is dependent on the
     // transform
