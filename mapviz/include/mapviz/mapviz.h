@@ -37,8 +37,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <GL/glew.h>
-
 // QT libraries
 #include <QtGui/QtGui>
 #include <QDialog>
@@ -59,7 +57,6 @@
 #include <pluginlib/class_loader.h>
 #include <tf/transform_listener.h>
 #include <yaml-cpp/yaml.h>
-#include <GL/glut.h>
 #include <std_srvs/Empty.h>
 
 // Auto-generated UI files
