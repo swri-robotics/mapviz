@@ -109,10 +109,11 @@ namespace mapviz_plugins
     void SetUnits(QString units);
     void SetOffsetX(int offset);
     void SetOffsetY(int offset);
-    void SetWidth(int width);
-    void SetHeight(int height);
+    void SetWidth(double width);
+    void SetHeight(double height);
     void SetSubscription(bool visible);
     void SetTransport(const QString& transport);
+    void KeepRatioChanged(bool checked);
 
   private:
     Ui::image_config ui_;
@@ -123,8 +124,8 @@ namespace mapviz_plugins
     Units units_;
     int offset_x_;
     int offset_y_;
-    int width_;
-    int height_;
+    double width_;
+    double height_;
     QString transport_;
 
     bool force_resubscribe_;
@@ -132,6 +133,7 @@ namespace mapviz_plugins
 
     double last_width_;
     double last_height_;
+    double original_aspect_ratio_;
 
     ros::NodeHandle local_node_;
     image_transport::Subscriber image_sub_;
