@@ -38,9 +38,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-
 // QT libraries
 #include <QGLWidget>
 #include <QMouseEvent>
