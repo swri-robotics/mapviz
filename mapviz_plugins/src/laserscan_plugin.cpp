@@ -345,6 +345,23 @@ namespace mapviz_plugins
       }
   }
 
+  bool LaserScanPlugin::GetScanTransform(const Scan& scan, swri_transform_util::Transform& transform)
+  {
+      bool was_using_latest_transforms = this->use_latest_transforms_;
+      //Try first with use_latest_transforms_ = false
+      this->use_latest_transforms_ = false;
+      bool has_tranform = GetTransform(scan.source_frame_, scan.stamp, transform);
+      if( !has_tranform && was_using_latest_transforms)
+      {
+          //If failed use_latest_transforms_ = true
+          this->use_latest_transforms_ = true;
+          has_tranform = GetTransform(scan.source_frame_, scan.stamp, transform);
+      }
+
+      this->use_latest_transforms_ = was_using_latest_transforms;
+      return has_tranform;
+  }
+
   void LaserScanPlugin::laserScanCallback(const sensor_msgs::LaserScanConstPtr& msg)
   {
     if (!has_message_)
@@ -362,20 +379,14 @@ namespace mapviz_plugins
     scan.stamp = msg->header.stamp;
     scan.color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
     scan.source_frame_ = msg->header.frame_id;
-    scan.transformed = true;
     scan.has_intensity = !msg->intensities.empty();
-
     scan.points.reserve( msg->ranges.size() );
 
-    swri_transform_util::Transform transform;
-    if (!GetTransform(scan.source_frame_, msg->header.stamp, transform))
-    {
-      scan.transformed = false;
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
-    }
     double x, y;
-
     updatePreComputedTriginometic(msg);
+
+    swri_transform_util::Transform transform;
+    scan.transformed = GetScanTransform(scan, transform);
 
     for (size_t i = 0; i < msg->ranges.size(); i++)
     {
@@ -391,6 +402,7 @@ namespace mapviz_plugins
       point.range = msg->ranges[i];
       if (i < msg->intensities.size())
         point.intensity = msg->intensities[i];
+
       if (scan.transformed)
       {
         point.transformed_point = transform * point.point;
@@ -498,17 +510,22 @@ namespace mapviz_plugins
     {
       Scan& scan = *scan_it;
 
-      if (!scan_it->transformed)
+      if( !scan.transformed )
       {
-        swri_transform_util::Transform transform;
-        if (GetTransform(scan.source_frame_, scan.stamp, transform))
-        {
-          scan.transformed = true;
-          for (size_t i=0; i < scan.points.size(); ++i)
+          swri_transform_util::Transform transform;
+
+          if ( GetScanTransform( scan, transform) )
           {
-            point_it->transformed_point = transform * scan.points[i].point;
+              scan.transformed = true;
+              std::vector<StampedPoint>::iterator point_it = scan.points.begin();
+              for (; point_it != scan.points.end(); ++point_it)
+              {
+                  point_it->transformed_point = transform * point_it->point;
+              }
           }
-        }
+          else{
+              PrintError("No transform between " + scan.source_frame_ + " and " + target_frame_);
+          }
       }
     }
     // Z color is based on transformed color, so it is dependent on the

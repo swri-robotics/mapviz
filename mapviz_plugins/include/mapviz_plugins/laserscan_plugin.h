@@ -144,6 +144,7 @@ namespace mapviz_plugins
       size_t prev_ranges_size_;
       float  prev_angle_min_;
       float  prev_increment_;
+      bool GetScanTransform(const Scan &scan, swri_transform_util::Transform& transform);
   };
 }
 
