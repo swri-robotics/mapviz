@@ -61,7 +61,8 @@ namespace mapviz_plugins
     transport_("default"),
     has_image_(false),
     last_width_(0),
-    last_height_(0)
+    last_height_(0),
+    original_aspect_ratio_(1.0)
   {
     ui_.setupUi(config_widget_);
 
@@ -81,11 +82,15 @@ namespace mapviz_plugins
     QObject::connect(ui_.units, SIGNAL(activated(QString)), this, SLOT(SetUnits(QString)));
     QObject::connect(ui_.offsetx, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetX(int)));
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
-    QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
-    QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
+    QObject::connect(ui_.width, SIGNAL(valueChanged(double)), this, SLOT(SetWidth(double)));
+    QObject::connect(ui_.height, SIGNAL(valueChanged(double)), this, SLOT(SetHeight(double)));
     QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
+    QObject::connect(ui_.keep_ratio, SIGNAL(toggled(bool)), this, SLOT(KeepRatioChanged(bool)));
     QObject::connect(ui_.transport_combo_box, SIGNAL(activated(const QString&)),
                      this, SLOT(SetTransport(const QString&)));
+
+    ui_.width->setKeyboardTracking(false);
+    ui_.height->setKeyboardTracking(false);
   }
 
   ImagePlugin::~ImagePlugin()
@@ -102,12 +107,12 @@ namespace mapviz_plugins
     offset_y_ = offset;
   }
 
-  void ImagePlugin::SetWidth(int width)
+  void ImagePlugin::SetWidth(double width)
   {
     width_ = width;
   }
 
-  void ImagePlugin::SetHeight(int height)
+  void ImagePlugin::SetHeight(double height)
   {
     height_ = height;
   }
@@ -154,14 +159,39 @@ namespace mapviz_plugins
 
   void ImagePlugin::SetUnits(QString units)
   {
+    // do this in both cases to avoid image clamping
+    ui_.width->setMaximum(10000);
+    ui_.height->setMaximum(10000);
+
     if (units == "pixels")
     {
+      ui_.width->setDecimals(0);
+      ui_.height->setDecimals(0);
       units_ = PIXELS;
+      width_  = width_ * double(canvas_->width()) / 100.0;
+      height_ = height_ * double(canvas_->height()) / 100.0;
+      ui_.width->setSuffix(" px");
+      ui_.height->setSuffix(" px");
     }
     else if (units == "percent")
     {
+      ui_.width->setDecimals(1);
+      ui_.height->setDecimals(1);
       units_ = PERCENT;
+      width_ = width_ * 100.0 / double(canvas_->width());
+      height_ =  height_ * 100.0 / double(canvas_->height());
+      ui_.width->setSuffix(" %");
+      ui_.height->setSuffix(" %");
     }
+    ui_.width->setValue( width_ );
+    ui_.height->setValue( height_ );
+
+    if( units_ == PERCENT)
+    {
+      ui_.width->setMaximum(100);
+      ui_.height->setMaximum(100);
+    }
+
   }
   void ImagePlugin::SetSubscription(bool visible)
   {
@@ -188,6 +218,15 @@ namespace mapviz_plugins
     ROS_INFO("Changing image_transport to %s.", transport.toStdString().c_str());
     transport_ = transport;
     TopicEdited();
+  }
+
+  void ImagePlugin::KeepRatioChanged(bool checked)
+  {
+    ui_.height->setEnabled( !checked );
+    if( checked )
+    {
+      ui_.height->setValue( width_ * original_aspect_ratio_ );
+    }
   }
 
   void ImagePlugin::Resubscribe()
@@ -295,6 +334,17 @@ namespace mapviz_plugins
 
     last_width_ = 0;
     last_height_ = 0;
+    original_aspect_ratio_ = (double)image->height / (double)image->width;
+
+    if( ui_.keep_ratio->isChecked() )
+    {
+      double height =  width_ * original_aspect_ratio_;
+      if (units_ == PERCENT)
+      {
+        height *= (double)canvas_->width() / (double)canvas_->height();
+      }
+      ui_.height->setValue(height);
+    }
 
     has_image_ = true;
   }
@@ -377,12 +427,18 @@ namespace mapviz_plugins
     double y_offset = offset_y_;
     double width = width_;
     double height = height_;
+
     if (units_ == PERCENT)
     {
       x_offset = offset_x_ * canvas_->width() / 100.0;
       y_offset = offset_y_ * canvas_->height() / 100.0;
       width = width_ * canvas_->width() / 100.0;
       height = height_ * canvas_->height() / 100.0;
+    }
+
+    if( ui_.keep_ratio->isChecked() )
+    {
+      height = original_aspect_ratio_ * width;
     }
 
     // Scale the source image if necessary
@@ -524,6 +580,13 @@ namespace mapviz_plugins
       node["height"] >> height_;
       ui_.height->setValue(height_);
     }
+
+    if (node["keep_ratio"])
+    {
+      bool keep;
+      node["keep_ratio"] >> keep;
+      ui_.keep_ratio->setChecked( keep );
+    }
   }
 
   void ImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -535,6 +598,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
     emitter << YAML::Key << "width" << YAML::Value << width_;
     emitter << YAML::Key << "height" << YAML::Value << height_;
+    emitter << YAML::Key << "keep_ratio" << YAML::Value << ui_.keep_ratio->isChecked();
     emitter << YAML::Key << "image_transport" << YAML::Value << transport_.toStdString();
   }
 
