@@ -38,8 +38,6 @@
 #include <list>
 #include <vector>
 
-#include <GL/glut.h>
-
 // QT libraries
 #include <QColor>
 #include <QGLWidget>
