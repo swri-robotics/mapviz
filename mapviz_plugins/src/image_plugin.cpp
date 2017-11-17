@@ -88,6 +88,9 @@ namespace mapviz_plugins
     QObject::connect(ui_.keep_ratio, SIGNAL(toggled(bool)), this, SLOT(KeepRatioChanged(bool)));
     QObject::connect(ui_.transport_combo_box, SIGNAL(activated(const QString&)),
                      this, SLOT(SetTransport(const QString&)));
+
+    ui_.width->setKeyboardTracking(false);
+    ui_.height->setKeyboardTracking(false);
   }
 
   ImagePlugin::~ImagePlugin()
