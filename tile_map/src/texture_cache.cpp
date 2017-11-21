@@ -46,7 +46,7 @@
 
 namespace tile_map
 {
-  Texture::Texture(int32_t texture_id, size_t hash) : 
+  Texture::Texture(int32_t texture_id, size_t hash) :
     id(texture_id),
     url_hash(hash)
   {
@@ -63,14 +63,14 @@ namespace tile_map
     glDeleteTextures(1, &ids[0]);
   }
 
-  TextureCache::TextureCache(ImageCachePtr image_cache, size_t size) : 
+  TextureCache::TextureCache(ImageCachePtr image_cache, size_t size) :
     cache_(size),
     image_cache_(image_cache)
   {
-  
+
   }
 
-  TexturePtr TextureCache::GetTexture(size_t url_hash, const QString& url, bool& failed)
+  TexturePtr TextureCache::GetTexture(size_t url_hash, const QString& url, bool& failed, int priority)
   {
     TexturePtr texture;
 
@@ -82,11 +82,11 @@ namespace tile_map
       texture = *texture_ptr;
       delete texture_ptr;
     }
-    
+
     if (!texture)
     {
-      ImagePtr image = image_cache_->GetImage(url_hash, url);
-      
+      ImagePtr image = image_cache_->GetImage(url_hash, url, priority);
+
       if (image)
       {
         failed = image->Failed();
@@ -94,26 +94,26 @@ namespace tile_map
         if (image_ptr)
         {
           // All of the OpenGL calls need to occur on the main thread and so
-          // can't be done in the background.  The QImage calls could 
+          // can't be done in the background.  The QImage calls could
           // potentially be done in a background thread by the image cache.
           QImage qimage = *image_ptr;
-        
+
           GLuint ids[1];
           uint32_t check = 9999999;
           ids[0] = check;
-          
+
           glGenTextures(1, &ids[0]);
-        
+
           if (check == ids[0])
           {
             ROS_ERROR("FAILED TO CREATE TEXTURE");
-            
+
             GLenum err = glGetError();
             const GLubyte *errString = gluErrorString(err);
             ROS_ERROR("GL ERROR(%u): %s", err, errString);
             return texture;
           }
-        
+
           texture_ptr = new TexturePtr(boost::make_shared<Texture>(ids[0], url_hash));
           texture = *texture_ptr;
 
@@ -125,33 +125,33 @@ namespace tile_map
           {
             qimage = qimage.scaled(dimension, dimension, Qt::IgnoreAspectRatio, Qt::FastTransformation);
           }
-          
+
           glBindTexture(GL_TEXTURE_2D, texture->id);
           glTexImage2D(
-            GL_TEXTURE_2D, 
-            0, 
-            3, 
-            dimension, 
-            dimension, 
-            0, 
-            GL_RGBA, 
-            GL_UNSIGNED_BYTE, 
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            dimension,
+            dimension,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
             QGLWidget::convertToGLFormat(qimage).bits());
-            
+
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-          
+
           cache_.insert(url_hash, texture_ptr);
         }
       }
     }
-    
+
     return texture;
   }
-  
+
   void TextureCache::AddTexture(const TexturePtr& texture)
   {
     if (texture)

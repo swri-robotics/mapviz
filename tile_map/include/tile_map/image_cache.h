@@ -43,6 +43,7 @@
 #include <QNetworkReply>
 #include <QObject>
 #include <QSemaphore>
+#include <QSet>
 #include <QThread>
 #include <set>
 
@@ -58,12 +59,12 @@ namespace tile_map
 
     QString Uri() const { return uri_; }
     size_t UriHash() const { return uri_hash_; }
-  
+
     boost::shared_ptr<QImage> GetImage() { return image_; }
-    
+
     void InitializeImage();
     void ClearImage();
-    
+
     void AddFailure();
     bool Failed() const { return failed_; }
 
@@ -82,14 +83,14 @@ namespace tile_map
 
   private:
     QString uri_;
-    
+
     size_t uri_hash_;
-    
+
     bool loading_;
     int32_t failures_;
     bool failed_;
     uint64_t priority_;
-    
+
     mutable boost::shared_ptr<QImage> image_;
 
     static const int MAXIMUM_FAILURES;
@@ -99,34 +100,35 @@ namespace tile_map
   class ImageCache : public QObject
   {
     Q_OBJECT
-    
+
   public:
     explicit ImageCache(const QString& cache_dir, size_t size = 4096);
     ~ImageCache();
-    
+
     ImagePtr GetImage(size_t uri_hash, const QString& uri, int32_t priority = 0);
-  
+
   public Q_SLOTS:
     void ProcessRequest(QString uri);
     void ProcessReply(QNetworkReply* reply);
     void NetworkError(QNetworkReply::NetworkError error);
     void Clear();
-  
+
   private:
     QNetworkAccessManager network_manager_;
-    
+
     QString cache_dir_;
 
     QCache<size_t, ImagePtr> cache_;
     QMap<size_t, ImagePtr> unprocessed_;
+    QSet<size_t> failed_;
     QMap<QString, size_t> uri_to_hash_map_;
-    
+
     QMutex cache_mutex_;
     QMutex unprocessed_mutex_;
     bool exit_;
 
     uint64_t tick_;
-    
+
     CacheThread* cache_thread_;
 
     QSemaphore network_request_semaphore_;
@@ -135,13 +137,13 @@ namespace tile_map
 
     static const int MAXIMUM_NETWORK_REQUESTS;
   };
-  
+
   class CacheThread : public QThread
   {
     Q_OBJECT
     public:
       explicit CacheThread(ImageCache* parent);
-      
+
       virtual void run();
 
       void notify();
@@ -155,8 +157,8 @@ namespace tile_map
 
       static const int MAXIMUM_SEQUENTIAL_REQUESTS;
   };
-    
-  
+
+
   typedef boost::shared_ptr<ImageCache> ImageCachePtr;
 }
 

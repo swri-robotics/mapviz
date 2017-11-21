@@ -51,9 +51,9 @@ namespace tile_map
     int32_t level;
     int32_t subdiv_count;
     double subwidth;
-    
+
     TexturePtr texture;
-    
+
     std::vector<tf::Vector3> points;
     std::vector<tf::Vector3> points_t;
   };
@@ -68,39 +68,39 @@ namespace tile_map
     void SetTileSource(const boost::shared_ptr<TileSource>& tile_source);
 
     void SetTransform(const swri_transform_util::Transform& transform);
-    
+
     void SetView(
-      double latitude, 
-      double longitude, 
-      double scale, 
+      double latitude,
+      double longitude,
+      double scale,
       int32_t width,
       int32_t height);
-      
+
     void Draw();
-    
+
   private:
     boost::shared_ptr<TileSource> tile_source_;
 
     swri_transform_util::Transform transform_;
-    
+
     int32_t level_;
-    
+
     int64_t center_x_;
     int64_t center_y_;
-    
+
     int64_t size_;
-    
+
     int32_t width_;
     int32_t height_;
-    
+
     std::vector<Tile> tiles_;
     std::vector<Tile> precache_;
 
     TextureCachePtr tile_cache_;
-    
+
     void ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude);
-    
-    void InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile);
+
+    void InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile, int priority);
   };
 }
 
