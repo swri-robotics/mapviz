@@ -369,7 +369,7 @@ namespace mapviz
           ROS_INFO("%s", message.c_str());
       }
       QPalette p(status_label->palette());
-      p.setColor(QPalette::Text, Qt::green);
+      p.setColor(QPalette::Text, Qt::darkGreen);
       status_label->setPalette(p);
       status_label->setText(message.c_str());
   }
