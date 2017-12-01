@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mapviz_plugins)
 
 set(DEPENDENCIES
+  actionlib
   cv_bridge
   gps_common
   image_transport
@@ -9,6 +10,7 @@ set(DEPENDENCIES
   marti_common_msgs
   marti_nav_msgs
   marti_visualization_msgs
+  move_base_msgs
   nav_msgs
   pluginlib 
   roscpp 
@@ -80,6 +82,7 @@ set(UI_FILES
     ui/image_config.ui
     ui/laserscan_config.ui
     ui/marker_config.ui
+    ui/move_base_config.ui
     ui/navsat_config.ui
     ui/odometry_config.ui
     ui/path_config.ui
@@ -103,6 +106,7 @@ set(SRC_FILES
     src/image_plugin.cpp
     src/laserscan_plugin.cpp
     src/marker_plugin.cpp 
+    src/move_base_plugin.cpp
     src/navsat_plugin.cpp
     src/odometry_plugin.cpp 
     src/path_plugin.cpp
@@ -130,6 +134,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/placeable_window_proxy.h
     include/${PROJECT_NAME}/laserscan_plugin.h
     include/${PROJECT_NAME}/marker_plugin.h
+    include/${PROJECT_NAME}/move_base_plugin.h
     include/${PROJECT_NAME}/navsat_plugin.h
     include/${PROJECT_NAME}/odometry_plugin.h
     include/${PROJECT_NAME}/path_plugin.h
