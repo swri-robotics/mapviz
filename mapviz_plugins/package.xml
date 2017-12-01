@@ -15,6 +15,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>actionlib</depend>
   <depend>cv_bridge</depend>
   <depend>gps_common</depend>
   <depend>image_transport</depend>
@@ -26,6 +27,7 @@
   <depend>marti_common_msgs</depend>
   <depend>marti_nav_msgs</depend>
   <depend>marti_visualization_msgs</depend>
+  <depend>move_base_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
