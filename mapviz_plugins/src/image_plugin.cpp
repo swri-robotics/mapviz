@@ -165,10 +165,16 @@ namespace mapviz_plugins
       double scale_ratio = (size_.width() / 100.0);
       size_.setWidth(  original_img_size_.width() * scale_ratio );
       size_.setHeight( original_img_size_.height() * scale_ratio );
+
       ui_.width->setSuffix(" px");
       ui_.height->setSuffix(" px");
       ui_.offsetx->setSuffix(" px");
       ui_.offsety->setSuffix(" px");
+
+      ui_.width->setToolTip("Pixels");
+      ui_.height->setToolTip("Pixels");
+      ui_.offsetx->setToolTip("Pixels");
+      ui_.offsety->setToolTip("Pixels");
     }
     else if (units == "percent")
     {
@@ -177,11 +183,18 @@ namespace mapviz_plugins
       units_ = PERCENT;
       size_.setWidth(  100.0 * size_.width() /  original_img_size_.width() );
       size_.setHeight( 100.0 * size_.height() /  original_img_size_.height() );
-      ui_.width->setSuffix(" % (original)");
-      ui_.height->setSuffix(" % (original)");
-      ui_.offsetx->setSuffix(" % (canvas)");
-      ui_.offsety->setSuffix(" % (canvas)");
+
+      ui_.width->setSuffix(" %");
+      ui_.height->setSuffix(" %");
+      ui_.offsetx->setSuffix(" %");
+      ui_.offsety->setSuffix(" %");
+
+      ui_.width->setToolTip("Percent of the original image size");
+      ui_.height->setToolTip("Percent of the original image size");
+      ui_.offsetx->setToolTip("Percent of the visualization canvas");
+      ui_.offsety->setToolTip("Percent of the visualization canvas");
     }
+
     ui_.width->setValue( size_.width() );
     ui_.height->setValue( size_.height() );
   }
