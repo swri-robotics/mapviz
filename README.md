@@ -156,6 +156,14 @@ Projects a [visualization_msgs::Marker](http://docs.ros.org/api/visualization_ms
 **Parameters**
 * Topic: The marker topic
 
+### Move Base
+This plugin allows the user to send goals to [move_base](wiki.ros.org/move_base).
+
+**Buttons**
+* Estimated pose: similarly to RViz, it will publish a [geometry_msgs::PoseWithCovarianceStamped](http://docs.ros.org/api/geometry_msgs/html/msg/PoseWithCovarianceStamped.html) using the topic __/initialpose__.
+* 2D Nav goal: send a [move_base_msgs/MoveBaseActionGoal](http://wiki.ros.org/move_base#Action_API), unlike its RViz equivalent, which publishes a message on the topic __/move_base_simple/goal__.
+* Abort: stop the execution of the current goal.
+
 ### Multi-res Image
 Projects a geo-referenced multi-resolution image tile map into the scene.  The concept is the same as the Google Maps style pan/zoom satellite imagery. 
 
