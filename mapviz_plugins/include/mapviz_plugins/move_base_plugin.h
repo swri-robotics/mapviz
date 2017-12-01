@@ -79,11 +79,6 @@ namespace mapviz_plugins
 
     QWidget* GetConfigWidget(QWidget* parent);
 
-    bool SupportsPainting()
-    {
-      return true;
-    }
-
    protected:
     virtual void PrintError(const std::string& message) override;
     virtual void PrintInfo(const std::string& message) override;

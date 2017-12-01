@@ -331,7 +331,7 @@ void MoveBasePlugin::on_pushButtonInitialPose_toggled(bool checked)
             ui_.pushButtonGoalPose->setChecked(false);
         }
         else{
-            QPixmap cursor_pixmap = QPixmap(":/grape/images/green-arrow.png");
+            QPixmap cursor_pixmap = QPixmap(":/images/green-arrow.png");
             QApplication::setOverrideCursor(QCursor(cursor_pixmap));
         }
     }
@@ -349,7 +349,7 @@ void MoveBasePlugin::on_pushButtonGoalPose_toggled(bool checked)
             ui_.pushButtonInitialPose->setChecked(false);
         }
         else{
-            QPixmap cursor_pixmap = QPixmap(":/grape/images/green-arrow.png");
+            QPixmap cursor_pixmap = QPixmap(":/images/green-arrow.png");
             QApplication::setOverrideCursor(QCursor(cursor_pixmap));
         }
     }
