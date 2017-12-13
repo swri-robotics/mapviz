@@ -126,10 +126,27 @@ namespace mapviz_plugins
     ros::ServiceClient client = node_.serviceClient<mnm::PlanRoute>(service);
 
     mnm::PlanRoute plan_route;
-    plan_route.request.header.frame_id = stu::_wgs84_frame;
     plan_route.request.header.stamp = ros::Time::now();
     plan_route.request.plan_from_vehicle = static_cast<unsigned char>(start_from_vehicle);
     plan_route.request.waypoints = waypoints_;
+
+    stu::Transform transform;
+    if (tf_manager_.GetTransform(stu::_wgs84_frame, target_frame_, transform))
+    {
+      plan_route.request.header.frame_id = stu::_wgs84_frame;
+
+      for(int i=0; i<waypoints_.size(); i++ )
+      {
+        tf::Vector3 point( waypoints_[i].position.x, waypoints_[i].position.y, 0.0);
+        point = transform * point;
+        plan_route.request.waypoints[i].position.x = point.x();
+        plan_route.request.waypoints[i].position.y = point.y();
+      }
+    }
+    else{
+      plan_route.request.header.frame_id = target_frame_;
+      PrintfWarning("PlanRoute sent relative to frame [%s]", target_frame_);
+    }
 
     if (client.call(plan_route))
     {
@@ -210,34 +227,26 @@ namespace mapviz_plugins
     }
   }
 
+
   bool PlanRoutePlugin::handleMousePress(QMouseEvent* event)
   {
     selected_point_ = -1;
     int closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();
 
-    QPointF point = event->localPos();
-    stu::Transform transform;
-    if (tf_manager_.GetTransform(target_frame_, stu::_wgs84_frame, transform))
+    QPointF mouse_pos = event->localPos();
+
+    for (size_t i = 0; i < waypoints_.size(); i++)
     {
-      for (size_t i = 0; i < waypoints_.size(); i++)
-      {
-        tf::Vector3 waypoint(
-            waypoints_[i].position.x,
-            waypoints_[i].position.y,
-            0.0);
-        waypoint = transform * waypoint;
-
-        QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(waypoint.x(), waypoint.y()));
-
-        double distance = QLineF(transformed, point).length();
+        QPointF waypoint(waypoints_[i].position.x, waypoints_[i].position.y);
+        QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(waypoint);
+        double distance = QLineF(transformed, mouse_pos).length();
 
         if (distance < closest_distance)
         {
-          closest_distance = distance;
-          closest_point = static_cast<int>(i);
+            closest_distance = distance;
+            closest_point = static_cast<int>(i);
         }
-      }
     }
 
     if (event->button() == Qt::LeftButton)
@@ -272,17 +281,10 @@ namespace mapviz_plugins
   {
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < waypoints_.size())
     {
-      QPointF point = event->localPos();
-      stu::Transform transform;
-      if (tf_manager_.GetTransform(stu::_wgs84_frame, target_frame_, transform))
-      {
-        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-        position = transform * position;
-        waypoints_[selected_point_].position.x = position.x();
-        waypoints_[selected_point_].position.y = position.y();
-        PlanRoute();
-      }
+      QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(event->localPos());
+      waypoints_[selected_point_].position.x = transformed.x();
+      waypoints_[selected_point_].position.y = transformed.y();
+      PlanRoute();
 
       selected_point_ = -1;
       return true;
@@ -298,23 +300,12 @@ namespace mapviz_plugins
       // or just holding the cursor in place.
       if (msecsDiff < max_ms_ && distance <= max_distance_)
       {
-        QPointF point = event->localPos();
-
-
-        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-
-        stu::Transform transform;
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-        if (tf_manager_.GetTransform(stu::_wgs84_frame, target_frame_, transform))
-        {
-          position = transform * position;
-
-          geometry_msgs::Pose pose;
-          pose.position.x = position.x();
-          pose.position.y = position.y();
-          waypoints_.push_back(pose);
-          PlanRoute();
-        }
+        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(event->localPos());
+        geometry_msgs::Pose pose;
+        pose.position.x = transformed.x();
+        pose.position.y = transformed.y();
+        waypoints_.push_back(pose);
+        PlanRoute();
       }
     }
     is_mouse_down_ = false;
@@ -326,18 +317,10 @@ namespace mapviz_plugins
   {
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < waypoints_.size())
     {
-      QPointF point = event->localPos();
-      stu::Transform transform;
-      if (tf_manager_.GetTransform(stu::_wgs84_frame, target_frame_, transform))
-      {
-        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-        position = transform * position;
-        waypoints_[selected_point_].position.y = position.y();
-        waypoints_[selected_point_].position.x = position.x();
-        PlanRoute();
-      }
-
+      QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(event->localPos());
+      waypoints_[selected_point_].position.y = transformed.y();
+      waypoints_[selected_point_].position.x = transformed.x();
+      PlanRoute();
       return true;
     }
     return false;
@@ -345,51 +328,50 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Draw(double x, double y, double scale)
   {
-    stu::Transform transform;
-    if (tf_manager_.GetTransform(target_frame_, stu::_wgs84_frame, transform))
+    if (!failed_service_)
     {
-      if (!failed_service_)
+      if (route_preview_)
       {
-        if (route_preview_)
+        glLineWidth(2);
+        const QColor color = ui_.color->color();
+        glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
+
+        sru::Route route = *route_preview_;
+        stu::Transform transform;
+
+        glBegin(GL_LINE_STRIP);
+        if (tf_manager_.GetTransform(target_frame_, stu::_wgs84_frame, transform))
         {
-          sru::Route route = *route_preview_;
           sru::transform(route, transform, target_frame_);
-
-          glLineWidth(2);
-          const QColor color = ui_.color->color();
-          glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
-          glBegin(GL_LINE_STRIP);
-
           for (size_t i = 0; i < route.points.size(); i++)
           {
             glVertex2d(route.points[i].position().x(), route.points[i].position().y());
           }
-
-          glEnd();
+          PrintInfo("OK");
         }
-
-        PrintInfo("OK");
+        else{
+          for (size_t i = 0; i < waypoints_.size(); i++)
+          {
+            glVertex2d(waypoints_[i].position.x, waypoints_[i].position.y);
+          }
+          PrintError("Route failed to convert to wgs84");
+        }
+        glEnd();
       }
-
-      // Draw waypoints
-
-      glPointSize(20);
-      glColor4f(0.0, 1.0, 1.0, 1.0);
-      glBegin(GL_POINTS);
-
-      for (size_t i = 0; i < waypoints_.size(); i++)
-      {
-        tf::Vector3 point(waypoints_[i].position.x, waypoints_[i].position.y, 0);
-        point = transform * point;
-        glVertex2d(point.x(), point.y());
-      }
-      glEnd();
     }
-    else
+
+    // Draw waypoints
+    glPointSize(20);
+    glColor4f(0.0, 1.0, 1.0, 1.0);
+    glBegin(GL_POINTS);
+
+    for (size_t i = 0; i < waypoints_.size(); i++)
     {
-      PrintError("Failed to transform.");
+      glVertex2d(waypoints_[i].position.x, waypoints_[i].position.y);
     }
+    glEnd();
   }
+
 
   void PlanRoutePlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
@@ -400,18 +382,13 @@ namespace mapviz_plugins
     painter->setPen(pen);
     painter->setFont(QFont("DejaVu Sans Mono", 7));
 
-    stu::Transform transform;
-    if (tf_manager_.GetTransform(target_frame_, stu::_wgs84_frame, transform))
+    for (size_t i = 0; i < waypoints_.size(); i++)
     {
-      for (size_t i = 0; i < waypoints_.size(); i++)
-      {
-        tf::Vector3 point(waypoints_[i].position.x, waypoints_[i].position.y, 0);
-        point = transform * point;
-        QPointF gl_point = map_canvas_->FixedFrameToMapGlCoord(QPointF(point.x(), point.y()));
+        QPointF point(waypoints_[i].position.x, waypoints_[i].position.y);
+        QPointF gl_point = map_canvas_->FixedFrameToMapGlCoord(point);
         QPointF corner(gl_point.x() - 20, gl_point.y() - 20);
         QRectF rect(corner, QSizeF(40, 40));
         painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, QString::fromStdString(boost::lexical_cast<std::string>(i + 1)));
-      }
     }
 
     painter->restore();
