@@ -145,7 +145,7 @@ namespace mapviz_plugins
     }
     else{
       plan_route.request.header.frame_id = target_frame_;
-      PrintfWarning("PlanRoute sent relative to frame [%s]", target_frame_);
+      PrintWarning("PlanRoute sent relative to target_frame");
     }
 
     if (client.call(plan_route))
@@ -328,46 +328,46 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Draw(double x, double y, double scale)
   {
-    if (!failed_service_)
+    stu::Transform transform;
+    bool show_server_route = ( !failed_service_ && route_preview_ );
+    if (tf_manager_.GetTransform(target_frame_, stu::_wgs84_frame, transform))
     {
-      if (route_preview_)
-      {
-        glLineWidth(2);
-        const QColor color = ui_.color->color();
-        glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
-
-        sru::Route route = *route_preview_;
-        stu::Transform transform;
-
-        glBegin(GL_LINE_STRIP);
-        if (tf_manager_.GetTransform(target_frame_, stu::_wgs84_frame, transform))
-        {
-          sru::transform(route, transform, target_frame_);
-          for (size_t i = 0; i < route.points.size(); i++)
-          {
-            glVertex2d(route.points[i].position().x(), route.points[i].position().y());
-          }
-          PrintInfo("OK");
-        }
-        else{
-          for (size_t i = 0; i < waypoints_.size(); i++)
-          {
-            glVertex2d(waypoints_[i].position.x, waypoints_[i].position.y);
-          }
-          PrintError("Route failed to convert to wgs84");
-        }
-        glEnd();
-      }
+      show_server_route = false;
     }
+
+    const QColor color = ui_.color->color();
+    glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
+
+    glBegin(GL_LINE_STRIP);
+    if (show_server_route)
+    {
+      glLineWidth(2);
+      sru::Route route = *route_preview_;
+      sru::transform(route, transform, target_frame_);
+      for (size_t i = 0; i < route.points.size(); i++)
+      {
+        glVertex2d(route.points[i].position().x(), route.points[i].position().y());
+      }
+      PrintInfo("OK");
+    }
+    else{
+      glLineWidth(1);
+      for (const geometry_msgs::Pose& waypoint: waypoints_)
+      {
+        glVertex2d(waypoint.position.x, waypoint.position.y);
+      }
+      PrintError("Route failed to convert to wgs84");
+    }
+    glEnd();
 
     // Draw waypoints
     glPointSize(20);
     glColor4f(0.0, 1.0, 1.0, 1.0);
     glBegin(GL_POINTS);
 
-    for (size_t i = 0; i < waypoints_.size(); i++)
+    for (const geometry_msgs::Pose& waypoint: waypoints_)
     {
-      glVertex2d(waypoints_[i].position.x, waypoints_[i].position.y);
+      glVertex2d(waypoint.position.x, waypoint.position.y);
     }
     glEnd();
   }
@@ -382,13 +382,14 @@ namespace mapviz_plugins
     painter->setPen(pen);
     painter->setFont(QFont("DejaVu Sans Mono", 7));
 
-    for (size_t i = 0; i < waypoints_.size(); i++)
+    for (int i=0; i< waypoints_.size(); i++)
     {
         QPointF point(waypoints_[i].position.x, waypoints_[i].position.y);
         QPointF gl_point = map_canvas_->FixedFrameToMapGlCoord(point);
         QPointF corner(gl_point.x() - 20, gl_point.y() - 20);
         QRectF rect(corner, QSizeF(40, 40));
-        painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, QString::fromStdString(boost::lexical_cast<std::string>(i + 1)));
+        painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter,
+                          QString::fromStdString(std::to_string(i + 1)));
     }
 
     painter->restore();
