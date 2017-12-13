@@ -135,12 +135,12 @@ namespace mapviz_plugins
     {
       plan_route.request.header.frame_id = stu::_wgs84_frame;
 
-      for(int i=0; i<waypoints_.size(); i++ )
+      for( geometry_msgs::Pose& waypoint: plan_route.request.waypoints )
       {
-        tf::Vector3 point( waypoints_[i].position.x, waypoints_[i].position.y, 0.0);
+        tf::Vector3 point( waypoint.position.x, waypoint.position.y, 0.0);
         point = transform * point;
-        plan_route.request.waypoints[i].position.x = point.x();
-        plan_route.request.waypoints[i].position.y = point.y();
+        waypoint.position.x = point.x();
+        waypoint.position.y = point.y();
       }
     }
     else{
@@ -344,9 +344,9 @@ namespace mapviz_plugins
       glLineWidth(2);
       sru::Route route = *route_preview_;
       sru::transform(route, transform, target_frame_);
-      for (size_t i = 0; i < route.points.size(); i++)
+      for (const swri_route_util::RoutePoint& point: route.points)
       {
-        glVertex2d(route.points[i].position().x(), route.points[i].position().y());
+        glVertex2d(point.position().x(), point.position().y());
       }
       PrintInfo("OK");
     }
@@ -391,7 +391,6 @@ namespace mapviz_plugins
         painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter,
                           QString::fromStdString(std::to_string(i + 1)));
     }
-
     painter->restore();
   }
 
