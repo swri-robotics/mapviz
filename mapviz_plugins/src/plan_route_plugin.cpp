@@ -388,8 +388,7 @@ namespace mapviz_plugins
         QPointF gl_point = map_canvas_->FixedFrameToMapGlCoord(point);
         QPointF corner(gl_point.x() - 20, gl_point.y() - 20);
         QRectF rect(corner, QSizeF(40, 40));
-        painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter,
-                          QString::fromStdString(std::to_string(i + 1)));
+        painter->drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, QString::number(i + 1));
     }
     painter->restore();
   }
