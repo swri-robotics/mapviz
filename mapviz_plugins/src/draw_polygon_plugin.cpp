@@ -201,7 +201,7 @@ namespace mapviz_plugins
     QPointF point = event->localPos();
     stu::Transform transform;
     std::string frame = ui_.frame->text().toStdString();
-    if (tf_manager_.GetTransform(target_frame_, frame, transform))
+    if (tf_manager_->GetTransform(target_frame_, frame, transform))
     {
       for (size_t i = 0; i < vertices_.size(); i++)
       {
@@ -255,7 +255,7 @@ namespace mapviz_plugins
     {
       QPointF point = event->localPos();
       stu::Transform transform;
-      if (tf_manager_.GetTransform(frame, target_frame_, transform))
+      if (tf_manager_->GetTransform(frame, target_frame_, transform))
       {
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
         tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
@@ -287,7 +287,7 @@ namespace mapviz_plugins
         stu::Transform transform;
         tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
 
-        if (tf_manager_.GetTransform(frame, target_frame_, transform))
+        if (tf_manager_->GetTransform(frame, target_frame_, transform))
         {
           position = transform * position;
           vertices_.push_back(position);
@@ -308,7 +308,7 @@ namespace mapviz_plugins
       QPointF point = event->localPos();
       stu::Transform transform;
       std::string frame = ui_.frame->text().toStdString();
-      if (tf_manager_.GetTransform(frame, target_frame_, transform))
+      if (tf_manager_->GetTransform(frame, target_frame_, transform))
       {
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
         tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
@@ -326,7 +326,7 @@ namespace mapviz_plugins
   {
     stu::Transform transform;
     std::string frame = ui_.frame->text().toStdString();
-    if (!tf_manager_.GetTransform(target_frame_, frame, transform))
+    if (!tf_manager_->GetTransform(target_frame_, frame, transform))
     {
       return;
     }

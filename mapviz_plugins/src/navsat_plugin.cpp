@@ -114,7 +114,7 @@ namespace mapviz_plugins
   void NavSatPlugin::NavSatFixCallback(
       const sensor_msgs::NavSatFixConstPtr navsat)
   {
-    if (!local_xy_util_.Initialized())
+    if (!tf_manager_->LocalXyUtil()->Initialized())
     {
       return;
     }
@@ -129,13 +129,13 @@ namespace mapviz_plugins
 
     double x;
     double y;
-    local_xy_util_.ToLocalXy(navsat->latitude, navsat->longitude, x, y);
+    tf_manager_->LocalXyUtil()->ToLocalXy(navsat->latitude, navsat->longitude, x, y);
 
     stamped_point.point = tf::Point(x, y, navsat->altitude);
 
     stamped_point.orientation = tf::createQuaternionFromYaw(0.0);
 
-    stamped_point.source_frame = local_xy_util_.Frame();
+    stamped_point.source_frame = tf_manager_->LocalXyUtil()->Frame();
 
     if (points_.empty() ||
         stamped_point.point.distance(points_.back().point) >=

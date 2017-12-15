@@ -292,7 +292,7 @@ namespace tile_map
   void TileMapPlugin::Draw(double x, double y, double scale)
   {
     swri_transform_util::Transform to_wgs84;
-    if (tf_manager_.GetTransform(source_frame_, target_frame_, to_wgs84))
+    if (tf_manager_->GetTransform(source_frame_, target_frame_, to_wgs84))
     {
       tf::Vector3 center(x, y, 0);
       center = to_wgs84 * center;
@@ -318,7 +318,7 @@ namespace tile_map
   void TileMapPlugin::Transform()
   {
     swri_transform_util::Transform to_target;
-    if (tf_manager_.GetTransform(target_frame_, source_frame_, to_target))
+    if (tf_manager_->GetTransform(target_frame_, source_frame_, to_target))
     {
       tile_map_.SetTransform(to_target);
       PrintInfo("OK");
