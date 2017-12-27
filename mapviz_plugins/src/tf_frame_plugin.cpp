@@ -119,13 +119,21 @@ namespace mapviz_plugins
       stamped_point.stamp = transform.GetStamp();
       stamped_point.transformed = false;
 
-      double distance = std::sqrt(
-          std::pow(stamped_point.point.x() - points_.back().point.x(), 2) +
-          std::pow(stamped_point.point.y() - points_.back().point.y(), 2));
+      cur_point_ = stamped_point;
 
-      if (points_.empty() || distance >= position_tolerance_)
+      if (points_.empty() )
       {
-        points_.push_back(stamped_point);
+        points_.push_back( std::move(stamped_point) );
+      }
+      else {
+        const tf::Point& prev_point = points_.back().point;
+        const double distance = std::sqrt(
+            std::pow(cur_point_.point.x() - prev_point.x(), 2) +
+            std::pow(cur_point_.point.y() - prev_point.y(), 2));
+        if( distance >= position_tolerance_ )
+        {
+          points_.push_back( std::move(stamped_point) );
+        }
       }
 
       if (buffer_size_ > 0)
@@ -135,8 +143,6 @@ namespace mapviz_plugins
           points_.pop_front();
         }
       }
-
-      cur_point_ = stamped_point;
     }
   }
 
