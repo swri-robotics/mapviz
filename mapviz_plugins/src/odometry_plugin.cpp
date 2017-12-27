@@ -271,7 +271,7 @@ namespace mapviz_plugins
     QPen pen(QBrush(ui_.color->color()), 1);
     painter->setPen(pen);
 
-    std::list<StampedPoint>::iterator it = points_.begin();
+    std::deque<StampedPoint>::iterator it = points_.begin();
     int counter = 0;//used to alternate between rendering text on some points
     for (; it != points_.end(); ++it)
     {

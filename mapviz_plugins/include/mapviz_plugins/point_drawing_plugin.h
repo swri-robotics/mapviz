@@ -55,6 +55,8 @@ namespace mapviz_plugins
    public:
     struct StampedPoint
     {
+      StampedPoint(): transformed(false) {}
+
       tf::Point point;
       tf::Quaternion orientation;
       tf::Point transformed_point;
@@ -104,7 +106,7 @@ namespace mapviz_plugins
     int arrow_size_;
     DrawStyle draw_style_;
     StampedPoint cur_point_;
-    std::list<StampedPoint> points_;
+    std::deque<StampedPoint> points_;
     double position_tolerance_;
     int buffer_size_;
     bool covariance_checked_;
@@ -116,7 +118,7 @@ namespace mapviz_plugins
     bool static_arrow_sizes_;
 
    private:
-    std::vector<std::list<StampedPoint> > laps_;
+    std::vector<std::deque<StampedPoint> > laps_;
     bool got_begin_;
     tf::Point begin_;
   };

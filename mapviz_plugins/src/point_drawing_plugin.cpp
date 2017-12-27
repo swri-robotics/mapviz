@@ -226,7 +226,7 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-    std::list<StampedPoint>::iterator it = points_.begin();
+    std::deque<StampedPoint>::iterator it = points_.begin();
     for (; it != points_.end(); ++it)
     {
       success &= it->transformed;
@@ -277,7 +277,7 @@ namespace mapviz_plugins
     glLineWidth(2);
     glBegin(GL_LINES);
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
-    std::list<StampedPoint>::iterator it = points_.begin();
+    std::deque<StampedPoint>::iterator it = points_.begin();
     for (; it != points_.end(); ++it)
     {
       success &= DrawArrow(*it);
@@ -302,7 +302,12 @@ namespace mapviz_plugins
   bool PointDrawingPlugin::TransformPoint(StampedPoint& point)
   {
     swri_transform_util::Transform transform;
-    if (GetTransform(point.source_frame, point.stamp, transform))
+    if ( point.transformed )
+    {
+      return true;
+    }
+
+    if( GetTransform(point.source_frame, point.stamp, transform))
     {
       point.transformed_point = transform * point.point;
 
@@ -335,11 +340,9 @@ namespace mapviz_plugins
           point.transformed_cov_points[i] = transform * point.cov_points[i];
         }
       }
-
       point.transformed = true;
       return true;
     }
-
     point.transformed = false;
     return false;
   }
@@ -348,7 +351,7 @@ namespace mapviz_plugins
   {
     bool transformed = false;
 
-    std::list<StampedPoint>::iterator points_it = points_.begin();
+    std::deque<StampedPoint>::iterator points_it = points_.begin();
     for (; points_it != points_.end(); ++points_it)
     {
       transformed = transformed | TransformPoint(*points_it);
@@ -359,7 +362,7 @@ namespace mapviz_plugins
     {
       for (size_t i = 0; i < laps_.size(); i++)
       {
-        std::list<StampedPoint>::iterator lap_it = laps_[i].begin();
+        std::deque<StampedPoint>::iterator lap_it = laps_[i].begin();
         for (; lap_it != laps_[i].end(); ++lap_it)
         {
           transformed = transformed | TransformPoint(*lap_it);
@@ -395,7 +398,7 @@ namespace mapviz_plugins
           glBegin(GL_POINTS);
         }
 
-        std::list<StampedPoint>::iterator it = laps_[i].begin();
+        std::deque<StampedPoint>::iterator it = laps_[i].begin();
         for (; it != laps_[i].end(); it++)
         {
           if (it->transformed)
@@ -423,7 +426,7 @@ namespace mapviz_plugins
 
     if (points_.size() > 0)
     {
-      std::list<StampedPoint>::iterator it = points_.begin();
+      std::deque<StampedPoint>::iterator it = points_.begin();
       for (; it != points_.end(); ++it)
       {
         transformed &= it->transformed;
@@ -464,7 +467,7 @@ namespace mapviz_plugins
       for (size_t i = 0; i < laps_.size(); i++)
       {
         UpdateColor(base_color, static_cast<int>(i));
-        std::list<StampedPoint>::iterator it = laps_[i].begin();
+        std::deque<StampedPoint>::iterator it = laps_[i].begin();
         for (; it != laps_[i].end(); ++it)
         {
           glBegin(GL_LINE_STRIP);
@@ -484,7 +487,7 @@ namespace mapviz_plugins
 
     if (points_.size() > 0)
     {
-      std::list<StampedPoint>::iterator it = points_.begin();
+      std::deque<StampedPoint>::iterator it = points_.begin();
       for (; it != points_.end(); ++it)
       {
         glBegin(GL_LINE_STRIP);
