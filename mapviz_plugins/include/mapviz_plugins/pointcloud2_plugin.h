@@ -108,8 +108,6 @@ namespace mapviz_plugins
     struct StampedPoint
     {
       tf::Point point;
-      tf::Point transformed_point;
-      QColor color;
       std::vector<float> features;
     };
 
@@ -121,6 +119,11 @@ namespace mapviz_plugins
       std::string source_frame;
       bool transformed;
       std::map<std::string, FieldInfo> new_features;
+
+      std::vector<float> gl_transformed_point;
+      std::vector<float> gl_color;
+      GLuint point_vbo;
+      GLuint color_vbo;
     };
 
     float PointFeature(const uint8_t*, const FieldInfo&);

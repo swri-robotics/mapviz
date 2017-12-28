@@ -205,10 +205,11 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::ResetTransformedPointClouds()
   {
-    std::deque<Scan>::iterator scan_it = scans_.begin();
-    for (; scan_it != scans_.end(); ++scan_it)
+    for (Scan& scan: scans_)
     {
-      scan_it->transformed = false;
+      scan.transformed = false;
+      scan.gl_color.clear();
+      scan.gl_transformed_point.clear();
     }
   }
 
@@ -292,13 +293,17 @@ namespace mapviz_plugins
   {
     {
       QMutexLocker locker(&scan_mutex_);
-      std::deque<Scan>::iterator scan_it = scans_.begin();
-      for (; scan_it != scans_.end(); ++scan_it)
+      for (Scan& scan: scans_)
       {
-        std::vector<StampedPoint>::iterator point_it = scan_it->points.begin();
-        for (; point_it != scan_it->points.end(); point_it++)
+        scan.gl_color.clear();
+        scan.gl_color.reserve(scan.points.size()*4);
+        for (const StampedPoint& point: scan.points)
         {
-          point_it->color = CalculateColor(*point_it);
+          const QColor color = CalculateColor(point);
+          scan.gl_color.push_back( color.redF());
+          scan.gl_color.push_back( color.greenF());
+          scan.gl_color.push_back( color.blueF());
+          scan.gl_color.push_back( alpha_);
         }
       }
     }
@@ -506,6 +511,11 @@ namespace mapviz_plugins
         field_infos.push_back(it->second);
       }
 
+      scan.gl_transformed_point.clear();
+      scan.gl_transformed_point.reserve(num_points*2);
+      scan.gl_color.clear();
+      scan.gl_color.reserve(num_points*4);
+
       for (size_t i = 0; i < num_points; i++, ptr += point_step)
       {
         float x = *reinterpret_cast<const float*>(ptr + xoff);
@@ -523,9 +533,15 @@ namespace mapviz_plugins
         }
         if (scan.transformed)
         {
-          point.transformed_point = transform * point.point;
+          const tf::Point transformed_point = transform * point.point;
+          scan.gl_transformed_point.push_back( transformed_point.getX() );
+          scan.gl_transformed_point.push_back( transformed_point.getY() );
         }
-        point.color = CalculateColor(point);
+        const QColor color = CalculateColor(point);
+        scan.gl_color.push_back( color.redF());
+        scan.gl_color.push_back( color.greenF());
+        scan.gl_color.push_back( color.blueF());
+        scan.gl_color.push_back( alpha_);
       }
     }
 
@@ -652,23 +668,24 @@ namespace mapviz_plugins
     {
       QMutexLocker locker(&scan_mutex_);
 
-      std::deque<Scan>::iterator scan_it = scans_.begin();
       bool was_using_latest_transforms = use_latest_transforms_;
       use_latest_transforms_ = false;
-      for (; scan_it != scans_.end(); ++scan_it)
+      for (Scan& scan: scans_)
       {
-        Scan& scan = *scan_it;
-
-        if (!scan_it->transformed)
+        if (!scan.transformed)
         {
           swri_transform_util::Transform transform;
           if (GetTransform(scan.source_frame, scan.stamp, transform))
           {
+            scan.gl_transformed_point.clear();
+            scan.gl_transformed_point.reserve(scan.points.size()*2);
+
             scan.transformed = true;
-            std::vector<StampedPoint>::iterator point_it = scan.points.begin();
-            for (; point_it != scan.points.end(); ++point_it)
+            for (StampedPoint& point: scan.points)
             {
-              point_it->transformed_point = transform * point_it->point;
+              const tf::Point transformed_point = transform * point.point;
+              scan.gl_transformed_point.push_back( transformed_point.getX() );
+              scan.gl_transformed_point.push_back( transformed_point.getY() );
             }
           }
           else
