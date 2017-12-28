@@ -57,7 +57,6 @@ namespace mapviz_plugins
   OdometryPlugin::OdometryPlugin() : config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
-    covariance_checked_ = ui_.show_covariance->isChecked();
     ui_.color->setColor(Qt::green);
 
     // Set background white
@@ -86,8 +85,12 @@ namespace mapviz_plugins
                      this, SLOT(SetStaticArrowSizes(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+    QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
+    QObject::connect(ui_.show_laps, SIGNAL(toggled(bool)), this,
+            SLOT(LapToggled(bool)));
+    QObject::connect(ui_.show_covariance, SIGNAL(toggled(bool)), this,
+            SLOT(CovariancedToggled(bool)));
   }
 
   OdometryPlugin::~OdometryPlugin()
@@ -112,7 +115,7 @@ namespace mapviz_plugins
     if (topic != topic_)
     {
       initialized_ = false;
-      points_.clear();
+      clearPoints();
       has_message_ = false;
       PrintWarning("No messages received.");
 
@@ -156,26 +159,7 @@ namespace mapviz_plugins
         odometry->pose.pose.orientation.z,
         odometry->pose.pose.orientation.w);
 
-    if (points_.empty() ||
-        stamped_point.point.distance(points_.back().point) >=
-            position_tolerance_)
-    {
-      points_.push_back(stamped_point);
-    }
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) > buffer_size_)
-      {
-        points_.pop_front();
-      }
-    }
-
-    cur_point_ = stamped_point;
-    covariance_checked_ = ui_.show_covariance->isChecked();
-    lap_checked_ = ui_.show_laps->isChecked();
-
-    if (covariance_checked_)
+    if ( ui_.show_covariance->isChecked() )
     {
       tf::Matrix3x3 tf_cov =
           swri_transform_util::GetUpperLeft(odometry->pose.covariance);
@@ -191,15 +175,14 @@ namespace mapviz_plugins
           }
         }
 
-        cv::Mat cov_matrix_2d =
-            swri_image_util::ProjectEllipsoid(cov_matrix_3d);
+        cv::Mat cov_matrix_2d = swri_image_util::ProjectEllipsoid(cov_matrix_3d);
 
         if (!cov_matrix_2d.empty())
         {
-          cur_point_.cov_points = swri_image_util::GetEllipsePoints(
-              cov_matrix_2d, cur_point_.point, 3, 32);
+          stamped_point.cov_points = swri_image_util::GetEllipsePoints(
+              cov_matrix_2d, stamped_point.point, 3, 32);
 
-          cur_point_.transformed_cov_points = cur_point_.cov_points;
+          stamped_point.transformed_cov_points = stamped_point.cov_points;
         }
         else
         {
@@ -207,6 +190,9 @@ namespace mapviz_plugins
         }
       }
     }
+
+    pushPoint( std::move(stamped_point) );
+
   }
 
   void OdometryPlugin::PrintError(const std::string& message)
@@ -271,45 +257,21 @@ namespace mapviz_plugins
     QPen pen(QBrush(ui_.color->color()), 1);
     painter->setPen(pen);
 
-    std::deque<StampedPoint>::iterator it = points_.begin();
     int counter = 0;//used to alternate between rendering text on some points
-    for (; it != points_.end(); ++it)
+    for (const StampedPoint& point: points())
     {
-      if (it->transformed && counter % interval == 0)//this renders a timestamp every 'interval' points
+      if (point.transformed && counter % interval == 0)//this renders a timestamp every 'interval' points
       {
-        QPointF point = tf.map(QPointF(it->transformed_point.getX(),
-                                       it->transformed_point.getY()));
+        QPointF qpoint = tf.map(QPointF(point.transformed_point.getX(),
+                                        point.transformed_point.getY()));
         QString time;
-        time.setNum(it->stamp.toSec(), 'g', 12);
-        painter->drawText(point, time);
+        time.setNum(point.stamp.toSec(), 'g', 12);
+        painter->drawText(qpoint, time);
       }
       counter++;
     }
 
     painter->restore();
-  }
-
-  void OdometryPlugin::DrawCovariance()
-  {
-    glLineWidth(4);
-
-    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
-
-    if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
-    {
-      glBegin(GL_LINE_STRIP);
-
-      for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
-      {
-        glVertex2d(cur_point_.transformed_cov_points[i].getX(),
-                   cur_point_.transformed_cov_points[i].getY());
-      }
-
-      glVertex2d(cur_point_.transformed_cov_points.front().getX(),
-                 cur_point_.transformed_cov_points.front().getY());
-
-      glEnd();
-    }
   }
 
   void OdometryPlugin::LoadConfig(const YAML::Node& node,
@@ -326,42 +288,43 @@ namespace mapviz_plugins
     {
       std::string color;
       node["color"] >> color;
-      SetColor(QColor(color.c_str()));
-      ui_.color->setColor(color_);
+      QColor qcolor(color.c_str());
+      SetColor(qcolor);
+      ui_.color->setColor(qcolor);
     }
 
     if (node["draw_style"])
     {
       std::string draw_style;
       node["draw_style"] >> draw_style;
+      SetDrawStyle(draw_style);
 
       if (draw_style == "lines")
       {
-        draw_style_ = LINES;
         ui_.drawstyle->setCurrentIndex(0);
       }
       else if (draw_style == "points")
       {
-        draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
       }
       else if (draw_style == "arrows")
       {
-        draw_style_ = ARROWS;
         ui_.drawstyle->setCurrentIndex(2);
       }
     }
 
     if (node["position_tolerance"])
     {
-      node["position_tolerance"] >> position_tolerance_;
-      ui_.positiontolerance->setValue(position_tolerance_);
+      double position_tolerance;
+      node["position_tolerance"] >> position_tolerance;
+      PositionToleranceChanged(position_tolerance);
     }
 
     if (node["buffer_size"])
     {
-      node["buffer_size"] >> buffer_size_;
-      ui_.buffersize->setValue(buffer_size_);
+      double buffer_size;
+      node["buffer_size"] >> buffer_size;
+      BufferSizeChanged(buffer_size);
     }
 
     if (node["show_covariance"])
@@ -410,15 +373,10 @@ namespace mapviz_plugins
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
     emitter << YAML::Key << "position_tolerance" <<
-               YAML::Value << position_tolerance_;
-    if (!lap_checked_)
-    {
-      emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
-    }
-    else
-    {
-      emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_holder_;
-    }
+               YAML::Value << positionTollerance();
+
+    emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
+
     bool show_laps = ui_.show_laps->isChecked();
     emitter << YAML::Key << "show_laps" << YAML::Value << show_laps;
 

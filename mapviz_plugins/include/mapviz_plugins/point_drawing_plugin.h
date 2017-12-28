@@ -92,18 +92,30 @@ namespace mapviz_plugins
     virtual bool DrawLapsArrows();
     virtual bool TransformPoint(StampedPoint& point);
     virtual void UpdateColor(QColor base_color, int i);
+    virtual void DrawCovariance();
 
    protected Q_SLOTS:
     virtual void BufferSizeChanged(int value);
     virtual void DrawIcon();
     virtual void SetColor(const QColor& color);
-    virtual void SetDrawStyle(QString style);
+    virtual void SetDrawStyle(const std::string &style);
+    virtual void SetDrawStyle(DrawStyle style);
     virtual void SetStaticArrowSizes(bool isChecked);
     virtual void SetArrowSize(int arrowSize);
     virtual void PositionToleranceChanged(double value);
+    virtual void LapToggled(bool checked);
+    virtual void CovariancedToggled(bool checked);
     void ResetTransformedPoints();
 
    protected:
+    void pushPoint(StampedPoint point);
+    void clearPoints();
+
+    double bufferSize() const;
+    double positionTollerance() const;
+    const std::deque<StampedPoint>& points() const;
+
+   private:
     int arrow_size_;
     DrawStyle draw_style_;
     StampedPoint cur_point_;

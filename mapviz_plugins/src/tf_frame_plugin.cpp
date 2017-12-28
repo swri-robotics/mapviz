@@ -119,24 +119,7 @@ namespace mapviz_plugins
       stamped_point.stamp = transform.GetStamp();
       stamped_point.transformed = false;
 
-      double distance = std::sqrt(
-          std::pow(stamped_point.point.x() - points_.back().point.x(), 2) +
-          std::pow(stamped_point.point.y() - points_.back().point.y(), 2));
-
-      if (points_.empty() || distance >= position_tolerance_)
-      {
-        points_.push_back(stamped_point);
-      }
-
-      if (buffer_size_ > 0)
-      {
-        while (static_cast<int>(points_.size()) > buffer_size_)
-        {
-          points_.pop_front();
-        }
-      }
-
-      cur_point_ = stamped_point;
+      pushPoint( std::move(stamped_point) );
     }
   }
 
@@ -194,42 +177,43 @@ namespace mapviz_plugins
     {
       std::string color;
       node["color"] >> color;
-      SetColor(QColor(color.c_str()));
-      ui_.color->setColor(color_);
+      QColor qcolor(color.c_str());
+      SetColor(qcolor);
+      ui_.color->setColor(qcolor);
     }
 
     if (node["draw_style"])
     {
       std::string draw_style;
       node["draw_style"] >> draw_style;
+      SetDrawStyle(draw_style);
 
       if (draw_style == "lines")
       {
-        draw_style_ = LINES;
         ui_.drawstyle->setCurrentIndex(0);
       }
       else if (draw_style == "points")
       {
-        draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
       }
       else if (draw_style == "arrows")
       {
-        draw_style_ = ARROWS;
         ui_.drawstyle->setCurrentIndex(2);
       }
     }
 
     if (node["position_tolerance"])
     {
-      node["position_tolerance"] >> position_tolerance_;
-      ui_.positiontolerance->setValue(position_tolerance_);
+      double position_tolerance;
+      node["position_tolerance"] >> position_tolerance;
+      PositionToleranceChanged(position_tolerance);
     }
 
     if (node["buffer_size"])
     {
-      node["buffer_size"] >> buffer_size_;
-      ui_.buffersize->setValue(buffer_size_);
+      double buffer_size;
+      node["buffer_size"] >> buffer_size;
+      BufferSizeChanged(buffer_size);
     }
 
     if (node["static_arrow_sizes"])
@@ -259,9 +243,9 @@ namespace mapviz_plugins
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
     emitter << YAML::Key << "position_tolerance" <<
-               YAML::Value << position_tolerance_;
+               YAML::Value << positionTollerance();
 
-    emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
+    emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
 
     emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
 

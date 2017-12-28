@@ -108,7 +108,7 @@ namespace mapviz_plugins
     arrow_size_ = arrowSize;
   }
 
-  void PointDrawingPlugin::SetDrawStyle(QString style)
+  void PointDrawingPlugin::SetDrawStyle(const std::string& style)
   {
     if (style == "lines")
     {
@@ -122,8 +122,13 @@ namespace mapviz_plugins
     {
       draw_style_ = ARROWS;
     }
-
     DrawIcon();
+  }
+
+  void PointDrawingPlugin::SetDrawStyle(PointDrawingPlugin::DrawStyle style)
+  {
+     draw_style_ = style;
+     DrawIcon();
   }
 
   void PointDrawingPlugin::SetStaticArrowSizes(bool isChecked)
@@ -134,6 +139,16 @@ namespace mapviz_plugins
   void PointDrawingPlugin::PositionToleranceChanged(double value)
   {
     position_tolerance_ = value;
+  }
+
+  void PointDrawingPlugin::LapToggled(bool checked)
+  {
+    lap_checked_ = checked;
+  }
+
+  void PointDrawingPlugin::CovariancedToggled(bool checked)
+  {
+    covariance_checked_ = checked;
   }
 
   void PointDrawingPlugin::ResetTransformedPoints()
@@ -149,6 +164,53 @@ namespace mapviz_plugins
     {
       point.transformed = false;
     }
+  }
+
+  void PointDrawingPlugin::pushPoint(PointDrawingPlugin::StampedPoint stamped_point)
+  {
+    cur_point_ = stamped_point;
+
+    if (points_.empty() ||
+        (stamped_point.point.distance(points_.back().point)) >=
+            (position_tolerance_))
+    {
+      points_.push_back(stamped_point);
+    }
+
+    if (buffer_size_ > 0)
+    {
+      while (static_cast<int>(points_.size()) > buffer_size_)
+      {
+        points_.pop_front();
+      }
+    }
+  }
+
+  void PointDrawingPlugin::clearPoints()
+  {
+    points_.clear();
+  }
+
+  double PointDrawingPlugin::bufferSize() const
+  {
+    if (!lap_checked_)
+    {
+      return buffer_size_;
+    }
+    else
+    {
+      return buffer_holder_;
+    }
+  }
+
+  double PointDrawingPlugin::positionTollerance() const
+  {
+    return position_tolerance_;
+  }
+
+  const std::deque<PointDrawingPlugin::StampedPoint> &PointDrawingPlugin::points() const
+  {
+    return points_;
   }
 
   void PointDrawingPlugin::BufferSizeChanged(int value)
@@ -397,32 +459,30 @@ namespace mapviz_plugins
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(3);
     QColor base_color = color_;
-    if (laps_.size() != 0)
-    {
-      for (size_t i = 0; i < laps_.size(); i++)
-      {
-        UpdateColor(base_color, static_cast<int>(i));
-        if (draw_style_ == LINES)
-        {
-          glLineWidth(3);
-          glBegin(GL_LINE_STRIP);
-        }
-        else
-        {
-          glPointSize(6);
-          glBegin(GL_POINTS);
-        }
 
-        for (const StampedPoint& point: laps_[i])
-        {
-          if (point.transformed)
-          {
-            glVertex2d(point.transformed_point.getX(),
-                       point.transformed_point.getY());
-          }
-        }
-        glEnd();
+    for (size_t i = 0; i < laps_.size(); i++)
+    {
+      UpdateColor(base_color, static_cast<int>(i));
+      if (draw_style_ == LINES)
+      {
+        glLineWidth(3);
+        glBegin(GL_LINE_STRIP);
       }
+      else
+      {
+        glPointSize(6);
+        glBegin(GL_POINTS);
+      }
+
+      for (const StampedPoint& point: laps_[i])
+      {
+        if (point.transformed)
+        {
+          glVertex2d(point.transformed_point.getX(),
+                     point.transformed_point.getY());
+        }
+      }
+      glEnd();
     }
 
     if (draw_style_ == LINES)
@@ -467,6 +527,29 @@ namespace mapviz_plugins
       base_color.setHsv(hue, sat, v);
       glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(),
                 0.5);
+  }
+
+  void PointDrawingPlugin::DrawCovariance()
+  {
+    glLineWidth(4);
+
+    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
+
+    if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
+    {
+      glBegin(GL_LINE_STRIP);
+
+      for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
+      {
+        glVertex2d(cur_point_.transformed_cov_points[i].getX(),
+                   cur_point_.transformed_cov_points[i].getY());
+      }
+
+      glVertex2d(cur_point_.transformed_cov_points.front().getX(),
+                 cur_point_.transformed_cov_points.front().getY());
+
+      glEnd();
+    }
   }
 
   bool PointDrawingPlugin::DrawLapsArrows()
