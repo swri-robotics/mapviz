@@ -150,6 +150,10 @@ namespace mapviz_plugins
         SIGNAL(colorEdited(const QColor &)),
         this,
         SLOT(DrawIcon()));
+    QObject::connect(this,
+        SIGNAL(TargetFrameChanged(const std::string&)),
+        this,
+        SLOT(ResetTransformedScans()));
 
     PrintInfo("Constructed LaserScanPlugin");
   }
@@ -189,6 +193,14 @@ namespace mapviz_plugins
       painter.drawPoint(13, 2);
 
       icon_->SetPixmap(icon);
+    }
+  }
+
+  void LaserScanPlugin::ResetTransformedScans()
+  {
+    for (Scan& scan: scans_)
+    {
+      scan.transformed = false;
     }
   }
 

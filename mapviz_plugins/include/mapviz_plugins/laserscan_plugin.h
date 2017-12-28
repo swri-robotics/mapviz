@@ -97,6 +97,7 @@ namespace mapviz_plugins
       void UseRainbowChanged(int check_state);
       void UpdateColors();    
       void DrawIcon();
+      void ResetTransformedScans();
 
     private:
       struct StampedPoint
