@@ -101,6 +101,7 @@ namespace mapviz_plugins
     virtual void SetStaticArrowSizes(bool isChecked);
     virtual void SetArrowSize(int arrowSize);
     virtual void PositionToleranceChanged(double value);
+    void ResetTransformedPoints();
 
    protected:
     int arrow_size_;

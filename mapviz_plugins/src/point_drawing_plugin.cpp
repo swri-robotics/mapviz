@@ -57,6 +57,10 @@ namespace mapviz_plugins
         static_arrow_sizes_(false),
         got_begin_(false)
   {
+    QObject::connect(this,
+                     SIGNAL(TargetFrameChanged(const std::string&)),
+                     this,
+                     SLOT(ResetTransformedPoints()));
   }
 
   void PointDrawingPlugin::DrawIcon()
@@ -130,6 +134,21 @@ namespace mapviz_plugins
   void PointDrawingPlugin::PositionToleranceChanged(double value)
   {
     position_tolerance_ = value;
+  }
+
+  void PointDrawingPlugin::ResetTransformedPoints()
+  {
+    for (std::deque<StampedPoint>& lap: laps_)
+    {
+      for (StampedPoint& point: lap)
+      {
+        point.transformed = false;
+      }
+    }
+    for (StampedPoint& point: points_)
+    {
+      point.transformed = false;
+    }
   }
 
   void PointDrawingPlugin::BufferSizeChanged(int value)
@@ -226,13 +245,12 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-    std::deque<StampedPoint>::iterator it = points_.begin();
-    for (; it != points_.end(); ++it)
+    for (const StampedPoint& point: points_)
     {
-      success &= it->transformed;
-      if (it->transformed)
+      success &= point.transformed;
+      if (point.transformed)
       {
-        glVertex2d(it->transformed_point.getX(), it->transformed_point.getY());
+        glVertex2d(point.transformed_point.getX(), point.transformed_point.getY());
       }
     }
 
@@ -277,10 +295,9 @@ namespace mapviz_plugins
     glLineWidth(2);
     glBegin(GL_LINES);
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
-    std::deque<StampedPoint>::iterator it = points_.begin();
-    for (; it != points_.end(); ++it)
+    for (const StampedPoint& point: points_)
     {
-      success &= DrawArrow(*it);
+      success &= DrawArrow(point);
     }
 
     success &= DrawArrow(cur_point_);
@@ -351,21 +368,19 @@ namespace mapviz_plugins
   {
     bool transformed = false;
 
-    std::deque<StampedPoint>::iterator points_it = points_.begin();
-    for (; points_it != points_.end(); ++points_it)
+    for (StampedPoint& point: points_)
     {
-      transformed = transformed | TransformPoint(*points_it);
+      transformed = transformed | TransformPoint(point);
     }
 
     transformed = transformed | TransformPoint(cur_point_);
     if (laps_.size() > 0)
     {
-      for (size_t i = 0; i < laps_.size(); i++)
+      for (std::deque<StampedPoint>& lap: laps_)
       {
-        std::deque<StampedPoint>::iterator lap_it = laps_[i].begin();
-        for (; lap_it != laps_[i].end(); ++lap_it)
+        for (StampedPoint& point: lap)
         {
-          transformed = transformed | TransformPoint(*lap_it);
+          transformed = transformed | TransformPoint(point);
         }
       }
     }
@@ -398,13 +413,12 @@ namespace mapviz_plugins
           glBegin(GL_POINTS);
         }
 
-        std::deque<StampedPoint>::iterator it = laps_[i].begin();
-        for (; it != laps_[i].end(); it++)
+        for (const StampedPoint& point: laps_[i])
         {
-          if (it->transformed)
+          if (point.transformed)
           {
-            glVertex2d(it->transformed_point.getX(),
-                       it->transformed_point.getY());
+            glVertex2d(point.transformed_point.getX(),
+                       point.transformed_point.getY());
           }
         }
         glEnd();
@@ -426,14 +440,13 @@ namespace mapviz_plugins
 
     if (points_.size() > 0)
     {
-      std::deque<StampedPoint>::iterator it = points_.begin();
-      for (; it != points_.end(); ++it)
+      for (const StampedPoint& point: points_)
       {
-        transformed &= it->transformed;
-        if (it->transformed)
+        transformed &= point.transformed;
+        if (point.transformed)
         {
-          glVertex2d(it->transformed_point.getX(),
-                     it->transformed_point.getY());
+          glVertex2d(point.transformed_point.getX(),
+                     point.transformed_point.getY());
         }
       }
     }
@@ -468,10 +481,10 @@ namespace mapviz_plugins
       {
         UpdateColor(base_color, static_cast<int>(i));
         std::deque<StampedPoint>::iterator it = laps_[i].begin();
-        for (; it != laps_[i].end(); ++it)
+        for (const StampedPoint& point: laps_[i])
         {
           glBegin(GL_LINE_STRIP);
-          success &= DrawArrow(*it);
+          success &= DrawArrow(point);
           glEnd();
         }
       }
@@ -487,11 +500,10 @@ namespace mapviz_plugins
 
     if (points_.size() > 0)
     {
-      std::deque<StampedPoint>::iterator it = points_.begin();
-      for (; it != points_.end(); ++it)
+      for (const StampedPoint& point: points_)
       {
         glBegin(GL_LINE_STRIP);
-        success &= DrawArrow(*it);
+        success &= DrawArrow(point);
         glEnd();
       }
     }
