@@ -563,7 +563,6 @@ namespace mapviz_plugins
       for (size_t i = 0; i < laps_.size(); i++)
       {
         UpdateColor(base_color, static_cast<int>(i));
-        std::deque<StampedPoint>::iterator it = laps_[i].begin();
         for (const StampedPoint& point: laps_[i])
         {
           glBegin(GL_LINE_STRIP);
