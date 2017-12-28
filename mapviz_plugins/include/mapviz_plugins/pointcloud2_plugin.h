@@ -120,7 +120,7 @@ namespace mapviz_plugins
       bool transformed;
       std::map<std::string, FieldInfo> new_features;
 
-      std::vector<float> gl_transformed_point;
+      std::vector<float> gl_point;
       std::vector<float> gl_color;
       GLuint point_vbo;
       GLuint color_vbo;
