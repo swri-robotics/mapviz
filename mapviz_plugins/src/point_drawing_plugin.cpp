@@ -203,7 +203,7 @@ namespace mapviz_plugins
     }
   }
 
-  double PointDrawingPlugin::positionTollerance() const
+  double PointDrawingPlugin::positionTolerance() const
   {
     return position_tolerance_;
   }

@@ -112,7 +112,7 @@ namespace mapviz_plugins
     void clearPoints();
 
     double bufferSize() const;
-    double positionTollerance() const;
+    double positionTolerance() const;
     const std::deque<StampedPoint>& points() const;
 
    private:

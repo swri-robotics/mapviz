@@ -272,7 +272,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
     emitter << YAML::Key << "position_tolerance" <<
-               YAML::Value << positionTollerance();
+               YAML::Value << positionTolerance();
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
 
