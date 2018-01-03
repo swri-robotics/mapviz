@@ -79,6 +79,8 @@ namespace tile_map
     void Draw();
 
   private:
+    void DrawTiles(std::vector<Tile> &tiles ,int priority);
+
     boost::shared_ptr<TileSource> tile_source_;
 
     swri_transform_util::Transform transform_;
