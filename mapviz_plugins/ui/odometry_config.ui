@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>287</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -291,25 +291,6 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
-    <widget class="QDoubleSpinBox" name="show_timestamps">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="buttonSymbols">
-      <enum>QAbstractSpinBox::PlusMinus</enum>
-     </property>
-     <property name="suffix">
-      <string/>
-     </property>
-     <property name="value">
-      <double>1.000000000000000</double>
-     </property>
-    </widget>
-   </item>
    <item row="10" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
@@ -355,6 +336,22 @@
      </property>
     </widget>
    </item>
+   <item row="9" column="1">
+    <widget class="QSpinBox" name="show_timestamps">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="buttonSymbols">
+      <enum>QAbstractSpinBox::PlusMinus</enum>
+     </property>
+     <property name="value">
+      <number>1</number>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -374,4 +371,3 @@
   <slot>AngleToleranceChanged(double)</slot>
  </slots>
 </ui>
-

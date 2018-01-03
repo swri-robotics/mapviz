@@ -69,8 +69,6 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.show_timestamps, SIGNAL(valueChanged(int)), this,
-                     SLOT(TopicEditor()));
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this,
                      SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
