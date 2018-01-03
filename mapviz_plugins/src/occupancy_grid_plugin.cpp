@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2018, Eurecat
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
 //     * Redistributions in binary form must reproduce the above copyright
 //       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Southwest Research Institute® (SwRI®) nor the
+//     * Neither the name of Eurecat nor the
 //       names of its contributors may be used to endorse or promote products
 //       derived from this software without specific prior written permission.
 //
@@ -152,6 +152,16 @@ namespace mapviz_plugins
       {
         gl_colors_[i] = alpha;
       }
+
+      glBindVertexArray(vao_);
+
+      glGenBuffers(1, &colours_vbo_);
+      glBindBuffer(GL_ARRAY_BUFFER, colours_vbo_);  // color
+      glBufferData(GL_ARRAY_BUFFER, gl_colors_.size() * sizeof(GLfloat), gl_colors_.data(), GL_STATIC_DRAW);
+      glColorPointer( 4, GL_FLOAT, 0, 0);
+
+      glBindVertexArray(0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
   }
 
@@ -276,6 +286,16 @@ namespace mapviz_plugins
       glRotatef(yaw   * 180.0 / M_PI, 0, 0, 1);
 
       glScalef( grid_->info.resolution, grid_->info.resolution, 1.0);
+
+      glBegin(GL_QUADS);
+      glColor4f(0.6, 0.7, 0.7f, ui_.alpha->value()*0.5);
+
+      glVertex2d(0, 0);
+      glVertex2d(grid_->info.width, 0.0);
+      glVertex2d(grid_->info.width, grid_->info.height);
+      glVertex2d(0.0, grid_->info.height);
+
+      glEnd();
 
       glBindVertexArray(vao_);
       glDrawArrays(GL_QUADS, 0, gl_points_.size() / 2 );
