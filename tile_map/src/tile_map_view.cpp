@@ -214,7 +214,7 @@ namespace tile_map
 
     for (size_t i = 0; i < precache_.size(); i++)
     {
-      TexturePtr texture = precache_[i].texture;
+      TexturePtr& texture = precache_[i].texture;
 
       if (!texture)
       {
@@ -264,7 +264,7 @@ namespace tile_map
 
     for (size_t i = 0; i < tiles_.size(); i++)
     {
-      TexturePtr texture = tiles_[i].texture;
+      TexturePtr& texture = tiles_[i].texture;
 
       if (!texture)
       {
