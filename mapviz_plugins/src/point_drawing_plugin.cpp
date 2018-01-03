@@ -108,7 +108,7 @@ namespace mapviz_plugins
     arrow_size_ = arrowSize;
   }
 
-  void PointDrawingPlugin::SetDrawStyle(const std::string& style)
+  void PointDrawingPlugin::SetDrawStyle(QString style)
   {
     if (style == "lines")
     {

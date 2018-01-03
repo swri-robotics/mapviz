@@ -297,19 +297,21 @@ namespace mapviz_plugins
     {
       std::string draw_style;
       node["draw_style"] >> draw_style;
-      SetDrawStyle(draw_style);
 
       if (draw_style == "lines")
       {
         ui_.drawstyle->setCurrentIndex(0);
+        SetDrawStyle( LINES );
       }
       else if (draw_style == "points")
       {
         ui_.drawstyle->setCurrentIndex(1);
+        SetDrawStyle( POINTS );
       }
       else if (draw_style == "arrows")
       {
         ui_.drawstyle->setCurrentIndex(2);
+        SetDrawStyle( ARROWS );
       }
     }
 

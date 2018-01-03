@@ -98,7 +98,7 @@ namespace mapviz_plugins
     virtual void BufferSizeChanged(int value);
     virtual void DrawIcon();
     virtual void SetColor(const QColor& color);
-    virtual void SetDrawStyle(const std::string &style);
+    virtual void SetDrawStyle(QString style);
     virtual void SetDrawStyle(DrawStyle style);
     virtual void SetStaticArrowSizes(bool isChecked);
     virtual void SetArrowSize(int arrowSize);
