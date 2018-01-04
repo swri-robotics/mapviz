@@ -227,7 +227,9 @@ namespace mapviz_plugins
 
     if (node["arrow_size"])
     {
-      ui_.arrow_size->setValue(node["arrow_size"].as<int>());
+      int arrow_size = node["arrow_size"].as<int>();
+      ui_.arrow_size->setValue(arrow_size);
+      SetArrowSize(arrow_size);
     }
 
     FrameEdited();

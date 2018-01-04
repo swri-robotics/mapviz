@@ -332,12 +332,14 @@ namespace mapviz_plugins
       bool show_covariance = false;
       node["show_covariance"] >> show_covariance;
       ui_.show_covariance->setChecked(show_covariance);
+      CovariancedToggled(show_covariance);
     }
     if (node["show_laps"])
     {
       bool show_laps = false;
       node["show_laps"] >> show_laps;
       ui_.show_laps->setChecked(show_laps);
+      LapToggled(show_laps);
     }
 
     if (node["static_arrow_sizes"])
@@ -349,7 +351,9 @@ namespace mapviz_plugins
 
     if (node["arrow_size"])
     {
-      ui_.arrow_size->setValue(node["arrow_size"].as<int>());
+      double arrow_size = node["arrow_size"].as<int>();
+      ui_.arrow_size->setValue(arrow_size);
+      SetArrowSize(arrow_size);
     }
 
     if (node["show_timestamps"])
