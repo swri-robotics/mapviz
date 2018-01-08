@@ -206,10 +206,7 @@ namespace mapviz_plugins
     }
     else
     {
-      image_transport::ImageTransport it(local_node_);
-      image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
-
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      Resubscribe();
     }
   }
 
