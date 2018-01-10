@@ -56,5 +56,8 @@
   <class name="mapviz_plugins/move_base" type="mapviz_plugins::MoveBasePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Interface to the [move_base] action server.</description>
   </class>
+  <class name="mapviz_plugins/occupancy_grid" type="mapviz_plugins::OccupancyGridPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Display maps and other OccupancyGrids</description>
+  </class>
 </library>
 
