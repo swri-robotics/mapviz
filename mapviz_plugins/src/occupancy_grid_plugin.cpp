@@ -210,26 +210,27 @@ namespace mapviz_plugins
     gl_colors_.clear();
     gl_colors_.reserve( 16*num_quads );
     double alpha = ui_.alpha->value();
-
-    for (size_t col = 0; col < msg->info.width; col++)
+    
+    int index = 0;
+    for (size_t Y = 0; Y < msg->info.height; Y++)
     {
-      for (size_t row = 0; row < msg->info.height; row++)
+      for (size_t X = 0 ; X < msg->info.width; X++)
       {
-        const double color = msg->data[ row + (col*msg->info.height) ];
+        double color = msg->data[ index++ ];
 
         if( color < 0) continue;
 
-        gl_points_.push_back( row ); // X
-        gl_points_.push_back( col ); // Y
+        gl_points_.push_back( X );
+        gl_points_.push_back( Y );
 
-        gl_points_.push_back( row ); // X
-        gl_points_.push_back( col + 1 ); // Y
+        gl_points_.push_back( X );
+        gl_points_.push_back( Y + 1 );
 
-        gl_points_.push_back( row + 1 ); // X
-        gl_points_.push_back( col + 1 ); // Y
+        gl_points_.push_back( X + 1 );
+        gl_points_.push_back( Y + 1 );
 
-        gl_points_.push_back( row + 1 ); // X
-        gl_points_.push_back( col ); // Y
+        gl_points_.push_back( X + 1 );
+        gl_points_.push_back( Y );
 
         for (int j=0; j<4; j++)
         {
