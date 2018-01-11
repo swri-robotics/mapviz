@@ -106,11 +106,10 @@ namespace mapviz_plugins
     virtual void LapToggled(bool checked);
     virtual void CovariancedToggled(bool checked);
     void ResetTransformedPoints();
+    void ClearPoints();
 
    protected:
     void pushPoint(StampedPoint point);
-    void clearPoints();
-
     double bufferSize() const;
     double positionTolerance() const;
     const std::deque<StampedPoint>& points() const;

@@ -92,7 +92,7 @@ namespace mapviz_plugins
     if (topic != topic_)
     {
       initialized_ = false;
-      clearPoints();
+      ClearPoints();
       has_message_ = false;
       PrintWarning("No messages received.");
 
@@ -116,7 +116,7 @@ namespace mapviz_plugins
       has_message_ = true;
     }
 
-    clearPoints();
+    ClearPoints();
 
     for (unsigned int i = 0; i < path->poses.size(); i++)
     {

@@ -84,11 +84,13 @@ namespace mapviz_plugins
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
-            SLOT(SetColor(const QColor&)));
+                     SLOT(SetColor(const QColor&)));
     QObject::connect(ui_.show_laps, SIGNAL(toggled(bool)), this,
-            SLOT(LapToggled(bool)));
+                     SLOT(LapToggled(bool)));
     QObject::connect(ui_.show_covariance, SIGNAL(toggled(bool)), this,
-            SLOT(CovariancedToggled(bool)));
+                     SLOT(CovariancedToggled(bool)));
+    QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
+                     SLOT(ClearPoints()));
   }
 
   OdometryPlugin::~OdometryPlugin()
@@ -113,7 +115,7 @@ namespace mapviz_plugins
     if (topic != topic_)
     {
       initialized_ = false;
-      clearPoints();
+      ClearPoints();
       has_message_ = false;
       PrintWarning("No messages received.");
 
@@ -317,6 +319,7 @@ namespace mapviz_plugins
     {
       double position_tolerance;
       node["position_tolerance"] >> position_tolerance;
+      ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
     }
 
@@ -324,6 +327,7 @@ namespace mapviz_plugins
     {
       double buffer_size;
       node["buffer_size"] >> buffer_size;
+      ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
 

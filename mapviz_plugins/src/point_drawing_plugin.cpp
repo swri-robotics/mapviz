@@ -183,14 +183,14 @@ namespace mapviz_plugins
 
     if (buffer_size_ > 0)
     {
-      while (static_cast<int>(points_.size()) > buffer_size_)
+      while (static_cast<int>(points_.size()) >= buffer_size_)
       {
         points_.pop_front();
       }
     }
   }
 
-  void PointDrawingPlugin::clearPoints()
+  void PointDrawingPlugin::ClearPoints()
   {
     points_.clear();
   }
@@ -223,7 +223,7 @@ namespace mapviz_plugins
 
     if (buffer_size_ > 0)
     {
-      while (static_cast<int>(points_.size()) > buffer_size_)
+      while (static_cast<int>(points_.size()) >= buffer_size_)
       {
         points_.pop_front();
       }
@@ -304,7 +304,7 @@ namespace mapviz_plugins
   {
     bool success = cur_point_.transformed;
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
-    if (draw_style_ == LINES)
+    if (draw_style_ == LINES && points_.size()>0)
     {
       glLineWidth(3);
       glBegin(GL_LINE_STRIP);
@@ -362,7 +362,7 @@ namespace mapviz_plugins
   bool PointDrawingPlugin::DrawArrows()
   {
     bool success = true;
-    glLineWidth(2);
+    glLineWidth(4);
     glBegin(GL_LINES);
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     for (const StampedPoint& point: points_)

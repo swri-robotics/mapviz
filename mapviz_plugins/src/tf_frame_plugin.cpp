@@ -81,6 +81,8 @@ namespace mapviz_plugins
                      this, SLOT(SetArrowSize(int)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
                      SLOT(SetColor(const QColor&)));
+    QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
+                     SLOT(ClearPoints()));
   }
 
   TfFramePlugin::~TfFramePlugin()
@@ -208,6 +210,7 @@ namespace mapviz_plugins
     {
       double position_tolerance;
       node["position_tolerance"] >> position_tolerance;
+      ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
     }
 
@@ -215,6 +218,7 @@ namespace mapviz_plugins
     {
       double buffer_size;
       node["buffer_size"] >> buffer_size;
+      ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
 
