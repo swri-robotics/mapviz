@@ -122,18 +122,15 @@ namespace mapviz_plugins
     std::string topic_;
     Anchor anchor_;
     Units units_;
-    int offset_x_;
-    int offset_y_;
-    double width_;
-    double height_;
     QString transport_;
 
     bool force_resubscribe_;
     bool has_image_;
 
-    double last_width_;
-    double last_height_;
-    double original_aspect_ratio_;
+    QPointF offset_;
+    QSizeF size_;
+    QSizeF last_size_;
+    QSizeF original_img_size_;
 
     ros::NodeHandle local_node_;
     image_transport::Subscriber image_sub_;

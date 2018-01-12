@@ -54,15 +54,12 @@ namespace mapviz_plugins
     config_widget_(new QWidget()),
     anchor_(TOP_LEFT),
     units_(PIXELS),
-    offset_x_(0),
-    offset_y_(0),
-    width_(320),
-    height_(240),
+    offset_(0,0),
+    size_(320, 240),
     transport_("default"),
     has_image_(false),
-    last_width_(0),
-    last_height_(0),
-    original_aspect_ratio_(1.0)
+    last_size_(0,0),
+    original_img_size_(1,1)
   {
     ui_.setupUi(config_widget_);
 
@@ -99,22 +96,22 @@ namespace mapviz_plugins
 
   void ImagePlugin::SetOffsetX(int offset)
   {
-    offset_x_ = offset;
+    offset_.setX( offset );
   }
 
   void ImagePlugin::SetOffsetY(int offset)
   {
-    offset_y_ = offset;
+    offset_.setY( offset );
   }
 
   void ImagePlugin::SetWidth(double width)
   {
-    width_ = width;
+    size_.setWidth( width );
   }
 
   void ImagePlugin::SetHeight(double height)
   {
-    height_ = height;
+    size_.setHeight( height );
   }
 
   void ImagePlugin::SetAnchor(QString anchor)
@@ -159,40 +156,49 @@ namespace mapviz_plugins
 
   void ImagePlugin::SetUnits(QString units)
   {
-    // do this in both cases to avoid image clamping
-    ui_.width->setMaximum(10000);
-    ui_.height->setMaximum(10000);
-
     if (units == "pixels")
     {
       ui_.width->setDecimals(0);
       ui_.height->setDecimals(0);
       units_ = PIXELS;
-      width_  = width_ * double(canvas_->width()) / 100.0;
-      height_ = height_ * double(canvas_->height()) / 100.0;
+      // convert percent to pixels
+      double scale_ratio = (size_.width() / 100.0);
+      size_.setWidth(  original_img_size_.width() * scale_ratio );
+      size_.setHeight( original_img_size_.height() * scale_ratio );
+
       ui_.width->setSuffix(" px");
       ui_.height->setSuffix(" px");
+      ui_.offsetx->setSuffix(" px");
+      ui_.offsety->setSuffix(" px");
+
+      ui_.width->setToolTip("Pixels");
+      ui_.height->setToolTip("Pixels");
+      ui_.offsetx->setToolTip("Pixels");
+      ui_.offsety->setToolTip("Pixels");
     }
     else if (units == "percent")
     {
       ui_.width->setDecimals(1);
       ui_.height->setDecimals(1);
       units_ = PERCENT;
-      width_ = width_ * 100.0 / double(canvas_->width());
-      height_ =  height_ * 100.0 / double(canvas_->height());
+      size_.setWidth(  100.0 * size_.width() /  original_img_size_.width() );
+      size_.setHeight( 100.0 * size_.height() /  original_img_size_.height() );
+
       ui_.width->setSuffix(" %");
       ui_.height->setSuffix(" %");
-    }
-    ui_.width->setValue( width_ );
-    ui_.height->setValue( height_ );
+      ui_.offsetx->setSuffix(" %");
+      ui_.offsety->setSuffix(" %");
 
-    if( units_ == PERCENT)
-    {
-      ui_.width->setMaximum(100);
-      ui_.height->setMaximum(100);
+      ui_.width->setToolTip("Percent of the original image size");
+      ui_.height->setToolTip("Percent of the original image size");
+      ui_.offsetx->setToolTip("Percent of the visualization canvas");
+      ui_.offsety->setToolTip("Percent of the visualization canvas");
     }
 
+    ui_.width->setValue( size_.width() );
+    ui_.height->setValue( size_.height() );
   }
+
   void ImagePlugin::SetSubscription(bool visible)
   {
     if(topic_.empty())
@@ -225,7 +231,7 @@ namespace mapviz_plugins
     ui_.height->setEnabled( !checked );
     if( checked )
     {
-      ui_.height->setValue( width_ * original_aspect_ratio_ );
+      ui_.height->setValue( size_.width() * original_img_size_.height() / original_img_size_.width() );
     }
   }
 
@@ -332,18 +338,18 @@ namespace mapviz_plugins
       return;
     }
 
-    last_width_ = 0;
-    last_height_ = 0;
-    original_aspect_ratio_ = (double)image->height / (double)image->width;
+    last_size_ = QSizeF(0,0);
+    original_img_size_ = QSizeF(image_.width, image_.height);
 
     if( ui_.keep_ratio->isChecked() )
     {
-      double height =  width_ * original_aspect_ratio_;
-      if (units_ == PERCENT)
-      {
-        height *= (double)canvas_->width() / (double)canvas_->height();
+      const double ratio =  original_img_size_.height() / original_img_size_.width();
+      if( units_ == PERCENT){
+        ui_.height->setValue( size_.width() );
       }
-      ui_.height->setValue(height);
+      else{
+        ui_.height->setValue( size_.width() * ratio );
+      }
     }
 
     has_image_ = true;
@@ -423,28 +429,29 @@ namespace mapviz_plugins
   void ImagePlugin::Draw(double x, double y, double scale)
   {
     // Calculate the correct offsets and dimensions
-    double x_offset = offset_x_;
-    double y_offset = offset_y_;
-    double width = width_;
-    double height = height_;
+    double x_offset = offset_.x();
+    double y_offset = offset_.y();
+    double width = size_.width();
+    double height = size_.height();
 
     if (units_ == PERCENT)
     {
-      x_offset = offset_x_ * canvas_->width() / 100.0;
-      y_offset = offset_y_ * canvas_->height() / 100.0;
-      width = width_ * canvas_->width() / 100.0;
-      height = height_ * canvas_->height() / 100.0;
+      x_offset *= canvas_->width() / 100.0;
+      y_offset *= canvas_->height() / 100.0;
+      width  *= original_img_size_.width() / 100.0;
+      height *= original_img_size_.height() / 100.0;
     }
 
     if( ui_.keep_ratio->isChecked() )
     {
-      height = original_aspect_ratio_ * width;
+      height = (original_img_size_.height() / original_img_size_.width()) * width;
     }
 
     // Scale the source image if necessary
-    if (width != last_width_ || height != last_height_)
+    if (width != last_size_.width() || height != last_size_.height())
     {
       ScaleImage(width, height);
+      last_size_ = QSizeF(width,height);
     }
 
     // Calculate the correct render position
@@ -506,9 +513,6 @@ namespace mapviz_plugins
     DrawIplImage(&scaled_image_);
 
     glPopMatrix();
-
-    last_width_ = width;
-    last_height_ = height;
   }
 
   void ImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
@@ -559,26 +563,30 @@ namespace mapviz_plugins
 
     if (node["offset_x"])
     {
-      node["offset_x"] >> offset_x_;
-      ui_.offsetx->setValue(offset_x_);
+      double offset;
+      node["offset_x"] >> offset;
+      ui_.offsetx->setValue(offset);
     }
 
     if (node["offset_y"])
     {
-      node["offset_y"] >> offset_y_;
-      ui_.offsety->setValue(offset_y_);
+      double offset;
+      node["offset_y"] >> offset;
+      ui_.offsety->setValue(offset);
     }
 
     if (node["width"])
     {
-      node["width"] >> width_;
-      ui_.width->setValue(width_);
+      double width;
+      node["width"] >> width;
+      ui_.width->setValue(width);
     }
 
     if (node["height"])
     {
-      node["height"] >> height_;
-      ui_.height->setValue(height_);
+      double height;
+      node["height"] >> height;
+      ui_.height->setValue(height);
     }
 
     if (node["keep_ratio"])
@@ -594,10 +602,10 @@ namespace mapviz_plugins
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "anchor" << YAML::Value << AnchorToString(anchor_);
     emitter << YAML::Key << "units" << YAML::Value << UnitsToString(units_);
-    emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
-    emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
-    emitter << YAML::Key << "width" << YAML::Value << width_;
-    emitter << YAML::Key << "height" << YAML::Value << height_;
+    emitter << YAML::Key << "offset_x" << YAML::Value << offset_.x();
+    emitter << YAML::Key << "offset_y" << YAML::Value << offset_.y();
+    emitter << YAML::Key << "width" << YAML::Value << size_.width();
+    emitter << YAML::Key << "height" << YAML::Value << size_.height();
     emitter << YAML::Key << "keep_ratio" << YAML::Value << ui_.keep_ratio->isChecked();
     emitter << YAML::Key << "image_transport" << YAML::Value << transport_.toStdString();
   }
