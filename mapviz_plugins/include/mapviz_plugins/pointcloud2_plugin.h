@@ -103,6 +103,7 @@ namespace mapviz_plugins
     void UpdateColors();
     void DrawIcon();
     void ResetTransformedPointClouds();
+    void ClearPointClouds();
     void SetSubscription(bool subscribe);
 
   private:

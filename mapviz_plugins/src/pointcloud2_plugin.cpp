@@ -98,6 +98,10 @@ namespace mapviz_plugins
                      SIGNAL(clicked()),
                      this,
                      SLOT(SelectTopic()));
+    QObject::connect(ui_.buttonResetBuffer,
+                     SIGNAL(clicked()),
+                     this,
+                     SLOT(ClearPointClouds()));
     QObject::connect(ui_.topic,
                      SIGNAL(editingFinished()),
                      this,
@@ -206,12 +210,19 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::ResetTransformedPointClouds()
   {
+    QMutexLocker locker(&scan_mutex_);
     for (Scan& scan: scans_)
     {
       scan.transformed = false;
       scan.gl_color.clear();
       scan.gl_point.clear();
     }
+  }
+
+  void PointCloud2Plugin::ClearPointClouds()
+  {
+      QMutexLocker locker(&scan_mutex_);
+      scans_.clear();
   }
 
   void PointCloud2Plugin::SetSubscription(bool subscribe)
