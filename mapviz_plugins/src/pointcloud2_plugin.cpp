@@ -301,10 +301,10 @@ namespace mapviz_plugins
         for (const StampedPoint& point: scan.points)
         {
           const QColor color = CalculateColor(point);
-          scan.gl_color.push_back( color.redF());
-          scan.gl_color.push_back( color.greenF());
-          scan.gl_color.push_back( color.blueF());
-          scan.gl_color.push_back( alpha_);
+          scan.gl_color.push_back( color.red());
+          scan.gl_color.push_back( color.green());
+          scan.gl_color.push_back( color.blue());
+          scan.gl_color.push_back( 255 );
         }
       }
     }
@@ -543,10 +543,10 @@ namespace mapviz_plugins
           scan.gl_point.push_back( transformed_point.getY() );
         }
         const QColor color = CalculateColor(point);
-        scan.gl_color.push_back( color.redF());
-        scan.gl_color.push_back( color.greenF());
-        scan.gl_color.push_back( color.blueF());
-        scan.gl_color.push_back( alpha_);
+        scan.gl_color.push_back( color.red());
+        scan.gl_color.push_back( color.green());
+        scan.gl_color.push_back( color.blue());
+        scan.gl_color.push_back( 255);
       }
     }
 
@@ -634,8 +634,8 @@ namespace mapviz_plugins
           glVertexPointer( 2, GL_FLOAT, 0, 0);
 
           glBindBuffer(GL_ARRAY_BUFFER, scan.color_vbo);  // color
-          glBufferData(GL_ARRAY_BUFFER, scan.gl_color.size() * sizeof(float), scan.gl_color.data(), GL_STATIC_DRAW);
-          glColorPointer( 4, GL_FLOAT, 0, 0);
+          glBufferData(GL_ARRAY_BUFFER, scan.gl_color.size() * sizeof(uint8_t), scan.gl_color.data(), GL_STATIC_DRAW);
+          glColorPointer( 4, GL_BYTE, 0, 0);
 
           glDrawArrays(GL_POINTS, 0, scan.gl_point.size() / 2 );
         }

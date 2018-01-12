@@ -121,7 +121,7 @@ namespace mapviz_plugins
       std::map<std::string, FieldInfo> new_features;
 
       std::vector<float> gl_point;
-      std::vector<float> gl_color;
+      std::vector<uint8_t> gl_color;
       GLuint point_vbo;
       GLuint color_vbo;
     };
