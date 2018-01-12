@@ -111,13 +111,11 @@ namespace mapviz_plugins
                      this,
                      SLOT(ColorTransformerChanged(int)));
     QObject::connect(ui_.max_color,
-                     SIGNAL(colorEdited(
-                                const QColor &)),
+                     SIGNAL(colorEdited(const QColor &)),
                      this,
                      SLOT(UpdateColors()));
     QObject::connect(ui_.min_color,
-                     SIGNAL(colorEdited(
-                                const QColor &)),
+                     SIGNAL(colorEdited(const QColor &)),
                      this,
                      SLOT(UpdateColors()));
     QObject::connect(ui_.minValue,
@@ -149,19 +147,21 @@ namespace mapviz_plugins
                      this,
                      SLOT(UseAutomaxminChanged(int)));
     QObject::connect(ui_.max_color,
-                     SIGNAL(colorEdited(
-                                const QColor &)),
+                     SIGNAL(colorEdited(const QColor &)),
                      this,
                      SLOT(DrawIcon()));
     QObject::connect(ui_.min_color,
-                     SIGNAL(colorEdited(
-                                const QColor &)),
+                     SIGNAL(colorEdited( const QColor &)),
                      this,
                      SLOT(DrawIcon()));
     QObject::connect(this,
                      SIGNAL(TargetFrameChanged(const std::string&)),
                      this,
                      SLOT(ResetTransformedPointClouds()));
+    QObject::connect(this,
+                     SIGNAL(VisibleChanged(bool)),
+                     this,
+                     SLOT(SetSubscription(bool)));
 
     PrintInfo("Constructed PointCloud2Plugin");
   }
@@ -211,6 +211,20 @@ namespace mapviz_plugins
       scan.transformed = false;
       scan.gl_color.clear();
       scan.gl_point.clear();
+    }
+  }
+
+  void PointCloud2Plugin::SetSubscription(bool subscribe)
+  {
+    pc2_sub_.shutdown();
+
+    if (subscribe && !topic_.empty())
+    {
+      pc2_sub_ = node_.subscribe(topic_, 10, &PointCloud2Plugin::PointCloud2Callback, this);
+      new_topic_ = true;
+      need_new_list_ = true;
+      max_.clear();
+      min_.clear();
     }
   }
 
@@ -304,7 +318,7 @@ namespace mapviz_plugins
           scan.gl_color.push_back( color.red());
           scan.gl_color.push_back( color.green());
           scan.gl_color.push_back( color.blue());
-          scan.gl_color.push_back( 255 );
+          scan.gl_color.push_back( static_cast<uint8_t>(alpha_ * 255.0 ) );
         }
       }
     }
@@ -337,21 +351,8 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      pc2_sub_.shutdown();
-
       topic_ = topic;
-      if (!topic.empty())
-      {
-        pc2_sub_ = node_.subscribe(topic_,
-                                   100,
-                                   &PointCloud2Plugin::PointCloud2Callback,
-                                   this);
-        new_topic_ = true;
-        need_new_list_ = true;
-        max_.clear();
-        min_.clear();
-        ROS_INFO("Subscribing to %s", topic_.c_str());
-      }
+      SetSubscription(this->Visible());
     }
   }
 
@@ -546,7 +547,7 @@ namespace mapviz_plugins
         scan.gl_color.push_back( color.red());
         scan.gl_color.push_back( color.green());
         scan.gl_color.push_back( color.blue());
-        scan.gl_color.push_back( 255);
+        scan.gl_color.push_back( static_cast<uint8_t>(alpha_ * 255.0 ) );
       }
     }
 
@@ -635,7 +636,7 @@ namespace mapviz_plugins
 
           glBindBuffer(GL_ARRAY_BUFFER, scan.color_vbo);  // color
           glBufferData(GL_ARRAY_BUFFER, scan.gl_color.size() * sizeof(uint8_t), scan.gl_color.data(), GL_STATIC_DRAW);
-          glColorPointer( 4, GL_BYTE, 0, 0);
+          glColorPointer( 4, GL_UNSIGNED_BYTE, 0, 0);
 
           glDrawArrays(GL_POINTS, 0, scan.gl_point.size() / 2 );
         }
