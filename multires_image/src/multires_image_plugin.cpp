@@ -330,6 +330,17 @@ namespace mapviz_plugins
 
       AcceptConfiguration();
     }
+
+    if (node["offset_x"])
+    {
+        node["offset_x"] >> offset_x_;
+        ui_.x_offset_spin_box->setValue(offset_x_);
+    }
+    if (node["offset_y"])
+    {
+        node["offset_y"] >> offset_y_;
+        ui_.y_offset_spin_box->setValue(offset_y_);
+    }
   }
 
   void MultiresImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -339,6 +350,8 @@ namespace mapviz_plugins
     boost::filesystem::path rel_path = MakePathRelative(abs_path, base_path);
 
     emitter << YAML::Key << "path" << YAML::Value << rel_path.string();
+    emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
+    emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
   }
 }
 
