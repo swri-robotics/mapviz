@@ -29,6 +29,7 @@
   <depend>marti_visualization_msgs</depend>
   <depend>move_base_msgs</depend>
   <depend>nav_msgs</depend>
+  <depend>map_msgs</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
