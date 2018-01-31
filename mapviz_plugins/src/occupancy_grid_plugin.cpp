@@ -526,6 +526,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "alpha"  << YAML::Value << ui_.alpha->value();
     emitter << YAML::Key << "topic"  << YAML::Value << ui_.topic_grid->text().toStdString();
     emitter << YAML::Key << "update" << YAML::Value << ui_.checkbox_update->isChecked();
+    emitter << YAML::Key << "scheme" << YAML::Value << ui_.color_scheme->currentText().toStdString();
   }
 }
 
