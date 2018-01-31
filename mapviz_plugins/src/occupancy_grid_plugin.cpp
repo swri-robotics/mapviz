@@ -394,6 +394,7 @@ namespace mapviz_plugins
     texture_y_ = static_cast<float>(height) / static_cast<float>(texture_size_);
 
     updateTexture();
+    PrintInfo("Map received");
   }
 
   void OccupancyGridPlugin::CallbackUpdate(const map_msgs::OccupancyGridUpdateConstPtr &msg)
