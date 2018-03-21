@@ -215,5 +215,13 @@ namespace multires_image
     m_transformed_bottom_left = transform * m_bottom_left;
     m_transformed_bottom_right = transform * m_bottom_right;
   }
+
+  void Tile::Transform(const swri_transform_util::Transform& transform, const swri_transform_util::Transform& offset_tf)
+  {
+    m_transformed_top_left = offset_tf * (transform * m_top_left);
+    m_transformed_top_right = offset_tf * (transform * m_top_right);
+    m_transformed_bottom_left = offset_tf * (transform * m_bottom_left);
+    m_transformed_bottom_right = offset_tf * (transform * m_bottom_right);
+  }
 }
 
