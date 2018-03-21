@@ -75,6 +75,9 @@ namespace mapviz_plugins
     void Shutdown()
     {
     }
+
+    void ClearHistory();
+
     void Draw(double x, double y, double scale);
 
     void Transform();

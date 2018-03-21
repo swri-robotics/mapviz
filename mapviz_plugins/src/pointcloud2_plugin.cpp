@@ -172,6 +172,11 @@ namespace mapviz_plugins
   {
   }
 
+  void PointCloud2Plugin::ClearHistory()
+  {
+    scans_.clear();
+  }
+
   void PointCloud2Plugin::DrawIcon()
   {
     if (icon_)

@@ -74,6 +74,8 @@ namespace mapviz_plugins
     bool Initialize(QGLWidget* canvas);
     void Shutdown() {}
 
+    void ClearHistory();
+
     void Draw(double x, double y, double scale);
 
     void Transform();
