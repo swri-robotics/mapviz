@@ -74,6 +74,8 @@ namespace mapviz
 
     virtual void Shutdown() = 0;
 
+    virtual void ClearHistory() {}
+
     /**
      * Draws on the Mapviz canvas using OpenGL commands; this will be called
      * before Paint();

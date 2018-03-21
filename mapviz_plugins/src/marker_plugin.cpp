@@ -87,6 +87,11 @@ namespace mapviz_plugins
   {
   }
 
+  void MarkerPlugin::ClearHistory()
+  {
+    markers_.clear();
+  }
+
   void MarkerPlugin::SelectTopic()
   {
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(

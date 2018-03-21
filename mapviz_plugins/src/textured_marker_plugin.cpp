@@ -97,6 +97,11 @@ namespace mapviz_plugins
   {
   }
 
+  void TexturedMarkerPlugin::ClearHistory()
+  {
+    markers_.clear();
+  }
+
   void TexturedMarkerPlugin::SelectTopic()
   {
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
