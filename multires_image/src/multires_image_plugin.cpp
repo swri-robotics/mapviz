@@ -52,7 +52,9 @@ namespace mapviz_plugins
     tile_set_(NULL),
     tile_view_(NULL),
     config_widget_(new QWidget()),
-    transformed_(false)
+    transformed_(false),
+    offset_x_(0.0),
+    offset_y_(0.0)
   {
     ui_.setupUi(config_widget_);
 
@@ -66,6 +68,8 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.browse, SIGNAL(clicked()), this, SLOT(SelectFile()));
     QObject::connect(ui_.path, SIGNAL(editingFinished()), this, SLOT(AcceptConfiguration()));
+    QObject::connect(ui_.x_offset_spin_box, SIGNAL(valueChanged(double)), this, SLOT(SetXOffset(double)));
+    QObject::connect(ui_.y_offset_spin_box, SIGNAL(valueChanged(double)), this, SLOT(SetYOffset(double)));
 
     source_frame_ = "/";
   }
@@ -171,6 +175,17 @@ namespace mapviz_plugins
     }
   }
 
+
+  void MultiresImagePlugin::SetXOffset(double offset_x)
+  {
+      offset_x_ = offset_x;
+  }
+
+  void MultiresImagePlugin::SetYOffset(double offset_y)
+  {
+      offset_y_ = offset_y;
+  }
+
   QWidget* MultiresImagePlugin::GetConfigWidget(QWidget* parent)
   {
     config_widget_->setParent(parent);
@@ -225,6 +240,12 @@ namespace mapviz_plugins
       return;
     }
 
+    // Add in user-specified offset to map
+    swri_transform_util::Transform offset(
+                tf::Transform(
+                    tf::createIdentityQuaternion(),
+                    tf::Vector3(offset_x_, offset_y_, 0.0)));
+
     // Set relative positions of tile points based on tf transform
     for (int i = 0; i < tile_set_->LayerCount(); i++)
     {
@@ -235,7 +256,7 @@ namespace mapviz_plugins
         {
           multires_image::Tile* tile = layer->GetTile(c, r);
 
-          tile->Transform(transform_);
+          tile->Transform(transform_, offset);
         }
       }
     }
@@ -309,6 +330,17 @@ namespace mapviz_plugins
 
       AcceptConfiguration();
     }
+
+    if (node["offset_x"])
+    {
+        node["offset_x"] >> offset_x_;
+        ui_.x_offset_spin_box->setValue(offset_x_);
+    }
+    if (node["offset_y"])
+    {
+        node["offset_y"] >> offset_y_;
+        ui_.y_offset_spin_box->setValue(offset_y_);
+    }
   }
 
   void MultiresImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -318,6 +350,8 @@ namespace mapviz_plugins
     boost::filesystem::path rel_path = MakePathRelative(abs_path, base_path);
 
     emitter << YAML::Key << "path" << YAML::Value << rel_path.string();
+    emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
+    emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
   }
 }
 
