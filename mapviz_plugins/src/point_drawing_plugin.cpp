@@ -59,6 +59,11 @@ namespace mapviz_plugins
   {
   }
 
+  void PointDrawingPlugin::ClearHistory()
+  {
+    points_.clear();
+  }
+
   void PointDrawingPlugin::DrawIcon()
   {
     if (icon_)
