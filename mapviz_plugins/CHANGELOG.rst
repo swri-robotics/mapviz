@@ -2,6 +2,26 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add clear history functionality.
+* Add support for newlines in text marker plugin (`#572 <https://github.com/swri-robotics/mapviz/issues/572>`_)
+* New plugin to send commands to move_base
+* Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)
+* Added "keep image ratio" to Image plugin (`#543 <https://github.com/swri-robotics/mapviz/issues/543>`_)
+* Remove copy and paste of Print...
+* PointCloud2 speed improvement (`#531 <https://github.com/swri-robotics/mapviz/issues/531>`_)
+* Dead code removed (`#535 <https://github.com/swri-robotics/mapviz/issues/535>`_)
+* Ratio added to robot_image_plugin (`#530 <https://github.com/swri-robotics/mapviz/issues/530>`_)
+* Speed up improvement in LaserScan and PointCloud2 (`#525 <https://github.com/swri-robotics/mapviz/issues/525>`_)
+* Re-add GPSFix plugin to kinetic-devel (`#519 <https://github.com/swri-robotics/mapviz/issues/519>`_)
+* Add support for unpacking rgb8 in pointcloud2s
+* Use non-deprecated pluginlib macro
+* Add plug-in for drawing and publishing a polygon.
+* change the signal that triggers AlphaEdited + minor changes (`#514 <https://github.com/swri-robotics/mapviz/issues/514>`_)
+* Added timestamp display to odometry for kinetic
+* Contributors: Davide Faconti, Marc Alban, Matthew Bries, Mikael Arguedas, P. J. Reed, jgassaway
+
 0.2.4 (2017-08-11)
 ------------------
 * Add /wgs84 frame to point click publisher when available.

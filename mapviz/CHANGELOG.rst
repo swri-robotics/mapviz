@@ -2,6 +2,22 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add clear history functionality.
+* New plugin to send commands to move_base
+* improve text contrast (`#550 <https://github.com/swri-robotics/mapviz/issues/550>`_)
+* Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)
+* remove copy and paste of Print...
+* add context menu to config_item (`#526 <https://github.com/swri-robotics/mapviz/issues/526>`_)
+* Merge pull request `#523 <https://github.com/swri-robotics/mapviz/issues/523>`_ from matt-attack/add-keyboard-input-support-kinetic
+* Add keyboard input support for plugins
+* update to use non deprecated pluginlib macro
+* Fix the "File" menu actions (`#513 <https://github.com/swri-robotics/mapviz/issues/513>`_)
+* Merge pull request `#481 <https://github.com/swri-robotics/mapviz/issues/481>`_ from pjreed/threaded-video-recording-kinetic
+* Move video recording into its own thread
+* Contributors: Davide Faconti, Marc Alban, Matthew Bries, Mikael Arguedas, P. J. Reed
+
 0.2.4 (2017-08-11)
 ------------------
 * Add basic profiling to mapviz.
