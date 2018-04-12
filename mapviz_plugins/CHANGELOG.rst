@@ -2,6 +2,25 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add clear history functionality.
+* Add support for newlines in text marker plugin (`#571 <https://github.com/swri-robotics/mapviz/issues/571>`_)
+* Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)
+* Added "keep image ratio" to Image plugin (`#543 <https://github.com/swri-robotics/mapviz/issues/543>`_) (`#545 <https://github.com/swri-robotics/mapviz/issues/545>`_)
+* Remove copy and paste of Print...
+* PointCloud2 speed improvement (`#531 <https://github.com/swri-robotics/mapviz/issues/531>`_) (`#538 <https://github.com/swri-robotics/mapviz/issues/538>`_)
+* Dead code removed (`#535 <https://github.com/swri-robotics/mapviz/issues/535>`_) (`#537 <https://github.com/swri-robotics/mapviz/issues/537>`_)
+* Speed up improvement in LaserScan and PointCloud2 (`#525 <https://github.com/swri-robotics/mapviz/issues/525>`_) (`#528 <https://github.com/swri-robotics/mapviz/issues/528>`_)
+* Add support for unpacking rgb8 in pointcloud2s
+* Update to use non deprecated pluginlib macro
+* change the signal that triggers AlphaEdited + minor changes (`#514 <https://github.com/swri-robotics/mapviz/issues/514>`_)
+* Added timestamp display to odometry
+* Merge pull request `#492 <https://github.com/swri-robotics/mapviz/issues/492>`_ from matt-attack/fix_448
+* Fix color of covariance display for odometry
+* Added timestamp display to odometry
+* Contributors: Davide Faconti, Marc Alban, Matthew Bries, Mikael Arguedas, P. J. Reed, jgassaway
+
 0.0.8 (2017-08-11)
 ------------------
 * Add /wgs84 frame to point click publisher when available.

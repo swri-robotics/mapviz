@@ -2,6 +2,15 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add ability to set offset for multires image (`#565 <https://github.com/swri-robotics/mapviz/issues/565>`_)
+* Fix multires image scale when projection is WGS84.
+* update to use non deprecated pluginlib macro
+* Remove dep on libopencv-dev from multires_image (`#505 <https://github.com/swri-robotics/mapviz/issues/505>`_)
+* Support transparent tiles in multires_image
+* Contributors: Marc Alban, Mikael Arguedas, P. J. Reed, jgassaway
+
 0.0.8 (2017-08-11)
 ------------------
 * Install mapviz_tile_loader (`#499 <https://github.com/swri-robotics/mapviz/issues/499>`_)

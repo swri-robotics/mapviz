@@ -2,6 +2,14 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bug fix in TileMap. GenTexture was invoked over and over again (`#560 <https://github.com/swri-robotics/mapviz/issues/560>`_)
+* Improve tile loading prioritization.
+* Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)
+* update to use non deprecated pluginlib macro
+* Contributors: Davide Faconti, Marc Alban, Mikael Arguedas, P. J. Reed
+
 0.0.8 (2017-08-11)
 ------------------
 * Add missing boost header.

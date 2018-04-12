@@ -2,6 +2,18 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add clear history functionality.
+* improve text contrast (`#552 <https://github.com/swri-robotics/mapviz/issues/552>`_)
+* Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)
+* remove copy and paste of Print...
+* add context menu to config_item (`#526 <https://github.com/swri-robotics/mapviz/issues/526>`_) (`#532 <https://github.com/swri-robotics/mapviz/issues/532>`_)
+* Add keyboard input support for plugins
+* update to use non deprecated pluginlib macro
+* Move video recording into its own thread
+* Contributors: Davide Faconti, Marc Alban, Matthew Bries, Mikael Arguedas, P. J. Reed
+
 0.0.8 (2017-08-11)
 ------------------
 * Add basic profiling to mapviz.
