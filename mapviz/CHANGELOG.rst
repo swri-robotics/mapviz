@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.5 (2018-04-12)
+------------------
 * Add clear history functionality.
 * New plugin to send commands to move_base
 * improve text contrast (`#550 <https://github.com/swri-robotics/mapviz/issues/550>`_)

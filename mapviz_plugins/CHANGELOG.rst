@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.5 (2018-04-12)
+------------------
 * Add clear history functionality.
 * Add support for newlines in text marker plugin (`#572 <https://github.com/swri-robotics/mapviz/issues/572>`_)
 * New plugin to send commands to move_base
