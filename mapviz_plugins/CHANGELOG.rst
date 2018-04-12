@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.9 (2018-04-12)
+------------------
 * Add clear history functionality.
 * Add support for newlines in text marker plugin (`#571 <https://github.com/swri-robotics/mapviz/issues/571>`_)
 * Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)

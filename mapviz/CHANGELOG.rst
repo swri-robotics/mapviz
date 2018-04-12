@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.9 (2018-04-12)
+------------------
 * Add clear history functionality.
 * improve text contrast (`#552 <https://github.com/swri-robotics/mapviz/issues/552>`_)
 * Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)
