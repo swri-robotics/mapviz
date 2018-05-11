@@ -51,10 +51,8 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
-                        plan_route_grape,
-                        mapviz_plugins::MoveBasePlugin,
-                        mapviz::MapvizPlugin)
+
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MoveBasePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
