@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>arrow_in.png</file>
+        <file>image-x-generic.png</file>
+        <file>media-playback-pause.png</file>
+        <file>media-playback-stop.png</file>
+        <file>media-record.png</file>
+        <file>remove-icon-th.png</file>
+        <file>green-arrow.png</file>
+    </qresource>
+</RCC>

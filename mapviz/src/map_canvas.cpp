@@ -31,8 +31,16 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-
+#include <iostream>
 #include <mapviz/map_canvas.h>
+#include <QMenu>
+#include <QAction>
+#include "ros/ros.h"
+#include "drones4life_scenario/AvailableServices.h"
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iostream>
 
 // C++ standard libraries
 #include <cmath>
@@ -88,6 +96,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
   setFrameRate(50.0);
   frame_rate_timer_.start();
   setFocusPolicy(Qt::StrongFocus);
+  this->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 MapCanvas::~MapCanvas()
@@ -317,13 +326,15 @@ void MapCanvas::Zoom(float factor)
 
 void MapCanvas::mousePressEvent(QMouseEvent* e)
 {
-  mouse_x_ = e->x();
-  mouse_y_ = e->y();
-  mouse_previous_y_ = mouse_y_;
-  drag_x_ = 0;
-  drag_y_ = 0;
-  mouse_pressed_ = true;
-  mouse_button_ = e->button();
+
+    mouse_x_ = e->x();
+    mouse_y_ = e->y();
+    mouse_previous_y_ = mouse_y_;
+    drag_x_ = 0;
+    drag_y_ = 0;
+    mouse_pressed_ = true;
+    mouse_button_ = e->button();
+
 }
 
 void MapCanvas::keyPressEvent(QKeyEvent* event)
@@ -612,4 +623,34 @@ double MapCanvas::frameRate() const
 {
   return 1000.0 / frame_rate_timer_.interval();
 }
-}  // namespace mapviz
+
+std::string MapCanvas::showCustomContextMenu(const QPoint &pos,std::vector<std::string> result){
+   QMenu contextMenu(this);
+   std::vector<QAction *> actions;
+
+   for(auto service : result){
+                    QAction * act= new QAction(service.c_str(),this);
+                    actions.push_back(act);
+   }
+   for(auto action: actions){       
+           contextMenu.addAction(action);
+       }
+
+   QAction* selectedItem=contextMenu.exec(pos);
+   for(auto action: actions){
+           action->deleteLater();
+       }
+
+   if (selectedItem){
+       ROS_INFO("make call to %s",selectedItem->text().toStdString().c_str());
+       return selectedItem->text().toStdString().c_str();
+   }else{
+    ROS_ERROR("Service:''  doesn't exist");
+    return "";
+   }
+
+}
+
+
+}
+

@@ -55,7 +55,7 @@ namespace mapviz_plugins
     void setMaxClickMovement(qreal max_distance);
 
   Q_SIGNALS:
-    void pointClicked(const QPointF&);
+    void pointClicked(const QPointF&, const Qt::MouseButton&);
 
   protected:
     bool eventFilter(QObject *object, QEvent* event);

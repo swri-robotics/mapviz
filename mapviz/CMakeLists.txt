@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   swri_transform_util
   swri_yaml_util
   tf
+  drones4life_scenario
+
 )
 
 find_package(Boost REQUIRED system filesystem)
@@ -131,6 +133,8 @@ target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${Boost_LIBRARIES} ${QT_QT
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
+
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

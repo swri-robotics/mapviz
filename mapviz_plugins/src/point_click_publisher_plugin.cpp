@@ -46,7 +46,7 @@ namespace mapviz_plugins
   {
     ui_.setupUi(config_widget_);
 
-    connect(&click_filter_, SIGNAL(pointClicked(const QPointF&)),
+    connect(&click_filter_, SIGNAL(pointClicked(const QPointF&, const)),
             this, SLOT(pointClicked(const QPointF&)));
     connect(ui_.topic, SIGNAL(textEdited(const QString&)),
             this, SLOT(topicChanged(const QString&)));
@@ -108,7 +108,7 @@ namespace mapviz_plugins
   }
 
 
-  void PointClickPublisherPlugin::pointClicked(const QPointF& point)
+  void PointClickPublisherPlugin::pointClicked(const QPointF& point, const Qt::MouseButton& button)
   {
     QPointF transformed = canvas_->MapGlCoordToFixedFrame(point);
 

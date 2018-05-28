@@ -78,7 +78,7 @@ namespace mapviz_plugins
     QWidget* GetConfigWidget(QWidget* parent);
 
   protected Q_SLOTS:
-    void pointClicked(const QPointF& point);
+    void pointClicked(const QPointF& point, const Qt::MouseButton& button);
     void topicChanged(const QString& topic);
     void updateFrames();
 

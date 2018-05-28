@@ -1,0 +1,4 @@
+geometry_msgs/Point point
+string command
+---
+bool success

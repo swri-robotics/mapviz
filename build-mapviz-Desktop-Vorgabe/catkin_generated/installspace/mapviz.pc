@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: mapviz
+Description: Description of mapviz
+Version: 0.2.5
+Cflags: -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5/ -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/lib/x86_64-linux-gnu/qt5//mkspecs/linux-g++-64 -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include -I/usr/include/x86_64-linux-gnu/qt5/QtOpenGL -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets
+Libs: -L/usr/local/lib /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.5.1 /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.5.1 /usr/lib/x86_64-linux-gnu/libQt5OpenGL.so.5.5.1 /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.5.1
+Requires: marti_common_msgs message_runtime roscpp rqt_gui_cpp pluginlib swri_transform_util swri_yaml_util tf

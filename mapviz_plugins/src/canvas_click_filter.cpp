@@ -74,7 +74,7 @@ namespace mapviz_plugins
         // or just holding the cursor in place.
         if (msecsDiff < max_ms_ && distance <= max_distance_)
         {
-          Q_EMIT pointClicked(me->localPos());
+          Q_EMIT pointClicked(me->localPos(),me->button());
         }
       }
       is_mouse_down_ = false;
