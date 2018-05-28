@@ -55,14 +55,19 @@ namespace mapviz_plugins
 
     QWidget* GetConfigWidget(QWidget* parent);
 
+
+    void serviceCall(std::string service);
+
+
   protected Q_SLOTS:
 
-    void pointClicked(const QPointF& point);
+    void pointClicked(const QPointF& point, const Qt::MouseButton& button);
     void topicChanged(const QString& topic);
     void updateFrames();
 
-  private:
 
+  private:
+    void showContextMenu(const QPoint& pos, boost::shared_ptr<geometry_msgs::PointStamped> stamped);
     Ui::right_click_services_config ui_;
     QWidget* config_widget_;
 

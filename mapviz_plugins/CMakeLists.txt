@@ -26,7 +26,11 @@ set(DEPENDENCIES
   visualization_msgs
 )
 
-find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
+find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES}
+            std_msgs
+            geometry_msgs
+            message_generation
+            )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
@@ -53,6 +57,16 @@ add_definitions(
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
+add_message_files(DIRECTORY msg
+                  FILES
+                  Location.msg
+)
+
+add_service_files(FILES
+  AvailableServices.srv
+  GPSCommand.srv
+)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
 find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)

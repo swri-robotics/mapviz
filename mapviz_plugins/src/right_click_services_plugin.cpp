@@ -7,8 +7,15 @@
 #include <geometry_msgs/PointStamped.h>
 #include <swri_transform_util/frames.h>
 #include <swri_yaml_util/yaml_util.h>
-#include <QMouseEvent>
 #include <boost/shared_ptr.hpp>
+#include <mapviz/map_canvas.h>
+#include <Qt>
+#include <mapviz_plugins/AvailableServices.h>
+#include <mapviz_plugins/GPSCommand.h>
+#include <std_srvs/Trigger.h>
+#include <iostream>
+#include <fstream>
+#include <std_msgs/Bool.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -22,10 +29,13 @@ namespace mapviz_plugins
   {
     ui_.setupUi(config_widget_);
 
-    connect(&click_filter_, SIGNAL(pointClicked(const QPointF&)),
-            this, SLOT(pointClicked(const QPointF&)));
+    connect(&click_filter_, SIGNAL(pointClicked(const QPointF&, const Qt::MouseButton&)),
+            this, SLOT(pointClicked(const QPointF&, const Qt::MouseButton&)));
     connect(ui_.topic, SIGNAL(textEdited(const QString&)),
             this, SLOT(topicChanged(const QString&)));
+
+
+
 
     frame_timer_.start(1000);
     connect(&frame_timer_, SIGNAL(timeout()), this, SLOT(updateFrames()));
@@ -45,6 +55,7 @@ namespace mapviz_plugins
     canvas_->installEventFilter(&click_filter_);
 
     PrintInfo("Ready.");
+
 
     return true;
   }
@@ -84,12 +95,11 @@ namespace mapviz_plugins
   }
 
 
-  void RightClickServicesPlugin::pointClicked(const QPointF& point)
+  void RightClickServicesPlugin::pointClicked(const QPointF & point, const Qt::MouseButton& button)
   {
     QPointF transformed = canvas_->MapGlCoordToFixedFrame(point);
 
     std::string output_frame = ui_.outputframe->currentText().toStdString();
-
 
     if (target_frame_ != output_frame)
     {
@@ -123,6 +133,12 @@ namespace mapviz_plugins
     stamped->point.z = 0.0;
 
     point_publisher_.publish(stamped);
+
+    if (button==Qt::RightButton){
+        const QPoint pos=point.toPoint();
+
+        showContextMenu(pos,stamped);
+    }
   }
 
   void RightClickServicesPlugin::SetNode(const ros::NodeHandle& node)
@@ -212,6 +228,48 @@ namespace mapviz_plugins
       ui_.outputframe->setCurrentIndex(index);
     }
   }
+void RightClickServicesPlugin::showContextMenu(const QPoint& pos,boost::shared_ptr<geometry_msgs::PointStamped> stamped)
+  {
+      // retreive Available Services,Commands
+      ros::NodeHandle n;
+      ros::service::waitForService("/mapviz/available_commands",10);
+      ros::ServiceClient client = n.serviceClient<mapviz_plugins::AvailableServices>("/mapviz/available_commands");
+      mapviz_plugins::AvailableServices srv;
+      std::vector<std::string> service_name_list;
+      if(client.exists()){
+          if (client.call(srv))
+          {
+          service_name_list= srv.response.message;
+          }
+      }
 
+      //call service to execute chosen command
+      ros::service::waitForService("/mapviz/gps_command_execute",10);
+      ros::ServiceClient command_client = n.serviceClient<mapviz_plugins::GPSCommand>("/mapviz/gps_command_execute");
+
+      mapviz_plugins::GPSCommand  gps_command;
+      gps_command.request.command = canvas_->showCustomContextMenu(canvas_->mapToGlobal(pos),service_name_list);
+      gps_command.request.point.x =stamped->point.x;
+      gps_command.request.point.y =stamped->point.y;
+      if (gps_command.request.command.length()<=0){
+        PrintInfo("Empty Service was not called");
+      }else{
+          if (command_client.exists()){
+              if(command_client.call(gps_command)){
+                  std::stringstream ss;
+                  if(gps_command.response.success){
+                     ss << "Calling " << gps_command.request.command << " was successful";
+                   }else{
+                      ss << "Calling " << gps_command.request.command << " was unsuccessful";
+                  }
+                  PrintInfo(ss.str());
+          }
+      }
+      }
+
+  }
 
 }
+
+
+
