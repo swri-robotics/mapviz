@@ -13,8 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   swri_transform_util
   swri_yaml_util
   tf
-  drones4life_scenario
-
 )
 
 find_package(Boost REQUIRED system filesystem)
