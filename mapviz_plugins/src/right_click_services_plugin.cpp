@@ -258,9 +258,9 @@ void RightClickServicesPlugin::showContextMenu(const QPoint& pos,boost::shared_p
               if(command_client.call(gps_command)){
                   std::stringstream ss;
                   if(gps_command.response.success){
-                     ss << "Calling " << gps_command.request.command << " was successful";
+                     ss << "Calling " << gps_command.request.command << " was successful " <<gps_command.response.message ;
                    }else{
-                      ss << "Calling " << gps_command.request.command << " was unsuccessful";
+                      ss << "Calling " << gps_command.request.command << " was unsuccessful "<<gps_command.response.message;
                   }
                   PrintInfo(ss.str());
           }
