@@ -1,4 +1,4 @@
-image_path: "tiles"
+image_path: "../../efffeu_launch/data/mapviz_tiles/tiles"
 image_width: 1000
 image_height: 1000
 tile_size: 1000
