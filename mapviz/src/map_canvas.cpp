@@ -27,6 +27,11 @@
 //
 // *****************************************************************************
 
+
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+
 #include <mapviz/map_canvas.h>
 
 // C++ standard libraries
@@ -82,6 +87,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
   QObject::connect(&frame_rate_timer_, SIGNAL(timeout()), this, SLOT(update()));
   setFrameRate(50.0);
   frame_rate_timer_.start();
+  setFocusPolicy(Qt::StrongFocus);
 }
 
 MapCanvas::~MapCanvas()
@@ -190,7 +196,6 @@ void MapCanvas::CaptureFrame(bool force)
     GLubyte* data = reinterpret_cast<GLubyte*>(glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
     if(data)
     {
-      capture_buffer_.clear();
       capture_buffer_.resize(pixel_buffer_size_);
 
       memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
@@ -319,6 +324,15 @@ void MapCanvas::mousePressEvent(QMouseEvent* e)
   drag_y_ = 0;
   mouse_pressed_ = true;
   mouse_button_ = e->button();
+}
+
+void MapCanvas::keyPressEvent(QKeyEvent* event)
+{
+  std::list<MapvizPluginPtr>::iterator it;
+  for (it = plugins_.begin(); it != plugins_.end(); ++it)
+  {
+    (*it)->event(event);
+  }
 }
 
 QPointF MapCanvas::MapGlCoordToFixedFrame(const QPointF& point)

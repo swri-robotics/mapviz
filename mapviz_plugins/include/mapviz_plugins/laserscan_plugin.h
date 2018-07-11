@@ -71,6 +71,8 @@ namespace mapviz_plugins
       {
       }
 
+      void ClearHistory();
+
       void Draw(double x, double y, double scale);
 
       void Transform();
@@ -88,7 +90,7 @@ namespace mapviz_plugins
     protected Q_SLOTS:
       void SelectTopic();
       void TopicEdited();
-      void AlphaEdited();
+      void AlphaEdited(double val);
       void ColorTransformerChanged(int index);
       void MinValueChanged(double value);
       void MaxValueChanged(double value);
@@ -120,6 +122,7 @@ namespace mapviz_plugins
 
       void laserScanCallback(const sensor_msgs::LaserScanConstPtr& scan);
       QColor CalculateColor(const StampedPoint& point, bool has_intensity);
+      void updatePreComputedTriginometic(const sensor_msgs::LaserScanConstPtr& msg);
 
       Ui::laserscan_config ui_;
       QWidget* config_widget_;
@@ -138,6 +141,11 @@ namespace mapviz_plugins
       // decay time (evenator)
       std::deque<Scan> scans_;
       ros::Subscriber laserscan_sub_;
+      std::vector<double> precomputed_cos_;
+      std::vector<double> precomputed_sin_;
+      size_t prev_ranges_size_;
+      float  prev_angle_min_;
+      float  prev_increment_;
   };
 }
 

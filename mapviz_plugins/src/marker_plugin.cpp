@@ -50,11 +50,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    marker,
-    mapviz_plugins::MarkerPlugin,
-    mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MarkerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
@@ -85,6 +81,11 @@ namespace mapviz_plugins
 
   MarkerPlugin::~MarkerPlugin()
   {
+  }
+
+  void MarkerPlugin::ClearHistory()
+  {
+    markers_.clear();
   }
 
   void MarkerPlugin::SelectTopic()
@@ -396,44 +397,17 @@ namespace mapviz_plugins
 
   void MarkerPlugin::PrintError(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_ERROR("Error: %s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintErrorHelper(ui_.status, message);
   }
 
   void MarkerPlugin::PrintInfo(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_INFO("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::green);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintInfoHelper(ui_.status, message);
   }
 
   void MarkerPlugin::PrintWarning(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_WARN("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::darkYellow);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintWarningHelper(ui_.status, message);
   }
 
   QWidget* MarkerPlugin::GetConfigWidget(QWidget* parent)
@@ -706,7 +680,11 @@ namespace mapviz_plugins
         StampedPoint& rosPoint = marker.points.front();
         QPointF point = tf.map(QPointF(rosPoint.transformed_point.x(),
                                        rosPoint.transformed_point.y()));
-        painter->drawText(point, QString(marker.text.c_str()));
+
+        // Get bounding rectangle
+        QRectF rect(point, QSizeF(10,10));
+        rect = painter->boundingRect(rect, Qt::AlignLeft ,QString(marker.text.c_str()));
+        painter->drawText(rect, QString(marker.text.c_str()));
 
         PrintInfo("OK");
       }

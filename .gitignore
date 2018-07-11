@@ -8,6 +8,7 @@
 *.bag
 *~
 .idea
+cmake-build-debug/
 lib/
 _gtest_from_src/
 bin/
@@ -17,3 +18,4 @@ msg_gen/
 srv_gen/
 *.cfgc
 version.txt
+cmake-build-debug/

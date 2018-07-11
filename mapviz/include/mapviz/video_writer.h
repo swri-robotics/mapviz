@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2015, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2017, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,83 +27,43 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_TILE_MAP_VIEW_H_
-#define TILE_MAP_TILE_MAP_VIEW_H_
+#ifndef MAPVIZ_VIDEO_WRITER_H
+#define MAPVIZ_VIDEO_WRITER_H
 
-#include <string>
+#include <QObject>
+#include <QMutex>
+#include <QImage>
 
 #include <boost/shared_ptr.hpp>
 
-#include <tile_map/tile_source.h>
-#include <tile_map/texture_cache.h>
+#ifndef Q_MOC_RUN
+#include <opencv2/highgui/highgui.hpp>
+#endif
 
-#include <swri_transform_util/transform.h>
-
-namespace tile_map
+namespace mapviz
 {
-  class TileSource;
-
-  struct Tile
+  class VideoWriter : public QObject
   {
+    Q_OBJECT
+
   public:
-    QString url;
-    size_t url_hash;
-    int32_t level;
-    int32_t subdiv_count;
-    double subwidth;
+    VideoWriter() :
+        video_mutex_(QMutex::Recursive)
+    {}
 
-    TexturePtr texture;
+    bool initializeWriter(const std::string& directory, int width, int height);
+    bool isRecording();
+    void stop();
 
-    std::vector<tf::Vector3> points;
-    std::vector<tf::Vector3> points_t;
-  };
-
-  class TileMapView
-  {
-  public:
-    TileMapView();
-
-    void ResetCache();
-
-    void SetTileSource(const boost::shared_ptr<TileSource>& tile_source);
-
-    void SetTransform(const swri_transform_util::Transform& transform);
-
-    void SetView(
-      double latitude,
-      double longitude,
-      double scale,
-      int32_t width,
-      int32_t height);
-
-    void Draw();
+  public Q_SLOTS:
+    void processFrame(QImage frame);
 
   private:
-    void DrawTiles(std::vector<Tile> &tiles ,int priority);
-
-    boost::shared_ptr<TileSource> tile_source_;
-
-    swri_transform_util::Transform transform_;
-
-    int32_t level_;
-
-    int64_t center_x_;
-    int64_t center_y_;
-
-    int64_t size_;
-
-    int32_t width_;
-    int32_t height_;
-
-    std::vector<Tile> tiles_;
-    std::vector<Tile> precache_;
-
-    TextureCachePtr tile_cache_;
-
-    void ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude);
-
-    void InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile, int priority);
+    int height_;
+    int width_;
+    QMutex video_mutex_;
+    boost::shared_ptr<cv::VideoWriter> video_writer_;
   };
 }
 
-#endif  // TILE_MAP_TILE_MAP_VIEW_H_
+#endif //MAPVIZ_VIDEO_WRITER_H

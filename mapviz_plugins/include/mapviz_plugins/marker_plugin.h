@@ -36,7 +36,6 @@
 #include <map>
 
 #include <mapviz/mapviz_plugin.h>
-#include <GL/glut.h>
 
 // QT libraries
 #include <QGLWidget>
@@ -69,6 +68,8 @@ namespace mapviz_plugins
 
     bool Initialize(QGLWidget* canvas);
     void Shutdown() {}
+
+    void ClearHistory();
 
     void Draw(double x, double y, double scale);
     void Paint(QPainter* painter, double x, double y, double scale);

@@ -40,10 +40,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
-                        navsat,
-                        mapviz_plugins::NavSatPlugin,
-                        mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::NavSatPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
@@ -73,12 +70,8 @@ namespace mapviz_plugins
                      SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
                      SLOT(SetDrawStyle(QString)));
-    QObject::connect(ui_.static_arrow_sizes, SIGNAL(clicked(bool)),
-                     this, SLOT(SetStaticArrowSizes(bool)));
-    QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
-                     this, SLOT(SetArrowSize(int)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
-            SLOT(SetColor(const QColor&)));
+    QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+                     SLOT(SetColor(const QColor&)));
   }
 
   NavSatPlugin::~NavSatPlugin()
@@ -164,44 +157,17 @@ namespace mapviz_plugins
 
   void NavSatPlugin::PrintError(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_ERROR("Error: %s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintErrorHelper(ui_.status, message);
   }
 
   void NavSatPlugin::PrintInfo(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_INFO("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::green);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintInfoHelper(ui_.status, message);
   }
 
   void NavSatPlugin::PrintWarning(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_WARN("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::darkYellow);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintWarningHelper(ui_.status, message);
   }
 
   QWidget* NavSatPlugin::GetConfigWidget(QWidget* parent)
@@ -272,18 +238,6 @@ namespace mapviz_plugins
       ui_.buffersize->setValue(buffer_size_);
     }
 
-    if (node["static_arrow_sizes"])
-    {
-      bool static_arrow_sizes = node["static_arrow_sizes"].as<bool>();
-      ui_.static_arrow_sizes->setChecked(static_arrow_sizes);
-      SetStaticArrowSizes(static_arrow_sizes);
-    }
-
-    if (node["arrow_size"])
-    {
-      ui_.arrow_size->setValue(node["arrow_size"].as<int>());
-    }
-
     TopicEdited();
   }
 
@@ -302,9 +256,5 @@ namespace mapviz_plugins
                YAML::Value << position_tolerance_;
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
-
-    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
-
-    emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
   }
 }

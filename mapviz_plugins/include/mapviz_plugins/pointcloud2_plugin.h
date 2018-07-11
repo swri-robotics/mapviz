@@ -75,6 +75,9 @@ namespace mapviz_plugins
     void Shutdown()
     {
     }
+
+    void ClearHistory();
+
     void Draw(double x, double y, double scale);
 
     void Transform();
@@ -92,7 +95,7 @@ namespace mapviz_plugins
   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
-    void AlphaEdited();
+    void AlphaEdited(double new_value);
     void ColorTransformerChanged(int index);
     void MinValueChanged(double value);
     void MaxValueChanged(double value);
@@ -110,20 +113,20 @@ namespace mapviz_plugins
       tf::Point point;
       tf::Point transformed_point;
       QColor color;
-      std::vector<double> features;
+      std::vector<float> features;
     };
 
     struct Scan
     {
       ros::Time stamp;
       QColor color;
-      std::deque<StampedPoint> points;
+      std::vector<StampedPoint> points;
       std::string source_frame;
       bool transformed;
       std::map<std::string, FieldInfo> new_features;
     };
 
-    double PointFeature(const uint8_t*, const FieldInfo&);
+    float PointFeature(const uint8_t*, const FieldInfo&);
     void PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& scan);
     QColor CalculateColor(const StampedPoint& point);
     void UpdateMinMaxWidgets();

@@ -299,6 +299,25 @@
      </property>
     </widget>
    </item>
+   <item row="9" column="1">
+    <widget class="QDoubleSpinBox" name="show_timestamps">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="buttonSymbols">
+      <enum>QAbstractSpinBox::PlusMinus</enum>
+     </property>
+     <property name="suffix">
+      <string/>
+     </property>
+     <property name="value">
+      <double>0.000000000000000</double>
+     </property>
+    </widget>
+   </item>
    <item row="10" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">

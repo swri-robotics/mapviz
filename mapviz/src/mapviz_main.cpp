@@ -29,6 +29,7 @@
 
 #include "mapviz/mapviz.h"
 #include "mapviz/mapviz_application.h"
+#include <GL/glut.h>
 
 int main(int argc, char **argv)
 {

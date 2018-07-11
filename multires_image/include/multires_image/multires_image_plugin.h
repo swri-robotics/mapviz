@@ -81,11 +81,15 @@ namespace mapviz_plugins
   protected Q_SLOTS:
     void SelectFile();
     void AcceptConfiguration();
+    void SetXOffset(double long_offset);
+    void SetYOffset(double latitude_offset);
 
   private:
     bool     loaded_;
     double center_x_;
     double center_y_;
+    double offset_x_;
+    double offset_y_;
 
     multires_image::TileSet* tile_set_;
     MultiresView* tile_view_;

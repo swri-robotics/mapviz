@@ -83,6 +83,10 @@ install(TARGETS ${PROJECT_NAME} multires_view_node multires_widget ${PROJECT_NAM
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
+catkin_install_python(PROGRAMS nodes/mapviz_tile_loader
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

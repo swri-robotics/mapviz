@@ -1,102 +1,42 @@
-Mapviz
+Mapviz [![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=indigo-devel)](https://travis-ci.org/swri-robotics/mapviz)
 ======
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RVIZ](http://wiki.ros.org/rviz) focused on visualizing 2D data.
 
 ![](https://github.com/swri-robotics/mapviz/wiki/mapviz.png)
 
-Installation (ROS Indigo, Jade)
+Installation
 ------------
 
-In ROS Indigo, you can install mapviz using apt-get from the ROS apt repository. This is the recommended installation method for ROS Indigo and Jade.
+You can install mapviz using apt-get from the ROS apt repository:
 
     sudo apt-get install ros-$ROS_DISTRO-mapviz ros-$ROS_DISTRO-mapviz-plugins ros-$ROS_DISTRO-tile-map ros-$ROS_DISTRO-multires-image
 
-Ubuntu Build Status
+Building From Source
 ------------
 
-Package | Indigo (Trusty) | Jade (Trusty) | Jade (Utopic) | Jade (Vivid)
-------- | --------------- | ------------- | ------------- | ------------
-mapviz (32-bit) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ibin_uT32__mapviz__ubuntu_trusty_i386__binary)](http://build.ros.org/job/Ibin_uT32__mapviz__ubuntu_trusty_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT32__mapviz__ubuntu_trusty_i386__binary)](http://build.ros.org/job/Jbin_uT32__mapviz__ubuntu_trusty_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uU32__mapviz__ubuntu_utopic_i386__binary)](http://build.ros.org/job/Jbin_uU32__mapviz__ubuntu_utopic_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uV32__mapviz__ubuntu_vivid_i386__binary)](http://build.ros.org/job/Jbin_uV32__mapviz__ubuntu_vivid_i386__binary/)
-mapviz (64-bit) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ibin_uT64__mapviz__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Ibin_uT64__mapviz__ubuntu_trusty_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT64__mapviz__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Jbin_uT64__mapviz__ubuntu_trusty_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uU64__mapviz__ubuntu_utopic_amd64__binary)](http://build.ros.org/job/Jbin_uU64__mapviz__ubuntu_utopic_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uV64__mapviz__ubuntu_vivid_amd64__binary)](http://build.ros.org/job/Jbin_uV64__mapviz__ubuntu_vivid_amd64__binary/)
-mapviz_plugins (32-bit) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ibin_uT32__mapviz_plugins__ubuntu_trusty_i386__binary)](http://build.ros.org/job/Ibin_uT32__mapviz_plugins__ubuntu_trusty_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT32__mapviz_plugins__ubuntu_trusty_i386__binary)](http://build.ros.org/job/Jbin_uT32__mapviz_plugins__ubuntu_trusty_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uU32__mapviz_plugins__ubuntu_utopic_i386__binary)](http://build.ros.org/job/Jbin_uU32__mapviz_plugins__ubuntu_utopic_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uV32__mapviz_plugins__ubuntu_vivid_i386__binary)](http://build.ros.org/job/Jbin_uV32__mapviz_plugins__ubuntu_vivid_i386__binary/)
-mapviz_plugins (64-bit) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ibin_uT64__mapviz_plugins__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Ibin_uT64__mapviz_plugins__ubuntu_trusty_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT64__mapviz_plugins__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Jbin_uT64__mapviz_plugins__ubuntu_trusty_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uU64__mapviz_plugins__ubuntu_utopic_amd64__binary)](http://build.ros.org/job/Jbin_uU64__mapviz_plugins__ubuntu_utopic_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uV64__mapviz_plugins__ubuntu_vivid_amd64__binary)](http://build.ros.org/job/Jbin_uV64__mapviz_plugins__ubuntu_vivid_amd64__binary/)
-multires_image (32-bit) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ibin_uT32__multires_image__ubuntu_trusty_i386__binary)](http://build.ros.org/job/Ibin_uT32__multires_image__ubuntu_trusty_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT32__multires_image__ubuntu_trusty_i386__binary)](http://build.ros.org/job/Jbin_uT32__multires_image__ubuntu_trusty_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uU32__multires_image__ubuntu_utopic_i386__binary)](http://build.ros.org/job/Jbin_uU32__multires_image__ubuntu_utopic_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uV32__multires_image__ubuntu_vivid_i386__binary)](http://build.ros.org/job/Jbin_uV32__multires_image__ubuntu_vivid_i386__binary/)
-multires_image (64-bit) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ibin_uT64__multires_image__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Ibin_uT64__multires_image__ubuntu_trusty_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT64__multires_image__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Jbin_uT64__multires_image__ubuntu_trusty_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uU64__multires_image__ubuntu_utopic_amd64__binary)](http://build.ros.org/job/Jbin_uU64__multires_image__ubuntu_utopic_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uV64__multires_image__ubuntu_vivid_amd64__binary)](http://build.ros.org/job/Jbin_uV64__multires_image__ubuntu_vivid_amd64__binary/)
-tile_map (32-bit) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ibin_uT32__tile_map__ubuntu_trusty_i386__binary)](http://build.ros.org/job/Ibin_uT32__tile_map__ubuntu_trusty_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT32__tile_map__ubuntu_trusty_i386__binary)](http://build.ros.org/job/Jbin_uT32__tile_map__ubuntu_trusty_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uU32__tile_map__ubuntu_utopic_i386__binary)](http://build.ros.org/job/Jbin_uU32__tile_map__ubuntu_utopic_i386__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uV32__tile_map__ubuntu_vivid_i386__binary)](http://build.ros.org/job/Jbin_uV32__tile_map__ubuntu_vivid_i386__binary/)
-tile_map (64-bit) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ibin_uT64__tile_map__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Ibin_uT64__tile_map__ubuntu_trusty_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT64__tile_map__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Jbin_uT64__tile_map__ubuntu_trusty_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uU64__tile_map__ubuntu_utopic_amd64__binary)](http://build.ros.org/job/Jbin_uU64__tile_map__ubuntu_utopic_amd64__binary/) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uV64__tile_map__ubuntu_vivid_amd64__binary)](http://build.ros.org/job/Jbin_uV64__tile_map__ubuntu_vivid_amd64__binary/)
-
-Travis CI Build Status
-----------------------
-
-Indigo | Jade
------- | ----
-[![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=indigo-devel)](https://travis-ci.org/swri-robotics/mapviz) | [![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=jade-devel)](https://travis-ci.org/swri-robotics/mapviz)
-
-
-Building From Source (ROS Indigo, Jade)
-------------
+Note that for ROS Lunar, you can use the `kinetic-devel` branch, as there are no changes to Mapviz between Kinetic and Lunar.
 
 These directions assume you have already set up a catkin workspace. See [this tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) on the ROS Wiki for help setting up a catkin workspace.
 
 ### Checking out the source code (wstool)
 
-If you're using wstool, add these repositories to your wstool workspace:
+If you're using wstool, add this repository to your wstool workspace:
 
     wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v $ROS_DISTRO-devel
-    wstool set marti_common --git https://github.com/swri-robotics/marti_common.git -v $ROS_DISTRO-devel
-    wstool set marti_messages --git https://github.com/swri-robotics/marti_messages.git -v indigo-devel
+    wstool update mapviz
 
 ### Checking out the source code (git)
 
-If you're not using wstool, you can check out the repositories directly with git:
+If you're not using wstool, you can check out the repository directly with git:
 
     git clone https://github.com/swri-robotics/mapviz.git --branch $ROS_DISTRO-devel
-    git clone https://github.com/swri-robotics/marti_common.git --branch $ROS_DISTRO-devel
-    git clone https://github.com/swri-robotics/marti_messages.git --branch indigo-devel
 
 ### Installing dependencies and building
 
 Install all of the dependencies using rosdep by running the following command from the root of your catkin workspace:
 
     rosdep install --from-paths src --ignore-src
-
-Build the workspace with catkin_make:
-
-    catkin_make
-
-Building From Source (ROS Groovy, Hydro)
-------------
-
-These directions assume you have already set up a catkin workspace. See [this tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) on the ROS Wiki for help setting up a catkin workspace.
-
-### Checking out the source code (wstool)
-
-If you're using wstool, add these repositories to your wstool workspace:
-
-    wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v $ROS_DISTRO-devel
-    wstool set marti_common --git https://github.com/swri-robotics/marti_common.git -v $ROS_DISTRO-devel
-    wstool set marti_messages --git https://github.com/swri-robotics/marti_messages.git -v $ROS_DISTRO-devel
-
-### Checking out the source code (git)
-
-If you're not using wstool, you can check out the repositories with git:
-
-    git clone https://github.com/swri-robotics/mapviz.git --branch $ROS_DISTRO-devel
-    git clone https://github.com/swri-robotics/marti_common.git --branch $ROS_DISTRO-devel
-    git clone https://github.com/swri-robotics/marti_messages.git --branch $ROS_DISTRO-devel
-
-### Installing dependencies and building
-
-Install all of the dependencies manually using these two commands:
-
-    sudo apt-get install ros-$ROS_DISTRO-tf ros-$ROS_DISTRO-common-msgs ros-$ROS_DISTRO-plugin-lib \
-      ros-$ROS_DISTRO-gps-umd ros-$ROS_DISTRO-nodelet ros-$ROS_DISTRO-cv-bridge \
-      ros-$ROS_DISTRO-image-geometry ros-$ROS_DISTRO-angles ros-$ROS_DISTRO-camera-calibration-parsers \
-      ros-$ROS_DISTRO-image-transport
-
-    sudo apt-get install yaml-cpp libboost-random-dev libblas-dev liblapack-dev libproj-dev \
-      libglew-dev freeglut3-dev libxmu-dev libgeos++-dev qt4-dev-tools
 
 Build the workspace with catkin_make:
 

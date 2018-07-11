@@ -54,11 +54,11 @@ namespace tile_map
   public:
     explicit TextureCache(ImageCachePtr image_cache, size_t size = 512);
 
-    TexturePtr GetTexture(size_t url_hash, const QString& url, bool& failed);
+    TexturePtr GetTexture(size_t url_hash, const QString& url, bool& failed, int priority);
     void AddTexture(const TexturePtr& texture);
 
     void Clear();
-    
+
   private:
     QCache<size_t, TexturePtr> cache_;
 

@@ -149,7 +149,7 @@ namespace multires_image
         m_textureId = ids[0];
 
         glBindTexture(GL_TEXTURE_2D, m_textureId);
-        glTexImage2D(GL_TEXTURE_2D, 0, 3, m_dimension, m_dimension, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_dimension, m_dimension, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
 
         // TODO(malban): check for GL error
 
@@ -214,6 +214,14 @@ namespace multires_image
     m_transformed_top_right = transform * m_top_right;
     m_transformed_bottom_left = transform * m_bottom_left;
     m_transformed_bottom_right = transform * m_bottom_right;
+  }
+
+  void Tile::Transform(const swri_transform_util::Transform& transform, const swri_transform_util::Transform& offset_tf)
+  {
+    m_transformed_top_left = offset_tf * (transform * m_top_left);
+    m_transformed_top_right = offset_tf * (transform * m_top_right);
+    m_transformed_bottom_left = offset_tf * (transform * m_bottom_left);
+    m_transformed_bottom_right = offset_tf * (transform * m_bottom_right);
   }
 }
 

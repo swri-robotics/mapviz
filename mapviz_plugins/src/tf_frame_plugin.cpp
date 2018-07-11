@@ -45,10 +45,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(mapviz_plugins,
-                        tf_frame,
-                        mapviz_plugins::TfFramePlugin,
-                        mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TfFramePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
@@ -82,8 +79,8 @@ namespace mapviz_plugins
                      this, SLOT(SetStaticArrowSizes(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
-            SLOT(SetColor(const QColor&)));
+    QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+                     SLOT(SetColor(const QColor&)));
   }
 
   TfFramePlugin::~TfFramePlugin()
@@ -145,44 +142,17 @@ namespace mapviz_plugins
 
   void TfFramePlugin::PrintError(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_ERROR("Error: %s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintErrorHelper(ui_.status, message);
   }
 
   void TfFramePlugin::PrintInfo(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_INFO("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::green);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintInfoHelper(ui_.status, message);
   }
 
   void TfFramePlugin::PrintWarning(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_WARN("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::darkYellow);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintWarningHelper(ui_.status, message);
   }
 
   QWidget* TfFramePlugin::GetConfigWidget(QWidget* parent)
@@ -242,6 +212,11 @@ namespace mapviz_plugins
       {
         draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
+      }
+      else if (draw_style == "arrows")
+      {
+        draw_style_ = ARROWS;
+        ui_.drawstyle->setCurrentIndex(2);
       }
     }
 

@@ -37,10 +37,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <GL/glew.h>
-
-#include <opencv2/highgui/highgui.hpp>
-
 // QT libraries
 #include <QtGui/QtGui>
 #include <QDialog>
@@ -61,7 +57,6 @@
 #include <pluginlib/class_loader.h>
 #include <tf/transform_listener.h>
 #include <yaml-cpp/yaml.h>
-#include <GL/glut.h>
 #include <std_srvs/Empty.h>
 
 // Auto-generated UI files
@@ -72,6 +67,7 @@
 #include <mapviz/AddMapvizDisplay.h>
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
+#include <mapviz/video_writer.h>
 
 #include "stopwatch.h"
 
@@ -93,6 +89,7 @@ namespace mapviz
     void SaveConfig();
     void SelectNewDisplay();
     void RemoveDisplay();
+    void RemoveDisplay(QListWidgetItem* item);
     void ReorderDisplays();
     void FixedFrameSelected(const QString& text);
     void TargetFrameSelected(const QString& text);
@@ -121,8 +118,16 @@ namespace mapviz
     void Hover(double x, double y, double scale);
     void Recenter();
     void HandleProfileTimer();
+    void ClearHistory();
 
   Q_SIGNALS:
+    /**
+     * Emitted every time a frame is grabbed when Mapviz is in video recording
+     * mode, typically at a rate of 30 FPS.
+     * Note that the QImage emitted says its format is ARGB, but its pixel
+     * order is actually BGRA.
+     */
+    void FrameGrabbed(QImage);
     void ImageTransportChanged();
 
   protected:
@@ -138,7 +143,7 @@ namespace mapviz
 
     QLabel* xy_pos_label_;
     QLabel* lat_lon_pos_label_;
-    
+
     QWidget* spacer1_;
     QWidget* spacer2_;
     QWidget* spacer3_;
@@ -146,8 +151,6 @@ namespace mapviz
     QPushButton* rec_button_;
     QPushButton* stop_button_;
     QPushButton* screenshot_button_;
-    
-    boost::shared_ptr<cv::VideoWriter> video_writer_;
 
     int    argc_;
     char** argv_;
@@ -158,9 +161,11 @@ namespace mapviz
     bool force_480p_;
     bool resizable_;
     QColor background_;
-    
+
     std::string capture_directory_;
-    
+    QThread video_thread_;
+    VideoWriter* vid_writer_;
+
     bool updating_frames_;
 
     ros::NodeHandle* node_;
@@ -185,7 +190,7 @@ namespace mapviz
         int draw_order = 0);
 
     bool AddDisplay(
-      AddMapvizDisplay::Request& req, 
+      AddMapvizDisplay::Request& req,
       AddMapvizDisplay::Response& resp);
 
     void ClearDisplays();

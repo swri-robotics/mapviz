@@ -47,11 +47,7 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(
-    mapviz_plugins,
-    robot_image,
-    mapviz_plugins::RobotImagePlugin,
-    mapviz::MapvizPlugin);
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RobotImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
@@ -168,44 +164,17 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::PrintError(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_ERROR("Error: %s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintErrorHelper(ui_.status, message);
   }
 
   void RobotImagePlugin::PrintInfo(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_INFO("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::green);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintInfoHelper(ui_.status, message);
   }
 
   void RobotImagePlugin::PrintWarning(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
-    {
-      return;
-    }
-
-    ROS_WARN("%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::darkYellow);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
+    PrintWarningHelper(ui_.status, message);
   }
 
   QWidget* RobotImagePlugin::GetConfigWidget(QWidget* parent)
