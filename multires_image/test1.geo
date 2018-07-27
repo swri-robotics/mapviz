@@ -1,5 +1,5 @@
-image_path: "tiles"
-image_width: 1000
+image_path: "../../drones4life_scenario/launch/data/mapviz_tiles/tiles"
+image_width: 974
 image_height: 1000
 tile_size: 1000
 
