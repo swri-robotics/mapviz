@@ -10,4 +10,4 @@ projection: geographic
 
 // Georeference
 tiepoint: [6785, 336, 29.45196669, -98.61370577]
-pixel_scale: [0.00000157, 0.000001375]  
+pixel_scale: [0.00000157, 0.000001375]
