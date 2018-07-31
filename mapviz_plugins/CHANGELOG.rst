@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.10 (2018-07-31)
+-------------------
 * Fix timestamp interval (`#587 <https://github.com/swri-robotics/mapviz/issues/587>`_)
 * Contributors: Matthew
 
