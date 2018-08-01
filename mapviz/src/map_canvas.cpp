@@ -36,7 +36,6 @@
 #include <QMenu>
 #include <QAction>
 #include "ros/ros.h"
-#include "drones4life_scenario/AvailableServices.h"
 #include <vector>
 #include <string>
 #include <sstream>
