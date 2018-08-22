@@ -434,11 +434,9 @@ namespace mapviz_plugins
   {
     ros::Time now = ros::Time::now();
 
-    std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
-    for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
+    for (auto nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
-      std::map<int, MarkerData>::iterator markerIter;
-      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end();)
+      for (auto markerIter = nsIter->second.begin(); markerIter != nsIter->second.end();)
       {
         MarkerData& marker = markerIter->second;
 
@@ -664,11 +662,9 @@ namespace mapviz_plugins
     painter->save();
     painter->resetTransform();
 
-    std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
-    for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
+    for (auto nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
-      std::map<int, MarkerData>::iterator markerIter;
-      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
+      for (auto markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
 
@@ -701,11 +697,9 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Transform()
   {
-    std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
-    for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
+    for (auto nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
-      std::map<int, MarkerData>::iterator markerIter;
-      for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
+      for (auto markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
 
