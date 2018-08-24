@@ -46,7 +46,7 @@ namespace mapviz_plugins
   {
     ui_.setupUi(config_widget_);
 
-    connect(&click_filter_, SIGNAL(pointClicked(const QPointF&, const)),
+    connect(&click_filter_, SIGNAL(pointClicked(const QPointF&)),
             this, SLOT(pointClicked(const QPointF&)));
     connect(ui_.topic, SIGNAL(textEdited(const QString&)),
             this, SLOT(topicChanged(const QString&)));
