@@ -177,7 +177,7 @@ namespace mapviz_plugins
 
   void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    if (swri_yaml_util::FindValue(node, "color"))
+    if (swri_yaml_util::FindValue(node, "topic"))
     {
       std::string topic;
       node["topic"] >> topic;
