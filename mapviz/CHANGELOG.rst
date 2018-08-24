@@ -2,6 +2,9 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.6 (2018-07-31)
+------------------
+
 0.2.5 (2018-04-12)
 ------------------
 * Add clear history functionality.

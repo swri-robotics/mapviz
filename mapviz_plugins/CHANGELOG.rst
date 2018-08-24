@@ -2,6 +2,13 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.6 (2018-07-31)
+------------------
+* Fix timestamp interval (`#588 <https://github.com/swri-robotics/mapviz/issues/588>`_)
+* Update path_plugin.cpp (`#586 <https://github.com/swri-robotics/mapviz/issues/586>`_)
+* Replace depcreated plugin macro with newer version
+* Contributors: Matthew, P. J. Reed, camjaws
+
 0.2.5 (2018-04-12)
 ------------------
 * Add clear history functionality.

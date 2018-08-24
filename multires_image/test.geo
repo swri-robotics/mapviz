@@ -1,13 +1,12 @@
-// Image properties
-image_path: tiles
-image_width: 25600
-image_height: 17920
-tile_size: 512
+image_path: "../../drones4life_scenario/launch/data/mapviz_tiles/tiles"
+image_width: 974
+image_height: 1000
+tile_size: 1000
 
-// Coordinate System
-datum: wgs84
-projection: geographic
+datum: "wgs84"
+projection: "utm"
 
-// Georeference
-tiepoint: [6785, 336, 29.45196669, -98.61370577]
-pixel_scale: [0.00000157, 0.000001375]
+tiepoints:
+- point: [0,0 ,      387304.82386743545, 5822591.650868726]
+- point: [574, 718,  387353.6521101936, 5822527.6940708365]
+- point: [135,235,   387315.95388440706, 5822570.898269689]
