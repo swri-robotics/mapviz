@@ -593,17 +593,18 @@ namespace mapviz_plugins
       }
 
       QPen pen(QBrush(QColor::fromRgbF(marker.color.r, marker.color.g,
-                             marker.color.b)), 1);
+                             marker.color.b, marker.color.a)), 1);
       painter->setPen(pen);
 
       StampedPoint& rosPoint = marker.points.front();
       QPointF point = tf.map(QPointF(rosPoint.transformed_point.x(),
                                      rosPoint.transformed_point.y()));
 
+      auto text = QString::fromStdString(marker.text);
       // Get bounding rectangle
       QRectF rect(point, QSizeF(10,10));
-      rect = painter->boundingRect(rect, Qt::AlignLeft ,QString(marker.text.c_str()));
-      painter->drawText(rect, QString(marker.text.c_str()));
+      rect = painter->boundingRect(rect, Qt::AlignLeft | Qt::AlignHCenter, text);
+      painter->drawText(rect, text);
 
       PrintInfo("OK");
     }
