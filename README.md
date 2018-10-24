@@ -82,6 +82,15 @@ Build the workspace with catkin_make:
 Plug-ins
 --------
 
+### Coordinate Picker
+
+Transforms coordinates of clicked points on the map to a specified frame. The most recent coordinate is placed on the clipboard, and a list of coordinates is displayed in the GUI.
+
+![](doc/images/screenshot_coordinate_picker.png)
+
+**Parameters**
+* Frame: coordinate frame into which to transform the clicked point
+
 ### Disparity
 
 Overlays a [sensor_msgs::DisparityImage](http://docs.ros.org/api/stereo_msgs/html/msg/DisparityImage.html) onto the display using the ''jet'' color map.
