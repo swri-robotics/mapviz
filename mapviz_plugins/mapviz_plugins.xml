@@ -62,5 +62,8 @@
   <class name="mapviz_plugins/string" type="mapviz_plugins::StringPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Displays a std_msgs/String at a fixed point on the canvas.</description>
   </class>
+  <class name="mapviz_plugins/coordinate_picker" type="mapviz_plugins::CoordinatePickerPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Prints clicked coordinates in specified frame and copies to clipboard.</description>
+  </class>
 </library>
 
