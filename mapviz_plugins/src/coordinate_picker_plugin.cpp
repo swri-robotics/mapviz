@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <alpaca_simulator/coordinate_picker_plugin.h>
+#include <mapviz_plugins/coordinate_picker_plugin.h>
 #include <mapviz/mapviz_plugin.h>
 
 #include <QClipboard>
@@ -44,9 +44,9 @@
 #include <swri_transform_util/transform.h>
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(alpaca_simulator::CoordinatePickerPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::CoordinatePickerPlugin, mapviz::MapvizPlugin)
 
-namespace alpaca_simulator
+namespace mapviz_plugins
 {
 
 CoordinatePickerPlugin::CoordinatePickerPlugin()
