@@ -11,8 +11,8 @@
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
-  <build_depend>libqt4-dev</build_depend>
-  <build_depend>libqt4-opengl-dev</build_depend>
+  <build_depend>libqt_dev</build_depend>
+  <build_depend>libqt_opengl_dev</build_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
@@ -38,8 +38,8 @@
   <depend>tf</depend>
   <depend>visualization_msgs</depend>
 
-  <exec_depend>libqt4</exec_depend>
-  <exec_depend>libqt4-opengl</exec_depend>
+  <exec_depend>libqt_core</exec_depend>
+  <exec_depend>libqt_opengl</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

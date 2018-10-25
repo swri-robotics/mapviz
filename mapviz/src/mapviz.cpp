@@ -48,7 +48,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 // QT libraries
+#if QT_VERSION >= 0x050000
+#include <QtWidgets/QApplication>
+#else
 #include <QtGui/QApplication>
+#endif
 #include <QFileDialog>
 #include <QActionGroup>
 #include <QColorDialog>

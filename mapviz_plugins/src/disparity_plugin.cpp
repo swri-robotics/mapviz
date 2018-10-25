@@ -163,7 +163,7 @@ namespace mapviz_plugins
       units_ = PERCENT;
     }
   }
-  void DisparityPlugin::SetSubscription(bool visible)
+  /*void DisparityPlugin::SetSubscription(bool visible)
   {
     if(topic_.empty())
     {
@@ -176,11 +176,11 @@ namespace mapviz_plugins
     }
     else
     {
-        disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
+      disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+      ROS_INFO("Subscribing to %s", topic_.c_str());
     }
-  }
+  }*/
   void DisparityPlugin::SelectTopic()
   {
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
