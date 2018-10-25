@@ -104,7 +104,7 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
-  QPointF point = event->localPos();
+  QPointF point = event->posF();
   ROS_DEBUG("Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;
@@ -147,7 +147,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   stream.setRealNumberPrecision(9);
   stream << point.x() << "," << point.y();
 
-  QClipboard* clipboard = QGuiApplication::clipboard();
+  QClipboard* clipboard = QApplication::clipboard();
   clipboard->setText(new_point);
 
   stream << " (" << QString::fromStdString(frame) << ")\n";
