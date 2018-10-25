@@ -163,7 +163,7 @@ namespace mapviz_plugins
       units_ = PERCENT;
     }
   }
-  /*void DisparityPlugin::SetSubscription(bool visible)
+  void DisparityPlugin::SetSubscription(bool visible)
   {
     if(topic_.empty())
     {
@@ -180,7 +180,7 @@ namespace mapviz_plugins
 
       ROS_INFO("Subscribing to %s", topic_.c_str());
     }
-  }*/
+  }
   void DisparityPlugin::SelectTopic()
   {
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(

@@ -26,7 +26,6 @@ set(DEPENDENCIES
 
 find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
 
-#find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 ### QT ###
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
   find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL)
@@ -56,7 +55,11 @@ else()
 endif()
 
 set(QT_USE_QTOPENGL TRUE)
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
 find_package(OpenCV 2 REQUIRED)
+else()
+find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
+endif()
 find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
 
