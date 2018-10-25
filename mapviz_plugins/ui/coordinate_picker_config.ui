@@ -89,9 +89,6 @@
      <property name="textInteractionFlags">
       <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
      </property>
-     <property name="placeholderText">
-      <string>Click on the map; coordinates appear here</string>
-     </property>
     </widget>
    </item>
   </layout>
