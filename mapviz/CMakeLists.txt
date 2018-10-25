@@ -17,7 +17,36 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED system filesystem)
 find_package(OpenCV 2 REQUIRED)
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+
+### QT ###
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL)
+  set(Qt_FOUND TRUE)
+  set(Qt_INCLUDE_DIRS "${QT_INCLUDE_DIR};${QT_QTGUI_INCLUDE_DIR};${GT_QTOPENGL_INCLUDE_DIR}")
+  set(Qt_LIBRARIES "${QT_QTCORE_LIBRARY};${QT_QTGUI_LIBRARY};${QT_QTOPENGL_LIBRARY}")
+  set(Qt_LIBS
+      Qt4::QtCore
+      Qt4::QtGui
+      Qt4::QtOpenGL
+      )
+else()
+  find_package(Qt5Concurrent REQUIRED)
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5Gui REQUIRED)
+  find_package(Qt5OpenGL REQUIRED)
+  find_package(Qt5Widgets REQUIRED)
+  set(Qt_FOUND TRUE)
+  set(Qt_INCLUDE_DIRS "${Qt5Concurrent_INCLUDE_DIRS};${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
+  set(Qt_LIBRARIES "${Qt5Concurrent_LIBRARIES};${Qt5Core_LIBRARIES};${Qt5Gui_LIBRARIES};${Qt5OpenGL_LIBRARIES};${Qt5Widgets_LIBRARIES}")
+  set(Qt_LIBS
+      Qt5::Concurrent
+      Qt5::Core
+      Qt5::Gui
+      Qt5::OpenGL
+      Qt5::Widgets
+      )
+  add_definitions(-DWFlags=WindowFlags)
+endif()
 set(QT_USE_QTOPENGL TRUE)
 
 # Require OpenGL
@@ -37,7 +66,7 @@ generate_messages(DEPENDENCIES
 
 catkin_package(
   INCLUDE_DIRS include
-  DEPENDS libqt4
+  DEPENDS Qt
   CATKIN_DEPENDS
     marti_common_msgs
     message_runtime
@@ -53,8 +82,8 @@ catkin_package(
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-include(${QT_USE_FILE})
-include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIR} ${QT_QTOPENGL_INCLUDE_DIR} ${OpenGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
+#include(${QT_USE_FILE})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Qt_INCLUDE_DIRS} ${OpenGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR})
 add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
@@ -97,18 +126,29 @@ file (GLOB SRC_FILES
   src/select_topic_dialog.cpp
   src/video_writer.cpp
 )
-QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
-QT4_WRAP_UI(SRC_FILES ${UI_FILES})
-QT4_WRAP_CPP(SRC_FILES ${HEADER_FILES})
+
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
+  QT4_WRAP_UI(SRC_FILES ${UI_FILES})
+  qt4_wrap_cpp(SRC_FILES ${HEADER_FILES})
+else()
+  QT5_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
+  QT5_WRAP_UI(SRC_FILES ${UI_FILES})
+  qt5_wrap_cpp(SRC_FILES ${HEADER_FILES})
+endif()
+
+#QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
+#QT4_WRAP_UI(SRC_FILES ${UI_FILES})
+#QT4_WRAP_CPP(SRC_FILES ${HEADER_FILES})
 
 add_library(rqt_${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
-target_link_libraries(rqt_${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(rqt_${PROJECT_NAME} ${Qt_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(rqt_${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 add_dependencies(rqt_${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
 
 add_executable(${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS} src/mapviz_main.cpp)
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${Boost_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Qt_LIBRARIES} ${Boost_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)

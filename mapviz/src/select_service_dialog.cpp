@@ -42,7 +42,11 @@
 
 #include <rosapi/Services.h>
 #include <rosapi/ServicesForType.h>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets/QMessageBox>
+#else
 #include <QtGui/QMessageBox>
+#endif
 
 namespace mapviz
 {

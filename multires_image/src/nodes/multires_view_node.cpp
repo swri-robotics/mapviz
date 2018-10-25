@@ -38,9 +38,14 @@
 #include <string>
 
 // QT libraries
-#include <QtGui/QApplication>
 #include <QString>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
+#else
+#include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
+#endif
 #include <QImage>
 #include <QFileInfo>
 

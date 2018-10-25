@@ -104,7 +104,24 @@ namespace mapviz_plugins
     void SetOffsetY(int offset);
     void SetWidth(int width);
     void SetHeight(int height);
-    void SetSubscription(bool visible);
+    void SetSubscription(bool visible)
+    {
+    if(topic_.empty())
+    {
+      return;
+    }
+    else if(!visible)
+    {
+      disparity_sub_.shutdown();
+      ROS_INFO("Dropped subscription to %s", topic_.c_str());
+    }
+    else
+    {
+      disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
+
+      ROS_INFO("Subscribing to %s", topic_.c_str());
+    }
+  }
 
   private:
     Ui::disparity_config ui_;
