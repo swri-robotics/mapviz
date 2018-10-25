@@ -16,7 +16,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Boost REQUIRED system filesystem)
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
 find_package(OpenCV 2 REQUIRED)
+else()
+find_package(OpenCV 3.1 COMPONENTS core imgproc imgcodecs videoio REQUIRED)
+endif()
 
 ### QT ###
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
@@ -136,10 +140,6 @@ else()
   QT5_WRAP_UI(SRC_FILES ${UI_FILES})
   qt5_wrap_cpp(SRC_FILES ${HEADER_FILES})
 endif()
-
-#QT4_ADD_RESOURCES(RCC_SRCS src/resources/icons.qrc)
-#QT4_WRAP_UI(SRC_FILES ${UI_FILES})
-#QT4_WRAP_CPP(SRC_FILES ${HEADER_FILES})
 
 add_library(rqt_${PROJECT_NAME} ${SRC_FILES} ${RCC_SRCS})
 target_link_libraries(rqt_${PROJECT_NAME} ${Qt_LIBRARIES} ${OpenGL_LIBRARY} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
