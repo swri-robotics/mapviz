@@ -7,13 +7,29 @@ notifications:
   email:
     on_success: always
     on_failure: always
-env:
-  global:
-    - USE_DEB=true
-    - ROS_DISTRO="indigo"
-  matrix:
-    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+jobs:
+  include:
+    - stage: build-shadow-fixed
+      env: ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - env: ROS_DISTRO="lunar" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - stage: build-released
+      env: ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="lunar" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - stage: lint
+      sudo: false
+      install: pip install --user -q catkin-lint
+      script: catkin_lint -W2 --explain .
+      env: JOB="catkin_lint"
+  allow_failures:
+    - env: ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="lunar" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: JOB="catkin_lint"
 matrix:
   allow_failures:
     - env: ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
