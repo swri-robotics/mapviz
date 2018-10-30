@@ -40,7 +40,6 @@ else()
   add_definitions(-DWFlags=WindowFlags)
 endif()
 set(QT_USE_QTOPENGL TRUE)
-find_package(OpenCV 2 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -56,7 +55,7 @@ catkin_package(
 )
 
 #include(${QT_USE_FILE})
-include_directories(include ${catkin_INCLUDE_DIRS} ${Qt_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Qt_INCLUDE_DIRS})
 add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
@@ -74,7 +73,7 @@ else()
 QT5_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
 endif()
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${Qt_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${Qt_LIBRARIES} ${GLU_LIBRARY})
 
 # Build libmultires_widget
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
