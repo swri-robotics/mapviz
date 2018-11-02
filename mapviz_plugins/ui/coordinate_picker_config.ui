@@ -85,6 +85,13 @@
    <item row="2" column="2">
     <widget class="QPlainTextEdit" name="plainTextEdit"/>
    </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="clearListButton">
+     <property name="text">
+      <string>Clear List</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

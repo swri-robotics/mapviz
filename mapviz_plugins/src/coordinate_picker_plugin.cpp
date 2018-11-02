@@ -62,6 +62,8 @@ CoordinatePickerPlugin::CoordinatePickerPlugin()
                    this, SLOT(FrameEdited()));
   QObject::connect(ui_.copyCheckBox, SIGNAL(stateChanged(int)),
                    this, SLOT(ToggleCopyOnClick(int)));
+  QObject::connect(ui_.clearListButton, SIGNAL(clicked()),
+                   this, SLOT(ClearCoordList()));
 }
 
 CoordinatePickerPlugin::~CoordinatePickerPlugin()
@@ -204,6 +206,11 @@ void CoordinatePickerPlugin::ToggleCopyOnClick(int state)
       copy_on_click_ = false;
       break;
   }
+}
+
+void CoordinatePickerPlugin::ClearCoordList()
+{
+  ui_.coordTextEdit->setPlainText(QString());
 }
 
 void CoordinatePickerPlugin::Draw(double x, double y, double scale)

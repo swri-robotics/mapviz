@@ -77,6 +77,7 @@ namespace mapviz_plugins
       void SelectFrame();
       void FrameEdited();
       void ToggleCopyOnClick(int state);
+      void ClearCoordList();
 
     private:
       Ui::coordinate_picker_config ui_;
