@@ -101,6 +101,13 @@
      </property>
     </widget>
    </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="clearListButton">
+     <property name="text">
+      <string>Clear List</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>
