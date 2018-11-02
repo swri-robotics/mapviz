@@ -51,7 +51,8 @@ namespace mapviz_plugins
 
 CoordinatePickerPlugin::CoordinatePickerPlugin()
   : config_widget_(new QWidget()),
-  map_canvas_(NULL)
+  map_canvas_(NULL),
+  copy_on_click_(false)
 {
   ui_.setupUi(config_widget_);
 
@@ -59,6 +60,8 @@ CoordinatePickerPlugin::CoordinatePickerPlugin()
                    this, SLOT(SelectFrame()));
   QObject::connect(ui_.frame, SIGNAL(editingFinished()),
                    this, SLOT(FrameEdited()));
+  QObject::connect(ui_.copyCheckBox, SIGNAL(stateChanged(int)),
+                   this, SLOT(ToggleCopyOnClick(int)));
 }
 
 CoordinatePickerPlugin::~CoordinatePickerPlugin()
@@ -147,8 +150,11 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   stream.setRealNumberPrecision(9);
   stream << point.x() << "," << point.y();
 
-  QClipboard* clipboard = QGuiApplication::clipboard();
-  clipboard->setText(new_point);
+  if (copy_on_click_)
+  {
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    clipboard->setText(new_point);
+  }
 
   stream << " (" << QString::fromStdString(frame) << ")\n";
 
@@ -185,6 +191,21 @@ void CoordinatePickerPlugin::FrameEdited()
   ROS_INFO("Setting target frame to %s", ui_.frame->text().toStdString().c_str());
 }
 
+void CoordinatePickerPlugin::ToggleCopyOnClick(int state)
+{
+  switch(state)
+  {
+    case Qt::Checked:
+      copy_on_click_ = true;
+      break;
+    case Qt::PartiallyChecked:
+    case Qt::Unchecked:
+    default:
+      copy_on_click_ = false;
+      break;
+  }
+}
+
 void CoordinatePickerPlugin::Draw(double x, double y, double scale)
 {
 }
@@ -197,12 +218,29 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
     node["frame"] >> frame;
     ui_.frame->setText(QString::fromStdString(frame));
   }
+
+  if (node["copy"])
+  {
+    bool copy;
+    node["copy"] >> copy;
+    if (copy)
+    {
+      ui_.copyCheckBox->setCheckState(Qt::Checked);
+    }
+    else
+    {
+      ui_.copyCheckBox->setCheckState(Qt::Unchecked);
+    }
+  }
 }
 
 void CoordinatePickerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
 {
   std::string frame = ui_.frame->text().toStdString();
   emitter << YAML::Key << "frame" << YAML::Value << frame;
+
+  bool copy_on_click = ui_.copyCheckBox->isChecked();
+  emitter << YAML::Key << "copy" << YAML::Value << copy_on_click;
 }
 
 void CoordinatePickerPlugin::PrintError(const std::string& message)

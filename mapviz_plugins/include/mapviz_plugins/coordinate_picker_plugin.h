@@ -76,11 +76,14 @@ namespace mapviz_plugins
     protected Q_SLOTS:
       void SelectFrame();
       void FrameEdited();
+      void ToggleCopyOnClick(int state);
 
     private:
       Ui::coordinate_picker_config ui_;
       QWidget* config_widget_;
       mapviz::MapCanvas* map_canvas_;
+
+      bool copy_on_click_;
   };
 
 

@@ -32,7 +32,17 @@
    <property name="verticalSpacing">
     <number>4</number>
    </property>
-   <item row="5" column="2" colspan="2">
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font/>
+     </property>
+     <property name="text">
+      <string>Status:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="2" colspan="2">
     <widget class="QLabel" name="status">
      <property name="font">
       <font/>
@@ -48,34 +58,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QLineEdit" name="frame"/>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font/>
-     </property>
-     <property name="text">
-      <string>Status:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Frame:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="3">
-    <widget class="QPushButton" name="selectframe">
-     <property name="text">
-      <string>Select</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
+   <item row="2" column="2">
     <widget class="QPlainTextEdit" name="coordTextEdit">
      <property name="lineWrapMode">
       <enum>QPlainTextEdit::NoWrap</enum>
@@ -91,6 +74,30 @@
      </property>
      <property name="placeholderText">
       <string>Click on the map; coordinates appear here</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Frame:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QLineEdit" name="frame"/>
+   </item>
+   <item row="0" column="3">
+    <widget class="QPushButton" name="selectframe">
+     <property name="text">
+      <string>Select</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QCheckBox" name="copyCheckBox">
+     <property name="text">
+      <string>Copy to Clipboard on Click</string>
      </property>
     </widget>
    </item>
