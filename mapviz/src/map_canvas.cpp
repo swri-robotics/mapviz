@@ -1,4 +1,4 @@
-// *****************************************************************************
+﻿// *****************************************************************************
 //
 // Copyright (c) 2014, Southwest Research Institute® (SwRI®)
 // All rights reserved.
@@ -40,6 +40,8 @@
 
 namespace mapviz
 {
+
+
 bool compare_plugins(MapvizPluginPtr a, MapvizPluginPtr b)
 {
   return a->DrawOrder() < b->DrawOrder();
@@ -358,7 +360,7 @@ void MapCanvas::mouseReleaseEvent(QMouseEvent* e)
 
 void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 {
-  if (mouse_pressed_)
+  if (mouse_pressed_ && canvas_able_to_move_)
   {
     int diff;
     switch (mouse_button_)
