@@ -1,6 +1,6 @@
 <package format="2">
   <name>multires_image</name>
-  <version>0.0.10</version>
+  <version>0.2.6</version>
   <description>
 
      multires_image
@@ -13,10 +13,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>libqt_core</exec_depend>
   <build_depend>libqt_dev</build_depend>
-  <exec_depend>libqt_opengl</exec_depend>
   <build_depend>libqt_opengl_dev</build_depend>
+
+  <depend>cv_bridge</depend>
   <depend>gps_common</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
@@ -26,6 +26,9 @@
   <depend>swri_transform_util</depend>
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
+
+  <exec_depend>libqt_core</exec_depend>
+  <exec_depend>libqt_opengl</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

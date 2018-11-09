@@ -78,7 +78,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent = 0, Qt::WFlags flags = 0);
+    Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~Mapviz();
 
     void Initialize();

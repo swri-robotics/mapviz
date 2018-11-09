@@ -2,41 +2,56 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.10 (2018-07-31)
--------------------
+0.2.6 (2018-07-31)
+------------------
 
-0.0.9 (2018-04-12)
+0.2.5 (2018-04-12)
 ------------------
 * Add ability to set offset for multires image (`#565 <https://github.com/swri-robotics/mapviz/issues/565>`_)
 * Fix multires image scale when projection is WGS84.
 * update to use non deprecated pluginlib macro
-* Remove dep on libopencv-dev from multires_image (`#505 <https://github.com/swri-robotics/mapviz/issues/505>`_)
+* Mapviz tile loader (Kinetic) (`#509 <https://github.com/swri-robotics/mapviz/issues/509>`_)
+* Change package.xml dep order
 * Support transparent tiles in multires_image
 * Contributors: Marc Alban, Mikael Arguedas, P. J. Reed, jgassaway
 
-0.0.8 (2017-08-11)
-------------------
-* Install mapviz_tile_loader (`#499 <https://github.com/swri-robotics/mapviz/issues/499>`_)
-* Contributors: Matthew
-
-0.0.7 (2016-10-23)
+0.2.4 (2017-08-11)
 ------------------
 
-0.0.6 (2016-08-14)
+0.2.3 (2016-12-10)
 ------------------
 
-0.0.5 (2016-05-20)
+0.2.2 (2016-12-07)
 ------------------
-* Add helper node to automatically add relevant multires_image display to mapviz based on a GPS message.
+* Migrated OpenCV to 3.1 (default in Kinetic)
+* Contributors: Brian Holt
+
+0.2.1 (2016-10-23)
+------------------
+
+0.2.0 (2016-06-23)
+------------------
+* Update Qt to version 5
+* Contributors: Ed Venator
+
+0.1.3 (2016-05-20)
+------------------
 * Implement service for adding and modifying mapviz displays.
 * Fix for `#339 <https://github.com/swri-robotics/mapviz/issues/339>`_; explicitly depending on OpenCV 2
 * Contributors: Marc Alban, P. J. Reed
 
-0.0.4 (2016-01-06)
+0.1.2 (2016-01-06)
 ------------------
-* Uses file extension from geo file
-* Enables the possibility to load one-layer tile set
+* Enables the possibility to load a one-layer tile set
 * Contributors: Vincent Rousseau
+
+0.1.1 (2015-11-17)
+------------------
+* Use extension from geo file
+* Contributors: Vincent Rousseau
+
+0.1.0 (2015-09-29)
+------------------
 
 0.0.3 (2015-09-28)
 ------------------

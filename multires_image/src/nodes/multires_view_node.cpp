@@ -39,13 +39,8 @@
 
 // QT libraries
 #include <QString>
-#if QT_VERSION >= 0x050000
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QMessageBox>
-#else
-#include <QtGui/QApplication>
-#include <QtGui/QMessageBox>
-#endif
+#include <QApplication>
+#include <QMessageBox>
 #include <QImage>
 #include <QFileInfo>
 
@@ -53,7 +48,7 @@
 
 namespace multires_image
 {
-  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WFlags flags) :
+  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WindowFlags flags) :
     QMainWindow(parent, flags),
     argc_(argc),
     argv_(argv),

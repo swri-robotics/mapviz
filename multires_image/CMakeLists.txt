@@ -2,23 +2,30 @@ cmake_minimum_required(VERSION 2.8.3)
 project(multires_image)
 
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
   mapviz
   roscpp 
   tf 
   swri_transform_util 
   swri_math_util
-  swri_yaml_util)
+  swri_yaml_util
+)
 
 find_package(Boost REQUIRED thread)
 find_package(GLU REQUIRED)
+
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  find_package(OpenCV 2 REQUIRED)
+else()
+  find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
+endif()
 
 ### QT ###
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
   find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL)
   set(Qt_FOUND TRUE)
   set(Qt_INCLUDE_DIRS "${QT_INCLUDE_DIR};${QT_QTCORE_INCLUDE_DIR};${QT_QTGUI_INCLUDE_DIR};${QT_QTOPENGL_INCLUDE_DIR}")
-  set(Qt_LIBRARIES "${QT_QTCORE_LIBRARY};${QT_QTGUI_LIBRARY};${QT_QTOPENGL_LIBRARY}")
-  set(Qt_LIBS
+  set(Qt_LIBRARIES
       Qt4::QtCore
       Qt4::QtGui
       Qt4::QtOpenGL
@@ -30,8 +37,7 @@ else()
   find_package(Qt5Widgets REQUIRED)
   set(Qt_FOUND TRUE)
   set(Qt_INCLUDE_DIRS "${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
-  set(Qt_LIBRARIES "${Qt5Core_LIBRARIES};${Qt5Gui_LIBRARIES};${Qt5OpenGL_LIBRARIES};${Qt5Widgets_LIBRARIES}")
-  set(Qt_LIBS
+  set(Qt_LIBRARIES
       Qt5::Core
       Qt5::Gui
       Qt5::OpenGL
@@ -54,65 +60,77 @@ catkin_package(
     tf
 )
 
-#include(${QT_USE_FILE})
-include_directories(include ${catkin_INCLUDE_DIRS} ${Qt_INCLUDE_DIRS})
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories(include
+  ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIR}
+  ${Qt_INCLUDE_DIRS}
+)
 add_definitions(${QT_DEFINITIONS})
 
 set(QT_USE_QTOPENGL TRUE)
 
 # Build libtile_cache
-file (GLOB TILE_SRC_FILES 
-   src/string_util.cpp
+set(TILE_SRC_FILES 
    src/tile.cpp
    src/tile_cache.cpp
    src/tile_set.cpp
    src/tile_set_layer.cpp)
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-QT4_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
+  QT4_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
 else()
-QT5_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
+  QT5_WRAP_CPP(TILE_SRC_FILES include/multires_image/tile_cache.h)
 endif()
-add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${Qt_LIBRARIES} ${GLU_LIBRARY})
+
+add_library(${PROJECT_NAME} 
+  ${TILE_SRC_FILES}
+)
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${Qt_LIBRARIES}
+  ${GLU_LIBRARY}
+)
 
 # Build libmultires_widget
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(src)
-file (GLOB UI_FILES src/*.ui)
-file (GLOB WIDGET_SRC_FILES src/tile_view.cpp src/QGLMap.cpp)
+set(UI_FILES
+  src/QGLMap.ui
+  src/multires_config.ui
+)
+set(WIDGET_SRC_FILES src/tile_view.cpp src/QGLMap.cpp)
+
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-QT4_WRAP_UI(WIDGET_SRC_FILES ${UI_FILES})
-QT4_WRAP_CPP(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
+  QT4_WRAP_UI(WIDGET_SRC_FILES ${UI_FILES})
+  QT4_WRAP_CPP(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
 else()
-QT5_WRAP_UI(WIDGET_SRC_FILES ${UI_FILES})
-QT5_WRAP_CPP(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
+  QT5_WRAP_UI(WIDGET_SRC_FILES ${UI_FILES})
+  QT5_WRAP_CPP(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
 endif()
 add_library(multires_widget ${WIDGET_SRC_FILES})
 target_link_libraries(multires_widget ${PROJECT_NAME})
 
 # Build nodes
-include_directories(src)
-file (GLOB VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
+set(VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-QT4_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
+  QT4_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
 else()
-QT5_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
+  QT5_WRAP_CPP(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
 endif()
 add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
 target_link_libraries(multires_view_node multires_widget)
 
 # Build mapviz plugin
-file (GLOB MAPVIZ_SRC_FILES 
+set(MAPVIZ_SRC_FILES 
   src/multires_image_plugin.cpp
   src/multires_view.cpp)
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-QT4_WRAP_UI(MAPVIZ_SRC_FILES src/multires_config.ui)
-QT4_WRAP_CPP(MAPVIZ_SRC_FILES include/multires_image/multires_image_plugin.h)
+  QT4_WRAP_UI(MAPVIZ_SRC_FILES src/multires_config.ui)
+  QT4_WRAP_CPP(MAPVIZ_SRC_FILES include/multires_image/multires_image_plugin.h)
 else()
-QT5_WRAP_UI(MAPVIZ_SRC_FILES src/multires_config.ui)
-QT5_WRAP_CPP(MAPVIZ_SRC_FILES include/multires_image/multires_image_plugin.h)
+  QT5_WRAP_UI(MAPVIZ_SRC_FILES src/multires_config.ui)
+  QT5_WRAP_CPP(MAPVIZ_SRC_FILES include/multires_image/multires_image_plugin.h)
 endif()
+
 add_library(${PROJECT_NAME}_plugin ${MAPVIZ_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 

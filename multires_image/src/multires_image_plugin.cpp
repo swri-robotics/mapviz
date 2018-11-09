@@ -52,9 +52,9 @@ namespace mapviz_plugins
     tile_set_(NULL),
     tile_view_(NULL),
     config_widget_(new QWidget()),
-    transformed_(false),
     offset_x_(0.0),
-    offset_y_(0.0)
+    offset_y_(0.0),
+    transformed_(false)
   {
     ui_.setupUi(config_widget_);
 

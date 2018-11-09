@@ -189,14 +189,12 @@ namespace mapviz_plugins
     if(topic.name.empty())
     {
       topic.name.clear();
-      TopicEdited();
     }
     if (!topic.name.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic.name));
-      TopicEdited();
     }
-
+    TopicEdited();
   }
 
   void DisparityPlugin::TopicEdited()
@@ -216,6 +214,7 @@ namespace mapviz_plugins
     }
     if (topic != topic_)
     {
+      PrintWarning("Topic is Hidden");
       initialized_ = false;
       has_message_ = false;
       topic_ = topic;

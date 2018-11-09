@@ -28,6 +28,9 @@
 // *****************************************************************************
 
 #include <tile_map/tile_map_plugin.h>
+#include <tile_map/tile_source.h>
+#include <tile_map/bing_source.h>
+#include <tile_map/wmts_source.h>
 
 #include <boost/algorithm/string/trim.hpp>
 

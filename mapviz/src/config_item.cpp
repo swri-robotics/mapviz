@@ -34,7 +34,7 @@
 
 namespace mapviz
 {
-  ConfigItem::ConfigItem(QWidget *parent, Qt::WFlags flags) :
+  ConfigItem::ConfigItem(QWidget *parent, Qt::WindowFlags flags) :
     QWidget(parent, flags),
     item_(0),
     visible_(true)

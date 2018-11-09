@@ -52,7 +52,7 @@ namespace mapviz
     
     void UpdateIndices()
     {
-      for (int i = 0; i < count(); i++)
+      for (size_t i = 0; i < count(); i++)
       {
         item(i)->setData(Qt::UserRole, QVariant((float)i));
       }
@@ -89,7 +89,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    explicit SingleClickLabel(QWidget *parent = 0, Qt::WFlags flags = 0) :
+    explicit SingleClickLabel(QWidget *parent = 0, Qt::WindowFlags flags = 0) :
       QLabel(parent, flags) {}
 
     ~SingleClickLabel() {}
@@ -109,7 +109,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    explicit DoubleClickWidget(QWidget *parent = 0, Qt::WFlags flags = 0) :
+    explicit DoubleClickWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0) :
       QWidget(parent, flags) {}
 
     ~DoubleClickWidget() {}
@@ -141,7 +141,7 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    explicit IconWidget(QWidget *parent = 0, Qt::WFlags flags = 0) :
+    explicit IconWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0) :
       QWidget(parent, flags)
     {
       pixmap_ = QPixmap(16, 16);

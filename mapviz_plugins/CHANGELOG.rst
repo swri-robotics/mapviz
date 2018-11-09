@@ -2,44 +2,49 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.10 (2018-07-31)
--------------------
-* Fix timestamp interval (`#587 <https://github.com/swri-robotics/mapviz/issues/587>`_)
-* Contributors: Matthew
+0.2.6 (2018-07-31)
+------------------
+* Fix timestamp interval (`#588 <https://github.com/swri-robotics/mapviz/issues/588>`_)
+* Update path_plugin.cpp (`#586 <https://github.com/swri-robotics/mapviz/issues/586>`_)
+* Replace depcreated plugin macro with newer version
+* Contributors: Matthew, P. J. Reed, camjaws
 
-0.0.9 (2018-04-12)
+0.2.5 (2018-04-12)
 ------------------
 * Add clear history functionality.
-* Add support for newlines in text marker plugin (`#571 <https://github.com/swri-robotics/mapviz/issues/571>`_)
+* Add support for newlines in text marker plugin (`#572 <https://github.com/swri-robotics/mapviz/issues/572>`_)
+* New plugin to send commands to move_base
 * Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)
-* Added "keep image ratio" to Image plugin (`#543 <https://github.com/swri-robotics/mapviz/issues/543>`_) (`#545 <https://github.com/swri-robotics/mapviz/issues/545>`_)
+* Added "keep image ratio" to Image plugin (`#543 <https://github.com/swri-robotics/mapviz/issues/543>`_)
 * Remove copy and paste of Print...
-* PointCloud2 speed improvement (`#531 <https://github.com/swri-robotics/mapviz/issues/531>`_) (`#538 <https://github.com/swri-robotics/mapviz/issues/538>`_)
-* Dead code removed (`#535 <https://github.com/swri-robotics/mapviz/issues/535>`_) (`#537 <https://github.com/swri-robotics/mapviz/issues/537>`_)
-* Speed up improvement in LaserScan and PointCloud2 (`#525 <https://github.com/swri-robotics/mapviz/issues/525>`_) (`#528 <https://github.com/swri-robotics/mapviz/issues/528>`_)
+* PointCloud2 speed improvement (`#531 <https://github.com/swri-robotics/mapviz/issues/531>`_)
+* Dead code removed (`#535 <https://github.com/swri-robotics/mapviz/issues/535>`_)
+* Ratio added to robot_image_plugin (`#530 <https://github.com/swri-robotics/mapviz/issues/530>`_)
+* Speed up improvement in LaserScan and PointCloud2 (`#525 <https://github.com/swri-robotics/mapviz/issues/525>`_)
+* Re-add GPSFix plugin to kinetic-devel (`#519 <https://github.com/swri-robotics/mapviz/issues/519>`_)
 * Add support for unpacking rgb8 in pointcloud2s
-* Update to use non deprecated pluginlib macro
+* Use non-deprecated pluginlib macro
+* Add plug-in for drawing and publishing a polygon.
 * change the signal that triggers AlphaEdited + minor changes (`#514 <https://github.com/swri-robotics/mapviz/issues/514>`_)
-* Added timestamp display to odometry
-* Merge pull request `#492 <https://github.com/swri-robotics/mapviz/issues/492>`_ from matt-attack/fix_448
-* Fix color of covariance display for odometry
-* Added timestamp display to odometry
+* Added timestamp display to odometry for kinetic
 * Contributors: Davide Faconti, Marc Alban, Matthew Bries, Mikael Arguedas, P. J. Reed, jgassaway
 
-0.0.8 (2017-08-11)
+0.2.4 (2017-08-11)
 ------------------
 * Add /wgs84 frame to point click publisher when available.
-* replaced left_offset with offset_x, offset_y in robot image plugin
-* added left_offset to robot image plugin config
-* Add plug-in for drawing and publishing a polygon.
 * Transform cube and arrow markers properly
-* Delete markers that have expired and remove error message.
-* Fix segfault in pointcloud2 plug-in when pointcloud is empty.
-* Initialize buffer size variable.
-* Contributors: Marc Alban, Neal Seegmiller, P. J. Reed
+* Contributors: Marc Alban, P. J. Reed
 
-0.0.7 (2016-10-23)
+0.2.3 (2016-12-10)
 ------------------
+* Delete markers that have expired and remove error message. (`#454 <https://github.com/evenator/mapviz/issues/454>`_)
+* Fix segfault in pointcloud2 plug-in when pointcloud is empty. (`#450 <https://github.com/evenator/mapviz/issues/450>`_)
+* Initialize buffer size variable. (`#447 <https://github.com/evenator/mapviz/issues/447>`_)
+* Contributors: Marc Alban
+
+0.2.2 (2016-12-07)
+------------------
+* Migrated OpenCV to 3.1 (default in Kinetic)
 * General code cleanup of mapviz_plugins
   This doesn't change any functionality; it's just cleaning up code.  Notably, this will:
   - Fix all warnings (notably lots of ones about type casting)
@@ -48,6 +53,10 @@ Changelog for package mapviz_plugins
   - Remove commented-out code
   - Make spacing and indentation consistent
   - Make brace style consistent
+* Contributors: Brian Holt, Marc Alban, P. J. Reed
+
+0.2.1 (2016-10-23)
+------------------
 * Add a GUI for controlling the Image Transport (`#432 <https://github.com/swri-robotics/mapviz/issues/432>`_)
   This will add a sub-menu under the "View" menu that will:
   - List all available image transports
@@ -58,6 +67,8 @@ Changelog for package mapviz_plugins
   In addition, the image plugin now has a menu that can be used to change the
   transport for that specific plugin so that it is different from the default.
   Fixes `#430 <https://github.com/swri-robotics/mapviz/issues/430>`_
+  Conflicts:
+  mapviz/package.xml
 * Fix icon colors for point drawing plugins (`#433 <https://github.com/swri-robotics/mapviz/issues/433>`_)
   This was probably broken back when all of these were refactored to have a
   single base class.  It looks like the member variable that holds the color
@@ -65,47 +76,50 @@ Changelog for package mapviz_plugins
   Fixes `#426 <https://github.com/swri-robotics/mapviz/issues/426>`_
 * Add option to not scale arrows with zoom level
   This adds a checkbox to all of the plugins that can draw a series of
-  coordinates as arrows; i. e., the GPS, NavSatFix, Odometry, and TF Frame
+  coordinates as arrows; i. e., the NavSatFix, Odometry, and TF Frame
   plugins.  This checkbox will control whether the arrows are drawn at a fixed
   size regardless of zoom level or whether they are scaled with the zoom level.
   Resolves `#414 <https://github.com/swri-robotics/mapviz/issues/414>`_
-* Contributors: P. J. Reed
-
-0.0.6 (2016-08-14)
-------------------
-* Fixes signed comparison warnings in mapviz_plugins
-* Adds a way for plugin config widgets to resize
-
+* Fix signed comparison warnings in mapviz_plugins
+* Adding a way for plugin config widgets to resize
   - Adding an event plugins can emit to indicate their geometry has changed
   - Modifying the PCL2 plugin to use it as an example
-  
   Fixes `#393 <https://github.com/swri-robotics/mapviz/issues/393>`_
-* Sets default values for uninitialized variables
+* Adding default values for uninitialized variables
   Resolves `#372 <https://github.com/swri-robotics/mapviz/issues/372>`_
 * Creates and implements an abstract class for drawing point paths
-  Updates gps, navsat, odometry, path, and tf_frame plugins to use the
-  abstract point drawing class.
-* Adds the draw laps functionality, which allows the user to change the color
-  of the path as it passes a base point for ease of visibility. This option
-  is implemented for the gps and odometry plugins.
-* Implements support for the ARROW marker type
-  Resolves `#365 <https://github.com/swri-robotics/mapviz/issues/365>`_
-* Ensures that Mapviz won't subscribe to empty topic names. This involved
-  cleaning up the code for handling subscriptions for all topics. The behavior
-  is now:
-  
+  Updates gps,navsat,odometry,path, and tf_frame plugins to use the
+  abstract point drawing class. Also adds the draw laps functionality
+  which will change the color of the path as it passes a base point for
+  ease of visibility, currently implemented on gps and odometry plugins.
+  Conflicts:
+  mapviz_plugins/CMakeLists.txt
+  mapviz_plugins/include/mapviz_plugins/gps_plugin.h
+  mapviz_plugins/src/gps_config.ui
+  mapviz_plugins/src/gps_plugin.cpp
+* Ensuring that Mapviz won't subscribe to empty topic names (`#379 <https://github.com/swri-robotics/mapviz/issues/379>`_)
+  Clean up and made more consistent the code for handling subscriptions for all topics.
+  The behavior is now:
   - All input is trimmed before processing
   - If a topic name is empty, the old subscriber will be shut down and will not subscribe to the empty topic
-  
   Resolves `#327 <https://github.com/swri-robotics/mapviz/issues/327>`_
-* Fixes a crash in the PointCloud2 plugin
-* Caches transformed pointclouds to improve performance
-* PointCloud2 plugin "Color Transformer" combo box now properly saves its value
-* Return "false" if no other code handles the mouse event
-  Fixes `#360 <https://github.com/swri-robotics/mapviz/issues/360>`_
+* Fixing some typos in documentation.
+* Implementing support for the ARROW marker type
+  Resolves `#365 <https://github.com/swri-robotics/mapviz/issues/365>`_
 * Contributors: Ed Venator, Marc Alban, P. J. Reed
 
-0.0.5 (2016-05-20)
+0.2.0 (2016-06-23)
+------------------
+* Update Qt to version 5
+* Fixing a crash in the PointCloud2 plugin
+  Also sneaking in a few more changes:
+  - Caching transformed clouds to improve performance
+  - Properly saving the value of the "Color Transformer" combo box
+* Returning "false" if no other code handles the mouse event
+  Fixes `#360 <https://github.com/swri-robotics/mapviz/issues/360>`_
+* Contributors: Ed Venator, P. J. Reed
+
+0.1.3 (2016-05-20)
 ------------------
 * Implement mapviz plug-in for calling the marti_nav_msgs::PlanRoute service.
 * Migrate route plugin to use swri_route_util
@@ -116,8 +130,7 @@ Changelog for package mapviz_plugins
   between the fixed frame and the route frame is not constant.
 * Add support for mono8 textured markers.
 * Implement service for adding and modifying mapviz displays.
-* Store and restore position and size of attitude indicator plug-in.
-* Fix grid plug-in to correctly display when loading from a config file.
+* Adding attitude indicator plugin.
 * Changing some "unsigned long"s to "size_t"s.
 * Storing source frames individually for plugins w/ buffers
 * Fix for `#265 <https://github.com/swri-robotics/mapviz/issues/265>`_; message source frames don't update
@@ -138,11 +151,6 @@ Changelog for package mapviz_plugins
 * Remove unused variable
   prev_position\_ is set, but never actually used.
 * Adds route plugin with routeposition marker attachment.
-* fixing a variable name
-* fixed hidden image/disparity startup issue & issue where mapviz would crash when image/disparity plugins subscribed to empty messages
-* Added functionality to subscribe/unsubscribe when hidden to the image plugin and the disparity plugin
-* fixed bug with projection
-* Adds attitude indicator
 * Also updating the disparity plugin
 * Fixing `#317 <https://github.com/swri-robotics/mapviz/issues/317>`_
   First, the model view matrix needs to be saved and restored around
@@ -155,25 +163,27 @@ Changelog for package mapviz_plugins
 * Declaring types for Qt signal/slot use properly
 * Fixing some typos
 * Doing GL drawing on the main thread for `#313 <https://github.com/swri-robotics/mapviz/issues/313>`_
+* GPS plugin snuck back into CMakeLists.txt
 * A plugin for displaying std_msgs/Strings
 * Marker plugin will use a QPainter to draw text
   I modified the Marker plugin so that it will use a QPainter to draw
   text labels rather than OpenGL commands.  This doesn't really add any
   functional benefit; it's meant to serve as an example of how to use
   the QPainter.
-* Making the Image plugin use image_transport.
-  The image_transport package provides support for transparently
-  subscribing and publishing to topics using low-bandwidth compressed
-  formats; if the publisher supports it, this will cause the Image
-  plugin to consume far less bandwidth than before.
 * Fixing warnings and cleaning up formatting
 * updated mapviz_plugins.xml
+* add pointcloud2 plugin
 * Update map canvas at a fixed rate.
   This update adds a timer to the map canvas to repaint at a fixed rate.
   The default rate is 50 Hz, but there is a method to change it (not
   exposed to the UI at the moment).  50Hz was chosen because it is fast
   enough to give smooth animations and we almost always are running
   mapviz with at least one plugin triggering updates from a 50Hz topic.
+* Making the Image plugin use image_transport.
+  The image_transport package provides support for transparently
+  subscribing and publishing to topics using low-bandwidth compressed
+  formats; if the publisher supports it, this will cause the Image
+  plugin to consume far less bandwidth than before.
 * Handle cases where marker topic changes message types.
   This commit makes a better effort to properly support cases where a
   marker topic changes between Marker and MarkerArray during runtime.
@@ -209,19 +219,30 @@ Changelog for package mapviz_plugins
   - Topics sorted by name
   - User can filter topics by substring
   - Continuously checks the master for new topics while the dialog is open.
-* Contributors: Edward Venator, Elliot Johnson, Jerry Towler, Marc Alban, Nicholas Alton, P. J. Reed
+* Contributors: Elliot Johnson, Jerry Towler, Marc Alban, Nicholas Alton, P. J. Reed
 
-0.0.4 (2016-01-06)
+0.1.2 (2016-01-06)
 ------------------
-* Fixes bad package names in includes.
-* Backports navsat plug-in from jade.
+* Enables the possibility to load a one-layer tile set
 * Sorts topic, plug-in, and frame lists in selection dialogs.
 * Fixes tf plug-in update.
-* Adds a plugin to visualize laser scans based on the laserscan plugin for rviz:
+* Contributors: Marc Alban, Vincent Rousseau
+
+0.1.1 (2015-11-17)
+------------------
+* Extensions for geo files (PR `#262 <https://github.com/swri-robotics/mapviz/issues/262>`_)
+* Adds a plugin to visualize laser scans.
+  Display features are based on the laserscan plugin for rviz:
   * Points can be colored by range, or x/y/z axis
   * Points can be colored by interpolation between two colors or rainbow coloring
-* Enables the possibility to load one layer tile set
-* Contributors: Edward Venator, Marc Alban, P. J. Reed, Vincent Rousseau
+* Adds a plugin to visualize sensor_msgs/NavSatFix msgs, based on the old GPSFix plugin
+* Contributors: Claudio Bandera, Ed Venator, Vincent Rousseau
+
+0.1.0 (2015-09-29)
+------------------
+* Removes gps plugin, since gps_common is not in ROS Jade. See issue 
+  `#238 <https://github.com/swri-robotics/mapviz/issues/238>`_.
+* Contributors: Edward Venator
 
 0.0.3 (2015-09-28)
 ------------------

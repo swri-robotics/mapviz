@@ -1,6 +1,8 @@
 Mapviz [![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=indigo-devel)](https://travis-ci.org/swri-robotics/mapviz)
 ======
 
+[![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=kinetic-devel)](https://travis-ci.org/swri-robotics/mapviz)
+
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RVIZ](http://wiki.ros.org/rviz) focused on visualizing 2D data.
 
 ![](https://github.com/swri-robotics/mapviz/wiki/mapviz.png)
@@ -13,9 +15,7 @@ You can install mapviz using apt-get from the ROS apt repository:
     sudo apt-get install ros-$ROS_DISTRO-mapviz ros-$ROS_DISTRO-mapviz-plugins ros-$ROS_DISTRO-tile-map ros-$ROS_DISTRO-multires-image
 
 Building From Source
-------------
-
-Note that for ROS Lunar, you can use the `kinetic-devel` branch, as there are no changes to Mapviz between Kinetic and Lunar.
+--------------------
 
 These directions assume you have already set up a catkin workspace. See [this tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) on the ROS Wiki for help setting up a catkin workspace.
 
@@ -23,14 +23,14 @@ These directions assume you have already set up a catkin workspace. See [this tu
 
 If you're using wstool, add this repository to your wstool workspace:
 
-    wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v $ROS_DISTRO-devel
+    wstool set mapviz --git https://github.com/swri-robotics/mapviz.git
     wstool update mapviz
 
 ### Checking out the source code (git)
 
 If you're not using wstool, you can check out the repository directly with git:
 
-    git clone https://github.com/swri-robotics/mapviz.git --branch $ROS_DISTRO-devel
+    git clone https://github.com/swri-robotics/mapviz.git
 
 ### Installing dependencies and building
 
@@ -38,12 +38,21 @@ Install all of the dependencies using rosdep by running the following command fr
 
     rosdep install --from-paths src --ignore-src
 
-Build the workspace with catkin_make:
+Build the workspace with catkin\_make:
 
     catkin_make
 
 Plug-ins
 --------
+
+### Coordinate Picker
+
+Transforms coordinates of clicked points on the map to a specified frame. The most recent coordinate is placed on the clipboard, and a list of coordinates is displayed in the GUI.
+
+![](doc/images/screenshot_coordinate_picker.png)
+
+**Parameters**
+* Frame: coordinate frame into which to transform the clicked point
 
 ### Disparity
 
@@ -62,14 +71,16 @@ Overlays a [sensor_msgs::DisparityImage](http://docs.ros.org/api/stereo_msgs/htm
 
 ### GPS
 
-Projects [gps_common::GPSFix](http://docs.ros.org/hydro/api/gps_common/html/msg/GPSFix.html) message data into the scene.
+Projects [gps_common::GPSFix](http://docs.ros.org/kinetic/api/gps_common/html/msg/GPSFix.html) message data into the scene.
 
 **Parameters**
  * Topic: The GPS topic
  * Color: The color of the GPS data
  * Draw Style: (lines | points | arrows)
+ * Static Arrow Sizes: If checked, draw arrows the same size regardless of zoom level; slider adjusts size
  * Position Tolerance: Distance threshold for adding new GPS points to visualization
  * Buffer Size: Size of circular buffer of GPS points
+ * Show Laps: If checked, multiple loops of GPS coordinates will have different colors
 
 ### Grid
 Projects a 2D grid into the scene.
@@ -117,6 +128,14 @@ Projects a [visualization_msgs::Marker](http://docs.ros.org/api/visualization_ms
 **Parameters**
 * Topic: The marker topic
 
+### Move Base
+This plugin allows the user to send goals to [move_base](wiki.ros.org/move_base).
+
+**Buttons**
+* Estimated pose: similarly to RViz, it will publish a [geometry_msgs::PoseWithCovarianceStamped](http://docs.ros.org/api/geometry_msgs/html/msg/PoseWithCovarianceStamped.html) using the topic __/initialpose__.
+* 2D Nav goal: send a [move_base_msgs/MoveBaseActionGoal](http://wiki.ros.org/move_base#Action_API), unlike its RViz equivalent, which publishes a message on the topic __/move_base_simple/goal__.
+* Abort: stop the execution of the current goal.
+
 ### Multi-res Image
 Projects a geo-referenced multi-resolution image tile map into the scene.  The concept is the same as the Google Maps style pan/zoom satellite imagery. 
 
@@ -148,6 +167,17 @@ The map tiles are stored in directories for each resolution starting with layer0
 Tiles are named using the following format: 
 
     tile%05dx%05d.png % (row, column)
+
+### NavSat
+
+Projects [sensor_msgs::NavSatFix](http://http://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene.
+
+**Parameters**
+ * Topic: The GPS topic
+ * Color: The color of the GPS data
+ * Draw Style: (lines | points)
+ * Position Tolerance: Distance threshold for adding new GPS points to visualization
+ * Buffer Size: Size of circular buffer of GPS points
 
 ### Odometry
 
