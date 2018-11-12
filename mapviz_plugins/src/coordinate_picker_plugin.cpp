@@ -119,7 +119,11 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
+#if QT_VERSION >= 0x050000
   QPointF point = event->localPos();
+#else
+  QPointF point = event->posF();
+#endif
   ROS_DEBUG("Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;
