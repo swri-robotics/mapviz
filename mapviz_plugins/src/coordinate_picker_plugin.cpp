@@ -31,6 +31,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 #include <QClipboard>
+#include <QGuiApplication>
 #include <QMouseEvent>
 #include <QTextStream>
 
@@ -64,6 +65,10 @@ CoordinatePickerPlugin::CoordinatePickerPlugin()
                    this, SLOT(ToggleCopyOnClick(int)));
   QObject::connect(ui_.clearListButton, SIGNAL(clicked()),
                    this, SLOT(ClearCoordList()));
+
+#if QT_VERSION >= 0x050000
+  ui_.coordTextEdit->setPlaceholderText(tr("Click on the map; coordinates appear here"));
+#endif
 }
 
 CoordinatePickerPlugin::~CoordinatePickerPlugin()
