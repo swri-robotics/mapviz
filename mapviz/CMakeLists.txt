@@ -102,8 +102,8 @@ include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
   ${Qt_INCLUDE_DIRS}
   ${OpenGL_INCLUDE_DIR}
-  ${GLEW_INCLUDE_DIR}
-  ${OpenCV_INCLUDE_DIR}
+  ${GLEW_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 # Qt UI files
@@ -161,8 +161,7 @@ target_link_libraries(rqt_${PROJECT_NAME}
   ${OpenGL_LIBRARY}
   ${GLUT_LIBRARY}
   ${GLEW_LIBRARIES}
-  ${GLU_LIBRARY}
-  ${OpenCV_LIBRARIES}
+  ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
 )
 add_dependencies(rqt_${PROJECT_NAME}

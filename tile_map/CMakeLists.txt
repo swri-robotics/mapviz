@@ -52,6 +52,9 @@ find_package(PkgConfig REQUIRED)
 ### Use PkgConfig to find jsoncpp ###
 pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
+### Use PkgConfig to find GLEW ###
+pkg_check_modules(GLEW glew)
+
 catkin_package(
   LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_plugin
   INCLUDE_DIRS include
@@ -68,8 +71,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
-  ${Qt_INCLUDE_DIRS}
+  ${GLEW_INCLUDE_DIRS}
   ${JSONCPP_INCLUDE_DIRS}
+  ${Qt_INCLUDE_DIRS}
 )
 
 set(TILE_SRC_FILES

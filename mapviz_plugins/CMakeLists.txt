@@ -81,7 +81,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
   ${Qt_INCLUDE_DIRS}
 )
 
@@ -182,7 +182,7 @@ target_link_libraries(${PROJECT_NAME}
     ${catkin_LIBRARIES}
     ${GLU_LIBRARY}
     ${GLUT_LIBRARY}
-    ${OpenCV_LIBRARIES}
+    ${OpenCV_LIBS}
     ${Qt_LIBRARIES}
 )
 

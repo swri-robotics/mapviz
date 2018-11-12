@@ -19,6 +19,9 @@ find_package(Boost REQUIRED thread)
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
 
+### OpenCV ###
+# multires_image doesn't directly use OpenCV, but it uses swri_transform_util, and
+# we need to include OpenCV to make one of its headers compile.
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
   find_package(OpenCV 2 REQUIRED)
 else()
@@ -68,7 +71,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
   ${Qt_INCLUDE_DIRS}
 )
 
