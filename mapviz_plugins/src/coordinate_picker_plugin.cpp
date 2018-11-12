@@ -31,9 +31,14 @@
 #include <mapviz/mapviz_plugin.h>
 
 #include <QClipboard>
-#include <QGuiApplication>
 #include <QMouseEvent>
 #include <QTextStream>
+
+#if QT_VERSION >= 0x050000
+#include <QGuiApplication>
+#else
+#include <QApplication>
+#endif
 
 // ROS Libraries
 #include <ros/ros.h>
@@ -159,7 +164,11 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 
   if (copy_on_click_)
   {
+#if QT_VERSION >= 0x050000
     QClipboard* clipboard = QGuiApplication::clipboard();
+#else
+    QClipboard* clipboard = QApplication::clipboard();
+#endif
     clipboard->setText(new_point);
   }
 
