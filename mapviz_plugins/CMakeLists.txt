@@ -56,13 +56,14 @@ else()
   add_definitions(-DWFlags=WindowFlags)
 endif()
 
-set(QT_USE_QTOPENGL TRUE)
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-find_package(OpenCV 2 REQUIRED)
+  find_package(OpenCV 2 REQUIRED)
 else()
-find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
+  find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
 endif()
-find_package(GLU REQUIRED)
+
+### OpenGL ###
+find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
 catkin_package(
@@ -75,18 +76,14 @@ catkin_package(
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-#include(${QT_USE_FILE})
-include_directories(include
-    ${catkin_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIR}
-    ${PROJECT_BINARY_DIR}
-    ${Qt_INCLUDE_DIRS}
+# Need to include the current dir to include the results of building Qt UI files
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories(include)
+include_directories(SYSTEM
+  ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIR}
+  ${Qt_INCLUDE_DIRS}
 )
-add_definitions(${QT_DEFINITIONS})
-
-set(QT_USE_QTOPENGL TRUE)
-set(QT_USE_QTCORE TRUE)
-set(QT_USE_QTGUI TRUE)
 
 set(UI_FILES
     ui/attitude_indicator_config.ui
@@ -188,10 +185,12 @@ target_link_libraries(${PROJECT_NAME}
     ${OpenCV_LIBRARIES}
     ${Qt_LIBRARIES}
 )
-set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS")
 
-add_dependencies(${PROJECT_NAME} marti_visualization_msgs_generate_messages_cpp)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
+)
 
+### Install the plugins ###
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )

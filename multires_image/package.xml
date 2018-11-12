@@ -12,6 +12,7 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>qt_qmake</buildtool_depend>
 
   <build_depend>libqt_dev</build_depend>
   <build_depend>libqt_opengl_dev</build_depend>
@@ -21,7 +22,6 @@
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
-  <depend>rospy</depend>
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
   <depend>swri_yaml_util</depend>
@@ -29,6 +29,7 @@
 
   <exec_depend>libqt_core</exec_depend>
   <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>rospy</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

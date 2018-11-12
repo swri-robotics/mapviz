@@ -11,11 +11,11 @@
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>qt_qmake</buildtool_depend>
 
   <build_depend>libqt_dev</build_depend>
   <build_depend>libqt_opengl_dev</build_depend>
-
-  <buildtool_depend>catkin</buildtool_depend>
 
   <depend>actionlib</depend>
   <depend>cv_bridge</depend>
@@ -28,7 +28,6 @@
   <depend>move_base_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
-  <depend>qt_qmake</depend>
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>

@@ -13,7 +13,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>pkg-config</buildtool_depend>
-  
+  <buildtool_depend>qt_qmake</buildtool_depend>
+
   <build_depend>libqt_dev</build_depend>
   <build_depend>libqt_opengl_dev</build_depend>
   <build_depend>message_generation</build_depend>
@@ -25,7 +26,6 @@
   <depend>libxmu-dev</depend>
   <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
-  <depend>qt_qmake</depend>
   <depend>rosapi</depend>
   <depend>roscpp</depend>
   <depend>rqt_gui_cpp</depend>

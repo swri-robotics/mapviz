@@ -182,7 +182,8 @@ void MoveBasePlugin::timerCallback(const ros::TimerEvent &)
 
         case actionlib::SimpleClientGoalState::REJECTED:
         case actionlib::SimpleClientGoalState::ABORTED:
-            case actionlib::SimpleClientGoalState::LOST:
+        case actionlib::SimpleClientGoalState::LOST:
+        case actionlib::SimpleClientGoalState::RECALLED:
             PrintErrorHelper( ui_.status, state.toString() );
             monitoring_action_state_ = false;
             break;
