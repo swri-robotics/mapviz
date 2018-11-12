@@ -1,7 +1,5 @@
-Mapviz [![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=indigo-devel)](https://travis-ci.org/swri-robotics/mapviz)
+Mapviz [![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=master)](https://travis-ci.org/swri-robotics/mapviz)
 ======
-
-[![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=kinetic-devel)](https://travis-ci.org/swri-robotics/mapviz)
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RVIZ](http://wiki.ros.org/rviz) focused on visualizing 2D data.
 
