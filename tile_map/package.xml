@@ -14,14 +14,15 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>qt_qmake</buildtool_depend>
 
   <build_depend>libjsoncpp-dev</build_depend>
   <build_depend>libqt_dev</build_depend>
   <build_depend>libqt_opengl_dev</build_depend>
 
+  <depend>libglew-dev</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
-  <depend>qt_qmake</depend>
   <depend>roscpp</depend>
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
