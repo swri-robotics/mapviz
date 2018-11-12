@@ -46,14 +46,14 @@ endif()
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
 
+### GLEW ###
+find_package(GLEW REQUIRED)
+
 ### PkgConfig ###
 find_package(PkgConfig REQUIRED)
 
 ### Use PkgConfig to find jsoncpp ###
 pkg_check_modules(JSONCPP REQUIRED jsoncpp)
-
-### Use PkgConfig to find GLEW ###
-pkg_check_modules(GLEW glew)
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_plugin

@@ -22,6 +22,7 @@
   <depend>cv_bridge</depend>
   <depend>glut</depend>
   <depend>image_transport</depend>
+  <depend>libglew-dev</depend>
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
   <depend>marti_common_msgs</depend>

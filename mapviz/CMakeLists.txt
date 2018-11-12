@@ -71,11 +71,8 @@ set(QT_USE_QTOPENGL TRUE)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
-### PkgConfig ###
-find_package(PkgConfig REQUIRED)
-
-### Use PkgConfig to find GLEW ###
-pkg_check_modules(GLEW glew)
+### GLEW ###
+find_package(GLEW REQUIRED)
 
 add_service_files(FILES
   AddMapvizDisplay.srv

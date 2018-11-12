@@ -20,6 +20,7 @@
   <build_depend>libqt_dev</build_depend>
   <build_depend>libqt_opengl_dev</build_depend>
 
+  <depend>libglew-dev</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
