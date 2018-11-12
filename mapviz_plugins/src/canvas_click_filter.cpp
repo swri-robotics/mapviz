@@ -36,7 +36,7 @@ namespace mapviz_plugins
 {
   CanvasClickFilter::CanvasClickFilter() :
     is_mouse_down_(false),
-    //max_ms_(Q_INT64_C(500)),
+    max_ms_(Q_INT64_C(500)),
     max_distance_(2.0)
   { }
 
