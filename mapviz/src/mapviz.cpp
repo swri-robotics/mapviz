@@ -48,7 +48,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#if CV_MAJOR_VERSION >= 2
+#if CV_MAJOR_VERSION > 2
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/videoio/videoio.hpp>
 #endif
