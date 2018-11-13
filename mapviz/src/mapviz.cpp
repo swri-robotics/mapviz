@@ -1069,10 +1069,10 @@ void Mapviz::Hover(double x, double y, double scale)
     xy_pos_label_->update();
 
     swri_transform_util::Transform transform;
-    if (tf_manager_.SupportsTransform(
+    if (tf_manager_->SupportsTransform(
            swri_transform_util::_wgs84_frame,
            ui_.fixedframe->currentText().toStdString()) &&
-        tf_manager_.GetTransform(
+        tf_manager_->GetTransform(
            swri_transform_util::_wgs84_frame,
            ui_.fixedframe->currentText().toStdString(),
            transform))
