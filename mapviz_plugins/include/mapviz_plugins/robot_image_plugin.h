@@ -83,6 +83,8 @@ namespace mapviz_plugins
     void FrameEdited();
     void WidthChanged(double value);
     void HeightChanged(double value);
+    void OffsetXChanged(double value);
+    void OffsetYChanged(double value);
     void RatioEqualToggled(bool toggled);
     void RatioCustomToggled(bool toggled);
     void RatioOriginalToggled(bool toggled);
@@ -91,8 +93,10 @@ namespace mapviz_plugins
     Ui::robot_image_config ui_;
     QWidget* config_widget_;
 
-    double width_;
-    double height_;
+    double width_; //image width, if robot frame is x-forward this corresponds to robot length
+    double height_; //image height, corresponds to robot width
+    double offset_x_; //offset of image center from robot frame along x axis
+    double offset_y_; //offset of image center from robot frame along y axis
     double image_ratio_;
 
     std::string filename_;

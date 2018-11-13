@@ -53,8 +53,10 @@ namespace mapviz_plugins
 {
   RobotImagePlugin::RobotImagePlugin() :
     config_widget_(new QWidget()),
-    width_(1),
-    height_(1),
+    width_(2.0),
+    height_(1.0),
+    offset_x_(0.0),
+    offset_y_(0.0),
     image_ratio_(1.0),
     texture_loaded_(false),
     transformed_(false)
@@ -78,6 +80,10 @@ namespace mapviz_plugins
     QObject::connect(ui_.frame, SIGNAL(editingFinished()), this, SLOT(FrameEdited()));
     QObject::connect(ui_.width, SIGNAL(valueChanged(double)), this, SLOT(WidthChanged(double)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(double)), this, SLOT(HeightChanged(double)));
+    QObject::connect(ui_.offset_x, SIGNAL(valueChanged(double)), this, SLOT(OffsetXChanged(double)));
+    QObject::connect(ui_.offset_y, SIGNAL(valueChanged(double)), this, SLOT(OffsetYChanged(double)));
+    ui_.offset_x->setMinimum(-99.99); //default is 0.0 but negative offset must be supported
+    ui_.offset_y->setMinimum(-99.99);
     QObject::connect(ui_.ratio_equal, SIGNAL(toggled(bool)), this, SLOT(RatioEqualToggled(bool)));
     QObject::connect(ui_.ratio_custom, SIGNAL(toggled(bool)), this, SLOT(RatioCustomToggled(bool)));
     QObject::connect(ui_.ratio_original, SIGNAL(toggled(bool)), this, SLOT(RatioOriginalToggled(bool)));
@@ -143,6 +149,18 @@ namespace mapviz_plugins
     UpdateShape();
   }
 
+  void RobotImagePlugin::OffsetXChanged(double value)
+  {
+    offset_x_ = value;
+    UpdateShape();
+  }
+
+  void RobotImagePlugin::OffsetYChanged(double value)
+  {
+    offset_y_ = value;
+    UpdateShape();
+  }
+
   void RobotImagePlugin::RatioEqualToggled(bool toggled)
   {
     if( toggled )
@@ -158,6 +176,7 @@ namespace mapviz_plugins
     if( toggled )
     {
       ui_.height->setEnabled(true);
+      UpdateShape();
     }
   }
 
@@ -173,10 +192,12 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::UpdateShape()
   {
-    top_left_ = tf::Point(-width_ / 2.0, height_ / 2.0, 0);
-    top_right_ = tf::Point(width_ / 2.0, height_ / 2.0, 0);
-    bottom_left_ = tf::Point(-width_ / 2.0, -height_/2.0, 0);
-    bottom_right_ = tf::Point(width_ / 2.0, -height_ / 2.0, 0);
+    double hw = 0.5*width_; //half width
+    double hh = 0.5*height_; //half height
+    top_left_ = tf::Point(offset_x_ - hw, offset_y_ + hh, 0);
+    top_right_ = tf::Point(offset_x_ + hw, offset_y_ + hh, 0);
+    bottom_left_ = tf::Point(offset_x_ - hw, offset_y_ - hh, 0);
+    bottom_right_ = tf::Point(offset_x_ + hw, offset_y_ - hh, 0);
   }
 
   void RobotImagePlugin::PrintError(const std::string& message)
@@ -319,6 +340,17 @@ namespace mapviz_plugins
       node["frame"] >> source_frame_;
       ui_.frame->setText(source_frame_.c_str());
     }
+    if (node["offset_x"])
+    {
+      node["offset_x"] >> offset_x_;
+      ui_.offset_x->setValue(offset_x_);
+    }
+
+    if (node["offset_y"])
+    {
+      node["offset_y"] >> offset_y_;
+      ui_.offset_y->setValue(offset_y_);
+    }
 
     if (node["image"])
     {
@@ -367,6 +399,8 @@ namespace mapviz_plugins
     emitter << YAML::Key << "image" << YAML::Value << ui_.image->text().toStdString();
     emitter << YAML::Key << "width" << YAML::Value << width_;
     emitter << YAML::Key << "height" << YAML::Value << height_;
+    emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
+    emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
     if( ui_.ratio_custom->isChecked())
     {
       emitter << YAML::Key << "ratio" << YAML::Value << "custom";

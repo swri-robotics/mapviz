@@ -1,53 +1,19 @@
-Mapviz
+Mapviz [![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=master)](https://travis-ci.org/swri-robotics/mapviz)
 ======
-
-[![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=kinetic-devel)](https://travis-ci.org/swri-robotics/mapviz)
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RVIZ](http://wiki.ros.org/rviz) focused on visualizing 2D data.
 
 ![](https://github.com/swri-robotics/mapviz/wiki/mapviz.png)
 
-Installation (ROS Indigo, Jade)
------------
+Installation
+------------
 
-In ROS Indigo, you can install mapviz using apt-get from the ROS apt repository. This is the recommended installation method for ROS Indigo and Jade.
+You can install mapviz using apt-get from the ROS apt repository:
 
     sudo apt-get install ros-$ROS_DISTRO-mapviz ros-$ROS_DISTRO-mapviz-plugins ros-$ROS_DISTRO-tile-map ros-$ROS_DISTRO-multires-image
 
-
-Building From Source (ROS Indigo, Jade, Kinetic)
-------------
-
-These directions assume you have already set up a catkin workspace. See [this tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) on the ROS Wiki for help setting up a catkin workspace.
-
-### Checking out the source code (wstool)
-
-If you're using wstool, add these repositories to your wstool workspace:
-
-    wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v $ROS_DISTRO-devel
-    wstool set marti_common --git https://github.com/swri-robotics/marti_common.git -v $ROS_DISTRO-devel
-    wstool set marti_messages --git https://github.com/swri-robotics/marti_messages.git -v indigo-devel
-
-### Checking out the source code (git)
-
-If you're not using wstool, you can check out the repositories with git:
-
-    git clone https://github.com/swri-robotics/mapviz.git --branch $ROS_DISTRO-devel
-    git clone https://github.com/swri-robotics/marti_common.git --branch $ROS_DISTRO-devel
-    git clone https://github.com/swri-robotics/marti_messages.git --branch indigo-devel
-
-### Installing dependencies and building
-
-Install all of the dependencies using rosdep by running the following command from the root of your catkin workspace:
-
-    rosdep install --from-paths src --ignore-src
-
-Build the workspace with catkin_make:
-
-    catkin_make
-
-Building From Source (ROS Groovy, Hydro)
-------------
+Building From Source
+--------------------
 
 These directions assume you have already set up a catkin workspace. See [this tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace) on the ROS Wiki for help setting up a catkin workspace.
 
@@ -55,32 +21,36 @@ These directions assume you have already set up a catkin workspace. See [this tu
 
 If you're using wstool, add this repository to your wstool workspace:
 
-    wstool set mapviz --git https://github.com/swri-robotics/mapviz.git -v $ROS_DISTRO-devel
+    wstool set mapviz --git https://github.com/swri-robotics/mapviz.git
+    wstool update mapviz
 
 ### Checking out the source code (git)
 
-If you're not using wstool, you can check out the repositories with git:
+If you're not using wstool, you can check out the repository directly with git:
 
-    git clone https://github.com/swri-robotics/mapviz.git --branch $ROS_DISTRO-devel
+    git clone https://github.com/swri-robotics/mapviz.git
 
 ### Installing dependencies and building
 
-Install all of the dependencies manually using these two commands:
+Install all of the dependencies using rosdep by running the following command from the root of your catkin workspace:
 
-    sudo apt-get install ros-$ROS_DISTRO-tf ros-$ROS_DISTRO-common-msgs ros-$ROS_DISTRO-plugin-lib \
-      ros-$ROS_DISTRO-gps-umd ros-$ROS_DISTRO-nodelet ros-$ROS_DISTRO-cv-bridge \
-      ros-$ROS_DISTRO-image-geometry ros-$ROS_DISTRO-angles ros-$ROS_DISTRO-camera-calibration-parsers \
-      ros-$ROS_DISTRO-image-transport
+    rosdep install --from-paths src --ignore-src
 
-    sudo apt-get install yaml-cpp libboost-random-dev libblas-dev liblapack-dev libproj-dev \
-      libglew-dev freeglut3-dev libxmu-dev libgeos++-dev qt4-dev-tools
-
-Build the workspace with catkin_make:
+Build the workspace with catkin\_make:
 
     catkin_make
 
 Plug-ins
 --------
+
+### Coordinate Picker
+
+Transforms coordinates of clicked points on the map to a specified frame. The most recent coordinate is placed on the clipboard, and a list of coordinates is displayed in the GUI.
+
+![](doc/images/screenshot_coordinate_picker.png)
+
+**Parameters**
+* Frame: coordinate frame into which to transform the clicked point
 
 ### Disparity
 

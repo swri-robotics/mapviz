@@ -203,6 +203,59 @@ namespace tile_map
     }
   }
 
+  void TileMapView::DrawTiles(std::vector<Tile>& tiles, int priority)
+  {
+    for (size_t i = 0; i < tiles.size(); i++)
+    {
+      TexturePtr& texture = tiles[i].texture;
+
+      if (!texture)
+      {
+        bool failed;
+        texture = tile_cache_->GetTexture(tiles[i].url_hash, tiles[i].url, failed, priority);
+      }
+
+      if (texture)
+      {
+        glBindTexture(GL_TEXTURE_2D, texture->id);
+
+        glBegin(GL_TRIANGLES);
+
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+        for (int32_t row = 0; row < tiles[i].subdiv_count; row++)
+        {
+          for (int32_t col = 0; col < tiles[i].subdiv_count; col++)
+          {
+            double u_0 = col * tiles[i].subwidth;
+            double v_0 = 1.0 - row * tiles[i].subwidth;
+            double u_1 = (col + 1.0) * tiles[i].subwidth;
+            double v_1 = 1.0 - (row + 1.0) * tiles[i].subwidth;
+
+            const tf::Vector3& tl = tiles[i].points_t[row * (tiles[i].subdiv_count + 1) + col];
+            const tf::Vector3& tr = tiles[i].points_t[row * (tiles[i].subdiv_count + 1) + col + 1];
+            const tf::Vector3& br = tiles[i].points_t[(row + 1) * (tiles[i].subdiv_count + 1) + col + 1];
+            const tf::Vector3& bl = tiles[i].points_t[(row + 1) * (tiles[i].subdiv_count + 1) + col];
+
+            // Triangle 1
+            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
+            glTexCoord2f(u_1, v_0); glVertex2d(tr.x(), tr.y());
+            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
+
+            // Triangle 2
+            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
+            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
+            glTexCoord2f(u_0, v_1); glVertex2d(bl.x(), bl.y());
+          }
+        }
+
+        glEnd();
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+      }
+    }
+  }
+
   void TileMapView::Draw()
   {
     if (!tile_source_)
@@ -212,105 +265,8 @@ namespace tile_map
 
     glEnable(GL_TEXTURE_2D);
 
-    for (size_t i = 0; i < precache_.size(); i++)
-    {
-      TexturePtr texture = precache_[i].texture;
-
-      if (!texture)
-      {
-        bool failed;
-        texture = tile_cache_->GetTexture(precache_[i].url_hash, precache_[i].url, failed, 0);
-      }
-
-      if (texture)
-      {
-        glBindTexture(GL_TEXTURE_2D, texture->id);
-
-        glBegin(GL_TRIANGLES);
-
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-        for (int32_t row = 0; row < precache_[i].subdiv_count; row++)
-        {
-          for (int32_t col = 0; col < precache_[i].subdiv_count; col++)
-          {
-            double u_0 = col * precache_[i].subwidth;
-            double v_0 = 1.0 - row * precache_[i].subwidth;
-            double u_1 = (col + 1.0) * precache_[i].subwidth;
-            double v_1 = 1.0 - (row + 1.0) * precache_[i].subwidth;
-
-            const tf::Vector3& tl = precache_[i].points_t[row * (precache_[i].subdiv_count + 1) + col];
-            const tf::Vector3& tr = precache_[i].points_t[row * (precache_[i].subdiv_count + 1) + col + 1];
-            const tf::Vector3& br = precache_[i].points_t[(row + 1) * (precache_[i].subdiv_count + 1) + col + 1];
-            const tf::Vector3& bl = precache_[i].points_t[(row + 1) * (precache_[i].subdiv_count + 1) + col];
-
-            // Triangle 1
-            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
-            glTexCoord2f(u_1, v_0); glVertex2d(tr.x(), tr.y());
-            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
-
-            // Triangle 2
-            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
-            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
-            glTexCoord2f(u_0, v_1); glVertex2d(bl.x(), bl.y());
-          }
-        }
-
-        glEnd();
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-      }
-    }
-
-    for (size_t i = 0; i < tiles_.size(); i++)
-    {
-      TexturePtr texture = tiles_[i].texture;
-
-      if (!texture)
-      {
-        bool failed;
-        texture = tile_cache_->GetTexture(tiles_[i].url_hash, tiles_[i].url, failed, 10000);
-      }
-
-      if (texture)
-      {
-        glBindTexture(GL_TEXTURE_2D, texture->id);
-
-        glBegin(GL_TRIANGLES);
-
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-        for (int32_t row = 0; row < tiles_[i].subdiv_count; row++)
-        {
-          for (int32_t col = 0; col < tiles_[i].subdiv_count; col++)
-          {
-            double u_0 = col * tiles_[i].subwidth;
-            double v_0 = 1.0 - row * tiles_[i].subwidth;
-            double u_1 = (col + 1.0) * tiles_[i].subwidth;
-            double v_1 = 1.0 - (row + 1.0) * tiles_[i].subwidth;
-
-            const tf::Vector3& tl = tiles_[i].points_t[row * (tiles_[i].subdiv_count + 1) + col];
-            const tf::Vector3& tr = tiles_[i].points_t[row * (tiles_[i].subdiv_count + 1) + col + 1];
-            const tf::Vector3& br = tiles_[i].points_t[(row + 1) * (tiles_[i].subdiv_count + 1) + col + 1];
-            const tf::Vector3& bl = tiles_[i].points_t[(row + 1) * (tiles_[i].subdiv_count + 1) + col];
-
-            // Triangle 1
-            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
-            glTexCoord2f(u_1, v_0); glVertex2d(tr.x(), tr.y());
-            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
-
-            // Triangle 2
-            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
-            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
-            glTexCoord2f(u_0, v_1); glVertex2d(bl.x(), bl.y());
-          }
-        }
-
-        glEnd();
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-      }
-    }
+    DrawTiles( precache_, 0 );
+    DrawTiles( tiles_, 10000 );
 
     glDisable(GL_TEXTURE_2D);
   }
