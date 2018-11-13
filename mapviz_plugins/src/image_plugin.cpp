@@ -206,17 +206,14 @@ namespace mapviz_plugins
     }
     else
     {
-      image_transport::ImageTransport it(local_node_);
-      image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
-
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      Resubscribe();
     }
   }
 
   void ImagePlugin::SetTransport(const QString& transport)
   {
-    ROS_INFO("Changing image_transport to %s.", transport.toStdString().c_str());
-    transport_ = transport;
+    transport_ = transport.toStdString();
+    ROS_INFO("Changing image_transport to %s.", transport_.c_str());
     TopicEdited();
   }
 
@@ -231,7 +228,7 @@ namespace mapviz_plugins
 
   void ImagePlugin::Resubscribe()
   {
-    if (transport_ == QString::fromStdString("default"))
+    if (transport_ == "default")
     {
       force_resubscribe_ = true;
       TopicEdited();
@@ -275,7 +272,7 @@ namespace mapviz_plugins
     // have changed.
     if (force_resubscribe_ ||
         topic != topic_ ||
-        image_sub_.getTransport() != transport_.toStdString())
+        image_sub_.getTransport() != transport_)
     {
       force_resubscribe_ = false;
       initialized_ = false;
@@ -288,23 +285,23 @@ namespace mapviz_plugins
       if (!topic_.empty())
       {
         boost::shared_ptr<image_transport::ImageTransport> it;
-        if (transport_ == QString::fromStdString("default"))
+        if (transport_ == "default")
         {
           ROS_DEBUG("Using default transport.");
-          it = boost::make_shared<image_transport::ImageTransport>(node_);
-          image_sub_ = it->subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
+          image_transport::ImageTransport it(node_);
+          image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
         }
         else
         {
           ROS_DEBUG("Setting transport to %s on %s.",
-                   transport_.toStdString().c_str(), local_node_.getNamespace().c_str());
+                   transport_.c_str(), local_node_.getNamespace().c_str());
 
-          local_node_.setParam("image_transport", transport_.toStdString());
-          it = boost::make_shared<image_transport::ImageTransport>(local_node_);
-          image_sub_ = it->subscribe(topic_, 1, &ImagePlugin::imageCallback, this,
-                                     image_transport::TransportHints(transport_.toStdString(),
-                                                                     ros::TransportHints(),
-                                                                     local_node_));
+          local_node_.setParam("image_transport", transport_);
+          image_transport::ImageTransport it(local_node_);
+          image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this,
+                                    image_transport::TransportHints(transport_,
+                                                                    ros::TransportHints(),
+                                                                    local_node_));
         }
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
@@ -518,10 +515,8 @@ namespace mapviz_plugins
     // subscribe.
     if (node["image_transport"])
     {
-      std::string transport;
-      node["image_transport"] >> transport;
-      transport_ = QString::fromStdString(transport);
-      int index = ui_.transport_combo_box->findText(transport_);
+      node["image_transport"] >> transport_;
+      int index = ui_.transport_combo_box->findText( QString::fromStdString(transport_) );
       if (index != -1)
       {
         ui_.transport_combo_box->setCurrentIndex(index);
@@ -529,7 +524,7 @@ namespace mapviz_plugins
       else
       {
         ROS_WARN("Saved image transport %s is unavailable.",
-                 transport_.toStdString().c_str());
+                 transport_.c_str());
       }
     }
 
@@ -599,7 +594,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "width" << YAML::Value << width_;
     emitter << YAML::Key << "height" << YAML::Value << height_;
     emitter << YAML::Key << "keep_ratio" << YAML::Value << ui_.keep_ratio->isChecked();
-    emitter << YAML::Key << "image_transport" << YAML::Value << transport_.toStdString();
+    emitter << YAML::Key << "image_transport" << YAML::Value << transport_;
   }
 
   std::string ImagePlugin::AnchorToString(Anchor anchor)
