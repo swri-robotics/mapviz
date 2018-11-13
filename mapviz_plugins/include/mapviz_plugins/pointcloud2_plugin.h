@@ -106,13 +106,13 @@ namespace mapviz_plugins
     void UpdateColors();
     void DrawIcon();
     void ResetTransformedPointClouds();
+    void ClearPointClouds();
+    void SetSubscription(bool subscribe);
 
   private:
     struct StampedPoint
     {
       tf::Point point;
-      tf::Point transformed_point;
-      QColor color;
       std::vector<float> features;
     };
 
@@ -124,6 +124,11 @@ namespace mapviz_plugins
       std::string source_frame;
       bool transformed;
       std::map<std::string, FieldInfo> new_features;
+
+      std::vector<float> gl_point;
+      std::vector<uint8_t> gl_color;
+      GLuint point_vbo;
+      GLuint color_vbo;
     };
 
     float PointFeature(const uint8_t*, const FieldInfo&);
