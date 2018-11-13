@@ -161,7 +161,11 @@ bool PlaceableWindowProxy::handleMousePress(QMouseEvent *event)
   {
     start_rect_ = rect_;
     start_point_ = event->pos();
+#if QT_VERSION >= 0x050000
     state_ = getNextState(event->localPos());
+#else
+    state_ = getNextState(event->posF());
+#endif
     qWarning("changing state to %d", state_);
     return true;
   }
@@ -202,7 +206,11 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
 
   if (state_ == INACTIVE)
   {
+#if QT_VERSION >= 0x050000
     if (!rect_.contains(event->localPos()))
+#else
+    if (!rect_.contains(event->posF()))
+#endif
     {
       if (has_cursor_)
       {
@@ -216,7 +224,11 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     // cursor to indicate the state the user would enter by clicking.
 
     Qt::CursorShape shape;
-    switch(getNextState(event->localPos())) 
+#if QT_VERSION >= 0x050000
+    switch(getNextState(event->localPos()))
+#else
+    switch(getNextState(event->posF()))
+#endif
     {
     case MOVE_TOP_LEFT:
     case MOVE_BOTTOM_RIGHT:
@@ -243,7 +255,11 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     return true;
   }
 
+#if QT_VERSION >= 0x050000
   QPointF dp = event->localPos() - start_point_;
+#else
+  QPointF dp = event->posF() - start_point_;
+#endif
 
   // todo: enforce minimum size & constrain aspect ratio for resizes.  
   if (state_ == MOVE_ALL)
@@ -255,7 +271,11 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     rect_= resizeHelper(start_rect_,
                         start_rect_.bottomRight(),
                         start_rect_.topLeft(),
+#if QT_VERSION >= 0x050000
                         event->localPos());
+#else
+                        event->posF());
+#endif
     rect_.moveBottomRight(start_rect_.bottomRight());      
   }
   else if (state_ == MOVE_BOTTOM_LEFT)
@@ -263,7 +283,11 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     rect_= resizeHelper(start_rect_,
                         start_rect_.topRight(),
                         start_rect_.bottomLeft(),
+#if QT_VERSION >= 0x050000
                         event->localPos());
+#else
+                        event->posF());
+#endif
     rect_.moveTopRight(start_rect_.topRight());
   }
   else if (state_ == MOVE_BOTTOM_RIGHT)
@@ -271,7 +295,11 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     rect_= resizeHelper(start_rect_,
                         start_rect_.topLeft(),
                         start_rect_.bottomRight(),
+#if QT_VERSION >= 0x050000
                         event->localPos());
+#else
+                        event->posF());
+#endif
     rect_.moveTopLeft(start_rect_.topLeft());      
   }
   else if (state_ == MOVE_TOP_RIGHT)
@@ -279,7 +307,11 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     rect_= resizeHelper(start_rect_,
                         start_rect_.bottomLeft(),
                         start_rect_.topRight(),
+#if QT_VERSION >= 0x050000
                         event->localPos());
+#else
+                        event->posF());
+#endif
     rect_.moveBottomLeft(start_rect_.bottomLeft());      
   }
   else
@@ -326,14 +358,6 @@ QRectF PlaceableWindowProxy::resizeHelper(const QRectF &rect,
 
 bool PlaceableWindowProxy::handleResize(QResizeEvent *event)
 {
-  // QRectF overlap(rect_);
-  
-  // double w = event->oldSize().width() - rect_.width();
-  // double h = event->oldsize().height() - rect_.height();
-
-  // double s_x = rect_.left() / w;
-  // double s_y = rect_.right() / h;
-  
   // We always want to pass the resize event along to other widgets.
   return false;
 }

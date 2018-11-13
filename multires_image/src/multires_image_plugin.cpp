@@ -49,12 +49,14 @@ namespace mapviz_plugins
 {
   MultiresImagePlugin::MultiresImagePlugin() :
     loaded_(false),
+    center_x_(0.0),
+    center_y_(0.0),
+    offset_x_(0.0),
+    offset_y_(0.0),
     tile_set_(NULL),
     tile_view_(NULL),
     config_widget_(new QWidget()),
-    transformed_(false),
-    offset_x_(0.0),
-    offset_y_(0.0)
+    transformed_(false)
   {
     ui_.setupUi(config_widget_);
 

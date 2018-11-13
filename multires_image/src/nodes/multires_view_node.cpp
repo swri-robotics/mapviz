@@ -38,8 +38,8 @@
 #include <string>
 
 // QT libraries
-#include <QtWidgets/QApplication>
 #include <QString>
+#include <QApplication>
 #include <QMessageBox>
 #include <QImage>
 #include <QFileInfo>

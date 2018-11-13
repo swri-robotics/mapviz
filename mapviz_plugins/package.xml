@@ -11,19 +11,19 @@
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
-  <build_depend>libqt5-opengl-dev</build_depend>
+  <build_depend>libqt_dev</build_depend>
+  <build_depend>libqt_opengl_dev</build_depend>
+  <build_depend>message_generation</build_depend>
 
+  <build_export_depend>message_runtime</build_export_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>qt_qmake</buildtool_depend>
 
   <depend>actionlib</depend>
   <depend>cv_bridge</depend>
   <depend>gps_common</depend>
   <depend>image_transport</depend>
-  <depend>libqt5-core</depend>
-  <depend>libqt5-gui</depend>
-  <depend>libqt5-opengl</depend>
-  <depend>libqt5-widgets</depend>
   <depend>mapviz</depend>
   <depend>marti_common_msgs</depend>
   <depend>marti_nav_msgs</depend>
@@ -42,10 +42,10 @@
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
   <depend>visualization_msgs</depend>
-  <build_depend>message_generation</build_depend>
-<build_export_depend>message_runtime</build_export_depend>
-<exec_depend>message_runtime</exec_depend>
 
+  <exec_depend>libqt_core</exec_depend>
+  <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

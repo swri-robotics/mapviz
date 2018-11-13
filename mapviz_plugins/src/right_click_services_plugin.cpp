@@ -228,45 +228,53 @@ namespace mapviz_plugins
       ui_.outputframe->setCurrentIndex(index);
     }
   }
-void RightClickServicesPlugin::showContextMenu(const QPoint& pos,boost::shared_ptr<geometry_msgs::PointStamped> stamped)
+  void RightClickServicesPlugin::showContextMenu(const QPoint& pos,boost::shared_ptr<geometry_msgs::PointStamped> stamped)
   {
-      // retreive Available Services,Commands
-      ros::NodeHandle n;
-      ros::service::waitForService("/mapviz/available_commands",10);
-      ros::ServiceClient client = n.serviceClient<mapviz_plugins::AvailableServices>("/mapviz/available_commands");
-      mapviz_plugins::AvailableServices srv;
-      std::vector<std::string> service_name_list;
-      if(client.exists()){
-          if (client.call(srv))
+    // retreive Available Services,Commands
+    ros::NodeHandle n;
+    ros::service::waitForService("/mapviz/available_commands", 10);
+    ros::ServiceClient client = n.serviceClient<mapviz_plugins::AvailableServices>("/mapviz/available_commands");
+    mapviz_plugins::AvailableServices srv;
+    std::vector<std::string> service_name_list;
+    if(client.exists())
+    {
+      if (client.call(srv))
+      {
+        service_name_list= srv.response.message;
+      }
+    }
+
+    //call service to execute chosen command
+    ros::service::waitForService("/mapviz/gps_command_execute",10);
+    ros::ServiceClient command_client = n.serviceClient<mapviz_plugins::GPSCommand>("/mapviz/gps_command_execute");
+
+    mapviz_plugins::GPSCommand  gps_command;
+    gps_command.request.command = canvas_->showCustomContextMenu(canvas_->mapToGlobal(pos),service_name_list);
+    gps_command.request.point.x =stamped->point.x;
+    gps_command.request.point.y =stamped->point.y;
+    if (gps_command.request.command.length()<=0)
+    {
+      PrintInfo("Empty Service was not called");
+    }
+    else
+    {
+      if (command_client.exists())
+      {
+        if(command_client.call(gps_command))
+        {
+          std::stringstream ss;
+          if(gps_command.response.success)
           {
-          service_name_list= srv.response.message;
+            ss << "Calling " << gps_command.request.command << " was successful " << gps_command.response.message;
           }
-      }
-
-      //call service to execute chosen command
-      ros::service::waitForService("/mapviz/gps_command_execute",10);
-      ros::ServiceClient command_client = n.serviceClient<mapviz_plugins::GPSCommand>("/mapviz/gps_command_execute");
-
-      mapviz_plugins::GPSCommand  gps_command;
-      gps_command.request.command = canvas_->showCustomContextMenu(canvas_->mapToGlobal(pos),service_name_list);
-      gps_command.request.point.x =stamped->point.x;
-      gps_command.request.point.y =stamped->point.y;
-      if (gps_command.request.command.length()<=0){
-        PrintInfo("Empty Service was not called");
-      }else{
-          if (command_client.exists()){
-              if(command_client.call(gps_command)){
-                  std::stringstream ss;
-                  if(gps_command.response.success){
-                     ss << "Calling " << gps_command.request.command << " was successful " <<gps_command.response.message ;
-                   }else{
-                      ss << "Calling " << gps_command.request.command << " was unsuccessful "<<gps_command.response.message;
-                  }
-                  PrintInfo(ss.str());
+          else
+          {
+            ss << "Calling " << gps_command.request.command << " was unsuccessful "<< gps_command.response.message;
           }
+          PrintInfo(ss.str());
+        }
       }
-      }
-
+    }
   }
 
 }

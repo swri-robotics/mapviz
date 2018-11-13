@@ -57,7 +57,6 @@ namespace mapviz
   class MapvizPlugin : public QObject
   {
     Q_OBJECT;
-
   public:
     virtual ~MapvizPlugin() {}
 

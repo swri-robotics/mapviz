@@ -79,14 +79,14 @@ MoveBasePlugin::MoveBasePlugin() :
     p3.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.pushButtonInitialPose, &QPushButton::toggled,
-                     this, &MoveBasePlugin::on_pushButtonInitialPose_toggled);
+    QObject::connect(ui_.pushButtonInitialPose, SIGNAL(&QPushButton::toggled),
+                     this, SLOT(&MoveBasePlugin::on_pushButtonInitialPose_toggled));
 
-    QObject::connect(ui_.pushButtonGoalPose, &QPushButton::toggled,
-                     this, &MoveBasePlugin::on_pushButtonGoalPose_toggled);
+    QObject::connect(ui_.pushButtonGoalPose, SIGNAL(&QPushButton::toggled),
+                     this, SLOT(&MoveBasePlugin::on_pushButtonGoalPose_toggled));
 
-    QObject::connect(ui_.pushButtonAbort, &QPushButton::clicked,
-                     this, &MoveBasePlugin::on_pushButtonAbort_clicked );
+    QObject::connect(ui_.pushButtonAbort, SIGNAL(&QPushButton::clicked),
+                     this, SLOT(&MoveBasePlugin::on_pushButtonAbort_clicked));
 
     timer_ = nh_.createTimer(ros::Duration(1.0), &MoveBasePlugin::timerCallback, this);
 
@@ -182,7 +182,8 @@ void MoveBasePlugin::timerCallback(const ros::TimerEvent &)
 
         case actionlib::SimpleClientGoalState::REJECTED:
         case actionlib::SimpleClientGoalState::ABORTED:
-            case actionlib::SimpleClientGoalState::LOST:
+        case actionlib::SimpleClientGoalState::LOST:
+        case actionlib::SimpleClientGoalState::RECALLED:
             PrintErrorHelper( ui_.status, state.toString() );
             monitoring_action_state_ = false;
             break;
@@ -204,7 +205,11 @@ bool MoveBasePlugin::handleMousePress(QMouseEvent* event)
     {
         is_mouse_down_ = true;
         arrow_angle_ = 0;
-        arrow_tail_position_= map_canvas_->MapGlCoordToFixedFrame( event->localPos() );
+#if QT_VERSION >= 0x050000
+      arrow_tail_position_= map_canvas_->MapGlCoordToFixedFrame( event->localPos() );
+#else
+      arrow_tail_position_= map_canvas_->MapGlCoordToFixedFrame( event->posF() );
+#endif
         return true;
     }
     return false;
@@ -214,7 +219,11 @@ bool MoveBasePlugin::handleMouseMove(QMouseEvent* event)
 {
     if (is_mouse_down_)
     {
+#if QT_VERSION >= 0x050000
         QPointF head_pos = map_canvas_->MapGlCoordToFixedFrame( event->localPos() );
+#else
+        QPointF head_pos = map_canvas_->MapGlCoordToFixedFrame( event->posF() );
+#endif
         arrow_angle_ = atan2( head_pos.y() - arrow_tail_position_.y(),
                               head_pos.x() - arrow_tail_position_.x() );
     }
@@ -275,9 +284,14 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* event)
 
 void MoveBasePlugin::Draw(double x, double y, double scale)
 {
-    constexpr QPointF arrow_points[7] = {
-        {10,0}, {6, -2.5}, {6.5,-1}, {0,-1}, {0,1}, {6.5, 1}, {6,2.5}
-    };
+    std::array<QPointF, 7> arrow_points;
+    arrow_points[0] = QPointF(10, 0);
+    arrow_points[1] = QPointF(6, -2.5);
+    arrow_points[2] = QPointF(6.5, -1);
+    arrow_points[3] = QPointF(0, -1);
+    arrow_points[4] = QPointF(0, 1);
+    arrow_points[5] = QPointF(6.5, 1);
+    arrow_points[6] = QPointF(6, 2.5);
 
     if( is_mouse_down_ )
     {

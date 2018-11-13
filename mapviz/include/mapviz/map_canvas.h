@@ -87,6 +87,14 @@ namespace mapviz
     float OffsetX() const { return offset_x_; }
     float OffsetY() const { return offset_y_; }
 
+
+    void setCanvasAbleToMove(bool assigning)
+    {
+      canvas_able_to_move_ = assigning;
+    }
+
+    void leaveEvent(QEvent* e);
+
     void SetViewScale(float scale)
     {
       view_scale_ = scale;
@@ -175,7 +183,6 @@ namespace mapviz
     void mouseReleaseEvent(QMouseEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
     void keyPressEvent(QKeyEvent* e);
-    void leaveEvent(QEvent* e);
 
 
     void Recenter();
@@ -185,6 +192,7 @@ namespace mapviz
     void InitializePixelBuffers();
 
     std::string service_name;
+    bool canvas_able_to_move_ = true;
     bool has_pixel_buffers_;
     int32_t pixel_buffer_size_;
     GLuint pixel_buffer_ids_[2];

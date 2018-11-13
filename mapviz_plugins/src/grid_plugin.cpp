@@ -33,6 +33,8 @@
 #include <cstdio>
 #include <vector>
 
+#include <boost/lexical_cast.hpp>
+
 // QT libraries
 #include <QGLWidget>
 #include <QPalette>

@@ -107,12 +107,12 @@ namespace mapviz_plugins
       initialized_ = true;
       PrintWarning("No messages received.");
 
-       odometry_sub_.shutdown();
-       topic_ = topic;
-       if (!topic_.empty())
-       {
-         odometry_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
-             topic_, 100, &AttitudeIndicatorPlugin::handleMessage, this);
+      odometry_sub_.shutdown();
+      topic_ = topic;
+      if (!topic_.empty())
+      {
+        odometry_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
+            topic_, 100, &AttitudeIndicatorPlugin::handleMessage, this);
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
