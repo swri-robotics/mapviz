@@ -45,13 +45,20 @@
 #include <boost/make_shared.hpp>
 
 // OpenCV libraries
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/videoio.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#if CV_MAJOR_VERSION > 2
+#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/videoio/videoio.hpp>
+#endif
 
 // QT libraries
+#if QT_VERSION >= 0x050000
 #include <QtWidgets/QApplication>
+#else
+#include <QtGui/QApplication>
+#endif
 #include <QFileDialog>
 #include <QActionGroup>
 #include <QColorDialog>
@@ -102,12 +109,12 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
   ui_.statusbar->addPermanentWidget(xy_pos_label_);
   ui_.statusbar->addPermanentWidget(lat_lon_pos_label_);
-  
+
   spacer1_ = new QWidget(ui_.statusbar);
   spacer1_->setMaximumSize(22,22);
   spacer1_->setMinimumSize(22,22);
   ui_.statusbar->addPermanentWidget(spacer1_);
-  
+
   screenshot_button_ = new QPushButton();
   screenshot_button_->setMinimumSize(22, 22);
   screenshot_button_->setMaximumSize(22,22);
@@ -115,7 +122,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   screenshot_button_->setFlat(true);
   screenshot_button_->setToolTip("Capture screenshot of display canvas");
   ui_.statusbar->addPermanentWidget(screenshot_button_);
-  
+
   spacer2_ = new QWidget(ui_.statusbar);
   spacer2_->setMaximumSize(22,22);
   spacer2_->setMinimumSize(22,22);
@@ -129,7 +136,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   rec_button_->setFlat(true);
   rec_button_->setToolTip("Start recording video of display canvas");
   ui_.statusbar->addPermanentWidget(rec_button_);
-  
+
   stop_button_ = new QPushButton();
   stop_button_->setMinimumSize(22, 22);
   stop_button_->setMaximumSize(22,22);
@@ -174,6 +181,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(rec_button_, SIGNAL(toggled(bool)), this, SLOT(ToggleRecord(bool)));
   connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
   connect(screenshot_button_, SIGNAL(clicked()), this, SLOT(Screenshot()));
+  connect(ui_.actionClear_History, SIGNAL(triggered()), this, SLOT(ClearHistory()));
 
   // Use a separate thread for writing video files so that it won't cause
   // lag on the main thread.
@@ -209,6 +217,14 @@ void Mapviz::showEvent(QShowEvent* event)
 void Mapviz::closeEvent(QCloseEvent* event)
 {
   AutoSave();
+
+  for (auto& display: plugins_)
+  {
+    MapvizPluginPtr plugin = display.second;
+    canvas_->RemovePlugin(plugin);
+  }
+
+  plugins_.clear();
 }
 
 void Mapviz::Initialize()
@@ -260,7 +276,7 @@ void Mapviz::Initialize()
     canvas_->SetTargetFrame(ui_.targetframe->currentText().toStdString());
 
     ros::NodeHandle priv("~");
-    
+
     add_display_srv_ = node_->advertiseService("add_mapviz_display", &Mapviz::AddDisplay, this);
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
@@ -301,7 +317,7 @@ void Mapviz::Initialize()
       save_timer_.start(10000);
       connect(&save_timer_, SIGNAL(timeout()), this, SLOT(AutoSave()));
     }
-    
+
     connect(&record_timer_, SIGNAL(timeout()), this, SLOT(CaptureVideoFrame()));
 
     bool print_profile_data;
@@ -336,7 +352,7 @@ void Mapviz::UpdateFrames()
   tf_->getFrameStrings(frames);
   std::sort(frames.begin(), frames.end());
 
-  if (ui_.fixedframe->count() >= 0 && 
+  if (ui_.fixedframe->count() >= 0 &&
       static_cast<size_t>(ui_.fixedframe->count()) == frames.size())
   {
     bool changed = false;
@@ -394,7 +410,7 @@ void Mapviz::UpdateFrames()
     index = ui_.targetframe->findText(current_target.c_str());
     ui_.targetframe->setCurrentIndex(index);
   }
-  
+
   updating_frames_ = false;
 
   if (current_target != ui_.targetframe->currentText().toStdString())
@@ -561,7 +577,7 @@ void Mapviz::Open(const std::string& filename)
       doc["fix_orientation"] >> fix_orientation;
       ui_.actionFix_Orientation->setChecked(fix_orientation);
     }
-    
+
     if (swri_yaml_util::FindValue(doc, "rotate_90"))
     {
       bool rotate_90 = false;
@@ -589,7 +605,7 @@ void Mapviz::Open(const std::string& filename)
       doc["show_capture_tools"] >> show_capture_tools;
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
-    
+
     if (swri_yaml_util::FindValue(doc, "show_status_bar"))
     {
       bool show_status_bar = false;
@@ -649,12 +665,12 @@ void Mapviz::Open(const std::string& filename)
         ui_.actionForce_720p->setChecked(true);
       }
     }
-    
+
     if (swri_yaml_util::FindValue(doc, "force_480p"))
     {
       bool force_480p;
       doc["force_480p"] >> force_480p;
-      
+
       if (force_480p)
       {
         ui_.actionForce_480p->setChecked(true);
@@ -878,7 +894,7 @@ void Mapviz::SaveConfig()
   if (dialog.result() == QDialog::Accepted && dialog.selectedFiles().count() == 1)
   {
     std::string path = dialog.selectedFiles().first().toStdString();
-    
+
     std::string title;
     size_t last_slash = path.find_last_of('/');
     if (last_slash != std::string::npos && last_slash != path.size() - 1)
@@ -892,10 +908,18 @@ void Mapviz::SaveConfig()
     }
 
     title += " - mapviz";
-    
+
     setWindowTitle(QString::fromStdString(title));
 
     Save(path);
+  }
+}
+
+void Mapviz::ClearHistory()
+{
+  for (auto& plugin: plugins_)
+  {
+    plugin.second->ClearHistory();
   }
 }
 
@@ -939,7 +963,7 @@ void Mapviz::SelectNewDisplay()
 }
 
 bool Mapviz::AddDisplay(
-      AddMapvizDisplay::Request& req, 
+      AddMapvizDisplay::Request& req,
       AddMapvizDisplay::Response& resp)
 {
   std::map<std::string, std::string> properties;
@@ -972,26 +996,26 @@ bool Mapviz::AddDisplay(
       {
         display.first->setData(Qt::UserRole, QVariant(req.draw_order - 1.1));
         ui_.configs->sortItems();
-        
+
         ReorderDisplays();
       }
       else if (req.draw_order < 0)
       {
         display.first->setData(Qt::UserRole, QVariant(ui_.configs->count() + req.draw_order + 0.1));
         ui_.configs->sortItems();
-        
+
         ReorderDisplays();
       }
-      
+
       resp.success = true;
-      
+
       return true;
     }
   }
-  
+
   try
   {
-    MapvizPluginPtr plugin = 
+    MapvizPluginPtr plugin =
       CreateNewDisplay(req.name, req.type, req.visible, false, req.draw_order);
     plugin->LoadConfig(config, "");
     plugin->DrawIcon();
@@ -1003,7 +1027,7 @@ bool Mapviz::AddDisplay(
     resp.success = false;
     resp.message = "Failed to load display plug-in.";
   }
-  
+
   return true;
 }
 
@@ -1017,7 +1041,7 @@ void Mapviz::Hover(double x, double y, double scale)
       lat_lon_pos_label_->setVisible(false);
       return;
     }
-  
+
     int32_t precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / scale))));
 
     QString text = ui_.fixedframe->currentText();
@@ -1031,50 +1055,50 @@ void Mapviz::Hover(double x, double y, double scale)
     x_ss << std::fixed << std::setprecision(precision);
     x_ss << x;
     text += x_ss.str().c_str();
-    
+
     text += ", ";
-    
+
     std::ostringstream y_ss;
     y_ss << std::fixed << std::setprecision(precision);
     y_ss << y;
     text += y_ss.str().c_str();
-    
+
     xy_pos_label_->setText(text);
     xy_pos_label_->setVisible(true);
     xy_pos_label_->update();
-    
+
     swri_transform_util::Transform transform;
     if (tf_manager_.SupportsTransform(
-           swri_transform_util::_wgs84_frame, 
+           swri_transform_util::_wgs84_frame,
            ui_.fixedframe->currentText().toStdString()) &&
         tf_manager_.GetTransform(
-           swri_transform_util::_wgs84_frame, 
+           swri_transform_util::_wgs84_frame,
            ui_.fixedframe->currentText().toStdString(),
            transform))
     {
       tf::Vector3 point(x, y, 0);
       point = transform * point;
-      
+
       QString lat_lon_text = "lat/lon: ";
-      
+
       double lat_scale = (1.0 / 111111.0) * scale;
       int32_t lat_precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / lat_scale))));
-      
+
       std::ostringstream lat_ss;
       lat_ss << std::fixed << std::setprecision(lat_precision);
       lat_ss << point.y();
       lat_lon_text += lat_ss.str().c_str();
-      
+
       lat_lon_text += ", ";
-    
+
       double lon_scale = (1.0 / (111111.0 * std::cos(point.y() * swri_math_util::_deg_2_rad))) * scale;
       int32_t lon_precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / lon_scale))));
-      
+
       std::ostringstream lon_ss;
       lon_ss << std::fixed << std::setprecision(lon_precision);
       lon_ss << point.x();
       lat_lon_text += lon_ss.str().c_str();
-      
+
       lat_lon_pos_label_->setText(lat_lon_text);
       lat_lon_pos_label_->setVisible(true);
       lat_lon_pos_label_->update();
@@ -1109,17 +1133,17 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   ROS_INFO("creating: %s", real_type.c_str());
   MapvizPluginPtr plugin = loader_->createInstance(real_type.c_str());
-  
+
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
   plugin->SetIcon(config_item->ui_.icon);
-  
+
   plugin->Initialize(tf_, canvas_);
   plugin->SetType(real_type.c_str());
   plugin->SetName(name);
   plugin->SetNode(*node_);
   plugin->SetVisible(visible);
-  
+
   if (draw_order == 0)
   {
     plugin->SetDrawOrder(ui_.configs->count());
@@ -1163,7 +1187,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   {
     ui_.configs->insertItem(plugin->DrawOrder(), item);
   }
-  
+
   ui_.configs->setItemWidget(item, config_item);
   ui_.configs->UpdateIndices();
 
@@ -1266,7 +1290,7 @@ void Mapviz::ToggleCaptureTools(bool on)
   {
     ui_.actionShow_Status_Bar->setChecked(true);
   }
-  
+
   screenshot_button_->setVisible(on);
   rec_button_->setVisible(on);
   stop_button_->setVisible(on);
@@ -1287,9 +1311,9 @@ void Mapviz::ToggleRecord(bool on)
     {
       // Lock the window size.
       AdjustWindowSize();
-      
+
       canvas_->CaptureFrames(true);
-    
+
       std::string posix_time = boost::posix_time::to_iso_string(ros::WallTime::now().toBoost());
       boost::replace_all(posix_time, ".", "_");
       std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".avi";
@@ -1302,13 +1326,13 @@ void Mapviz::ToggleRecord(bool on)
         StopRecord();
         return;
       }
-      
+
       ROS_INFO("Writing video to: %s", filename.c_str());
       ui_.statusbar->showMessage("Recording video to " + QString::fromStdString(filename));
-      
+
       canvas_->updateGL();
     }
-    
+
     record_timer_.start(1000.0 / 30.0);
   }
   else
@@ -1375,41 +1399,41 @@ void Mapviz::StopRecord()
 {
   rec_button_->setChecked(false);
   stop_button_->setEnabled(false);
-  
+
   record_timer_.stop();
   if (vid_writer_)
   {
     vid_writer_->stop();
   }
   canvas_->CaptureFrames(false);
-  
+
   ui_.statusbar->showMessage(QString(""));
   rec_button_->setToolTip("Start recording video of display canvas");
-  
+
   AdjustWindowSize();
 }
 
 void Mapviz::Screenshot()
 {
   canvas_->CaptureFrame(true);
-  
+
   std::vector<uint8_t> frame;
   if (canvas_->CopyCaptureBuffer(frame))
   {
     cv::Mat image(canvas_->height(), canvas_->width(), CV_8UC4, &frame[0]);
     cv::Mat screenshot;
     cvtColor(image, screenshot, CV_BGRA2BGR);
-    
+
     cv::flip(screenshot, screenshot, 0);
-    
+
     std::string posix_time = boost::posix_time::to_iso_string(ros::WallTime::now().toBoost());
-    boost::replace_all(posix_time, ".", "_");    
+    boost::replace_all(posix_time, ".", "_");
     std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
     boost::replace_all(filename, "~", getenv("HOME"));
-    
-    ROS_INFO("Writing screenshot to: %s", filename.c_str());    
+
+    ROS_INFO("Writing screenshot to: %s", filename.c_str());
     ui_.statusbar->showMessage("Saved image to " + QString::fromStdString(filename));
-    
+
     cv::imwrite(filename, screenshot);
   }
   else

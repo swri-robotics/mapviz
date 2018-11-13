@@ -63,6 +63,11 @@ namespace mapviz_plugins
                      SLOT(ResetTransformedPoints()));
   }
 
+  void PointDrawingPlugin::ClearHistory()
+  {
+    points_.clear();
+  }
+
   void PointDrawingPlugin::DrawIcon()
   {
     if (icon_)

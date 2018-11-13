@@ -155,6 +155,11 @@ namespace mapviz_plugins
   {
   }
 
+  void LaserScanPlugin::ClearHistory()
+  {
+    scans_.clear();
+  }
+
   void LaserScanPlugin::DrawIcon()
   {
     if (icon_)

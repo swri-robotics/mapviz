@@ -85,6 +85,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
+    QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
   }
 
   DisparityPlugin::~DisparityPlugin()
@@ -162,17 +163,38 @@ namespace mapviz_plugins
       units_ = PERCENT;
     }
   }
+  void DisparityPlugin::SetSubscription(bool visible)
+  {
+    if(topic_.empty())
+    {
+      return;
+    }
+    else if(!visible)
+    {
+      disparity_sub_.shutdown();
+      ROS_INFO("Dropped subscription to %s", topic_.c_str());
+    }
+    else
+    {
+      disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
 
+      ROS_INFO("Subscribing to %s", topic_.c_str());
+    }
+  }
   void DisparityPlugin::SelectTopic()
   {
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
       "stereo_msgs/DisparityImage");
 
+    if(topic.name.empty())
+    {
+      topic.name.clear();
+    }
     if (!topic.name.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic.name));
-      TopicEdited();
     }
+    TopicEdited();
   }
 
   void DisparityPlugin::TopicEdited()
@@ -192,6 +214,7 @@ namespace mapviz_plugins
     }
     if (topic != topic_)
     {
+      PrintWarning("Topic is Hidden");
       initialized_ = false;
       has_message_ = false;
       topic_ = topic;

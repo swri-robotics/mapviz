@@ -198,7 +198,11 @@ namespace mapviz_plugins
     int closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();
 
+#if QT_VERSION >= 0x050000
     QPointF point = event->localPos();
+#else
+    QPointF point = event->posF();
+#endif
     stu::Transform transform;
     std::string frame = ui_.frame->text().toStdString();
     if (tf_manager_.GetTransform(target_frame_, frame, transform))
@@ -230,7 +234,11 @@ namespace mapviz_plugins
       else
       {
         is_mouse_down_ = true;
+#if QT_VERSION >= 0x050000
         mouse_down_pos_ = event->localPos();
+#else
+        mouse_down_pos_ = event->posF();
+#endif
         mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
         return false;
       }
@@ -253,7 +261,11 @@ namespace mapviz_plugins
     std::string frame = ui_.frame->text().toStdString();
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
+#if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
+#else
+      QPointF point = event->posF();
+#endif
       stu::Transform transform;
       if (tf_manager_.GetTransform(frame, target_frame_, transform))
       {
@@ -269,7 +281,11 @@ namespace mapviz_plugins
     }
     else if (is_mouse_down_)
     {
+#if QT_VERSION >= 0x050000
       qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
+#else
+      qreal distance = QLineF(mouse_down_pos_, event->posF()).length();
+#endif
       qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
       // Only fire the event if the mouse has moved less than the maximum distance
@@ -278,8 +294,11 @@ namespace mapviz_plugins
       // or just holding the cursor in place.
       if (msecsDiff < max_ms_ && distance <= max_distance_)
       {
+#if QT_VERSION >= 0x050000
         QPointF point = event->localPos();
-
+#else
+        QPointF point = event->posF();
+#endif
 
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
         ROS_INFO("mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
@@ -305,7 +324,11 @@ namespace mapviz_plugins
   {
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
+#if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
+#else
+      QPointF point = event->posF();
+#endif
       stu::Transform transform;
       std::string frame = ui_.frame->text().toStdString();
       if (tf_manager_.GetTransform(frame, target_frame_, transform))

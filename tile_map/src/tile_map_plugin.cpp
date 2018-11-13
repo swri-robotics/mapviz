@@ -32,6 +32,12 @@
 #include <tile_map/bing_source.h>
 #include <tile_map/wmts_source.h>
 
+#include <boost/algorithm/string/trim.hpp>
+
+#include <tile_map/tile_source.h>
+#include <tile_map/bing_source.h>
+#include <tile_map/wmts_source.h>
+
 // QT libraries
 #include <QGLWidget>
 #include <QInputDialog>
@@ -338,40 +344,49 @@ namespace tile_map
       for (source_iter = sources.begin(); source_iter != sources.end(); source_iter++)
       {
         std::string type = "";
-        if ((*source_iter)[TYPE_KEY])
+        if (swri_yaml_util::FindValue(*source_iter, TYPE_KEY))
         {
           // If the type isn't set, we'll assume it's WMTS
-          type = ((*source_iter)[TYPE_KEY]).as<std::string>();
+          (*source_iter)[TYPE_KEY] >> type;
         }
         boost::shared_ptr<TileSource> source;
         if (type == "wmts" || type.empty())
         {
+          std::string name;
+          std::string base_url;
+          int max_zoom;
+          (*source_iter)[NAME_KEY] >> name;
+          (*source_iter)[BASE_URL_KEY] >> base_url;
+          (*source_iter)[MAX_ZOOM_KEY] >> max_zoom;
           source = boost::make_shared<WmtsSource>(
-              QString::fromStdString(((*source_iter)[NAME_KEY]).as<std::string>()),
-              QString::fromStdString((*source_iter)[BASE_URL_KEY].as<std::string>()),
+              QString::fromStdString(name),
+              QString::fromStdString(base_url),
               true,
-              (*source_iter)[MAX_ZOOM_KEY].as<int>());
+              max_zoom);
         }
         else if (type == "bing")
         {
-          source = boost::make_shared<BingSource>(
-              QString::fromStdString(((*source_iter)[NAME_KEY]).as<std::string>()));
+          std::string name;
+          (*source_iter)[NAME_KEY] >> name;
+          source = boost::make_shared<BingSource>(QString::fromStdString(name));
         }
         tile_sources_[source->GetName()] = source;
         ui_.source_combo->addItem(source->GetName());
       }
     }
 
-    if (node[BING_API_KEY])
+    if (swri_yaml_util::FindValue(node, BING_API_KEY))
     {
-      std::string key = node[BING_API_KEY].as<std::string>();
+      std::string key;
+      node[BING_API_KEY] >> key;
       BingSource* source = static_cast<BingSource*>(tile_sources_[BING_NAME].get());
       source->SetApiKey(QString::fromStdString(key));
     }
     
-    if (node[SOURCE_KEY])
+    if (swri_yaml_util::FindValue(node, SOURCE_KEY))
     {
-      std::string source = node[SOURCE_KEY].as<std::string>();
+      std::string source;
+      node[SOURCE_KEY] >> source;
 
       int index = ui_.source_combo->findText(QString::fromStdString(source), Qt::MatchExactly);
 

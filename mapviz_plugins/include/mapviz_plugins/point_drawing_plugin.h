@@ -82,6 +82,9 @@ namespace mapviz_plugins
     virtual ~PointDrawingPlugin()
     {
     }
+
+    void ClearHistory();
+
     virtual void Transform();
     virtual bool DrawPoints(double scale);
     virtual bool DrawArrows();

@@ -2,46 +2,62 @@ cmake_minimum_required(VERSION 2.8.3)
 project(multires_image)
 
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
+  gps_common
   mapviz
+  pluginlib
   roscpp 
   tf 
   swri_transform_util 
   swri_math_util
-  swri_yaml_util)
+  swri_yaml_util
+)
 
+### Boost ###
 find_package(Boost REQUIRED thread)
-find_package(GLU REQUIRED)
-find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-set(QT_LIBRARIES
-  ${Qt5Core_LIBRARIES}
-  ${Qt5Gui_LIBRARIES}
-  ${Qt5OpenGL_LIBRARIES}
-  ${Qt5Widgets_LIBRARIES}
-)
-include_directories(
-  ${Qt5Core_INCLUDE_DIRS}
-  ${Qt5Gui_INCLUDE_DIRS}
-  ${Qt5OpenGL_INCLUDE_DIRS}
-  ${Qt5Widgets_INCLUDE_DIRS}
-)
-add_definitions(
-  ${Qt5Core_DEFINITIONS}
-  ${Qt5Gui_DEFINITIONS}
-  ${Qt5OpenGL_DEFINITIONS}
-  ${Qt5Widgets_DEFINITIONS}
-)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+### OpenGL ###
+find_package(OpenGL REQUIRED)
+
+### OpenCV ###
+# multires_image doesn't directly use OpenCV, but it uses swri_transform_util, and
+# we need to include OpenCV to make one of its headers compile.
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  find_package(OpenCV 2 REQUIRED)
+else()
+  find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
+endif()
+
+### Qt4 on ROS < Kinetic, Qt5 on ROS >= Kinetic ###
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL)
+  set(Qt_FOUND TRUE)
+  set(Qt_INCLUDE_DIRS "${QT_INCLUDE_DIR};${QT_QTCORE_INCLUDE_DIR};${QT_QTGUI_INCLUDE_DIR};${QT_QTOPENGL_INCLUDE_DIR}")
+  set(Qt_LIBRARIES
+      Qt4::QtCore
+      Qt4::QtGui
+      Qt4::QtOpenGL
+      )
+else()
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5Gui REQUIRED)
+  find_package(Qt5OpenGL REQUIRED)
+  find_package(Qt5Widgets REQUIRED)
+  set(Qt_FOUND TRUE)
+  set(Qt_INCLUDE_DIRS "${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
+  set(Qt_LIBRARIES
+      Qt5::Core
+      Qt5::Gui
+      Qt5::OpenGL
+      Qt5::Widgets
+      )
+  add_definitions(-DWFlags=WindowFlags)
+endif()
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME} multires_widget
-  DEPENDS Qt5Core Qt5Gui Qt5OpenGL Qt5Widgets
+  LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_plugin multires_widget
+  DEPENDS Qt
   CATKIN_DEPENDS
     mapviz
     pluginlib
@@ -51,52 +67,89 @@ catkin_package(
     tf
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIR})
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories(include)
+include_directories(SYSTEM
+  ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${Qt_INCLUDE_DIRS}
+)
 
 # Build libtile_cache
-file (GLOB TILE_SRC_FILES 
-   src/string_util.cpp
+set(TILE_SRC_FILES 
    src/tile.cpp
    src/tile_cache.cpp
    src/tile_set.cpp
    src/tile_set_layer.cpp)
-qt5_wrap_cpp(TILE_SRC_FILES include/multires_image/tile_cache.h)
-add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${OpenCV_LIBS})
+
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  qt4_wrap_cpp(TILE_SRC_FILES include/${PROJECT_NAME}/tile_cache.h)
+else()
+  qt5_wrap_cpp(TILE_SRC_FILES include/${PROJECT_NAME}/tile_cache.h)
+endif()
+
+add_library(${PROJECT_NAME} 
+  ${TILE_SRC_FILES}
+)
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${Qt_LIBRARIES}
+  ${GLU_LIBRARY}
+)
 
 # Build libmultires_widget
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(src)
-file (GLOB UI_FILES src/*.ui)
-file (GLOB WIDGET_SRC_FILES src/tile_view.cpp src/QGLMap.cpp)
-qt5_wrap_ui(WIDGET_SRC_FILES ${UI_FILES})
-qt5_wrap_cpp(WIDGET_SRC_FILES include/multires_image/QGLMap.h)
+set(UI_FILES
+  src/QGLMap.ui
+  src/multires_config.ui
+)
+set(WIDGET_SRC_FILES src/tile_view.cpp src/QGLMap.cpp)
+
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  qt4_wrap_ui(WIDGET_SRC_FILES ${UI_FILES})
+  qt4_wrap_cpp(WIDGET_SRC_FILES include/${PROJECT_NAME}/QGLMap.h)
+else()
+  qt5_wrap_ui(WIDGET_SRC_FILES ${UI_FILES})
+  qt5_wrap_cpp(WIDGET_SRC_FILES include/${PROJECT_NAME}/QGLMap.h)
+endif()
 add_library(multires_widget ${WIDGET_SRC_FILES})
 target_link_libraries(multires_widget ${PROJECT_NAME})
 
 # Build nodes
-include_directories(src)
-file (GLOB VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
-qt5_wrap_cpp(VIEW_NODE_SRC_FILES include/multires_image/multires_view_node.h)
+set(VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  qt4_wrap_cpp(VIEW_NODE_SRC_FILES include/${PROJECT_NAME}/multires_view_node.h)
+else()
+  qt5_wrap_cpp(VIEW_NODE_SRC_FILES include/${PROJECT_NAME}/multires_view_node.h)
+endif()
 add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
 target_link_libraries(multires_view_node multires_widget)
 
 # Build mapviz plugin
-file (GLOB MAPVIZ_SRC_FILES 
-  src/multires_image_plugin.cpp
+set(MAPVIZ_SRC_FILES 
+  src/${PROJECT_NAME}_plugin.cpp
   src/multires_view.cpp)
-qt5_wrap_ui(MAPVIZ_SRC_FILES src/multires_config.ui)
-qt5_wrap_cpp(MAPVIZ_SRC_FILES include/multires_image/multires_image_plugin.h)
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  qt4_wrap_ui(MAPVIZ_SRC_FILES src/multires_config.ui)
+  qt4_wrap_cpp(MAPVIZ_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
+else()
+  qt5_wrap_ui(MAPVIZ_SRC_FILES src/multires_config.ui)
+  qt5_wrap_cpp(MAPVIZ_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
+endif()
+
 add_library(${PROJECT_NAME}_plugin ${MAPVIZ_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
+### Install ${PROJECT_NAME} plugin ###
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS ${PROJECT_NAME} multires_view_node multires_widget ${PROJECT_NAME}_plugin
+install(TARGETS ${PROJECT_NAME}
+  multires_view_node
+  multires_widget
+  ${PROJECT_NAME}_plugin
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -111,4 +164,5 @@ install(DIRECTORY launch
 )
 
 install(FILES mapviz_plugins.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)

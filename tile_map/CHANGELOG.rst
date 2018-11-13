@@ -2,6 +2,17 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.6 (2018-07-31)
+------------------
+
+0.2.5 (2018-04-12)
+------------------
+* Bug fix in TileMap. GenTexture was invoked over and over again (`#559 <https://github.com/swri-robotics/mapviz/issues/559>`_)
+* Improve tile loading prioritization.
+* Glew warning fixed (`#539 <https://github.com/swri-robotics/mapviz/issues/539>`_)
+* update to use non deprecated pluginlib macro
+* Contributors: Davide Faconti, Marc Alban, Mikael Arguedas, P. J. Reed
+
 0.2.4 (2017-08-11)
 ------------------
 * add include for boost::algorithm::trim_copy to fix tile_map_plugin.cpp:408:31: error: ‘trim_copy’ is not a member of ‘boost’ (`#497 <https://github.com/swri-robotics/mapviz/issues/497>`_)
