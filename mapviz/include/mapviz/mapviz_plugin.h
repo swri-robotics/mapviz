@@ -57,7 +57,6 @@ namespace mapviz
   class MapvizPlugin : public QObject
   {
     Q_OBJECT;
-
   public:
     virtual ~MapvizPlugin() {}
 
@@ -72,6 +71,8 @@ namespace mapviz
     }
 
     virtual void Shutdown() = 0;
+
+    virtual void ClearHistory() {}
 
     /**
      * Draws on the Mapviz canvas using OpenGL commands; this will be called

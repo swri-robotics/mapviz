@@ -1,90 +1,120 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tile_map)
 
-find_package(catkin REQUIRED COMPONENTS 
-  roscpp 
-  pluginlib 
-  tf 
+set(DEPENDENCIES
   mapviz
+  pluginlib
+  roscpp
+  swri_math_util
   swri_transform_util
-  swri_math_util)
+  swri_yaml_util
+  tf
+)
+find_package(catkin REQUIRED COMPONENTS
+  ${DEPENDENCIES}
+)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Network REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-set(QT_LIBRARIES
-  ${Qt5Core_LIBRARIES}
-  ${Qt5Gui_LIBRARIES}
-  ${Qt5Network_LIBRARIES}
-  ${Qt5OpenGL_LIBRARIES}
-  ${Qt5Widgets_LIBRARIES}
-)
-include_directories(
-  ${Qt5Core_INCLUDE_DIRS}
-  ${Qt5Gui_INCLUDE_DIRS}
-  ${Qt5Network_INCLUDE_DIRS}
-  ${Qt5OpenGL_INCLUDE_DIRS}
-  ${Qt5Widgets_INCLUDE_DIRS}
-)
-add_definitions(
-  ${Qt5Core_DEFINITIONS}
-  ${Qt5Gui_DEFINITIONS}
-  ${Qt5Network_DEFINITIONS}
-  ${Qt5OpenGL_DEFINITIONS}
-  ${Qt5Widgets_DEFINITIONS}
-)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+### Qt4 on ROS < Kinetic, Qt5 on ROS >= Kinetic ###
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL QtNetwork)
+  set(Qt_FOUND TRUE)
+  set(Qt_INCLUDE_DIRS "${QT_INCLUDE_DIR};${QT_QTCORE_INCLUDE_DIR};${QT_QTGUI_INCLUDE_DIR};${QT_QTOPENGL_INCLUDE_DIR};${QT_QTNETWORK_INCLUDE_DIR}")
+  set(Qt_LIBRARIES
+      Qt4::QtCore
+      Qt4::QtGui
+      Qt4::QtOpenGL
+      Qt4::QtNetwork
+      )
+else()
+  find_package(Qt5Network REQUIRED)
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5Gui REQUIRED)
+  find_package(Qt5OpenGL REQUIRED)
+  find_package(Qt5Widgets REQUIRED)
+  set(Qt_FOUND TRUE)
+  set(Qt_INCLUDE_DIRS "${Qt5Network_INCLUDE_DIRS};${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
+  set(Qt_LIBRARIES
+      Qt5::Network
+      Qt5::Core
+      Qt5::Gui
+      Qt5::OpenGL
+      Qt5::Widgets
+      )
+  add_definitions(-DWFlags=WindowFlags)
+endif()
 
+### OpenGL ###
+find_package(OpenGL REQUIRED)
+
+### GLEW ###
+find_package(GLEW REQUIRED)
+
+### PkgConfig ###
 find_package(PkgConfig REQUIRED)
 
-find_package(GLU REQUIRED)
-
+### Use PkgConfig to find jsoncpp ###
 pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 catkin_package(
+  LIBRARIES ${PROJECT_NAME} ${PROJECT_NAME}_plugin
   INCLUDE_DIRS include
-  DEPENDS Qt5Core Qt5Gui Qt5OpenGL Qt5Widgets
-  CATKIN_DEPENDS 
-    roscpp 
-    pluginlib 
-    tf 
-    mapviz
-    swri_transform_util
-    swri_math_util
+  DEPENDS Qt
+  CATKIN_DEPENDS
+    ${DEPENDENCIES}
 )
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS})
+# Need to include the current dir to include the results of building Qt UI files
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories(include)
+include_directories(SYSTEM
+  ${catkin_INCLUDE_DIRS}
+  ${GLEW_INCLUDE_DIRS}
+  ${JSONCPP_INCLUDE_DIRS}
+  ${Qt_INCLUDE_DIRS}
+)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-file (GLOB TILE_SRC_FILES 
+set(TILE_SRC_FILES
   src/image_cache.cpp
   src/texture_cache.cpp
   src/bing_source.cpp
   src/tile_source.cpp
   src/wmts_source.cpp
-  src/tile_map_view.cpp)
-qt5_wrap_cpp(TILE_SRC_FILES 
-  include/tile_map/image_cache.h
-  include/tile_map/tile_source.h
-  include/tile_map/wmts_source.h
-  include/tile_map/bing_source.h)
+  src/${PROJECT_NAME}_view.cpp
+)
+set(QT_HEADERS
+  include/${PROJECT_NAME}/image_cache.h
+  include/${PROJECT_NAME}/tile_source.h
+  include/${PROJECT_NAME}/wmts_source.h
+  include/${PROJECT_NAME}/bing_source.h
+)
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  qt4_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
+else()
+  qt5_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
+endif()
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARIES} ${GLU_LIBRARY} ${JSONCPP_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+  ${Qt_LIBRARIES}
+  ${GLU_LIBRARY}
+  ${JSONCPP_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
 
-file (GLOB PLUGIN_SRC_FILES
-  src/tile_map_plugin.cpp)
-file (GLOB PLUGIN_UI_FILES
-  src/tile_map_config.ui)
-qt5_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
-qt5_wrap_cpp(PLUGIN_SRC_FILES include/tile_map/tile_map_plugin.h)
+set(PLUGIN_SRC_FILES
+  src/${PROJECT_NAME}_plugin.cpp)
+set(PLUGIN_UI_FILES
+  src/${PROJECT_NAME}_config.ui)
+
+if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
+  qt4_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
+  qt4_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
+else()
+  qt5_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
+  qt5_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
+endif()
 
 add_library(${PROJECT_NAME}_plugin ${PLUGIN_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
@@ -101,5 +131,5 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin
 )
 
 install(FILES mapviz_plugins.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
