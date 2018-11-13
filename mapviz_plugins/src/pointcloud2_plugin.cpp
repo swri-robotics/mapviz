@@ -65,8 +65,8 @@ namespace mapviz_plugins
       config_widget_(new QWidget()),
       topic_(""),
       alpha_(1.0),
-      min_value_(0.0),
       max_value_(100.0),
+      min_value_(0.0),
       point_size_(3),
       buffer_size_(1),
       new_topic_(true),
@@ -167,6 +167,11 @@ namespace mapviz_plugins
 
   PointCloud2Plugin::~PointCloud2Plugin()
   {
+  }
+
+  void PointCloud2Plugin::ClearHistory()
+  {
+    scans_.clear();
   }
 
   void PointCloud2Plugin::DrawIcon()

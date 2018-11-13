@@ -1,6 +1,6 @@
 <package format="2">
   <name>tile_map</name>
-  <version>0.2.4</version>
+  <version>0.2.6</version>
   <description>
 
      Tile map provides a slippy map style interface for visualizing 
@@ -14,14 +14,13 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>qt_qmake</buildtool_depend>
 
   <build_depend>libjsoncpp-dev</build_depend>
-  <build_depend>libqt5-opengl-dev</build_depend>
-  <depend>libqt5-core</depend>
-  <depend>libqt5-gui</depend>
-  <depend>libqt5-network</depend>
-  <depend>libqt5-opengl</depend>
-  <depend>libqt5-widgets</depend>
+  <build_depend>libqt_dev</build_depend>
+  <build_depend>libqt_opengl_dev</build_depend>
+
+  <depend>libglew-dev</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
@@ -29,7 +28,10 @@
   <depend>swri_transform_util</depend>
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
+
   <exec_depend>libjsoncpp</exec_depend>
+  <exec_depend>libqt_core</exec_depend>
+  <exec_depend>libqt_opengl</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
