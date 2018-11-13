@@ -108,12 +108,12 @@ namespace mapviz
 
   SelectServiceDialog::SelectServiceDialog(const std::string& datatype, QWidget* parent)
       :
+      QDialog(parent),
       allowed_datatype_(datatype),
-      ok_button_(new QPushButton("&Ok")),
       cancel_button_(new QPushButton("&Cancel")),
       list_widget_(new QListWidget()),
       name_filter_(new QLineEdit()),
-      QDialog(parent)
+      ok_button_(new QPushButton("&Ok"))
   {
     QHBoxLayout *filter_box = new QHBoxLayout();
     filter_box->addWidget(new QLabel("Filter:"));
@@ -285,7 +285,7 @@ namespace mapviz
 
     if (qt_selection.isValid()) {
       int row = qt_selection.row();
-      if (row < displayed_services_.size()) {
+      if (row < static_cast<int>(displayed_services_.size())) {
         return displayed_services_[row];
       }
     }

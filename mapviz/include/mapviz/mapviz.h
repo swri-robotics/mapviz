@@ -37,8 +37,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <GL/glew.h>
-
 // QT libraries
 #include <QtGui/QtGui>
 #include <QDialog>
@@ -59,7 +57,6 @@
 #include <pluginlib/class_loader.h>
 #include <tf/transform_listener.h>
 #include <yaml-cpp/yaml.h>
-#include <GL/glut.h>
 #include <std_srvs/Empty.h>
 
 // Auto-generated UI files
@@ -121,6 +118,7 @@ namespace mapviz
     void Hover(double x, double y, double scale);
     void Recenter();
     void HandleProfileTimer();
+    void ClearHistory();
 
   Q_SIGNALS:
     /**
@@ -145,7 +143,7 @@ namespace mapviz
 
     QLabel* xy_pos_label_;
     QLabel* lat_lon_pos_label_;
-    
+
     QWidget* spacer1_;
     QWidget* spacer2_;
     QWidget* spacer3_;
@@ -163,11 +161,11 @@ namespace mapviz
     bool force_480p_;
     bool resizable_;
     QColor background_;
-    
+
     std::string capture_directory_;
     QThread video_thread_;
     VideoWriter* vid_writer_;
-    
+
     bool updating_frames_;
 
     ros::NodeHandle* node_;
@@ -192,7 +190,7 @@ namespace mapviz
         int draw_order = 0);
 
     bool AddDisplay(
-      AddMapvizDisplay::Request& req, 
+      AddMapvizDisplay::Request& req,
       AddMapvizDisplay::Response& resp);
 
     void ClearDisplays();

@@ -38,9 +38,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-
 // QT libraries
 #include <QGLWidget>
 #include <QMouseEvent>
@@ -86,6 +83,14 @@ namespace mapviz
     float ViewScale() const { return view_scale_; }
     float OffsetX() const { return offset_x_; }
     float OffsetY() const { return offset_y_; }
+
+
+    void setCanvasAbleToMove(bool assigning)
+    {
+      canvas_able_to_move_ = assigning;
+    }
+
+    void leaveEvent(QEvent* e);
 
     void SetViewScale(float scale)
     {
@@ -175,7 +180,6 @@ namespace mapviz
     void mouseReleaseEvent(QMouseEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
     void keyPressEvent(QKeyEvent* e);
-    void leaveEvent(QEvent* e);
 
     void Recenter();
     void TransformTarget(QPainter* painter);
@@ -183,6 +187,7 @@ namespace mapviz
 
     void InitializePixelBuffers();
 
+    bool canvas_able_to_move_ = true;
     bool has_pixel_buffers_;
     int32_t pixel_buffer_size_;
     GLuint pixel_buffer_ids_[2];

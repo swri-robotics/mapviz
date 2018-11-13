@@ -36,8 +36,6 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <GL/glew.h>
-
 // QT libraries
 #include <QWidget>
 #include <QGLWidget>
@@ -59,7 +57,6 @@ namespace mapviz
   class MapvizPlugin : public QObject
   {
     Q_OBJECT;
-
   public:
     virtual ~MapvizPlugin() {}
 
@@ -73,6 +70,8 @@ namespace mapviz
     }
 
     virtual void Shutdown() = 0;
+
+    virtual void ClearHistory() {}
 
     /**
      * Draws on the Mapviz canvas using OpenGL commands; this will be called
@@ -369,7 +368,7 @@ namespace mapviz
           ROS_INFO("%s", message.c_str());
       }
       QPalette p(status_label->palette());
-      p.setColor(QPalette::Text, Qt::green);
+      p.setColor(QPalette::Text, Qt::darkGreen);
       status_label->setPalette(p);
       status_label->setText(message.c_str());
   }

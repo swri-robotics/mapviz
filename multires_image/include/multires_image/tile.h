@@ -77,6 +77,7 @@ namespace multires_image
     void Draw();
 
     void Transform(const swri_transform_util::Transform& transform);
+    void Transform(const swri_transform_util::Transform& transform, const swri_transform_util::Transform& offset_tf);
 
   private:
     const std::string   m_path;

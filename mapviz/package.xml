@@ -1,6 +1,6 @@
 <package format="2">
   <name>mapviz</name>
-  <version>0.2.4</version>
+  <version>0.2.6</version>
   <description>
 
      mapviz
@@ -13,19 +13,16 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>pkg-config</buildtool_depend>
-  
-  <build_depend>message_generation</build_depend>
-  <exec_depend>message_runtime</exec_depend>
+  <buildtool_depend>qt_qmake</buildtool_depend>
 
-  <build_depend>libqt5-opengl-dev</build_depend>
+  <build_depend>libqt_dev</build_depend>
+  <build_depend>libqt_opengl_dev</build_depend>
+  <build_depend>message_generation</build_depend>
+
   <depend>cv_bridge</depend>
   <depend>glut</depend>
   <depend>image_transport</depend>
   <depend>libglew-dev</depend>
-  <depend>libqt5-core</depend>
-  <depend>libqt5-gui</depend>
-  <depend>libqt5-opengl</depend>
-  <depend>libqt5-widgets</depend>
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
   <depend>marti_common_msgs</depend>
@@ -38,6 +35,10 @@
   <depend>swri_transform_util</depend>
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
+
+  <exec_depend>libqt_core</exec_depend>
+  <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
