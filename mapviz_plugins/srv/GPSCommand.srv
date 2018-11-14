@@ -1,5 +1,5 @@
-geometry_msgs/Point point
+sensor_msgs/NavSatFix location
 string command
 ---
 bool success
-string message
+string[] message

@@ -184,7 +184,6 @@ namespace mapviz
 
     void InitializePixelBuffers();
 
-    std::string service_name;
     bool has_pixel_buffers_;
     int32_t pixel_buffer_size_;
     GLuint pixel_buffer_ids_[2];

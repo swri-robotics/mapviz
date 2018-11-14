@@ -4,7 +4,6 @@ project(mapviz)
 find_package(catkin REQUIRED COMPONENTS
   image_transport
   marti_common_msgs
-  message_generation
   rosapi
   roscpp
   #rqt_gui

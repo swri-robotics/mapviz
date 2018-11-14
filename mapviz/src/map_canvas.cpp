@@ -39,7 +39,6 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <iostream>
 
 // C++ standard libraries
 #include <cmath>
@@ -326,13 +325,13 @@ void MapCanvas::Zoom(float factor)
 void MapCanvas::mousePressEvent(QMouseEvent* e)
 {
 
-    mouse_x_ = e->x();
-    mouse_y_ = e->y();
-    mouse_previous_y_ = mouse_y_;
-    drag_x_ = 0;
-    drag_y_ = 0;
-    mouse_pressed_ = true;
-    mouse_button_ = e->button();
+  mouse_x_ = e->x();
+  mouse_y_ = e->y();
+  mouse_previous_y_ = mouse_y_;
+  drag_x_ = 0;
+  drag_y_ = 0;
+  mouse_pressed_ = true;
+  mouse_button_ = e->button();
 
 }
 
@@ -624,29 +623,33 @@ double MapCanvas::frameRate() const
 }
 
 std::string MapCanvas::showCustomContextMenu(const QPoint &pos,std::vector<std::string> result){
-   QMenu contextMenu(this);
-   std::vector<QAction *> actions;
+  QMenu contextMenu(this);
+  std::vector<QAction *> actions;
 
-   for(auto service : result){
-                    QAction * act= new QAction(service.c_str(),this);
-                    actions.push_back(act);
-   }
-   for(auto action: actions){       
-           contextMenu.addAction(action);
-       }
+  for(auto service : result)
+  {
+    QAction * act= new QAction(service.c_str(),this);
+    actions.push_back(act);
+  }
+  for(auto action: actions)
+  {
+    contextMenu.addAction(action);
+  }
 
-   QAction* selectedItem=contextMenu.exec(pos);
-   for(auto action: actions){
-           action->deleteLater();
-       }
+  QAction* selectedItem=contextMenu.exec(pos);
+  for(auto action: actions)
+  {
+    action->deleteLater();
+  }
 
-   if (selectedItem){
-       ROS_INFO("make call to %s",selectedItem->text().toStdString().c_str());
-       return selectedItem->text().toStdString().c_str();
-   }else{
-    ROS_ERROR("Service:''  doesn't exist");
+  if (selectedItem)
+  {
+    ROS_INFO("make call to %s",selectedItem->text().toStdString().c_str());
+    return selectedItem->text().toStdString().c_str();
+  }else{
+    ROS_ERROR("Please choose a service from the context menu by clicking on a displayed item");
     return "";
-   }
+  }
 
 }
 
