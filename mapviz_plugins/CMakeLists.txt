@@ -12,6 +12,7 @@ set(DEPENDENCIES
   marti_visualization_msgs
   move_base_msgs
   nav_msgs
+  map_msgs
   pluginlib 
   roscpp 
   sensor_msgs
@@ -97,6 +98,7 @@ set(UI_FILES
     ui/marker_config.ui
     ui/move_base_config.ui
     ui/navsat_config.ui
+    ui/occupancy_grid_config.ui
     ui/odometry_config.ui
     ui/path_config.ui
     ui/plan_route_config.ui
@@ -122,6 +124,7 @@ set(SRC_FILES
     src/marker_plugin.cpp 
     src/move_base_plugin.cpp
     src/navsat_plugin.cpp
+    src/occupancy_grid_plugin.cpp
     src/odometry_plugin.cpp 
     src/path_plugin.cpp
     src/placeable_window_proxy.cpp
@@ -149,6 +152,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/marker_plugin.h
     include/${PROJECT_NAME}/move_base_plugin.h
     include/${PROJECT_NAME}/navsat_plugin.h
+    include/${PROJECT_NAME}/occupancy_grid_plugin.h
     include/${PROJECT_NAME}/odometry_plugin.h
     include/${PROJECT_NAME}/path_plugin.h
     include/${PROJECT_NAME}/path_plugin.h

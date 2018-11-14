@@ -57,6 +57,10 @@ namespace mapviz_plugins
         static_arrow_sizes_(false),
         got_begin_(false)
   {
+    QObject::connect(this,
+                     SIGNAL(TargetFrameChanged(const std::string&)),
+                     this,
+                     SLOT(ResetTransformedPoints()));
   }
 
   void PointDrawingPlugin::ClearHistory()
@@ -107,6 +111,7 @@ namespace mapviz_plugins
   void PointDrawingPlugin::SetArrowSize(int arrowSize)
   {
     arrow_size_ = arrowSize;
+    ResetTransformedPoints();
   }
 
   void PointDrawingPlugin::SetDrawStyle(QString style)
@@ -123,18 +128,98 @@ namespace mapviz_plugins
     {
       draw_style_ = ARROWS;
     }
-
+    ResetTransformedPoints();
     DrawIcon();
+  }
+
+  void PointDrawingPlugin::SetDrawStyle(PointDrawingPlugin::DrawStyle style)
+  {
+     draw_style_ = style;
+     DrawIcon();
   }
 
   void PointDrawingPlugin::SetStaticArrowSizes(bool isChecked)
   {
     static_arrow_sizes_ = isChecked;
+    ResetTransformedPoints();
   }
 
   void PointDrawingPlugin::PositionToleranceChanged(double value)
   {
     position_tolerance_ = value;
+  }
+
+  void PointDrawingPlugin::LapToggled(bool checked)
+  {
+    lap_checked_ = checked;
+  }
+
+  void PointDrawingPlugin::CovariancedToggled(bool checked)
+  {
+    covariance_checked_ = checked;
+  }
+
+  void PointDrawingPlugin::ResetTransformedPoints()
+  {
+    for (std::deque<StampedPoint>& lap: laps_)
+    {
+      for (StampedPoint& point: lap)
+      {
+        point.transformed = false;
+      }
+    }
+    for (StampedPoint& point: points_)
+    {
+      point.transformed = false;
+    }
+    Transform();
+  }
+
+  void PointDrawingPlugin::pushPoint(PointDrawingPlugin::StampedPoint stamped_point)
+  {
+    cur_point_ = stamped_point;
+
+    if (points_.empty() ||
+        (stamped_point.point.distance(points_.back().point)) >=
+            (position_tolerance_))
+    {
+      points_.push_back(stamped_point);
+    }
+
+    if (buffer_size_ > 0)
+    {
+      while (static_cast<int>(points_.size()) >= buffer_size_)
+      {
+        points_.pop_front();
+      }
+    }
+  }
+
+  void PointDrawingPlugin::ClearPoints()
+  {
+    points_.clear();
+  }
+
+  double PointDrawingPlugin::bufferSize() const
+  {
+    if (!lap_checked_)
+    {
+      return buffer_size_;
+    }
+    else
+    {
+      return buffer_holder_;
+    }
+  }
+
+  double PointDrawingPlugin::positionTolerance() const
+  {
+    return position_tolerance_;
+  }
+
+  const std::deque<PointDrawingPlugin::StampedPoint> &PointDrawingPlugin::points() const
+  {
+    return points_;
   }
 
   void PointDrawingPlugin::BufferSizeChanged(int value)
@@ -143,7 +228,7 @@ namespace mapviz_plugins
 
     if (buffer_size_ > 0)
     {
-      while (static_cast<int>(points_.size()) > buffer_size_)
+      while (static_cast<int>(points_.size()) >= buffer_size_)
       {
         points_.pop_front();
       }
@@ -152,6 +237,10 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawPoints(double scale)
   {
+    if( scale_ != scale && draw_style_ == ARROWS && static_arrow_sizes_)
+    {
+      ResetTransformedPoints();
+    }
     scale_ = scale;
     bool transformed = true;
     if (lap_checked_)
@@ -220,7 +309,7 @@ namespace mapviz_plugins
   {
     bool success = cur_point_.transformed;
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
-    if (draw_style_ == LINES)
+    if (draw_style_ == LINES && points_.size()>0)
     {
       glLineWidth(3);
       glBegin(GL_LINE_STRIP);
@@ -231,13 +320,12 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-    std::list<StampedPoint>::iterator it = points_.begin();
-    for (; it != points_.end(); ++it)
+    for (const StampedPoint& point: points_)
     {
-      success &= it->transformed;
-      if (it->transformed)
+      success &= point.transformed;
+      if (point.transformed)
       {
-        glVertex2d(it->transformed_point.getX(), it->transformed_point.getY());
+        glVertex2d(point.transformed_point.getX(), point.transformed_point.getY());
       }
     }
 
@@ -279,13 +367,12 @@ namespace mapviz_plugins
   bool PointDrawingPlugin::DrawArrows()
   {
     bool success = true;
-    glLineWidth(2);
+    glLineWidth(4);
     glBegin(GL_LINES);
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
-    std::list<StampedPoint>::iterator it = points_.begin();
-    for (; it != points_.end(); ++it)
+    for (const StampedPoint& point: points_)
     {
-      success &= DrawArrow(*it);
+      success &= DrawArrow(point);
     }
 
     success &= DrawArrow(cur_point_);
@@ -306,32 +393,40 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::TransformPoint(StampedPoint& point)
   {
+    if ( point.transformed )
+    {
+      return true;
+    }
+
     swri_transform_util::Transform transform;
-    if (GetTransform(point.source_frame, point.stamp, transform))
+    if( GetTransform(point.source_frame, point.stamp, transform))
     {
       point.transformed_point = transform * point.point;
 
-      tf::Transform orientation(tf::Transform(transform.GetOrientation()) *
-                                point.orientation);
-
-      double size = static_cast<double>(arrow_size_);
-      if (static_arrow_sizes_)
+      if (draw_style_ == ARROWS)
       {
-        size *= scale_;
-      }
-      else
-      {
-        size /= 10.0;
-      }
-      double arrow_width = size / 5.0;
-      double head_length = size * 0.75;
+        tf::Transform orientation(tf::Transform(transform.GetOrientation()) *
+                                  point.orientation);
 
-      point.transformed_arrow_point =
-          point.transformed_point + orientation * tf::Point(size, 0.0, 0.0);
-      point.transformed_arrow_left =
-          point.transformed_point + orientation * tf::Point(head_length, -arrow_width, 0.0);
-      point.transformed_arrow_right =
-          point.transformed_point + orientation * tf::Point(head_length, arrow_width, 0.0);
+        double size = static_cast<double>(arrow_size_);
+        if (static_arrow_sizes_)
+        {
+          size *= scale_;
+        }
+        else
+        {
+          size /= 10.0;
+        }
+        double arrow_width = size / 5.0;
+        double head_length = size * 0.75;
+
+        point.transformed_arrow_point =
+            point.transformed_point + orientation * tf::Point(size, 0.0, 0.0);
+        point.transformed_arrow_left =
+            point.transformed_point + orientation * tf::Point(head_length, -arrow_width, 0.0);
+        point.transformed_arrow_right =
+            point.transformed_point + orientation * tf::Point(head_length, arrow_width, 0.0);
+      }
 
       if (covariance_checked_)
       {
@@ -340,11 +435,9 @@ namespace mapviz_plugins
           point.transformed_cov_points[i] = transform * point.cov_points[i];
         }
       }
-
       point.transformed = true;
       return true;
     }
-
     point.transformed = false;
     return false;
   }
@@ -353,21 +446,19 @@ namespace mapviz_plugins
   {
     bool transformed = false;
 
-    std::list<StampedPoint>::iterator points_it = points_.begin();
-    for (; points_it != points_.end(); ++points_it)
+    for (StampedPoint& point: points_)
     {
-      transformed = transformed | TransformPoint(*points_it);
+      transformed = transformed | TransformPoint(point);
     }
 
     transformed = transformed | TransformPoint(cur_point_);
     if (laps_.size() > 0)
     {
-      for (size_t i = 0; i < laps_.size(); i++)
+      for (std::deque<StampedPoint>& lap: laps_)
       {
-        std::list<StampedPoint>::iterator lap_it = laps_[i].begin();
-        for (; lap_it != laps_[i].end(); ++lap_it)
+        for (StampedPoint& point: lap)
         {
-          transformed = transformed | TransformPoint(*lap_it);
+          transformed = transformed | TransformPoint(point);
         }
       }
     }
@@ -384,33 +475,30 @@ namespace mapviz_plugins
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(3);
     QColor base_color = color_;
-    if (laps_.size() != 0)
-    {
-      for (size_t i = 0; i < laps_.size(); i++)
-      {
-        UpdateColor(base_color, static_cast<int>(i));
-        if (draw_style_ == LINES)
-        {
-          glLineWidth(3);
-          glBegin(GL_LINE_STRIP);
-        }
-        else
-        {
-          glPointSize(6);
-          glBegin(GL_POINTS);
-        }
 
-        std::list<StampedPoint>::iterator it = laps_[i].begin();
-        for (; it != laps_[i].end(); it++)
-        {
-          if (it->transformed)
-          {
-            glVertex2d(it->transformed_point.getX(),
-                       it->transformed_point.getY());
-          }
-        }
-        glEnd();
+    for (size_t i = 0; i < laps_.size(); i++)
+    {
+      UpdateColor(base_color, static_cast<int>(i));
+      if (draw_style_ == LINES)
+      {
+        glLineWidth(3);
+        glBegin(GL_LINE_STRIP);
       }
+      else
+      {
+        glPointSize(6);
+        glBegin(GL_POINTS);
+      }
+
+      for (const StampedPoint& point: laps_[i])
+      {
+        if (point.transformed)
+        {
+          glVertex2d(point.transformed_point.getX(),
+                     point.transformed_point.getY());
+        }
+      }
+      glEnd();
     }
 
     if (draw_style_ == LINES)
@@ -428,14 +516,13 @@ namespace mapviz_plugins
 
     if (points_.size() > 0)
     {
-      std::list<StampedPoint>::iterator it = points_.begin();
-      for (; it != points_.end(); ++it)
+      for (const StampedPoint& point: points_)
       {
-        transformed &= it->transformed;
-        if (it->transformed)
+        transformed &= point.transformed;
+        if (point.transformed)
         {
-          glVertex2d(it->transformed_point.getX(),
-                     it->transformed_point.getY());
+          glVertex2d(point.transformed_point.getX(),
+                     point.transformed_point.getY());
         }
       }
     }
@@ -458,6 +545,29 @@ namespace mapviz_plugins
                 0.5);
   }
 
+  void PointDrawingPlugin::DrawCovariance()
+  {
+    glLineWidth(4);
+
+    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
+
+    if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
+    {
+      glBegin(GL_LINE_STRIP);
+
+      for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
+      {
+        glVertex2d(cur_point_.transformed_cov_points[i].getX(),
+                   cur_point_.transformed_cov_points[i].getY());
+      }
+
+      glVertex2d(cur_point_.transformed_cov_points.front().getX(),
+                 cur_point_.transformed_cov_points.front().getY());
+
+      glEnd();
+    }
+  }
+
   bool PointDrawingPlugin::DrawLapsArrows()
   {
     bool success = laps_.size() != 0 && points_.size() != 0;
@@ -469,11 +579,10 @@ namespace mapviz_plugins
       for (size_t i = 0; i < laps_.size(); i++)
       {
         UpdateColor(base_color, static_cast<int>(i));
-        std::list<StampedPoint>::iterator it = laps_[i].begin();
-        for (; it != laps_[i].end(); ++it)
+        for (const StampedPoint& point: laps_[i])
         {
           glBegin(GL_LINE_STRIP);
-          success &= DrawArrow(*it);
+          success &= DrawArrow(point);
           glEnd();
         }
       }
@@ -489,11 +598,10 @@ namespace mapviz_plugins
 
     if (points_.size() > 0)
     {
-      std::list<StampedPoint>::iterator it = points_.begin();
-      for (; it != points_.end(); ++it)
+      for (const StampedPoint& point: points_)
       {
         glBegin(GL_LINE_STRIP);
-        success &= DrawArrow(*it);
+        success &= DrawArrow(point);
         glEnd();
       }
     }
