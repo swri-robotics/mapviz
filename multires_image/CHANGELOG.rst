@@ -2,6 +2,11 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge all -devel branches into a single master branch
+* Contributors: P. J. Reed
+
 0.2.6 (2018-07-31)
 ------------------
 

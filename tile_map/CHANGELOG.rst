@@ -2,6 +2,11 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge all -devel branches into a single master branch
+* Contributors: P. J. Reed
+
 0.2.6 (2018-07-31)
 ------------------
 
