@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2018-11-16)
+------------------
 * Merge all -devel branches into a single master branch
 * Add function to lock canvas movement (`#596 <https://github.com/swri-robotics/mapviz/issues/596>`_)
 * Contributors: P. J. Reed

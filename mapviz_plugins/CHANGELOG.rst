@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2018-11-16)
+------------------
 * Merge all -devel branches into a single master branch
 * Don't transform laser scans twice (`#544 <https://github.com/swri-robotics/mapviz/issues/544>`_)
 * Improving point_drawing plugins and bug fix of tf_plugin (`#557 <https://github.com/swri-robotics/mapviz/issues/557>`_)
