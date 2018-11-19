@@ -1,7 +1,36 @@
 // *****************************************************************************
+//
+// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//     * Neither the name of Southwest Research Institute® (SwRI®) nor the
+//       names of its contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// *****************************************************************************
+
+// *****************************************************************************
 //  handling right click event, calls service which will display a
 //  number of services that are available on that specific location
-//  
+//
 // *****************************************************************************
 #include <mapviz_plugins/right_click_services_plugin.h>
 #include <geometry_msgs/PointStamped.h>
@@ -10,7 +39,6 @@
 #include <boost/shared_ptr.hpp>
 #include <mapviz/map_canvas.h>
 #include <Qt>
-#include <mapviz_plugins/AvailableServices.h>
 #include <mapviz_plugins/GPSCommand.h>
 #include <std_srvs/Trigger.h>
 #include <iostream>
@@ -34,11 +62,13 @@ namespace mapviz_plugins
     connect(ui_.topic, SIGNAL(textEdited(const QString&)),
             this, SLOT(topicChanged(const QString&)));
 
-
+    connect(ui_.availableservicestopic, SIGNAL(textEdited(const QString&)), this, SLOT(availableServiceTopicChanged(const QString&)));
+    connect(ui_.gpscommandtopic, SIGNAL(textEdited(const QString&)), this, SLOT(gpsCommandTopicChanged(const QString&)));
 
 
     frame_timer_.start(1000);
     connect(&frame_timer_, SIGNAL(timeout()), this, SLOT(updateFrames()));
+
   }
 
   RightClickServicesPlugin::~RightClickServicesPlugin()
@@ -58,6 +88,20 @@ namespace mapviz_plugins
 
 
     return true;
+  }
+  void RightClickServicesPlugin::availableServiceTopicChanged(const QString& topic)
+  {
+    std::stringstream ss;
+    RightClickServicesPlugin::available_service_topic_=topic.toStdString().c_str();
+    ss << "switched available service topic to: " << topic.toStdString().c_str();
+    PrintInfo(ss.str());
+  }
+  void RightClickServicesPlugin::gpsCommandTopicChanged(const QString& topic)
+  {
+    std::stringstream ss;
+    RightClickServicesPlugin::gps_command_execute_topic_=topic.toStdString().c_str();
+    ss << "switched gps command service topic to: " << topic.toStdString().c_str();
+    PrintInfo(ss.str());
   }
 
   void RightClickServicesPlugin::Draw(double x, double y, double scale)
@@ -79,12 +123,27 @@ namespace mapviz_plugins
       node["output_frame"] >> tmp;
       ui_.outputframe->addItem(QString(tmp.c_str()));
     }
+    if (swri_yaml_util::FindValue(node, "gpscommandtopic"))
+    {
+      node["gpscommandtopic"] >> tmp;
+      ui_.gpscommandtopic->setText(QString(tmp.c_str()));
+      gpsCommandTopicChanged(ui_.gpscommandtopic->text());
+    }
+    if (swri_yaml_util::FindValue(node, "availableservicestopic"))
+    {
+      node["availableservicestopic"] >> tmp;
+      ui_.availableservicestopic->setText(QString(tmp.c_str()));
+      availableServiceTopicChanged(ui_.availableservicestopic->text());
+    }
+
   }
 
   void RightClickServicesPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "output_frame" << YAML::Value << ui_.outputframe->currentText().toStdString();
+    emitter << YAML::Key << "availableservicestopic" << YAML::Value << ui_.availableservicestopic->text().toStdString();
+    emitter << YAML::Key << "gpscommandtopic" << YAML::Value << ui_.gpscommandtopic->text().toStdString();
   }
 
   QWidget* RightClickServicesPlugin::GetConfigWidget(QWidget* parent)
@@ -230,42 +289,45 @@ namespace mapviz_plugins
   }
   void RightClickServicesPlugin::showContextMenu(const QPoint& pos,boost::shared_ptr<geometry_msgs::PointStamped> stamped)
   {
-    // retreive Available Services,Commands
-    ros::NodeHandle n;
-    ros::service::waitForService("/mapviz/available_commands", 10);
-    ros::ServiceClient client = n.serviceClient<mapviz_plugins::AvailableServices>("/mapviz/available_commands");
-    mapviz_plugins::AvailableServices srv;
-    std::vector<std::string> service_name_list;
-    if(client.exists())
-    {
-      if (client.call(srv))
+      // retreive Available Services,Commands
+      ros::NodeHandle n;
+      ros::service::waitForService(RightClickServicesPlugin::available_service_topic_,10);
+      ros::ServiceClient client = n.serviceClient<mapviz_plugins::GPSCommand>(RightClickServicesPlugin::available_service_topic_);
+      mapviz_plugins::GPSCommand srv;
+      srv.request.command = "";
+      srv.request.location.longitude =stamped->point.x;
+      srv.request.location.latitude =stamped->point.y;
+      std::vector<std::string> service_name_list;
+      if(client.exists())
       {
-        service_name_list= srv.response.message;
-      }
-    }
-
-    //call service to execute chosen command
-    ros::service::waitForService("/mapviz/gps_command_execute",10);
-    ros::ServiceClient command_client = n.serviceClient<mapviz_plugins::GPSCommand>("/mapviz/gps_command_execute");
-
-    mapviz_plugins::GPSCommand  gps_command;
-    gps_command.request.command = canvas_->showCustomContextMenu(canvas_->mapToGlobal(pos),service_name_list);
-    gps_command.request.point.x =stamped->point.x;
-    gps_command.request.point.y =stamped->point.y;
-    if (gps_command.request.command.length()<=0)
-    {
-      PrintInfo("Empty Service was not called");
-    }
-    else
-    {
-      if (command_client.exists())
-      {
-        if(command_client.call(gps_command))
-        {
-          std::stringstream ss;
-          if(gps_command.response.success)
+          if (client.call(srv))
           {
-            ss << "Calling " << gps_command.request.command << " was successful " << gps_command.response.message;
+          service_name_list= srv.response.message;
+          }
+      }
+      //call service to execute chosen command
+      ros::service::waitForService(RightClickServicesPlugin::gps_command_execute_topic_,10);
+      ros::ServiceClient command_client = n.serviceClient<mapviz_plugins::GPSCommand>(RightClickServicesPlugin::gps_command_execute_topic_);
+
+      mapviz_plugins::GPSCommand  gps_command;
+      gps_command.request.command = canvas_->showCustomContextMenu(canvas_->mapToGlobal(pos),service_name_list);
+      gps_command.request.location.longitude =stamped->point.x;
+      gps_command.request.location.latitude =stamped->point.y;
+      if (gps_command.request.command.length()<=0){
+        PrintInfo("Empty Service was not called");
+      }else{
+          if (command_client.exists())
+          {
+              if(command_client.call(gps_command))
+              {
+                  std::stringstream ss;
+                  if(gps_command.response.success)
+                  {
+                     ss << "Calling " << gps_command.request.command << " was successful " << gps_command.response.message[0] ;
+                  }else{
+                      ss << "Calling " << gps_command.request.command << " was unsuccessful "<< gps_command.response.message[0];
+                  }
+                  PrintInfo(ss.str());
           }
           else
           {
@@ -276,8 +338,3 @@ namespace mapviz_plugins
       }
     }
   }
-
-}
-
-
-

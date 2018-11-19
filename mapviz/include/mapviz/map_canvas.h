@@ -191,7 +191,6 @@ namespace mapviz
 
     void InitializePixelBuffers();
 
-    std::string service_name;
     bool canvas_able_to_move_ = true;
     bool has_pixel_buffers_;
     int32_t pixel_buffer_size_;

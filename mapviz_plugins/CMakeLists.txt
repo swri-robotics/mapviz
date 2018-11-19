@@ -26,19 +26,35 @@ set(DEPENDENCIES
   visualization_msgs
 )
 
-find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES}
-            std_msgs
-            geometry_msgs
-            message_generation
-            )
+find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
 
-add_message_files(DIRECTORY msg
-                  FILES
-                  Location.msg
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+set(QT_LIBRARIES
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Gui_LIBRARIES}
+  ${Qt5OpenGL_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
 )
+include_directories(
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Gui_INCLUDE_DIRS}
+  ${Qt5OpenGL_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+add_definitions(
+  ${Qt5Core_DEFINITIONS}
+  ${Qt5Gui_DEFINITIONS}
+  ${Qt5OpenGL_DEFINITIONS}
+  ${Qt5Widgets_DEFINITIONS}
+)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+
 
 add_service_files(FILES
-  AvailableServices.srv
   GPSCommand.srv
 )
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
@@ -79,6 +95,9 @@ endif()
 
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
+generate_messages(DEPENDENCIES std_msgs sensor_msgs)
+find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
+find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
 
 catkin_package(
