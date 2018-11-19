@@ -25,7 +25,6 @@ set(DEPENDENCIES
   swri_yaml_util
   tf
   visualization_msgs
-  std_msgs
 )
 
 find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
