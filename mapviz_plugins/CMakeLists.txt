@@ -12,6 +12,7 @@ set(DEPENDENCIES
   marti_visualization_msgs
   move_base_msgs
   nav_msgs
+  map_msgs
   pluginlib
   roscpp
   sensor_msgs
@@ -58,7 +59,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 add_service_files(FILES
   GPSCommand.srv
 )
-generate_messages(DEPENDENCIES sensor_msgs)
+generate_messages(DEPENDENCIES sensor_msgs std_msgs)
 ### QT ###
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
   find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL)
@@ -95,7 +96,7 @@ endif()
 
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
-
+generate_messages(DEPENDENCIES sensor_msgs)
 find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
 find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
@@ -157,6 +158,7 @@ set(SRC_FILES
     src/marker_plugin.cpp
     src/move_base_plugin.cpp
     src/navsat_plugin.cpp
+    src/occupancy_grid_plugin.cpp
     src/odometry_plugin.cpp
     src/path_plugin.cpp
     src/placeable_window_proxy.cpp
