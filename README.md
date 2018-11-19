@@ -106,7 +106,7 @@ Overlays a [sensor_msgs::Image](http://docs.ros.org/api/sensor_msgs/html/msg/Ima
 * Height: Display height
 * Units: (pixels | percent of window)
 
-### LaserScan 
+### LaserScan
 
 Projects a [sensor_msgs::LaserScan](http://docs.ros.org/api/sensor_msgs/html/msg/LaserScan.html) message into the scene.
 
@@ -135,7 +135,7 @@ This plugin allows the user to send goals to [move_base](wiki.ros.org/move_base)
 * Abort: stop the execution of the current goal.
 
 ### Multi-res Image
-Projects a geo-referenced multi-resolution image tile map into the scene.  The concept is the same as the Google Maps style pan/zoom satellite imagery. 
+Projects a geo-referenced multi-resolution image tile map into the scene.  The concept is the same as the Google Maps style pan/zoom satellite imagery.
 
 ![](https://github.com/swri-robotics/mapviz/wiki/multires2.png)
 
@@ -148,11 +148,11 @@ A custom format is currently used to store the map tiles and geo-reference. The 
     image_width: 29184     # The full pixel width of the map
     image_height: 15872    # The full pixel height of the map
     tile_size: 512         # The pixel size of the individual tiles
-    
+
     datum: "wgs84"         # Datum is currently ignored
     projection: "utm"      # (utm|wgs84)
- 
-                           # At least 2 tie points are required for 
+
+                           # At least 2 tie points are required for
                            # scale, and 3 for orientation.
     tiepoints:             #   [pixel x, pixel y, geo x, geo y]
      - point: [4799, 209, 535674.5, 3258382.5]
@@ -162,7 +162,7 @@ A custom format is currently used to store the map tiles and geo-reference. The 
 
 The map tiles are stored in directories for each resolution starting with layer0, the full resolution.  In subsequent layers the resolution is halved until the entire map fits within a single tile.  
 
-Tiles are named using the following format: 
+Tiles are named using the following format:
 
     tile%05dx%05d.png % (row, column)
 
@@ -203,6 +203,15 @@ Publishes a [geometry_msgs::PointStamped](http://docs.ros.org/api/geometry_msgs/
 **Parameters**
  * Topic: The topic to publish the point to
  * Frame: The target frame to transform the point to before publishing it
+
+### Right Click Services
+
+Shows a Custom Context Menu with available services at this sepcific gps location.
+**Parameters**
+ * Topic: The topic to publish gps point to
+ * Frame: The target frame to transform the point to before publishing it
+ * available services topic: Service topic for Mapviz to retreive available services From
+ * gps command topic: Service topic for Mapviz to request the chosen gps command to be executed
 
 ### Robot Image
 
