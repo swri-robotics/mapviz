@@ -39,7 +39,7 @@
 
 // Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.h>
-
+  
 #include <QGLWidget>
 #include <QTimer>
 #include <mapviz/map_canvas.h>
