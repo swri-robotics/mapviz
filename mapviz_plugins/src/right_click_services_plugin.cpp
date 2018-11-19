@@ -308,19 +308,21 @@ namespace mapviz_plugins
       //call service to execute chosen command
       ros::service::waitForService(RightClickServicesPlugin::gps_command_execute_topic_,10);
       ros::ServiceClient command_client = n.serviceClient<mapviz_plugins::GPSCommand>(RightClickServicesPlugin::gps_command_execute_topic_);
-
+      std::stringstream ss;
       mapviz_plugins::GPSCommand  gps_command;
       gps_command.request.command = canvas_->showCustomContextMenu(canvas_->mapToGlobal(pos),service_name_list);
       gps_command.request.location.longitude =stamped->point.x;
       gps_command.request.location.latitude =stamped->point.y;
-      if (gps_command.request.command.length()<=0){
+      if (gps_command.request.command.length()<=0)
+      {
         PrintInfo("Empty Service was not called");
-      }else{
+      }
+      else{
           if (command_client.exists())
           {
               if(command_client.call(gps_command))
               {
-                  std::stringstream ss;
+
                   if(gps_command.response.success)
                   {
                      ss << "Calling " << gps_command.request.command << " was successful " << gps_command.response.message[0] ;
@@ -328,10 +330,10 @@ namespace mapviz_plugins
                       ss << "Calling " << gps_command.request.command << " was unsuccessful "<< gps_command.response.message[0];
                   }
                   PrintInfo(ss.str());
-          }
+            }
           else
           {
-            ss << "Calling " << gps_command.request.command << " was unsuccessful "<< gps_command.response.message;
+            ss << "Calling " << gps_command.request.command  << " was unsuccessful "<< gps_command.response.message[0];
           }
           PrintInfo(ss.str());
         }
