@@ -13,17 +13,17 @@ set(DEPENDENCIES
   move_base_msgs
   nav_msgs
   map_msgs
-  pluginlib
-  roscpp
+  pluginlib 
+  roscpp 
   sensor_msgs
-  std_msgs
+  std_msgs 
   stereo_msgs
   swri_image_util
   swri_math_util
   swri_route_util
   swri_transform_util
   swri_yaml_util
-  tf
+  tf 
   visualization_msgs
 )
 
@@ -95,9 +95,6 @@ endif()
 
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
-generate_messages(DEPENDENCIES sensor_msgs)
-find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
-find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
 
 catkin_package(
@@ -131,6 +128,7 @@ set(UI_FILES
     ui/marker_config.ui
     ui/move_base_config.ui
     ui/navsat_config.ui
+    ui/occupancy_grid_config.ui
     ui/odometry_config.ui
     ui/path_config.ui
     ui/plan_route_config.ui
@@ -145,7 +143,7 @@ set(UI_FILES
 )
 
 set(SRC_FILES
-    src/attitude_indicator_plugin.cpp
+    src/attitude_indicator_plugin.cpp 
     src/canvas_click_filter.cpp
     src/coordinate_picker_plugin.cpp
     src/disparity_plugin.cpp
@@ -154,11 +152,11 @@ set(SRC_FILES
     src/grid_plugin.cpp
     src/image_plugin.cpp
     src/laserscan_plugin.cpp
-    src/marker_plugin.cpp
+    src/marker_plugin.cpp 
     src/move_base_plugin.cpp
     src/navsat_plugin.cpp
     src/occupancy_grid_plugin.cpp
-    src/odometry_plugin.cpp
+    src/odometry_plugin.cpp 
     src/path_plugin.cpp
     src/placeable_window_proxy.cpp
     src/plan_route_plugin.cpp
@@ -186,6 +184,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/marker_plugin.h
     include/${PROJECT_NAME}/move_base_plugin.h
     include/${PROJECT_NAME}/navsat_plugin.h
+    include/${PROJECT_NAME}/occupancy_grid_plugin.h
     include/${PROJECT_NAME}/odometry_plugin.h
     include/${PROJECT_NAME}/path_plugin.h
     include/${PROJECT_NAME}/path_plugin.h
@@ -201,7 +200,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/textured_marker_plugin.h
     include/${PROJECT_NAME}/tf_frame_plugin.h
 )
-
+    
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
   qt4_wrap_ui(UI_SRC_FILES ${UI_FILES})
   qt4_wrap_cpp(MOC_FILES ${HEADER_FILES})
@@ -242,3 +241,4 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES ${PROJECT_NAME}.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+

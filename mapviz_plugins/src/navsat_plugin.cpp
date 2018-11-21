@@ -72,6 +72,8 @@ namespace mapviz_plugins
                      SLOT(SetDrawStyle(QString)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
                      SLOT(SetColor(const QColor&)));
+    QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
+                     SLOT(ClearPoints()));
   }
 
   NavSatPlugin::~NavSatPlugin()
@@ -96,7 +98,7 @@ namespace mapviz_plugins
     if (topic != topic_)
     {
       initialized_ = false;
-      points_.clear();
+      ClearPoints();
       has_message_ = false;
       PrintWarning("No messages received.");
 
@@ -132,27 +134,10 @@ namespace mapviz_plugins
     local_xy_util_.ToLocalXy(navsat->latitude, navsat->longitude, x, y);
 
     stamped_point.point = tf::Point(x, y, navsat->altitude);
-
     stamped_point.orientation = tf::createQuaternionFromYaw(0.0);
-
     stamped_point.source_frame = local_xy_util_.Frame();
 
-    if (points_.empty() ||
-        stamped_point.point.distance(points_.back().point) >=
-            position_tolerance_)
-    {
-      points_.push_back(stamped_point);
-    }
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) > buffer_size_)
-      {
-        points_.pop_front();
-      }
-    }
-
-    cur_point_ = stamped_point;
+    pushPoint( std::move(stamped_point ) );
   }
 
   void NavSatPlugin::PrintError(const std::string& message)
@@ -205,8 +190,9 @@ namespace mapviz_plugins
     {
       std::string color;
       node["color"] >> color;
-      SetColor(QColor(color.c_str()));
-      ui_.color->setColor(color_);
+      QColor qcolor(color.c_str());
+      SetColor(qcolor);
+      ui_.color->setColor(qcolor);
     }
 
     if (node["draw_style"])
@@ -216,26 +202,30 @@ namespace mapviz_plugins
 
       if (draw_style == "lines")
       {
-        draw_style_ = LINES;
         ui_.drawstyle->setCurrentIndex(0);
+        SetDrawStyle( LINES );
       }
       else if (draw_style == "points")
       {
-        draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
+        SetDrawStyle( POINTS );
       }
     }
 
     if (node["position_tolerance"])
     {
-      node["position_tolerance"] >> position_tolerance_;
-      ui_.positiontolerance->setValue(position_tolerance_);
+      double position_tolerance;
+      node["position_tolerance"] >> position_tolerance;
+      ui_.positiontolerance->setValue(position_tolerance);
+      PositionToleranceChanged(position_tolerance);
     }
 
     if (node["buffer_size"])
     {
-      node["buffer_size"] >> buffer_size_;
-      ui_.buffersize->setValue(buffer_size_);
+      double buffer_size;
+      node["buffer_size"] >> buffer_size;
+      ui_.buffersize->setValue(buffer_size);
+      BufferSizeChanged(buffer_size);
     }
 
     TopicEdited();
@@ -253,8 +243,8 @@ namespace mapviz_plugins
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
     emitter << YAML::Key << "position_tolerance" <<
-               YAML::Value << position_tolerance_;
+               YAML::Value << positionTolerance();
 
-    emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
+    emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
   }
 }

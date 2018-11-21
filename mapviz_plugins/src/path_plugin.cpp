@@ -67,6 +67,7 @@ namespace mapviz_plugins
     connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     connect(ui_.path_color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
+
   }
 
   PathPlugin::~PathPlugin()
@@ -91,7 +92,7 @@ namespace mapviz_plugins
     if (topic != topic_)
     {
       initialized_ = false;
-      points_.clear();
+      ClearPoints();
       has_message_ = false;
       PrintWarning("No messages received.");
 
@@ -115,7 +116,7 @@ namespace mapviz_plugins
       has_message_ = true;
     }
 
-    points_.clear();
+    ClearPoints();
 
     for (unsigned int i = 0; i < path->poses.size(); i++)
     {
@@ -125,7 +126,7 @@ namespace mapviz_plugins
       stamped_point.point = tf::Point(path->poses[i].pose.position.x,
                                       path->poses[i].pose.position.y, 0);
 
-      points_.push_back(stamped_point);
+      pushPoint( std::move(stamped_point) );
     }
   }
 
@@ -163,12 +164,13 @@ namespace mapviz_plugins
     bool lines;
     bool points;
     QColor old_color = ui_.path_color->color();
-    draw_style_ = LINES;
+    QColor color = old_color.dark(200);
+    SetDrawStyle( LINES );
     lines = DrawPoints(scale);
-    color_ = color_.dark(200);
-    draw_style_ = POINTS;
+    SetColor(color);
+    SetDrawStyle( POINTS );
     points = DrawPoints(scale);
-    color_ = old_color;
+    SetColor(old_color);
     if (lines && points)
     {
       PrintInfo("OK");
@@ -189,8 +191,9 @@ namespace mapviz_plugins
     {
       std::string color;
       node["color"] >> color;
-      SetColor(QColor(color.c_str()));
-      ui_.path_color->setColor(color_);
+      QColor qcolor(color.c_str());
+      SetColor(qcolor);
+      ui_.path_color->setColor(qcolor);
     }
   }
 

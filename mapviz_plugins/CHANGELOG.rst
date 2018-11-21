@@ -2,6 +2,18 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.0 (2018-11-16)
+------------------
+* Merge all -devel branches into a single master branch
+* Don't transform laser scans twice (`#544 <https://github.com/swri-robotics/mapviz/issues/544>`_)
+* Improving point_drawing plugins and bug fix of tf_plugin (`#557 <https://github.com/swri-robotics/mapviz/issues/557>`_)
+* OpenGL rendering of PointClouds  (2X speedup) (`#558 <https://github.com/swri-robotics/mapviz/issues/558>`_)
+* Occupancy grid (new plugin) (`#568 <https://github.com/swri-robotics/mapviz/issues/568>`_)
+* Bug fix in image plugin (`#563 <https://github.com/swri-robotics/mapviz/issues/563>`_)
+* Fix Indigo build, clean up warnings (`#597 <https://github.com/swri-robotics/mapviz/issues/597>`_)
+* Create Coordinate Picker plugin (`#593 <https://github.com/swri-robotics/mapviz/issues/593>`_)
+* Contributors: Davide Faconti, Ed Venator, Edward Venator, Elliot Johnson, Jerry Towler, Marc Alban, Matthew, Matthew Bries, Mikael Arguedas, Neal Seegmiller, Nicholas Alton, P. J. Reed, Vincent Rousseau
+
 0.2.6 (2018-07-31)
 ------------------
 * Fix timestamp interval (`#588 <https://github.com/swri-robotics/mapviz/issues/588>`_)

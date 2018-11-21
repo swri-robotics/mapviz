@@ -73,8 +73,12 @@ namespace mapviz_plugins
                      this, SLOT(SetStaticArrowSizes(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
+    QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
+    QObject::connect(ui_.show_laps, SIGNAL(toggled(bool)), this,
+            SLOT(LapToggled(bool)));
+    QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
+                     SLOT(ClearPoints()));
   }
 
   GpsPlugin::~GpsPlugin()
@@ -99,7 +103,7 @@ namespace mapviz_plugins
     if (topic != topic_)
     {
       initialized_ = false;
-      points_.clear();
+      ClearPoints();
       has_message_ = false;
       PrintWarning("No messages received.");
 
@@ -135,7 +139,7 @@ namespace mapviz_plugins
     local_xy_util_.ToLocalXy(gps->latitude, gps->longitude, x, y);
 
     stamped_point.point = tf::Point(x, y, gps->altitude);
-    lap_checked_ = ui_.show_laps->isChecked();
+
     // The GPS "track" is in degrees, but createQuaternionFromYaw expects
     // radians.
     // Furthermore, the track rotates in the opposite direction and is also
@@ -143,22 +147,7 @@ namespace mapviz_plugins
     stamped_point.orientation =
         tf::createQuaternionFromYaw((-gps->track * (M_PI / 180.0)) + M_PI_2);
 
-    if (points_.empty() ||
-        (stamped_point.point.distance(points_.back().point)) >=
-            (position_tolerance_))
-    {
-      points_.push_back(stamped_point);
-    }
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) > buffer_size_)
-      {
-        points_.pop_front();
-      }
-    }
-
-    cur_point_ = stamped_point;
+    pushPoint( std::move( stamped_point) );
   }
 
   void GpsPlugin::PrintError(const std::string& message)
@@ -212,8 +201,9 @@ namespace mapviz_plugins
     {
       std::string color;
       node["color"] >> color;
-      SetColor(QColor(color.c_str()));
-      ui_.color->setColor(color_);
+      QColor qcolor(color.c_str());
+      SetColor(qcolor);
+      ui_.color->setColor(qcolor);
     }
 
     if (node["draw_style"])
@@ -223,31 +213,35 @@ namespace mapviz_plugins
 
       if (draw_style == "lines")
       {
-        draw_style_ = LINES;
         ui_.drawstyle->setCurrentIndex(0);
+        SetDrawStyle( LINES );
       }
       else if (draw_style == "points")
       {
-        draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
+        SetDrawStyle( POINTS );
       }
       else if (draw_style == "arrows")
       {
-        draw_style_ = ARROWS;
         ui_.drawstyle->setCurrentIndex(2);
+        SetDrawStyle( ARROWS );
       }
     }
 
     if (node["position_tolerance"])
     {
-      node["position_tolerance"] >> position_tolerance_;
-      ui_.positiontolerance->setValue(position_tolerance_);
+      double position_tolerance;
+      node["position_tolerance"] >> position_tolerance;
+      ui_.positiontolerance->setValue(position_tolerance);
+      PositionToleranceChanged(position_tolerance);
     }
 
     if (node["buffer_size"])
     {
-      node["buffer_size"] >> buffer_size_;
-      ui_.buffersize->setValue(buffer_size_);
+      double buffer_size;
+      node["buffer_size"] >> buffer_size;
+      ui_.buffersize->setValue(buffer_size);
+      BufferSizeChanged(buffer_size);
     }
 
     if (node["show_laps"])
@@ -255,6 +249,7 @@ namespace mapviz_plugins
       bool show_laps = false;
       node["show_laps"] >> show_laps;
       ui_.show_laps->setChecked(show_laps);
+      LapToggled(show_laps);
     }
 
     if (node["static_arrow_sizes"])
@@ -266,7 +261,9 @@ namespace mapviz_plugins
 
     if (node["arrow_size"])
     {
-      ui_.arrow_size->setValue(node["arrow_size"].as<int>());
+      int arrow_size = node["arrow_size"].as<int>();
+      ui_.arrow_size->setValue(arrow_size);
+      SetArrowSize(arrow_size);
     }
 
     TopicEdited();
@@ -284,16 +281,9 @@ namespace mapviz_plugins
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
 
     emitter << YAML::Key << "position_tolerance" <<
-               YAML::Value << position_tolerance_;
+               YAML::Value << positionTolerance();
 
-    if (!lap_checked_)
-    {
-      emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_size_;
-    }
-    else
-    {
-      emitter << YAML::Key << "buffer_size" << YAML::Value << buffer_holder_;
-    }
+    emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
 
     bool show_laps = ui_.show_laps->isChecked();
     emitter << YAML::Key << "show_laps" << YAML::Value << show_laps;
