@@ -144,7 +144,7 @@
       </font>
      </property>
      <property name="text">
-      <string>/mapviz/gps_command</string>
+      <string/>
      </property>
     </widget>
    </item>
@@ -157,7 +157,7 @@
       </font>
      </property>
      <property name="text">
-      <string>/mapviz/available_services</string>
+      <string/>
      </property>
     </widget>
    </item>
