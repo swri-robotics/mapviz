@@ -297,11 +297,17 @@ namespace tile_map
 
   void TileMapPlugin::Draw(double x, double y, double scale)
   {
+    if (!tile_map_.IsReady())
+    {
+      return;
+    }
+
     swri_transform_util::Transform to_wgs84;
     if (tf_manager_.GetTransform(source_frame_, target_frame_, to_wgs84))
     {
       tf::Vector3 center(x, y, 0);
       center = to_wgs84 * center;
+
       if (center.y() != last_center_y_ ||
           center.x() != last_center_x_ ||
           scale != last_scale_ ||
@@ -316,6 +322,7 @@ namespace tile_map
         last_width_ = canvas_->width();
         last_height_ = canvas_->height();
         tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+        ROS_INFO("TileMapPlugin::Draw: Successfully set view");
       }
       tile_map_.Draw();
     }

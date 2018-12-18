@@ -63,6 +63,8 @@ namespace tile_map
   public:
     TileMapView();
 
+    bool IsReady();
+
     void ResetCache();
 
     void SetTileSource(const boost::shared_ptr<TileSource>& tile_source);

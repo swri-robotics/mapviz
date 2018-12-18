@@ -56,6 +56,11 @@ namespace tile_map
     tile_cache_ = boost::make_shared<TextureCache>(image_cache);
   }
 
+  bool TileMapView::IsReady()
+  {
+    return tile_source_ && tile_source_->IsReady();
+  }
+
   void TileMapView::ResetCache()
   {
     tile_cache_->Clear();

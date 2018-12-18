@@ -56,6 +56,8 @@ namespace tile_map
 
     virtual bool IsCustom() const;
 
+    virtual bool IsReady() const { return is_ready_; };
+
     virtual void SetCustom(bool is_custom);
 
     virtual int32_t GetMaxZoom() const;
@@ -101,10 +103,16 @@ namespace tile_map
     void InfoMessage(const std::string& info_msg) const;
 
   protected:
-    TileSource() {};
+    TileSource() :
+      is_custom_(false),
+      is_ready_(false),
+      max_zoom_(20),
+      min_zoom_(0)
+    {};
 
     QString base_url_;
     bool is_custom_;
+    bool is_ready_;
     int32_t max_zoom_;
     int32_t min_zoom_;
     QString name_;
