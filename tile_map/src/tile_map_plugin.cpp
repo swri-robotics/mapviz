@@ -322,7 +322,7 @@ namespace tile_map
         last_width_ = canvas_->width();
         last_height_ = canvas_->height();
         tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
-        ROS_INFO("TileMapPlugin::Draw: Successfully set view");
+        ROS_DEBUG("TileMapPlugin::Draw: Successfully set view");
       }
       tile_map_.Draw();
     }
