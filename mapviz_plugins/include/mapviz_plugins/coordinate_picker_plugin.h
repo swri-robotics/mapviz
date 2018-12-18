@@ -83,7 +83,6 @@ namespace mapviz_plugins
       Ui::coordinate_picker_config ui_;
       QWidget* config_widget_;
       mapviz::MapCanvas* map_canvas_;
-      tf::Vector3 last_position_;
 
       bool copy_on_click_;
   };
