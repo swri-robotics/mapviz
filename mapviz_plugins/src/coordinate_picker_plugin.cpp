@@ -58,7 +58,8 @@ namespace mapviz_plugins
 CoordinatePickerPlugin::CoordinatePickerPlugin()
   : config_widget_(new QWidget()),
   map_canvas_(NULL),
-  copy_on_click_(false)
+  copy_on_click_(false),
+  last_position_(tf::Vector3(0.0,0.0,0.0))
 {
   ui_.setupUi(config_widget_);
 
@@ -138,6 +139,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   // fixed frame, we get it in the `target_frame_` frame.
   //
   // Then we translate from that frame into *our* target frame, `frame`.
+  double distance = -1.0;
   if (tf_manager_.GetTransform(frame, target_frame_, transform))
   {
     ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
@@ -150,6 +152,13 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
     point.setX(position.x());
     point.setY(position.y());
 
+    if (last_position_ != tf::Vector3(0.0,0.0,0.0))
+    {
+      distance = last_position_.distance(position);
+    }
+
+    last_position_ = position;
+
     PrintInfo("OK");
   }
   else
@@ -160,11 +169,17 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
     return false;
   }
 
+
   ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
   QString new_point;
   QTextStream stream(&new_point);
   stream.setRealNumberPrecision(9);
   stream << point.x() << "," << point.y();
+
+  if (distance >= 0.0)
+  {
+    stream << " (" << distance << " m)";
+  }
 
   if (copy_on_click_)
   {
