@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef ALPACA_SIMULATOR_COORDINATE_PICKER_PLUGIN_H_
-#define ALPACA_SIMULATOR_COORDINATE_PICKER_PLUGIN_H_
+#ifndef MAPVIZ_PLUGINS_COORDINATE_PICKER_PLUGIN_H_
+#define MAPVIZ_PLUGINS_COORDINATE_PICKER_PLUGIN_H_
 
 #include <mapviz/mapviz_plugin.h>
 
@@ -90,5 +90,5 @@ namespace mapviz_plugins
 
 }
 
-#endif // ALPACA_SIMULATOR_COORDINATE_PICKER_PLUGIN_H_
+#endif // MAPVIZ_PLUGINS_COORDINATE_PICKER_PLUGIN_H_
 
