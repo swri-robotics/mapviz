@@ -10,6 +10,9 @@
   <class name="mapviz_plugins/coordinate_picker" type="mapviz_plugins::CoordinatePickerPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Prints clicked coordinates in specified frame and copies to clipboard.</description>
   </class>
+  <class name="mapviz_plugins/measuring" type="mapviz_plugins::MeasuringPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Measures the distance between points on the map.</description>
+  </class>
   <class name="mapviz_plugins/odometry" type="mapviz_plugins::OdometryPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Odometry mapviz plugin.</description>
   </class>
