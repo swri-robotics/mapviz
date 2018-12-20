@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/coordinate_picker_plugin.h>
+#include <mapviz_plugins/measuring_plugin.h>
 #include <mapviz/mapviz_plugin.h>
 
 #include <QClipboard>
@@ -50,15 +50,15 @@
 #include <swri_transform_util/transform.h>
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mapviz_plugins::CoordinatePickerPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MeasuringPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
 
-CoordinatePickerPlugin::CoordinatePickerPlugin()
+MeasuringPlugin::MeasuringPlugin()
   : config_widget_(new QWidget()),
   map_canvas_(NULL),
-  copy_on_click_(false)
+  last_position_(tf::Vector3(0.0,0.0,0.0))
 {
   ui_.setupUi(config_widget_);
 
@@ -66,17 +66,13 @@ CoordinatePickerPlugin::CoordinatePickerPlugin()
                    this, SLOT(SelectFrame()));
   QObject::connect(ui_.frame, SIGNAL(editingFinished()),
                    this, SLOT(FrameEdited()));
-  QObject::connect(ui_.copyCheckBox, SIGNAL(stateChanged(int)),
-                   this, SLOT(ToggleCopyOnClick(int)));
-  QObject::connect(ui_.clearListButton, SIGNAL(clicked()),
-                   this, SLOT(ClearCoordList()));
 
 #if QT_VERSION >= 0x050000
-  ui_.coordTextEdit->setPlaceholderText(tr("Click on the map; coordinates appear here"));
+  ui_.measurement->setText(tr("Click on the map; distance between clicks will appear here"));
 #endif
 }
 
-CoordinatePickerPlugin::~CoordinatePickerPlugin()
+MeasuringPlugin::~MeasuringPlugin()
 {
   if (map_canvas_)
   {
@@ -84,14 +80,14 @@ CoordinatePickerPlugin::~CoordinatePickerPlugin()
   }
 }
 
-QWidget* CoordinatePickerPlugin::GetConfigWidget(QWidget* parent)
+QWidget* MeasuringPlugin::GetConfigWidget(QWidget* parent)
 {
   config_widget_->setParent(parent);
 
   return config_widget_;
 }
 
-bool CoordinatePickerPlugin::Initialize(QGLWidget* canvas)
+bool MeasuringPlugin::Initialize(QGLWidget* canvas)
 {
   map_canvas_ = static_cast< mapviz::MapCanvas* >(canvas);
   map_canvas_->installEventFilter(this);
@@ -102,7 +98,7 @@ bool CoordinatePickerPlugin::Initialize(QGLWidget* canvas)
   return true;
 }
 
-bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
+bool MeasuringPlugin::eventFilter(QObject* object, QEvent* event)
 {
   switch (event->type())
   {
@@ -117,7 +113,7 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
   }
 }
 
-bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
+bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 {
 #if QT_VERSION >= 0x050000
   QPointF point = event->localPos();
@@ -138,6 +134,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   // fixed frame, we get it in the `target_frame_` frame.
   //
   // Then we translate from that frame into *our* target frame, `frame`.
+  double distance = -1.0;
   if (tf_manager_.GetTransform(frame, target_frame_, transform))
   {
     ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
@@ -149,6 +146,13 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
     position = transform * position;
     point.setX(position.x());
     point.setY(position.y());
+
+    if (last_position_ != tf::Vector3(0.0,0.0,0.0))
+    {
+      distance = last_position_.distance(position);
+    }
+
+    last_position_ = position;
 
     PrintInfo("OK");
   }
@@ -165,39 +169,31 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   QString new_point;
   QTextStream stream(&new_point);
   stream.setRealNumberPrecision(4);
-  stream << point.x() << ", " << point.y();
 
-  if (copy_on_click_)
+  if (distance >= 0.0)
   {
-#if QT_VERSION >= 0x050000
-    QClipboard* clipboard = QGuiApplication::clipboard();
-#else
-    QClipboard* clipboard = QApplication::clipboard();
-#endif
-    clipboard->setText(new_point);
+    stream << distance << " meters";
   }
 
-  stream << " (" << QString::fromStdString(frame) << ")\n";
-
-  ui_.coordTextEdit->setPlainText(ui_.coordTextEdit->toPlainText().prepend(new_point));
+  ui_.measurement->setText(new_point);
 
   // Let other plugins process this event too
   return false;
 }
 
-bool CoordinatePickerPlugin::handleMouseRelease(QMouseEvent* event)
+bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
   // Let other plugins process this event too
   return false;
 }
 
-bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent* event)
+bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 {
   // Let other plugins process this event too
   return false;
 }
 
-void CoordinatePickerPlugin::SelectFrame()
+void MeasuringPlugin::SelectFrame()
 {
   std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
   if (!frame.empty())
@@ -207,36 +203,16 @@ void CoordinatePickerPlugin::SelectFrame()
   }
 }
 
-void CoordinatePickerPlugin::FrameEdited()
+void MeasuringPlugin::FrameEdited()
 {
   ROS_INFO("Setting target frame to %s", ui_.frame->text().toStdString().c_str());
 }
 
-void CoordinatePickerPlugin::ToggleCopyOnClick(int state)
-{
-  switch(state)
-  {
-    case Qt::Checked:
-      copy_on_click_ = true;
-      break;
-    case Qt::PartiallyChecked:
-    case Qt::Unchecked:
-    default:
-      copy_on_click_ = false;
-      break;
-  }
-}
-
-void CoordinatePickerPlugin::ClearCoordList()
-{
-  ui_.coordTextEdit->setPlainText(QString());
-}
-
-void CoordinatePickerPlugin::Draw(double x, double y, double scale)
+void MeasuringPlugin::Draw(double x, double y, double scale)
 {
 }
 
-void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
 {
   if (node["frame"])
   {
@@ -244,42 +220,25 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
     node["frame"] >> frame;
     ui_.frame->setText(QString::fromStdString(frame));
   }
-
-  if (node["copy"])
-  {
-    bool copy;
-    node["copy"] >> copy;
-    if (copy)
-    {
-      ui_.copyCheckBox->setCheckState(Qt::Checked);
-    }
-    else
-    {
-      ui_.copyCheckBox->setCheckState(Qt::Unchecked);
-    }
-  }
 }
 
-void CoordinatePickerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+void MeasuringPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
 {
   std::string frame = ui_.frame->text().toStdString();
   emitter << YAML::Key << "frame" << YAML::Value << frame;
-
-  bool copy_on_click = ui_.copyCheckBox->isChecked();
-  emitter << YAML::Key << "copy" << YAML::Value << copy_on_click;
 }
 
-void CoordinatePickerPlugin::PrintError(const std::string& message)
+void MeasuringPlugin::PrintError(const std::string& message)
 {
   PrintErrorHelper(ui_.status, message, 1.0);
 }
 
-void CoordinatePickerPlugin::PrintInfo(const std::string& message)
+void MeasuringPlugin::PrintInfo(const std::string& message)
 {
   PrintInfoHelper(ui_.status, message, 1.0);
 }
 
-void CoordinatePickerPlugin::PrintWarning(const std::string& message)
+void MeasuringPlugin::PrintWarning(const std::string& message)
 {
   PrintWarningHelper(ui_.status, message, 1.0);
 }
