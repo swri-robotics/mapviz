@@ -62,6 +62,9 @@ namespace mapviz
     explicit MapCanvas(QWidget *parent = 0);
     ~MapCanvas();
 
+    std::string showCustomContextMenu(const QPoint &pos,std::vector<std::string> result);
+
+
     void InitializeTf(boost::shared_ptr<tf::TransformListener> tf);
 
     void AddPlugin(MapvizPluginPtr plugin, int order);
@@ -180,6 +183,7 @@ namespace mapviz
     void mouseReleaseEvent(QMouseEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
     void keyPressEvent(QKeyEvent* e);
+
 
     void Recenter();
     void TransformTarget(QPainter* painter);

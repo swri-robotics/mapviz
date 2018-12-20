@@ -27,35 +27,51 @@
 //
 // *****************************************************************************
 
-#include "mapviz_plugins/point_click_publisher_plugin.h"
+// *****************************************************************************
+//  handling right click event, calls service which will display a
+//  number of services that are available on that specific location
+//
+// *****************************************************************************
+#include <mapviz_plugins/right_click_services_plugin.h>
 #include <geometry_msgs/PointStamped.h>
 #include <swri_transform_util/frames.h>
 #include <swri_yaml_util/yaml_util.h>
-
 #include <boost/shared_ptr.hpp>
+#include <mapviz/map_canvas.h>
+#include <Qt>
+#include <mapviz_plugins/GPSCommand.h>
+#include <std_srvs/Trigger.h>
+#include <iostream>
+#include <fstream>
+#include <std_msgs/Bool.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointClickPublisherPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RightClickServicesPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PointClickPublisherPlugin::PointClickPublisherPlugin() :
+  RightClickServicesPlugin::RightClickServicesPlugin() :
     config_widget_(new QWidget()),
     canvas_(NULL)
   {
     ui_.setupUi(config_widget_);
 
-    connect(&click_filter_, SIGNAL(pointClicked(const QPointF&)),
-            this, SLOT(pointClicked(const QPointF&)));
+    connect(&click_filter_, SIGNAL(pointClicked(const QPointF&, const Qt::MouseButton&)),
+            this, SLOT(pointClicked(const QPointF&, const Qt::MouseButton&)));
     connect(ui_.topic, SIGNAL(textEdited(const QString&)),
             this, SLOT(topicChanged(const QString&)));
 
+    connect(ui_.availableservicestopic, SIGNAL(textEdited(const QString&)), this, SLOT(availableServiceTopicChanged(const QString&)));
+    connect(ui_.gpscommandtopic, SIGNAL(textEdited(const QString&)), this, SLOT(gpsCommandTopicChanged(const QString&)));
+
+
     frame_timer_.start(1000);
     connect(&frame_timer_, SIGNAL(timeout()), this, SLOT(updateFrames()));
+
   }
 
-  PointClickPublisherPlugin::~PointClickPublisherPlugin()
+  RightClickServicesPlugin::~RightClickServicesPlugin()
   {
     if (canvas_)
     {
@@ -63,21 +79,36 @@ namespace mapviz_plugins
     }
   }
 
-  bool PointClickPublisherPlugin::Initialize(QGLWidget* canvas)
+  bool RightClickServicesPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = static_cast<mapviz::MapCanvas*>(canvas);
     canvas_->installEventFilter(&click_filter_);
 
     PrintInfo("Ready.");
 
+
     return true;
   }
+  void RightClickServicesPlugin::availableServiceTopicChanged(const QString& topic)
+  {
+    std::stringstream ss;
+    RightClickServicesPlugin::available_service_topic_=topic.toStdString().c_str();
+    ss << "switched available service topic to: " << topic.toStdString().c_str();
+    PrintInfo(ss.str());
+  }
+  void RightClickServicesPlugin::gpsCommandTopicChanged(const QString& topic)
+  {
+    std::stringstream ss;
+    RightClickServicesPlugin::gps_command_execute_topic_=topic.toStdString().c_str();
+    ss << "switched gps command service topic to: " << topic.toStdString().c_str();
+    PrintInfo(ss.str());
+  }
 
-  void PointClickPublisherPlugin::Draw(double x, double y, double scale)
+  void RightClickServicesPlugin::Draw(double x, double y, double scale)
   {
   }
 
-  void PointClickPublisherPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void RightClickServicesPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string tmp;
     if (swri_yaml_util::FindValue(node, "topic"))
@@ -92,15 +123,30 @@ namespace mapviz_plugins
       node["output_frame"] >> tmp;
       ui_.outputframe->addItem(QString(tmp.c_str()));
     }
+    if (swri_yaml_util::FindValue(node, "gpscommandtopic"))
+    {
+      node["gpscommandtopic"] >> tmp;
+      ui_.gpscommandtopic->setText(QString(tmp.c_str()));
+      gpsCommandTopicChanged(ui_.gpscommandtopic->text());
+    }
+    if (swri_yaml_util::FindValue(node, "availableservicestopic"))
+    {
+      node["availableservicestopic"] >> tmp;
+      ui_.availableservicestopic->setText(QString(tmp.c_str()));
+      availableServiceTopicChanged(ui_.availableservicestopic->text());
+    }
+
   }
 
-  void PointClickPublisherPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void RightClickServicesPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "output_frame" << YAML::Value << ui_.outputframe->currentText().toStdString();
+    emitter << YAML::Key << "availableservicestopic" << YAML::Value << ui_.availableservicestopic->text().toStdString();
+    emitter << YAML::Key << "gpscommandtopic" << YAML::Value << ui_.gpscommandtopic->text().toStdString();
   }
 
-  QWidget* PointClickPublisherPlugin::GetConfigWidget(QWidget* parent)
+  QWidget* RightClickServicesPlugin::GetConfigWidget(QWidget* parent)
   {
     config_widget_->setParent(parent);
 
@@ -108,7 +154,7 @@ namespace mapviz_plugins
   }
 
 
-  void PointClickPublisherPlugin::pointClicked(const QPointF& point, const Qt::MouseButton& button)
+  void RightClickServicesPlugin::pointClicked(const QPointF & point, const Qt::MouseButton& button)
   {
     QPointF transformed = canvas_->MapGlCoordToFixedFrame(point);
 
@@ -137,6 +183,7 @@ namespace mapviz_plugins
     ss << "Point in " << output_frame.c_str() << ": " << transformed.x() << "," << transformed.y();
     PrintInfo(ss.str());
 
+
     boost::shared_ptr<geometry_msgs::PointStamped> stamped = boost::make_shared<geometry_msgs::PointStamped>();
     stamped->header.frame_id = output_frame;
     stamped->header.stamp = ros::Time::now();
@@ -145,9 +192,15 @@ namespace mapviz_plugins
     stamped->point.z = 0.0;
 
     point_publisher_.publish(stamped);
+
+    if (button==Qt::RightButton){
+        const QPoint pos=point.toPoint();
+
+        showContextMenu(pos,stamped);
+    }
   }
 
-  void PointClickPublisherPlugin::SetNode(const ros::NodeHandle& node)
+  void RightClickServicesPlugin::SetNode(const ros::NodeHandle& node)
   {
     mapviz::MapvizPlugin::SetNode(node);
 
@@ -156,23 +209,23 @@ namespace mapviz_plugins
     topicChanged(ui_.topic->text());
   }
 
-  void PointClickPublisherPlugin::PrintError(const std::string& message)
+  void RightClickServicesPlugin::PrintError(const std::string& message)
   {
     PrintErrorHelper(ui_.status, message);
   }
 
-  void PointClickPublisherPlugin::PrintInfo(const std::string& message)
+  void RightClickServicesPlugin::PrintInfo(const std::string& message)
   {
     PrintInfoHelper(ui_.status, message);
   }
 
-  void PointClickPublisherPlugin::PrintWarning(const std::string& message)
+  void RightClickServicesPlugin::PrintWarning(const std::string& message)
   {
     PrintWarningHelper(ui_.status, message);
   }
 
 
-  void PointClickPublisherPlugin::topicChanged(const QString& topic)
+  void RightClickServicesPlugin::topicChanged(const QString& topic)
   {
     std::stringstream ss;
     ss << "Publishing points to topic: " << topic.toStdString().c_str();
@@ -184,7 +237,7 @@ namespace mapviz_plugins
     }
   }
 
-  void PointClickPublisherPlugin::updateFrames()
+  void RightClickServicesPlugin::updateFrames()
   {
     std::vector<std::string> frames;
     tf_->getFrameStrings(frames);
@@ -234,4 +287,56 @@ namespace mapviz_plugins
       ui_.outputframe->setCurrentIndex(index);
     }
   }
-}
+  void RightClickServicesPlugin::showContextMenu(const QPoint& pos,boost::shared_ptr<geometry_msgs::PointStamped> stamped)
+  {
+      // retreive Available Services,Commands
+      ros::NodeHandle n;
+      ros::service::waitForService(RightClickServicesPlugin::available_service_topic_,10);
+      ros::ServiceClient client = n.serviceClient<mapviz_plugins::GPSCommand>(RightClickServicesPlugin::available_service_topic_);
+      mapviz_plugins::GPSCommand srv;
+      srv.request.command = "";
+      srv.request.location.longitude =stamped->point.x;
+      srv.request.location.latitude =stamped->point.y;
+      std::vector<std::string> service_name_list;
+      if(client.exists())
+      {
+          if (client.call(srv))
+          {
+          service_name_list= srv.response.message;
+          }
+      }
+      //call service to execute chosen command
+      ros::service::waitForService(RightClickServicesPlugin::gps_command_execute_topic_,10);
+      ros::ServiceClient command_client = n.serviceClient<mapviz_plugins::GPSCommand>(RightClickServicesPlugin::gps_command_execute_topic_);
+      std::stringstream ss;
+      mapviz_plugins::GPSCommand  gps_command;
+      gps_command.request.command = canvas_->showCustomContextMenu(canvas_->mapToGlobal(pos),service_name_list);
+      gps_command.request.location.longitude =stamped->point.x;
+      gps_command.request.location.latitude =stamped->point.y;
+      if (gps_command.request.command.length()<=0)
+      {
+        PrintInfo("Empty Service was not called");
+      }
+      else{
+          if (command_client.exists())
+          {
+              if(command_client.call(gps_command))
+              {
+
+                  if(gps_command.response.success)
+                  {
+                     ss << "Calling " << gps_command.request.command << " was successful " << gps_command.response.message[0] ;
+                  }else{
+                      ss << "Calling " << gps_command.request.command << " was unsuccessful "<< gps_command.response.message[0];
+                  }
+                  PrintInfo(ss.str());
+            }
+          else
+          {
+            ss << "Calling " << gps_command.request.command  << " was unsuccessful "<< gps_command.response.message[0];
+          }
+          PrintInfo(ss.str());
+        }
+      }
+    }
+  }

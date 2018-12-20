@@ -6,7 +6,7 @@ tile_size: 512
 
 // Coordinate System
 datum: wgs84
-projection: geographic 
+projection: geographic
 
 // Georeference
 tiepoint: [6785, 336, 29.45196669, -98.61370577]

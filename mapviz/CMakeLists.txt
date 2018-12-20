@@ -194,6 +194,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 add_dependencies(${PROJECT_NAME}
   ${PROJECT_NAME}_gencpp
+  ${catkin_EXPORTED_TARGETS}
 )
 
 ### Install mapviz ###

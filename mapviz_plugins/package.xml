@@ -16,6 +16,9 @@
 
   <build_depend>libqt_dev</build_depend>
   <build_depend>libqt_opengl_dev</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <build_export_depend>message_runtime</build_export_depend>
 
   <depend>actionlib</depend>
   <depend>cv_bridge</depend>
@@ -43,6 +46,7 @@
   
   <exec_depend>libqt_core</exec_depend>
   <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

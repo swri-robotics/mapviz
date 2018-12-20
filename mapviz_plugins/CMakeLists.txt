@@ -29,6 +29,36 @@ set(DEPENDENCIES
 
 find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+set(QT_LIBRARIES
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Gui_LIBRARIES}
+  ${Qt5OpenGL_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+)
+include_directories(
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Gui_INCLUDE_DIRS}
+  ${Qt5OpenGL_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+add_definitions(
+  ${Qt5Core_DEFINITIONS}
+  ${Qt5Gui_DEFINITIONS}
+  ${Qt5OpenGL_DEFINITIONS}
+  ${Qt5Widgets_DEFINITIONS}
+)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+
+
+add_service_files(FILES
+  GPSCommand.srv
+)
+generate_messages(DEPENDENCIES sensor_msgs std_msgs)
 ### QT ###
 if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
   find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL)
@@ -104,6 +134,7 @@ set(UI_FILES
     ui/path_config.ui
     ui/plan_route_config.ui
     ui/point_click_publisher_config.ui
+    ui/right_click_services_config.ui
     ui/pointcloud2_config.ui
     ui/robot_image_config.ui
     ui/route_config.ui
@@ -132,6 +163,7 @@ set(SRC_FILES
     src/placeable_window_proxy.cpp
     src/plan_route_plugin.cpp
     src/point_click_publisher_plugin.cpp
+    src/right_click_services_plugin.cpp
     src/pointcloud2_plugin.cpp
     src/point_drawing_plugin.cpp
     src/robot_image_plugin.cpp
@@ -162,6 +194,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/placeable_window_proxy.h
     include/${PROJECT_NAME}/plan_route_plugin.h
     include/${PROJECT_NAME}/point_click_publisher_plugin.h
+    include/${PROJECT_NAME}/right_click_services_plugin.h
     include/${PROJECT_NAME}/pointcloud2_plugin.h
     include/${PROJECT_NAME}/point_drawing_plugin.h
     include/${PROJECT_NAME}/robot_image_plugin.h

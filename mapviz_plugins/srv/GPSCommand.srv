@@ -1,0 +1,5 @@
+sensor_msgs/NavSatFix location
+string command
+---
+bool success
+string[] message

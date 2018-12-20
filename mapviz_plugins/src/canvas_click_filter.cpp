@@ -83,9 +83,9 @@ namespace mapviz_plugins
         if (msecsDiff < max_ms_ && distance <= max_distance_)
         {
 #if QT_VERSION >= 0x050000
-          Q_EMIT pointClicked(me->localPos());
+          Q_EMIT pointClicked(me->localPos(), me->button());
 #else
-          Q_EMIT pointClicked(me->posF());
+          Q_EMIT pointClicked(me->posF(), me->button());
 #endif
         }
       }
