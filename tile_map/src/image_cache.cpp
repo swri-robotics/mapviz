@@ -248,14 +248,14 @@ namespace tile_map
 
   void ImageCache::NetworkError(QNetworkReply::NetworkError error)
   {
-    ROS_ERROR("NETWORK ERROR");
+    ROS_ERROR("NETWORK ERROR: %d", error);
     // TODO add failure
   }
 
   const int CacheThread::MAXIMUM_SEQUENTIAL_REQUESTS = 12;
 
   CacheThread::CacheThread(ImageCache* parent) :
-    p(parent),
+    image_cache_(parent),
     waiting_mutex_()
   {
     waiting_mutex_.lock();
@@ -268,15 +268,15 @@ namespace tile_map
 
   void CacheThread::run()
   {
-    while (!p->exit_)
+    while (!image_cache_->exit_)
     {
       // Wait until we're told there are images we need to request.
       waiting_mutex_.lock();
 
       // Next, get all of them and sort them by priority.
-      p->unprocessed_mutex_.lock();
-      QList<ImagePtr> images = p->unprocessed_.values();
-      p->unprocessed_mutex_.unlock();
+      image_cache_->unprocessed_mutex_.lock();
+      QList<ImagePtr> images = image_cache_->unprocessed_.values();
+      image_cache_->unprocessed_mutex_.unlock();
 
       qSort(images.begin(), images.end(), ComparePriority);
 
@@ -288,12 +288,12 @@ namespace tile_map
       // are more left afterward, we'll start over.  This ensures that we
       // concentrate on processing the highest-priority images.
       int count = 0;
-      while (!p->exit_ && !images.empty() && count < MAXIMUM_SEQUENTIAL_REQUESTS)
+      while (!image_cache_->exit_ && !images.empty() && count < MAXIMUM_SEQUENTIAL_REQUESTS)
       {
-        p->network_request_semaphore_.acquire();
+        image_cache_->network_request_semaphore_.acquire();
 
         ImagePtr image = images.front();
-        p->unprocessed_mutex_.lock();
+        image_cache_->unprocessed_mutex_.lock();
         if (!image->Loading() && !image->Failed())
         {
           count++;
@@ -301,7 +301,7 @@ namespace tile_map
           images.pop_front();
 
           QString uri = image->Uri();
-          size_t hash = p->uri_to_hash_map_[uri];
+          size_t hash = image_cache_->uri_to_hash_map_[uri];
           if (uri.startsWith(QString("file:///")))
           {
             image->InitializeImage();
@@ -312,10 +312,10 @@ namespace tile_map
               image->AddFailure();
             }
 
-            p->unprocessed_.remove(hash);
-            p->uri_to_hash_map_.remove(uri);
+            image_cache_->unprocessed_.remove(hash);
+            image_cache_->uri_to_hash_map_.remove(uri);
             image->SetLoading(false);
-            p->network_request_semaphore_.release();
+            image_cache_->network_request_semaphore_.release();
           }
           else
           {
@@ -326,7 +326,7 @@ namespace tile_map
         {
           images.pop_front();
         }
-        p->unprocessed_mutex_.unlock();
+        image_cache_->unprocessed_mutex_.unlock();
 
       }
       if (!images.empty())

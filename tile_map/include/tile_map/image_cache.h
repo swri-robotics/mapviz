@@ -152,7 +152,7 @@ namespace tile_map
       void RequestImage(QString);
 
     private:
-      ImageCache* p;
+      ImageCache* image_cache_;
       QMutex waiting_mutex_;
 
       static const int MAXIMUM_SEQUENTIAL_REQUESTS;

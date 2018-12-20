@@ -180,6 +180,8 @@ namespace tile_map
       }
 
       Q_EMIT InfoMessage("API Key Set.");
+
+      is_ready_ = true;
     }
   }
 }
