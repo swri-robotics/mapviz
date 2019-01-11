@@ -644,7 +644,7 @@ namespace mapviz_plugins
 
       for (Scan& scan: scans_)
       {
-        if (scan.transformed)
+        if (scan.transformed && !scan.gl_color.empty())
         {
           glBindBuffer(GL_ARRAY_BUFFER, scan.point_vbo);  // coordinates
           glBufferData(GL_ARRAY_BUFFER, scan.gl_point.size() * sizeof(float), scan.gl_point.data(), GL_STATIC_DRAW);
@@ -760,7 +760,7 @@ namespace mapviz_plugins
       node["min_color"] >> min_color_str;
       ui_.min_color->setColor(QColor(min_color_str.c_str()));
     }
-    
+
     if (node["max_color"])
     {
       std::string max_color_str;
@@ -781,7 +781,7 @@ namespace mapviz_plugins
     }
 
     if (node["alpha"])
-    {      
+    {
       node["alpha"] >> alpha_;
       ui_.alpha->setValue(alpha_);
     }
@@ -799,7 +799,7 @@ namespace mapviz_plugins
       node["unpack_rgb"] >> unpack_rgb;
       ui_.unpack_rgb->setChecked(unpack_rgb);
     }
-    
+
     // UseRainbowChanged must be called *before* ColorTransformerChanged
     UseRainbowChanged(ui_.use_rainbow->checkState());
 
@@ -826,7 +826,7 @@ namespace mapviz_plugins
   {
     bool color_is_flat = ui_.color_transformer->currentIndex() == COLOR_FLAT;
 
-    if (color_is_flat) 
+    if (color_is_flat)
     {
       ui_.maxColorLabel->hide();
       ui_.max_color->hide();
