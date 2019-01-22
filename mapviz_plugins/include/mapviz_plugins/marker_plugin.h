@@ -32,8 +32,8 @@
 
 // C++ standard libraries
 #include <string>
-#include <list>
-#include <map>
+#include <vector>
+#include <unordered_map>
 
 #include <mapviz/mapviz_plugin.h>
 
@@ -58,6 +58,17 @@
 
 namespace mapviz_plugins
 {
+  using MarkerId = std::pair<std::string, int>;
+
+  struct MarkerIdHash {
+    std::size_t operator () (const MarkerId &p) const {
+      std::size_t seed = 0;
+      boost::hash_combine(seed, p.first);
+      boost::hash_combine(seed, p.second);
+      return seed;
+    }
+  };
+
   class MarkerPlugin : public mapviz::MapvizPlugin
   {
     Q_OBJECT
@@ -141,7 +152,7 @@ namespace mapviz_plugins
     bool connected_;
     bool has_message_;
 
-    std::map<std::string, std::map<int, MarkerData> > markers_;
+    std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;
 
     void handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg);
     void handleMarker(const visualization_msgs::Marker &marker);
