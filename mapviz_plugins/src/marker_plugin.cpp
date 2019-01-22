@@ -29,24 +29,11 @@
 
 #include <mapviz_plugins/marker_plugin.h>
 
-// C++ standard libraries
-#include <cmath>
-#include <cstdio>
-#include <vector>
-
-// Boost libraries
-#include <boost/algorithm/string.hpp>
-
-// QT libraries
-#include <QDialog>
-#include <QGLWidget>
-
-// ROS libraries
-#include <ros/master.h>
-
 #include <mapviz/select_topic_dialog.h>
 
 #include <swri_math_util/constants.h>
+
+#include <boost/algorithm/string.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
@@ -173,7 +160,7 @@ namespace mapviz_plugins
       markerData.text.clear(); // clear marker text
       markerData.stamp = marker.header.stamp;
       markerData.display_type = marker.type;
-      markerData.color = QColor::fromRgbF(marker.color.r, marker.color.g, marker.color.b, marker.color.a);
+      markerData.color = {marker.color.r, marker.color.g, marker.color.b, marker.color.a};
       markerData.scale_x = static_cast<float>(marker.scale.x);
       markerData.scale_y = static_cast<float>(marker.scale.y);
       markerData.scale_z = static_cast<float>(marker.scale.z);
@@ -308,11 +295,7 @@ namespace mapviz_plugins
 
           if (i < marker.colors.size())
           {
-            point.color = QColor::fromRgbF(
-                marker.colors[i].r,
-                marker.colors[i].g,
-                marker.colors[i].b,
-                marker.colors[i].a);
+            point.color = {marker.colors[i].r, marker.colors[i].g, marker.colors[i].b, marker.colors[i].a};
           }
           else
           {
@@ -444,9 +427,7 @@ namespace mapviz_plugins
         continue;
       }
 
-      double r, g, b, a;
-      marker.color.getRgbF(&r, &g, &b, &a);
-      glColor4d(r, g, b, a);
+      glColor4f(marker.color.r, marker.color.g, marker.color.b, marker.color.a);
 
       if (marker.display_type == visualization_msgs::Marker::ARROW) {
         if (marker.points.size() == 1) {
@@ -461,8 +442,7 @@ namespace mapviz_plugins
         glBegin(GL_LINES);
 
         for (const auto &point : marker.points) {
-          point.color.getRgbF(&r, &g, &b, &a);
-          glColor4d(r, g, b, a);
+          glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
           glVertex2d(
             point.transformed_point.getX(),
@@ -491,8 +471,7 @@ namespace mapviz_plugins
         glBegin(GL_LINE_STRIP);
 
         for (const auto &point : marker.points) {
-          point.color.getRgbF(&r, &g, &b, &a);
-          glColor4d(r, g, b, a);
+          glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
           glVertex2d(
             point.transformed_point.getX(),
@@ -506,8 +485,7 @@ namespace mapviz_plugins
         glBegin(GL_LINES);
 
         for (const auto &point : marker.points) {
-          point.color.getRgbF(&r, &g, &b, &a);
-          glColor4d(r, g, b, a);
+          glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
           glVertex2d(
             point.transformed_point.getX(),
@@ -521,8 +499,7 @@ namespace mapviz_plugins
         glBegin(GL_POINTS);
 
         for (const auto &point : marker.points) {
-          point.color.getRgbF(&r, &g, &b, &a);
-          glColor4d(r, g, b, a);
+          glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
           glVertex2d(
             point.transformed_point.getX(),
@@ -535,8 +512,7 @@ namespace mapviz_plugins
         glBegin(GL_TRIANGLES);
 
         for (const auto &point : marker.points) {
-          point.color.getRgbF(&r, &g, &b, &a);
-          glColor4d(r, g, b, a);
+          glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
           glVertex2d(
             point.transformed_point.getX(),
@@ -549,9 +525,7 @@ namespace mapviz_plugins
         marker.display_type == visualization_msgs::Marker::SPHERE ||
         marker.display_type == visualization_msgs::Marker::SPHERE_LIST) {
         for (const auto &point : marker.points) {
-          point.color.getRgbF(&r, &g, &b, &a);
-          glColor4d(r, g, b, a);
-
+          glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
           glBegin(GL_TRIANGLE_FAN);
 
@@ -579,8 +553,7 @@ namespace mapviz_plugins
         marker.display_type == visualization_msgs::Marker::CUBE_LIST) {
         glBegin(GL_TRIANGLE_FAN);
         for (const auto &point : marker.points) {
-          point.color.getRgbF(&r, &g, &b, &a);
-          glColor4d(r, g, b, a);
+          glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
           glVertex2d(point.transformed_point.getX(), point.transformed_point.getY());
         }
@@ -619,8 +592,8 @@ namespace mapviz_plugins
         continue;
       }
 
-      QPen pen(QBrush(QColor(marker.color.red(), marker.color.green(),
-                             marker.color.blue())), 1);
+      QPen pen(QBrush(QColor::fromRgbF(marker.color.r, marker.color.g,
+                             marker.color.b)), 1);
       painter->setPen(pen);
 
       StampedPoint& rosPoint = marker.points.front();

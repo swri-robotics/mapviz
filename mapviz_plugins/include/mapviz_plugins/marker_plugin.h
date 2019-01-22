@@ -32,24 +32,17 @@
 
 // C++ standard libraries
 #include <string>
-#include <vector>
 #include <unordered_map>
 
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
 #include <QGLWidget>
-#include <QObject>
-#include <QWidget>
-#include <QColor>
 
 // ROS libraries
-#include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 #include <topic_tools/shape_shifter.h>
-#include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <std_msgs/ColorRGBA.h>
 
 #include <mapviz/map_canvas.h>
 
@@ -107,6 +100,11 @@ namespace mapviz_plugins
     void ClearHistory();
 
   private:
+    struct Color
+    {
+      float r, g, b, a;
+    };
+
     struct StampedPoint
     {
       tf::Point point;
@@ -119,7 +117,7 @@ namespace mapviz_plugins
       tf::Point transformed_arrow_left;
       tf::Point transformed_arrow_right;
 
-      QColor color;
+      Color color;
     };
 
     struct MarkerData
@@ -128,7 +126,7 @@ namespace mapviz_plugins
       ros::Time expire_time;
 
       int display_type;
-      QColor color;
+      Color color;
 
       std::vector<StampedPoint> points;
       std::string text;
