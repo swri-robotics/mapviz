@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2019-01-23)
+------------------
 * Sharing tf_manager\_ between main app and plugins (`#555 <https://github.com/swri-robotics/mapviz/issues/555>`_)
 * Fix potential segfault in pointcloud plug-in. (`#602 <https://github.com/swri-robotics/mapviz/issues/602>`_)
 * Add Measuring Plugin (`#598 <https://github.com/swri-robotics/mapviz/issues/598>`_)
