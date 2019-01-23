@@ -260,7 +260,8 @@ void Mapviz::Initialize()
     connect(group, SIGNAL(triggered(QAction*)), this, SLOT(SetImageTransport(QAction*)));
 
     tf_ = boost::make_shared<tf::TransformListener>();
-    tf_manager_.Initialize(tf_);
+    tf_manager_ = boost::make_shared<swri_transform_util::TransformManager>();
+    tf_manager_->Initialize(tf_);
 
     loader_ = new pluginlib::ClassLoader<MapvizPlugin>(
         "mapviz", "mapviz::MapvizPlugin");
@@ -1068,10 +1069,10 @@ void Mapviz::Hover(double x, double y, double scale)
     xy_pos_label_->update();
 
     swri_transform_util::Transform transform;
-    if (tf_manager_.SupportsTransform(
+    if (tf_manager_->SupportsTransform(
            swri_transform_util::_wgs84_frame,
            ui_.fixedframe->currentText().toStdString()) &&
-        tf_manager_.GetTransform(
+        tf_manager_->GetTransform(
            swri_transform_util::_wgs84_frame,
            ui_.fixedframe->currentText().toStdString(),
            transform))
@@ -1137,8 +1138,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
   plugin->SetIcon(config_item->ui_.icon);
-
-  plugin->Initialize(tf_, canvas_);
+  plugin->Initialize(tf_, tf_manager_, canvas_);
   plugin->SetType(real_type.c_str());
   plugin->SetName(name);
   plugin->SetNode(*node_);

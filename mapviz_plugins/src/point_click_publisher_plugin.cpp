@@ -118,7 +118,7 @@ namespace mapviz_plugins
     {
       swri_transform_util::Transform tf;
       tf::Point tfPoint(transformed.x(), transformed.y(), 0.0);
-      if (tf_manager_.GetTransform(output_frame, target_frame_, tf))
+      if (tf_manager_->GetTransform(output_frame, target_frame_, tf))
       {
         tfPoint = tf * tfPoint;
       }
@@ -189,7 +189,7 @@ namespace mapviz_plugins
     std::vector<std::string> frames;
     tf_->getFrameStrings(frames);
 
-    bool supports_wgs84 = tf_manager_.SupportsTransform(
+    bool supports_wgs84 = tf_manager_->SupportsTransform(
         swri_transform_util::_local_xy_frame,
         swri_transform_util::_wgs84_frame);
 
