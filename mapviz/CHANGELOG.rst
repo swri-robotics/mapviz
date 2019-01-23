@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Sharing tf_manager\_ between main app and plugins (`#555 <https://github.com/swri-robotics/mapviz/issues/555>`_)
+* Contributors: Davide Faconti
+
 0.3.0 (2018-11-16)
 ------------------
 * Merge all -devel branches into a single master branch

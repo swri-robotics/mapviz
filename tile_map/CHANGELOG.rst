@@ -2,6 +2,12 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Sharing tf_manager\_ between main app and plugins (`#555 <https://github.com/swri-robotics/mapviz/issues/555>`_)
+* Fix issue with loading Bing map tiles (`#599 <https://github.com/swri-robotics/mapviz/issues/599>`_)
+* Contributors: Davide Faconti, P. J. Reed
+
 0.3.0 (2018-11-16)
 ------------------
 * Merge all -devel branches into a single master branch
