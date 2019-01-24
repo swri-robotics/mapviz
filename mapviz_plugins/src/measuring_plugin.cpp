@@ -135,7 +135,7 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
   //
   // Then we translate from that frame into *our* target frame, `frame`.
   double distance = -1.0;
-  if (tf_manager_.GetTransform(frame, target_frame_, transform))
+  if (tf_manager_->GetTransform(frame, target_frame_, transform))
   {
     ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
               target_frame_.c_str(),
