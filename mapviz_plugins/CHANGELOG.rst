@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2019-01-25)
+------------------
 * Use shared tf manager in measuring_plugin (`#604 <https://github.com/swri-robotics/mapviz/issues/604>`_)
 * Contributors: jgassaway
 
