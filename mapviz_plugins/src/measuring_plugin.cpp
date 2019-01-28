@@ -30,6 +30,8 @@
 #include <mapviz_plugins/measuring_plugin.h>
 #include <mapviz/mapviz_plugin.h>
 
+// QT libraries
+#include <QDateTime>
 #include <QClipboard>
 #include <QMouseEvent>
 #include <QTextStream>
@@ -52,11 +54,17 @@
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MeasuringPlugin, mapviz::MapvizPlugin)
 
+namespace stu = swri_transform_util;
+
 namespace mapviz_plugins
 {
 
-MeasuringPlugin::MeasuringPlugin()
-  : config_widget_(new QWidget()),
+MeasuringPlugin::MeasuringPlugin():
+  config_widget_(new QWidget()),
+  selected_point_(-1),
+  is_mouse_down_(false),
+  max_ms_(Q_INT64_C(500)),
+  max_distance_(2.0),
   map_canvas_(NULL),
   last_position_(tf::Vector3(0.0,0.0,0.0))
 {
@@ -115,6 +123,9 @@ bool MeasuringPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 {
+  selected_point_ = -1;
+  int closest_point = 0;
+  double closest_distance = std::numeric_limits<double>::max();
 #if QT_VERSION >= 0x050000
   QPointF point = event->localPos();
 #else
@@ -122,60 +133,36 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 #endif
   ROS_DEBUG("Map point: %f %f", point.x(), point.y());
 
-  swri_transform_util::Transform transform;
   std::string frame = ui_.frame->text().toStdString();
-  if (frame.empty())
-  {
-    frame = target_frame_;
-  }
 
-  // Frames get confusing. The `target_frame_` member is set by the "Fixed
-  // Frame" combobox in the GUI. When we transform the map coordinate to the
-  // fixed frame, we get it in the `target_frame_` frame.
-  //
-  // Then we translate from that frame into *our* target frame, `frame`.
-  double distance = -1.0;
-  if (tf_manager_->GetTransform(frame, target_frame_, transform))
+  if (event->button() == Qt::LeftButton)
   {
-    ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
-              target_frame_.c_str(),
-              frame.c_str());
-    QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-    ROS_DEBUG("Point in fixed frame: %f %f", transformed.x(), transformed.y());
-    tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-    position = transform * position;
-    point.setX(position.x());
-    point.setY(position.y());
-
-    if (last_position_ != tf::Vector3(0.0,0.0,0.0))
+    if (closest_distance < 15)
     {
-      distance = last_position_.distance(position);
+      selected_point_ = closest_point;
+      return true;
     }
-
-    last_position_ = position;
-
-    PrintInfo("OK");
+    else
+    {
+      is_mouse_down_ = true;
+#if QT_VERSION >= 0x050000
+      mouse_down_pos_ = event->localPos();
+#else
+      mouse_down_pos_ = event->posF();
+#endif
+      mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
+      return false;
+    }
   }
-  else
+  else if (event->button() == Qt::RightButton)
   {
-    QString warning;
-    QTextStream(&warning) << "No available transform from '" << QString::fromStdString(target_frame_) << "' to '" << QString::fromStdString(frame) << "'";
-    PrintWarning(warning.toStdString());
-    return false;
+    if (closest_distance < 15)
+    {
+      vertices_.erase(vertices_.begin() + closest_point);
+      transformed_vertices_.resize(vertices_.size());
+      return true;
+    }
   }
-
-
-  ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
-  QString new_point;
-  QTextStream stream(&new_point);
-  stream.setRealNumberPrecision(4);
-
-  if (distance >= 0.0)
-  {
-    stream << distance << " meters";
-  }
-
-  ui_.measurement->setText(new_point);
 
   // Let other plugins process this event too
   return false;
@@ -183,6 +170,119 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 
 bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
+    std::string frame = ui_.frame->text().toStdString();
+    stu::Transform transform;
+    if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
+    {
+#if QT_VERSION >= 0x050000
+      QPointF point = event->localPos();
+#else
+      QPointF point = event->posF();
+#endif
+      if (tf_manager_->GetTransform(frame, target_frame_, transform))
+      {
+        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+        position = transform * position;
+        vertices_[selected_point_].setX(position.x());
+        vertices_[selected_point_].setY(position.y());
+      }
+
+      selected_point_ = -1;
+      return true;
+    }
+    else if (is_mouse_down_)
+    {
+#if QT_VERSION >= 0x050000
+      qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
+#else
+      qreal distance = QLineF(mouse_down_pos_, event->posF()).length();
+#endif
+      qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
+
+      // Only fire the event if the mouse has moved less than the maximum distance
+      // and was held for shorter than the maximum time..  This prevents click
+      // events from being fired if the user is dragging the mouse across the map
+      // or just holding the cursor in place.
+      if (msecsDiff < max_ms_ && distance <= max_distance_)
+      {
+#if QT_VERSION >= 0x050000
+        QPointF point = event->localPos();
+#else
+        QPointF point = event->posF();
+#endif
+        if (frame.empty())
+        {
+          frame = target_frame_;
+        }
+
+        // Frames get confusing. The `target_frame_` member is set by the "Fixed
+        // Frame" combobox in the GUI. When we transform the map coordinate to the
+        // fixed frame, we get it in the `target_frame_` frame.
+        //
+        // Then we translate from that frame into *our* target frame, `frame`.
+        double distance = -1.0;
+        if (tf_manager_->GetTransform(frame, target_frame_, transform))
+        {
+          ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
+                    target_frame_.c_str(),
+                    frame.c_str());
+          QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+          ROS_DEBUG("Point in fixed frame: %f %f", transformed.x(), transformed.y());
+          tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+          position = transform * position;
+          point.setX(position.x());
+          point.setY(position.y());
+
+          if (last_position_ != tf::Vector3(0.0,0.0,0.0))
+          {
+            distance = last_position_.distance(position);
+          }
+
+          last_position_ = position;
+
+          PrintInfo("OK");
+        }
+        else
+        {
+          QString warning;
+          QTextStream(&warning) << "No available transform from '" << QString::fromStdString(target_frame_) << "' to '" << QString::fromStdString(frame) << "'";
+          PrintWarning(warning.toStdString());
+          return false;
+        }
+
+
+        ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
+        QString new_point;
+        QTextStream stream(&new_point);
+        stream.setRealNumberPrecision(4);
+
+        if (distance >= 0.0)
+        {
+          stream << distance << " meters";
+        }
+
+        ui_.measurement->setText(new_point);
+
+        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+        ROS_INFO("mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
+
+        stu::Transform transform;
+        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+
+        if (tf_manager_->GetTransform(frame, target_frame_, transform))
+        {
+          position = transform * position;
+          vertices_.push_back(position);
+          transformed_vertices_.resize(vertices_.size());
+          ROS_INFO("Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
+        }
+      }
+      //else
+        //  dragflag=1;
+
+    }
+    is_mouse_down_ = false;
   // Let other plugins process this event too
   return false;
 }

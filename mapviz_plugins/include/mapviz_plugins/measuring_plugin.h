@@ -84,6 +84,17 @@ namespace mapviz_plugins
       QWidget* config_widget_;
       mapviz::MapCanvas* map_canvas_;
       tf::Vector3 last_position_;
+
+      std::vector<tf::Vector3> vertices_;
+      std::vector<tf::Vector3> transformed_vertices_;
+
+      int selected_point_;
+      bool is_mouse_down_;
+      QPointF mouse_down_pos_;
+      qint64 mouse_down_time_;
+
+      qint64 max_ms_;
+      qreal max_distance_;
   };
 
 
