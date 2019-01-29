@@ -66,8 +66,8 @@ MeasuringPlugin::MeasuringPlugin():
   is_mouse_down_(false),
   max_ms_(Q_INT64_C(500)),
   max_distance_(2.0),
-  map_canvas_(NULL),
-  last_position_(tf::Vector3(0.0,0.0,0.0))
+  map_canvas_(NULL)
+  //last_position_(tf::Vector3(0.0,0.0,0.0))
 {
   ui_.setupUi(config_widget_);
 
@@ -197,6 +197,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
     std::string frame = ui_.frame->text().toStdString();
     stu::Transform transform;
+
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
 #if QT_VERSION >= 0x050000
@@ -246,7 +247,9 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
         // fixed frame, we get it in the `target_frame_` frame.
         //
         // Then we translate from that frame into *our* target frame, `frame`.
-        double totaldistance = 0.0;
+        double distance_instant = -1; //measurement between last two points
+        double distance_sum = 0; //sum of distance from all points
+        tf::Vector3 last_position_(0,0,0);
        /*if (tf_manager_->GetTransform(frame, target_frame_, transform))
         {
           ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
@@ -283,8 +286,13 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
             tf::Vector3 vertex = vertices_[i];
             vertex = transform * vertex;
             QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
-
-            double totaldistance = totaldistance + QLineF(transformed, point).length();
+            ROS_INFO("Vertex x:%f, Vertex y:%f", vertex.x(),vertex.y());
+            ROS_INFO("vertices_ size:%d", vertices_.size());
+            distance_instant = last_position_.distance(vertex);
+            ROS_INFO("distance %f", distance_instant);
+            distance_sum = distance_sum + distance_instant;
+            ROS_INFO("Total Distance %f", distance_sum);
+            last_position_ = vertex;
            }
         }
 
@@ -294,12 +302,23 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
         QTextStream stream(&new_point);
         stream.setRealNumberPrecision(4);
 
-        if (totaldistance > 0.0)
+        if (distance_instant > 0.0)
         {
-          stream << totaldistance << " meters";
+          stream << distance_instant << " meters";
         }
 
         ui_.measurement->setText(new_point);
+
+        QString new_point2;
+        QTextStream stream2(&new_point2);
+        stream2.setRealNumberPrecision(4);
+
+        if (distance_sum > 0.0)
+        {
+          stream2 << distance_sum << " meters";
+        }
+
+        ui_.totaldistance->setText(new_point2);
 
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
         ROS_INFO("mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
@@ -309,7 +328,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 
         if (tf_manager_->GetTransform(frame, target_frame_, transform))
         {
-          //position = transform * position;
+          position = transform * position;
           vertices_.push_back(position);
           transformed_vertices_.resize(vertices_.size());
           ROS_INFO("Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
@@ -357,12 +376,6 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
       transformed_vertices_[i] = transform * vertices_[i];
     }
 
-    /*if (print_Flag == 0)
-    {
-      ROS_INFO("Verticies_1 = %f", vertices_);
-      ROS_INFO("Transformed verticies = %f", transformed_vertices_);
-      print_Flag = 1;
-    } */
 
     glLineWidth(1);
     const QColor color = ui_.color->color();
@@ -379,12 +392,6 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
     glBegin(GL_LINES);
 
     glColor4d(color.redF(), color.greenF(), color.blueF(), 0.25);
-
-    /*if (transformed_vertices_.size() > 2)
-    {
-      glVertex2d(transformed_vertices_.front().x(), transformed_vertices_.front().y());
-      glVertex2d(transformed_vertices_.back().x(), transformed_vertices_.back().y());
-    } */
 
     glEnd();
 
