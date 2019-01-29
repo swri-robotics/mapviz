@@ -61,6 +61,7 @@ namespace mapviz_plugins
 
 MeasuringPlugin::MeasuringPlugin():
   config_widget_(new QWidget()),
+  print_Flag(0),
   selected_point_(-1),
   is_mouse_down_(false),
   max_ms_(Q_INT64_C(500)),
@@ -74,6 +75,8 @@ MeasuringPlugin::MeasuringPlugin():
                    this, SLOT(SelectFrame()));
   QObject::connect(ui_.frame, SIGNAL(editingFinished()),
                    this, SLOT(FrameEdited()));
+  QObject::connect(ui_.clear, SIGNAL(clicked()), this,
+                   SLOT(Clear()));
 
 #if QT_VERSION >= 0x050000
   ui_.measurement->setText(tr("Click on the map; distance between clicks will appear here"));
@@ -88,6 +91,11 @@ MeasuringPlugin::~MeasuringPlugin()
   }
 }
 
+void MeasuringPlugin::Clear()
+{
+  vertices_.clear();
+  transformed_vertices_.clear();
+}
 QWidget* MeasuringPlugin::GetConfigWidget(QWidget* parent)
 {
   config_widget_->setParent(parent);
@@ -131,10 +139,27 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 #else
   QPointF point = event->posF();
 #endif
+  stu::Transform transform;
   ROS_DEBUG("Map point: %f %f", point.x(), point.y());
 
   std::string frame = ui_.frame->text().toStdString();
+  if (tf_manager_->GetTransform(target_frame_, frame, transform))
+  {
+    for (size_t i = 0; i < vertices_.size(); i++)
+    {
+      tf::Vector3 vertex = vertices_[i];
+      vertex = transform * vertex;
+      QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
 
+      double distance = QLineF(transformed, point).length();
+
+      if (distance < closest_distance)
+      {
+        closest_distance = distance;
+        closest_point = static_cast<int>(i);
+      }
+    }
+  }
   if (event->button() == Qt::LeftButton)
   {
     if (closest_distance < 15)
@@ -221,8 +246,8 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
         // fixed frame, we get it in the `target_frame_` frame.
         //
         // Then we translate from that frame into *our* target frame, `frame`.
-        double distance = -1.0;
-        if (tf_manager_->GetTransform(frame, target_frame_, transform))
+        double totaldistance = 0.0;
+       /*if (tf_manager_->GetTransform(frame, target_frame_, transform))
         {
           ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
                     target_frame_.c_str(),
@@ -249,6 +274,18 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
           QTextStream(&warning) << "No available transform from '" << QString::fromStdString(target_frame_) << "' to '" << QString::fromStdString(frame) << "'";
           PrintWarning(warning.toStdString());
           return false;
+        } */
+
+        if (tf_manager_->GetTransform(target_frame_, frame, transform))
+        {
+          for (size_t i = 0; i < vertices_.size(); i++)
+          {
+            tf::Vector3 vertex = vertices_[i];
+            vertex = transform * vertex;
+            QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
+
+            double totaldistance = totaldistance + QLineF(transformed, point).length();
+           }
         }
 
 
@@ -257,9 +294,9 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
         QTextStream stream(&new_point);
         stream.setRealNumberPrecision(4);
 
-        if (distance >= 0.0)
+        if (totaldistance > 0.0)
         {
-          stream << distance << " meters";
+          stream << totaldistance << " meters";
         }
 
         ui_.measurement->setText(new_point);
@@ -272,15 +309,12 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 
         if (tf_manager_->GetTransform(frame, target_frame_, transform))
         {
-          position = transform * position;
+          //position = transform * position;
           vertices_.push_back(position);
           transformed_vertices_.resize(vertices_.size());
           ROS_INFO("Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
         }
       }
-      //else
-        //  dragflag=1;
-
     }
     is_mouse_down_ = false;
   // Let other plugins process this event too
@@ -310,6 +344,63 @@ void MeasuringPlugin::FrameEdited()
 
 void MeasuringPlugin::Draw(double x, double y, double scale)
 {
+    stu::Transform transform;
+    std::string frame = ui_.frame->text().toStdString();
+    if (!tf_manager_->GetTransform(target_frame_, frame, transform))
+    {
+      return;
+    }
+
+    // Transform polygon
+    for (size_t i = 0; i < vertices_.size(); i++)
+    {
+      transformed_vertices_[i] = transform * vertices_[i];
+    }
+
+    /*if (print_Flag == 0)
+    {
+      ROS_INFO("Verticies_1 = %f", vertices_);
+      ROS_INFO("Transformed verticies = %f", transformed_vertices_);
+      print_Flag = 1;
+    } */
+
+    glLineWidth(1);
+    const QColor color = ui_.color->color();
+    glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
+    glBegin(GL_LINE_STRIP);
+
+    for (const auto& vertex: transformed_vertices_)
+    {
+      glVertex2d(vertex.x(), vertex.y());
+    }
+
+    glEnd();
+
+    glBegin(GL_LINES);
+
+    glColor4d(color.redF(), color.greenF(), color.blueF(), 0.25);
+
+    /*if (transformed_vertices_.size() > 2)
+    {
+      glVertex2d(transformed_vertices_.front().x(), transformed_vertices_.front().y());
+      glVertex2d(transformed_vertices_.back().x(), transformed_vertices_.back().y());
+    } */
+
+    glEnd();
+
+    // Draw vertices
+    glPointSize(9);
+    glBegin(GL_POINTS);
+
+    for (const auto& vertex: transformed_vertices_)
+    {
+      glVertex2d(vertex.x(), vertex.y());
+    }
+    glEnd();
+
+
+
+    PrintInfo("OK");
 }
 
 void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
