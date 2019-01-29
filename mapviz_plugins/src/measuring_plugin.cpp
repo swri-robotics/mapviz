@@ -197,9 +197,11 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
     std::string frame = ui_.frame->text().toStdString();
     stu::Transform transform;
-
+    ROS_INFO("Selected Point :%d", selected_point_);
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
+         double test = 1;
+         ROS_INFO("Debugging Flag :%d", test);
 #if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
 #else
@@ -279,25 +281,38 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
           return false;
         } */
 
+        ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
+
+        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+        //ROS_INFO("mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
+
+        stu::Transform transform;
+        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+        vertices_.push_back(position);
+        transformed_vertices_.resize(vertices_.size());
+        ROS_INFO("vertices_ size:%d", vertices_.size());
+        ROS_INFO("Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
+
+
         if (tf_manager_->GetTransform(target_frame_, frame, transform))
         {
           for (size_t i = 0; i < vertices_.size(); i++)
           {
             tf::Vector3 vertex = vertices_[i];
-            vertex = transform * vertex;
-            QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
-            ROS_INFO("Vertex x:%f, Vertex y:%f", vertex.x(),vertex.y());
-            ROS_INFO("vertices_ size:%d", vertices_.size());
-            distance_instant = last_position_.distance(vertex);
-            ROS_INFO("distance %f", distance_instant);
-            distance_sum = distance_sum + distance_instant;
-            ROS_INFO("Total Distance %f", distance_sum);
+            //vertex = transform * vertex;
+           // QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
+            if (last_position_ != tf::Vector3(0,0,0))
+            {
+                distance_instant = last_position_.distance(vertex);
+                ROS_INFO("distance %f", distance_instant);
+                distance_sum = distance_sum + distance_instant;
+                ROS_INFO("Total Distance %f", distance_sum);
+            }
             last_position_ = vertex;
+            ROS_INFO("Adding VERTEX at %lf, %lf %s", vertex.x(), vertex.y(), frame.c_str());
            }
         }
 
-
-        ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
         QString new_point;
         QTextStream stream(&new_point);
         stream.setRealNumberPrecision(4);
@@ -319,20 +334,13 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
         }
 
         ui_.totaldistance->setText(new_point2);
-
-        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        ROS_INFO("mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
-
-        stu::Transform transform;
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-
-        if (tf_manager_->GetTransform(frame, target_frame_, transform))
+  /*      if (tf_manager_->GetTransform(frame, target_frame_, transform))
         {
           position = transform * position;
           vertices_.push_back(position);
           transformed_vertices_.resize(vertices_.size());
           ROS_INFO("Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
-        }
+        } */
       }
     }
     is_mouse_down_ = false;
@@ -370,7 +378,7 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
       return;
     }
 
-    // Transform polygon
+    // Transform
     for (size_t i = 0; i < vertices_.size(); i++)
     {
       transformed_vertices_[i] = transform * vertices_[i];
