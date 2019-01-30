@@ -77,6 +77,7 @@ namespace mapviz_plugins
       void SelectFrame();
       void FrameEdited();
       void Clear();
+      void DistanceCalculation();
       void ToggleCopyOnClick(int state);
       void ClearCoordList();
 
@@ -90,6 +91,7 @@ namespace mapviz_plugins
       std::vector<tf::Vector3> transformed_vertices_;
 
       int selected_point_;
+      bool swap_point_;
       int print_Flag;
       bool is_mouse_down_;
       QPointF mouse_down_pos_;

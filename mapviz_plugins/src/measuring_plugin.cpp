@@ -63,6 +63,7 @@ MeasuringPlugin::MeasuringPlugin():
   config_widget_(new QWidget()),
   print_Flag(0),
   selected_point_(-1),
+  swap_point_(false),
   is_mouse_down_(false),
   max_ms_(Q_INT64_C(500)),
   max_distance_(2.0),
@@ -141,7 +142,6 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 #endif
   stu::Transform transform;
   ROS_DEBUG("Map point: %f %f", point.x(), point.y());
-
   std::string frame = ui_.frame->text().toStdString();
   if (tf_manager_->GetTransform(target_frame_, frame, transform))
   {
@@ -157,6 +157,7 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
       {
         closest_distance = distance;
         closest_point = static_cast<int>(i);
+        ROS_INFO("Closest Distance :%lf", closest_distance);
       }
     }
   }
@@ -165,6 +166,8 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
     if (closest_distance < 15)
     {
       selected_point_ = closest_point;
+       ROS_INFO("Selected Point :%d", selected_point_);
+       ROS_INFO("Closest Point :%d", closest_point);
       return true;
     }
     else
@@ -185,6 +188,7 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
     {
       vertices_.erase(vertices_.begin() + closest_point);
       transformed_vertices_.resize(vertices_.size());
+      DistanceCalculation(); //function to calculate distance
       return true;
     }
   }
@@ -197,11 +201,8 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
     std::string frame = ui_.frame->text().toStdString();
     stu::Transform transform;
-    ROS_INFO("Selected Point :%d", selected_point_);
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
-         double test = 1;
-         ROS_INFO("Debugging Flag :%d", test);
 #if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
 #else
@@ -216,7 +217,10 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
         vertices_[selected_point_].setY(position.y());
       }
 
+      DistanceCalculation();
+
       selected_point_ = -1;
+
       return true;
     }
     else if (is_mouse_down_)
@@ -232,8 +236,9 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
       // and was held for shorter than the maximum time..  This prevents click
       // events from being fired if the user is dragging the mouse across the map
       // or just holding the cursor in place.
-      if (msecsDiff < max_ms_ && distance <= max_distance_)
+      if ((msecsDiff < max_ms_ && distance <= max_distance_) || swap_point_ == true)
       {
+          ROS_INFO("Debugging Flag 3 :%d", swap_point_);
 #if QT_VERSION >= 0x050000
         QPointF point = event->localPos();
 #else
@@ -244,112 +249,91 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
           frame = target_frame_;
         }
 
-        // Frames get confusing. The `target_frame_` member is set by the "Fixed
-        // Frame" combobox in the GUI. When we transform the map coordinate to the
-        // fixed frame, we get it in the `target_frame_` frame.
-        //
-        // Then we translate from that frame into *our* target frame, `frame`.
-        double distance_instant = -1; //measurement between last two points
-        double distance_sum = 0; //sum of distance from all points
-        tf::Vector3 last_position_(0,0,0);
-       /*if (tf_manager_->GetTransform(frame, target_frame_, transform))
-        {
-          ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
-                    target_frame_.c_str(),
-                    frame.c_str());
-          QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-          ROS_DEBUG("Point in fixed frame: %f %f", transformed.x(), transformed.y());
-          tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-          position = transform * position;
-          point.setX(position.x());
-          point.setY(position.y());
 
-          if (last_position_ != tf::Vector3(0.0,0.0,0.0))
-          {
-            distance = last_position_.distance(position);
-          }
-
-          last_position_ = position;
-
-          PrintInfo("OK");
-        }
-        else
-        {
-          QString warning;
-          QTextStream(&warning) << "No available transform from '" << QString::fromStdString(target_frame_) << "' to '" << QString::fromStdString(frame) << "'";
-          PrintWarning(warning.toStdString());
-          return false;
-        } */
-
-        ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
 
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        //ROS_INFO("mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
-
         stu::Transform transform;
         tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
         vertices_.push_back(position);
         transformed_vertices_.resize(vertices_.size());
-        ROS_INFO("vertices_ size:%d", vertices_.size());
-        ROS_INFO("Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
+        DistanceCalculation(); //call to calculate distance
+      }
+    }
+      is_mouse_down_ = false;
+    // Let other plugins process this event too
+    return false;
+}
 
-
-        if (tf_manager_->GetTransform(target_frame_, frame, transform))
+void MeasuringPlugin::DistanceCalculation()
+{
+    double distance_instant = -1; //measurement between last two points
+    double distance_sum = 0; //sum of distance from all points
+    tf::Vector3 last_position_(0,0,0);
+    stu::Transform transform;
+    std::string frame = ui_.frame->text().toStdString();
+    if (tf_manager_->GetTransform(target_frame_, frame, transform))
+    {
+        for (size_t i = 0; i < vertices_.size(); i++)
         {
-          for (size_t i = 0; i < vertices_.size(); i++)
-          {
             tf::Vector3 vertex = vertices_[i];
             //vertex = transform * vertex;
-           // QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
+            // QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
             if (last_position_ != tf::Vector3(0,0,0))
             {
                 distance_instant = last_position_.distance(vertex);
-                ROS_INFO("distance %f", distance_instant);
+                ROS_INFO("Distance %f", distance_instant);
                 distance_sum = distance_sum + distance_instant;
                 ROS_INFO("Total Distance %f", distance_sum);
             }
             last_position_ = vertex;
-            ROS_INFO("Adding VERTEX at %lf, %lf %s", vertex.x(), vertex.y(), frame.c_str());
-           }
+            // ROS_INFO("Adding VERTEX at %lf, %lf %s", vertex.x(), vertex.y(), frame.c_str());
         }
-
-        QString new_point;
-        QTextStream stream(&new_point);
-        stream.setRealNumberPrecision(4);
-
-        if (distance_instant > 0.0)
-        {
-          stream << distance_instant << " meters";
-        }
-
-        ui_.measurement->setText(new_point);
-
-        QString new_point2;
-        QTextStream stream2(&new_point2);
-        stream2.setRealNumberPrecision(4);
-
-        if (distance_sum > 0.0)
-        {
-          stream2 << distance_sum << " meters";
-        }
-
-        ui_.totaldistance->setText(new_point2);
-  /*      if (tf_manager_->GetTransform(frame, target_frame_, transform))
-        {
-          position = transform * position;
-          vertices_.push_back(position);
-          transformed_vertices_.resize(vertices_.size());
-          ROS_INFO("Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
-        } */
-      }
     }
-    is_mouse_down_ = false;
-  // Let other plugins process this event too
-  return false;
+
+    QString new_point;
+    QTextStream stream(&new_point);
+    stream.setRealNumberPrecision(4);
+
+    if (distance_instant > 0.0)
+    {
+        stream << distance_instant << " meters";
+    }
+
+    ui_.measurement->setText(new_point);
+
+    QString new_point2;
+    QTextStream stream2(&new_point2);
+    stream2.setRealNumberPrecision(4);
+
+    if (distance_sum > 0.0)
+    {
+        stream2 << distance_sum << " meters";
+    }
+
+    ui_.totaldistance->setText(new_point2);
 }
 
 bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 {
+    if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
+    {
+#if QT_VERSION >= 0x050000
+      QPointF point = event->localPos();
+#else
+      QPointF point = event->posF();
+#endif
+      stu::Transform transform;
+      std::string frame = ui_.frame->text().toStdString();
+      if (tf_manager_->GetTransform(frame, target_frame_, transform))
+      {
+        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+        position = transform * position;
+        vertices_[selected_point_].setY(position.y());
+        vertices_[selected_point_].setX(position.x());
+      }
+      return true;
+    }
   // Let other plugins process this event too
   return false;
 }
