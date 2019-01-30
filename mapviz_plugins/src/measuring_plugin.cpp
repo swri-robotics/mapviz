@@ -61,14 +61,11 @@ namespace mapviz_plugins
 
 MeasuringPlugin::MeasuringPlugin():
   config_widget_(new QWidget()),
-  print_Flag(0),
   selected_point_(-1),
-  swap_point_(false),
   is_mouse_down_(false),
   max_ms_(Q_INT64_C(500)),
   max_distance_(2.0),
   map_canvas_(NULL)
-  //last_position_(tf::Vector3(0.0,0.0,0.0))
 {
   ui_.setupUi(config_widget_);
 
@@ -81,6 +78,7 @@ MeasuringPlugin::MeasuringPlugin():
 
 #if QT_VERSION >= 0x050000
   ui_.measurement->setText(tr("Click on the map; distance between clicks will appear here"));
+  ui_.totaldistance->setText(tr("Click on the map; Total distance between clicks will appear here"));
 #endif
 }
 
@@ -96,6 +94,8 @@ void MeasuringPlugin::Clear()
 {
   vertices_.clear();
   transformed_vertices_.clear();
+  ui_.measurement->setText(tr("Click on the map; distance between clicks will appear here"));
+  ui_.totaldistance->setText(tr("Click on the map; Total distance between clicks will appear here"));
 }
 QWidget* MeasuringPlugin::GetConfigWidget(QWidget* parent)
 {
@@ -157,7 +157,6 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
       {
         closest_distance = distance;
         closest_point = static_cast<int>(i);
-        ROS_INFO("Closest Distance :%lf", closest_distance);
       }
     }
   }
@@ -166,8 +165,6 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
     if (closest_distance < 15)
     {
       selected_point_ = closest_point;
-       ROS_INFO("Selected Point :%d", selected_point_);
-       ROS_INFO("Closest Point :%d", closest_point);
       return true;
     }
     else
@@ -236,9 +233,8 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
       // and was held for shorter than the maximum time..  This prevents click
       // events from being fired if the user is dragging the mouse across the map
       // or just holding the cursor in place.
-      if ((msecsDiff < max_ms_ && distance <= max_distance_) || swap_point_ == true)
+      if (msecsDiff < max_ms_ && distance <= max_distance_)
       {
-          ROS_INFO("Debugging Flag 3 :%d", swap_point_);
 #if QT_VERSION >= 0x050000
         QPointF point = event->localPos();
 #else
@@ -276,17 +272,12 @@ void MeasuringPlugin::DistanceCalculation()
         for (size_t i = 0; i < vertices_.size(); i++)
         {
             tf::Vector3 vertex = vertices_[i];
-            //vertex = transform * vertex;
-            // QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
             if (last_position_ != tf::Vector3(0,0,0))
             {
                 distance_instant = last_position_.distance(vertex);
-                ROS_INFO("Distance %f", distance_instant);
                 distance_sum = distance_sum + distance_instant;
-                ROS_INFO("Total Distance %f", distance_sum);
             }
             last_position_ = vertex;
-            // ROS_INFO("Adding VERTEX at %lf, %lf %s", vertex.x(), vertex.y(), frame.c_str());
         }
     }
 
