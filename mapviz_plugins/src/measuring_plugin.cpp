@@ -69,13 +69,8 @@ MeasuringPlugin::MeasuringPlugin():
 {
   ui_.setupUi(config_widget_);
 
-  QObject::connect(ui_.selectframe, SIGNAL(clicked()),
-                   this, SLOT(SelectFrame()));
-  QObject::connect(ui_.frame, SIGNAL(editingFinished()),
-                   this, SLOT(FrameEdited()));
   QObject::connect(ui_.clear, SIGNAL(clicked()), this,
                    SLOT(Clear()));
-
 #if QT_VERSION >= 0x050000
   ui_.measurement->setText(tr("Click on the map; distance between clicks will appear here"));
   ui_.totaldistance->setText(tr("Click on the map; Total distance between clicks will appear here"));
@@ -93,7 +88,6 @@ MeasuringPlugin::~MeasuringPlugin()
 void MeasuringPlugin::Clear()
 {
   vertices_.clear();
-  transformed_vertices_.clear();
   ui_.measurement->setText(tr("Click on the map; distance between clicks will appear here"));
   ui_.totaldistance->setText(tr("Click on the map; Total distance between clicks will appear here"));
 }
@@ -142,22 +136,17 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 #endif
   stu::Transform transform;
   ROS_DEBUG("Map point: %f %f", point.x(), point.y());
-  std::string frame = ui_.frame->text().toStdString();
-  if (tf_manager_->GetTransform(target_frame_, frame, transform))
+  for (size_t i = 0; i < vertices_.size(); i++)
   {
-    for (size_t i = 0; i < vertices_.size(); i++)
+    tf::Vector3 vertex = vertices_[i];
+    QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
+
+    double distance = QLineF(transformed, point).length();
+
+    if (distance < closest_distance)
     {
-      tf::Vector3 vertex = vertices_[i];
-      vertex = transform * vertex;
-      QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
-
-      double distance = QLineF(transformed, point).length();
-
-      if (distance < closest_distance)
-      {
-        closest_distance = distance;
-        closest_point = static_cast<int>(i);
-      }
+      closest_distance = distance;
+      closest_point = static_cast<int>(i);
     }
   }
   if (event->button() == Qt::LeftButton)
@@ -184,7 +173,6 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
     if (closest_distance < 15)
     {
       vertices_.erase(vertices_.begin() + closest_point);
-      transformed_vertices_.resize(vertices_.size());
       DistanceCalculation(); //function to calculate distance
       return true;
     }
@@ -196,8 +184,6 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 
 bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
-    std::string frame = ui_.frame->text().toStdString();
-    stu::Transform transform;
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
 #if QT_VERSION >= 0x050000
@@ -205,14 +191,10 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 #else
       QPointF point = event->posF();
 #endif
-      if (tf_manager_->GetTransform(frame, target_frame_, transform))
-      {
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
         tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-        position = transform * position;
         vertices_[selected_point_].setX(position.x());
         vertices_[selected_point_].setY(position.y());
-      }
 
       DistanceCalculation();
 
@@ -240,18 +222,11 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 #else
         QPointF point = event->posF();
 #endif
-        if (frame.empty())
-        {
-          frame = target_frame_;
-        }
-
-
 
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
         stu::Transform transform;
         tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
         vertices_.push_back(position);
-        transformed_vertices_.resize(vertices_.size());
         DistanceCalculation(); //call to calculate distance
       }
     }
@@ -266,7 +241,7 @@ void MeasuringPlugin::DistanceCalculation()
     double distance_sum = 0; //sum of distance from all points
     tf::Vector3 last_position_(0,0,0);
     stu::Transform transform;
-    std::string frame = ui_.frame->text().toStdString();
+    std::string frame = target_frame_;//ui_.frame->text().toStdString();
     if (tf_manager_->GetTransform(target_frame_, frame, transform))
     {
         for (size_t i = 0; i < vertices_.size(); i++)
@@ -314,58 +289,26 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
       QPointF point = event->posF();
 #endif
       stu::Transform transform;
-      std::string frame = ui_.frame->text().toStdString();
-      if (tf_manager_->GetTransform(frame, target_frame_, transform))
-      {
-        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-        position = transform * position;
-        vertices_[selected_point_].setY(position.y());
-        vertices_[selected_point_].setX(position.x());
-      }
+      std::string frame = target_frame_;//ui_.frame->text().toStdString();
+      QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+      tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+      vertices_[selected_point_].setY(position.y());
+      vertices_[selected_point_].setX(position.x());
+      //  }
       return true;
     }
   // Let other plugins process this event too
   return false;
 }
 
-void MeasuringPlugin::SelectFrame()
-{
-  std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
-  if (!frame.empty())
-  {
-    ui_.frame->setText(QString::fromStdString(frame));
-    FrameEdited();
-  }
-}
-
-void MeasuringPlugin::FrameEdited()
-{
-  ROS_INFO("Setting target frame to %s", ui_.frame->text().toStdString().c_str());
-}
-
 void MeasuringPlugin::Draw(double x, double y, double scale)
 {
-    stu::Transform transform;
-    std::string frame = ui_.frame->text().toStdString();
-    if (!tf_manager_->GetTransform(target_frame_, frame, transform))
-    {
-      return;
-    }
-
-    // Transform
-    for (size_t i = 0; i < vertices_.size(); i++)
-    {
-      transformed_vertices_[i] = transform * vertices_[i];
-    }
-
-
     glLineWidth(1);
     const QColor color = ui_.color->color();
     glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
     glBegin(GL_LINE_STRIP);
 
-    for (const auto& vertex: transformed_vertices_)
+    for (const auto& vertex: vertices_)
     {
       glVertex2d(vertex.x(), vertex.y());
     }
@@ -382,7 +325,7 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
     glPointSize(9);
     glBegin(GL_POINTS);
 
-    for (const auto& vertex: transformed_vertices_)
+    for (const auto& vertex: vertices_)
     {
       glVertex2d(vertex.x(), vertex.y());
     }
@@ -395,18 +338,12 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
 
 void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
 {
-  if (node["frame"])
-  {
-    std::string frame;
-    node["frame"] >> frame;
-    ui_.frame->setText(QString::fromStdString(frame));
-  }
+
 }
 
 void MeasuringPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
 {
-  std::string frame = ui_.frame->text().toStdString();
-  emitter << YAML::Key << "frame" << YAML::Value << frame;
+
 }
 
 void MeasuringPlugin::PrintError(const std::string& message)

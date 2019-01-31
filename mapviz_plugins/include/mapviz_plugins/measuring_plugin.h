@@ -74,8 +74,6 @@ namespace mapviz_plugins
       bool handleMouseMove(QMouseEvent*);
 
     protected Q_SLOTS:
-      void SelectFrame();
-      void FrameEdited();
       void Clear();
       void DistanceCalculation();
       void ToggleCopyOnClick(int state);
