@@ -69,8 +69,6 @@ namespace mapviz_plugins
     bool Initialize(QGLWidget* canvas);
     void Shutdown() {}
 
-    void ClearHistory();
-
     void Draw(double x, double y, double scale);
     void Paint(QPainter* painter, double x, double y, double scale);
 
@@ -95,6 +93,7 @@ namespace mapviz_plugins
   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
+    void ClearHistory();
 
   private:
     struct StampedPoint
