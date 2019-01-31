@@ -113,14 +113,14 @@ bool MeasuringPlugin::eventFilter(QObject* object, QEvent* event)
 {
   switch (event->type())
   {
-    case QEvent::MouseButtonPress:
-      return handleMousePress(static_cast< QMouseEvent* >(event));
-    case QEvent::MouseButtonRelease:
-      return handleMouseRelease(static_cast< QMouseEvent* >(event));
-    case QEvent::MouseMove:
-      return handleMouseMove(static_cast< QMouseEvent* >(event));
-    default:
-      return false;
+  case QEvent::MouseButtonPress:
+    return handleMousePress(static_cast< QMouseEvent* >(event));
+  case QEvent::MouseButtonRelease:
+    return handleMouseRelease(static_cast< QMouseEvent* >(event));
+  case QEvent::MouseMove:
+    return handleMouseMove(static_cast< QMouseEvent* >(event));
+  default:
+    return false;
   }
 }
 
@@ -184,156 +184,153 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 
 bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
-    if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
+  if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
+  {
+#if QT_VERSION >= 0x050000
+    QPointF point = event->localPos();
+#else
+    QPointF point = event->posF();
+#endif
+    QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+    tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+    vertices_[selected_point_].setX(position.x());
+    vertices_[selected_point_].setY(position.y());
+
+    DistanceCalculation();
+
+    selected_point_ = -1;
+
+    return true;
+  }
+  else if (is_mouse_down_)
+  {
+#if QT_VERSION >= 0x050000
+    qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
+#else
+    qreal distance = QLineF(mouse_down_pos_, event->posF()).length();
+#endif
+    qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
+
+    // Only fire the event if the mouse has moved less than the maximum distance
+    // and was held for shorter than the maximum time..  This prevents click
+    // events from being fired if the user is dragging the mouse across the map
+    // or just holding the cursor in place.
+    if (msecsDiff < max_ms_ && distance <= max_distance_)
     {
 #if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
 #else
       QPointF point = event->posF();
 #endif
-        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-        vertices_[selected_point_].setX(position.x());
-        vertices_[selected_point_].setY(position.y());
 
-      DistanceCalculation();
-
-      selected_point_ = -1;
-
-      return true;
+      QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+      stu::Transform transform;
+      tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+      vertices_.push_back(position);
+      DistanceCalculation(); //call to calculate distance
     }
-    else if (is_mouse_down_)
-    {
-#if QT_VERSION >= 0x050000
-      qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
-#else
-      qreal distance = QLineF(mouse_down_pos_, event->posF()).length();
-#endif
-      qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
-
-      // Only fire the event if the mouse has moved less than the maximum distance
-      // and was held for shorter than the maximum time..  This prevents click
-      // events from being fired if the user is dragging the mouse across the map
-      // or just holding the cursor in place.
-      if (msecsDiff < max_ms_ && distance <= max_distance_)
-      {
-#if QT_VERSION >= 0x050000
-        QPointF point = event->localPos();
-#else
-        QPointF point = event->posF();
-#endif
-
-        QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        stu::Transform transform;
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-        vertices_.push_back(position);
-        DistanceCalculation(); //call to calculate distance
-      }
-    }
-      is_mouse_down_ = false;
-    // Let other plugins process this event too
-    return false;
+  }
+  is_mouse_down_ = false;
+  // Let other plugins process this event too
+  return false;
 }
 
 void MeasuringPlugin::DistanceCalculation()
 {
-    double distance_instant = -1; //measurement between last two points
-    double distance_sum = 0; //sum of distance from all points
-    tf::Vector3 last_position_(0,0,0);
-    stu::Transform transform;
-    std::string frame = target_frame_;//ui_.frame->text().toStdString();
-    if (tf_manager_->GetTransform(target_frame_, frame, transform))
+  double distance_instant = -1; //measurement between last two points
+  double distance_sum = 0; //sum of distance from all points
+  tf::Vector3 last_position_(0,0,0);
+  stu::Transform transform;
+  std::string frame = target_frame_;
+  if (tf_manager_->GetTransform(target_frame_, frame, transform))
+  {
+    for (size_t i = 0; i < vertices_.size(); i++)
     {
-        for (size_t i = 0; i < vertices_.size(); i++)
-        {
-            tf::Vector3 vertex = vertices_[i];
-            if (last_position_ != tf::Vector3(0,0,0))
-            {
-                distance_instant = last_position_.distance(vertex);
-                distance_sum = distance_sum + distance_instant;
-            }
-            last_position_ = vertex;
-        }
+      tf::Vector3 vertex = vertices_[i];
+      if (last_position_ != tf::Vector3(0,0,0))
+      {
+        distance_instant = last_position_.distance(vertex);
+        distance_sum = distance_sum + distance_instant;
+      }
+      last_position_ = vertex;
     }
+  }
 
-    QString new_point;
-    QTextStream stream(&new_point);
-    stream.setRealNumberPrecision(4);
+  QString new_point;
+  QTextStream stream(&new_point);
+  stream.setRealNumberPrecision(4);
 
-    if (distance_instant > 0.0)
-    {
-        stream << distance_instant << " meters";
-    }
+  if (distance_instant > 0.0)
+  {
+    stream << distance_instant << " meters";
+  }
 
-    ui_.measurement->setText(new_point);
+  ui_.measurement->setText(new_point);
 
-    QString new_point2;
-    QTextStream stream2(&new_point2);
-    stream2.setRealNumberPrecision(4);
+  QString new_point2;
+  QTextStream stream2(&new_point2);
+  stream2.setRealNumberPrecision(4);
 
-    if (distance_sum > 0.0)
-    {
-        stream2 << distance_sum << " meters";
-    }
+  if (distance_sum > 0.0)
+  {
+    stream2 << distance_sum << " meters";
+  }
 
-    ui_.totaldistance->setText(new_point2);
+  ui_.totaldistance->setText(new_point2);
 }
 
 bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 {
-    if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
-    {
+  if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
+  {
 #if QT_VERSION >= 0x050000
-      QPointF point = event->localPos();
+    QPointF point = event->localPos();
 #else
-      QPointF point = event->posF();
+    QPointF point = event->posF();
 #endif
-      stu::Transform transform;
-      std::string frame = target_frame_;//ui_.frame->text().toStdString();
-      QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-      tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
-      vertices_[selected_point_].setY(position.y());
-      vertices_[selected_point_].setX(position.x());
-      //  }
-      return true;
-    }
+    stu::Transform transform;
+    std::string frame = target_frame_;
+    QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
+    tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+    vertices_[selected_point_].setY(position.y());
+    vertices_[selected_point_].setX(position.x());
+    return true;
+  }
   // Let other plugins process this event too
   return false;
 }
 
 void MeasuringPlugin::Draw(double x, double y, double scale)
 {
-    glLineWidth(1);
-    const QColor color = ui_.color->color();
-    glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
-    glBegin(GL_LINE_STRIP);
+  glLineWidth(1);
+  const QColor color = ui_.color->color();
+  glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
+  glBegin(GL_LINE_STRIP);
 
-    for (const auto& vertex: vertices_)
-    {
-      glVertex2d(vertex.x(), vertex.y());
-    }
+  for (const auto& vertex: vertices_)
+  {
+    glVertex2d(vertex.x(), vertex.y());
+  }
 
-    glEnd();
+  glEnd();
 
-    glBegin(GL_LINES);
+  glBegin(GL_LINES);
 
-    glColor4d(color.redF(), color.greenF(), color.blueF(), 0.25);
+  glColor4d(color.redF(), color.greenF(), color.blueF(), 0.25);
 
-    glEnd();
+  glEnd();
 
-    // Draw vertices
-    glPointSize(9);
-    glBegin(GL_POINTS);
+  // Draw vertices
+  glPointSize(9);
+  glBegin(GL_POINTS);
 
-    for (const auto& vertex: vertices_)
-    {
-      glVertex2d(vertex.x(), vertex.y());
-    }
-    glEnd();
+  for (const auto& vertex: vertices_)
+  {
+    glVertex2d(vertex.x(), vertex.y());
+  }
+  glEnd();
 
-
-
-    PrintInfo("OK");
+  PrintInfo("OK");
 }
 
 void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
