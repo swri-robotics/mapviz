@@ -395,7 +395,7 @@ namespace mapviz_plugins
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
 
-    emitter << YAML::Key << "tampstamps" << YAML::Value << ui_.show_timestamps->value();
+    emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
   }
 }
 
