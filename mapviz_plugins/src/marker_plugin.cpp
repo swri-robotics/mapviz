@@ -310,7 +310,7 @@ namespace mapviz_plugins
         markerData.points.push_back(point);
         markerData.text = marker.text;
       }
-      else if (marker.action == 3) //is delete all funciton called
+      else if (marker.action == 3) //is delete all function called
       {
          markers_.clear();
       }
