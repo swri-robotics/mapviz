@@ -57,9 +57,11 @@ namespace mapviz_plugins
 
       void Draw(double x, double y, double scale);
       void Transform() { };
-      
+
       void LoadConfig(const YAML::Node& node, const std::string& path);
       void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+
+      void DistanceCalculation();
 
       QWidget* GetConfigWidget(QWidget* parent);
 
@@ -75,13 +77,11 @@ namespace mapviz_plugins
 
     protected Q_SLOTS:
       void Clear();
-      void DistanceCalculation();
-      void ToggleCopyOnClick(int state);
-      void ClearCoordList();
 
     private:
       Ui::measuring_config ui_;
       QWidget* config_widget_;
+
       mapviz::MapCanvas* map_canvas_;
       tf::Vector3 last_position_;
 

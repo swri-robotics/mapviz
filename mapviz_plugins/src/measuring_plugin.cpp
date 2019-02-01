@@ -32,7 +32,6 @@
 
 // QT libraries
 #include <QDateTime>
-#include <QClipboard>
 #include <QMouseEvent>
 #include <QTextStream>
 
@@ -48,13 +47,8 @@
 // Mapviz Libraries
 #include <mapviz/select_frame_dialog.h>
 
-//
-#include <swri_transform_util/transform.h>
-
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MeasuringPlugin, mapviz::MapvizPlugin)
-
-namespace stu = swri_transform_util;
 
 namespace mapviz_plugins
 {
@@ -134,7 +128,6 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 #else
   QPointF point = event->posF();
 #endif
-  stu::Transform transform;
   ROS_DEBUG("Map point: %f %f", point.x(), point.y());
   for (size_t i = 0; i < vertices_.size(); i++)
   {
@@ -224,7 +217,6 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 #endif
 
       QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-      stu::Transform transform;
       tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
       vertices_.push_back(position);
       DistanceCalculation(); //call to calculate distance
@@ -240,22 +232,17 @@ void MeasuringPlugin::DistanceCalculation()
   double distance_instant = -1; //measurement between last two points
   double distance_sum = 0; //sum of distance from all points
   tf::Vector3 last_position_(0,0,0);
-  stu::Transform transform;
   std::string frame = target_frame_;
-  if (tf_manager_->GetTransform(target_frame_, frame, transform))
+  for (size_t i = 0; i < vertices_.size(); i++)
   {
-    for (size_t i = 0; i < vertices_.size(); i++)
-    {
       tf::Vector3 vertex = vertices_[i];
       if (last_position_ != tf::Vector3(0,0,0))
       {
-        distance_instant = last_position_.distance(vertex);
-        distance_sum = distance_sum + distance_instant;
+          distance_instant = last_position_.distance(vertex);
+          distance_sum = distance_sum + distance_instant;
       }
       last_position_ = vertex;
-    }
   }
-
   QString new_point;
   QTextStream stream(&new_point);
   stream.setRealNumberPrecision(4);
@@ -288,15 +275,13 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 #else
     QPointF point = event->posF();
 #endif
-    stu::Transform transform;
     std::string frame = target_frame_;
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
     tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
     vertices_[selected_point_].setY(position.y());
     vertices_[selected_point_].setX(position.x());
     return true;
-  }
-  // Let other plugins process this event too
+  }// Let other plugins process this event too
   return false;
 }
 
