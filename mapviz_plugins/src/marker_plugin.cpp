@@ -75,6 +75,7 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
 
     startTimer(1000);
   }
@@ -85,6 +86,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::ClearHistory()
   {
+    ROS_INFO("Marker Clear all");
     markers_.clear();
   }
 
@@ -307,6 +309,10 @@ namespace mapviz_plugins
 
         markerData.points.push_back(point);
         markerData.text = marker.text;
+      }
+      else if (marker.action == 3) //is delete all function called
+      {
+         markers_.clear();
       }
       else
       {
