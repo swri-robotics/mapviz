@@ -283,7 +283,7 @@ namespace mapviz_plugins
           ROS_WARN("Unsupported encoding: %s", markerData.encoding_.c_str());
         }
 
-        if (size > 0 && marker.image.data.size() < marker.image.height*marker.image.width*bpp)
+        if (markerData.texture_.size() > 0 && marker.image.data.size() < marker.image.height*marker.image.width*bpp)
         {
           ROS_ERROR("TexturedMarker image had expected data size %i but only got %i. Dropping message.", size, marker.image.data.size());
           return;
