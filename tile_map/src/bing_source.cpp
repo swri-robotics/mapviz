@@ -47,6 +47,7 @@ namespace tile_map
   const std::string BingSource::BING_STATUS_CODE_KEY = "statusCode";
 
   BingSource::BingSource(const QString& name) :
+    TileSource(),
     network_manager_(this)
   {
     name_ = name;

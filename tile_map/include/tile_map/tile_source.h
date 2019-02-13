@@ -105,7 +105,7 @@ namespace tile_map
   protected:
     TileSource() :
       is_custom_(false),
-      is_ready_(false),
+      is_ready_(true),
       max_zoom_(20),
       min_zoom_(0)
     {};

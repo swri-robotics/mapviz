@@ -39,7 +39,8 @@ namespace tile_map
   WmtsSource::WmtsSource(const QString& name,
                          const QString& base_url,
                          bool is_custom,
-                         int32_t max_zoom)
+                         int32_t max_zoom) :
+                         TileSource()
   {
     name_ = name;
     base_url_ = base_url;
