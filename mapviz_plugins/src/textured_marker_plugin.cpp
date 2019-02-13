@@ -262,21 +262,32 @@ namespace mapviz_plugins
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+        size_t bpp = 0;
         if (markerData.encoding_ == sensor_msgs::image_encodings::BGRA8)
         {
+          bpp = 4;
           markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 4));
         }
         else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8)
         {
+          bpp = 3;
           markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 3));
         }
         else if (markerData.encoding_ == sensor_msgs::image_encodings::MONO8)
         {
+          bpp = 1;
           markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_));
         }
         else
         {
           ROS_WARN("Unsupported encoding: %s", markerData.encoding_.c_str());
+        }
+
+        size_t expected = marker.image.height*marker.image.width*bpp;
+        if (markerData.texture_.size() > 0 && marker.image.data.size() < expected)
+        {
+          ROS_ERROR("TexturedMarker image had expected data size %i but only got %i. Dropping message.", expected, marker.image.data.size());
+          return;
         }
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
