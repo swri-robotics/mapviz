@@ -57,9 +57,11 @@ namespace mapviz_plugins
 
       void Draw(double x, double y, double scale);
       void Transform() { };
-      
+
       void LoadConfig(const YAML::Node& node, const std::string& path);
       void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+
+      void DistanceCalculation();
 
       QWidget* GetConfigWidget(QWidget* parent);
 
@@ -74,16 +76,25 @@ namespace mapviz_plugins
       bool handleMouseMove(QMouseEvent*);
 
     protected Q_SLOTS:
-      void SelectFrame();
-      void FrameEdited();
-      void ToggleCopyOnClick(int state);
-      void ClearCoordList();
+      void Clear();
 
     private:
       Ui::measuring_config ui_;
       QWidget* config_widget_;
+
       mapviz::MapCanvas* map_canvas_;
       tf::Vector3 last_position_;
+
+      std::vector<tf::Vector3> vertices_;
+      std::vector<tf::Vector3> transformed_vertices_;
+
+      int selected_point_;
+      bool is_mouse_down_;
+      QPointF mouse_down_pos_;
+      qint64 mouse_down_time_;
+
+      qint64 max_ms_;
+      qreal max_distance_;
   };
 
 
