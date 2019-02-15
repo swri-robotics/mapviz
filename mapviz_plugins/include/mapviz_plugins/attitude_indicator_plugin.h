@@ -100,8 +100,8 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin
   void AttitudeCallbackOdom(const nav_msgs::OdometryConstPtr& odometry);
   void AttitudeCallbackPose(const geometry_msgs::PoseConstPtr& pose);
   void handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg);
+  void applyAttitudeOrientation(const geometry_msgs::Quaternion &orientation);
 
-  tf::Quaternion attitude_orientation_;
   double pitch_;
   double roll_;
   double yaw_;
