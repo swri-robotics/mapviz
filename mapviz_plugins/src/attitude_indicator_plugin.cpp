@@ -141,55 +141,33 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::AttitudeCallbackOdom(const nav_msgs::OdometryConstPtr& odometry)
   {
-    attitude_orientation_ = tf::Quaternion(
-        odometry->pose.pose.orientation.x,
-        odometry->pose.pose.orientation.y,
-        odometry->pose.pose.orientation.z,
-        odometry->pose.pose.orientation.w);
-
-    tf::Matrix3x3 m(attitude_orientation_);
-    m.getRPY(roll_, pitch_, yaw_);
-    roll_ = roll_ * (180.0 / M_PI);
-    pitch_ = pitch_ * (180.0 / M_PI);
-    yaw_ = yaw_ * (180.0 / M_PI);
-
-    ROS_INFO("roll %f,pitch %f, yaw %f", roll_, pitch_, yaw_);
-    canvas_->update();
+    applyAttitudeOrientation(odometry->pose.pose.orientation);
   }
 
   void AttitudeIndicatorPlugin::AttitudeCallbackImu(const sensor_msgs::ImuConstPtr& imu)
   {
-    attitude_orientation_ = tf::Quaternion(
-        imu->orientation.x,
-        imu->orientation.y,
-        imu->orientation.z,
-        imu->orientation.w);
-
-    tf::Matrix3x3 m(attitude_orientation_);
-    m.getRPY(roll_, pitch_, yaw_);
-    roll_ = roll_ * (180.0 / M_PI);
-    pitch_ = pitch_ * (180.0 / M_PI);
-    yaw_ = yaw_ * (180.0 / M_PI);
-    ROS_INFO("roll %f,pitch %f, yaw %f", roll_, pitch_, yaw_);
-
-    canvas_->update();
+    applyAttitudeOrientation(imu->orientation);
   }
 
   void AttitudeIndicatorPlugin::AttitudeCallbackPose(const geometry_msgs::PoseConstPtr& pose)
   {
-    attitude_orientation_ = tf::Quaternion(
-        pose->orientation.x,
-        pose->orientation.y,
-        pose->orientation.z,
-        pose->orientation.w);
+    applyAttitudeOrientation(pose->orientation);
+  }
 
-    tf::Matrix3x3 m(attitude_orientation_);
+  void AttitudeIndicatorPlugin::applyAttitudeOrientation(const geometry_msgs::Quaternion &orientation)
+  {
+    tf::Quaternion attitude_orientation(
+      orientation.x,
+      orientation.y,
+      orientation.z,
+      orientation.w);
+
+    tf::Matrix3x3 m(attitude_orientation);
     m.getRPY(roll_, pitch_, yaw_);
     roll_ = roll_ * (180.0 / M_PI);
     pitch_ = pitch_ * (180.0 / M_PI);
     yaw_ = yaw_ * (180.0 / M_PI);
 
-    ROS_INFO("roll %f,pitch %f, yaw %f", roll_, pitch_, yaw_);
     canvas_->update();
   }
 
