@@ -305,10 +305,6 @@ namespace mapviz_plugins
           markerData.points.push_back(point);
         }
       }
-      else if (marker.action == 3) //is delete all function called
-      {
-         markers_.clear();
-      }
       else
       {
         ROS_WARN_ONCE("Unsupported marker type: %d", markerData.display_type);
@@ -318,7 +314,7 @@ namespace mapviz_plugins
     {
       markers_.erase(std::make_pair(marker.ns, marker.id));
     }
-    else if (marker.action == visualization_msgs::Marker::DELETEALL)
+    else if (marker.action == 3) // The DELETEALL enum doesn't exist in Indigo
     {
       markers_.clear();
     }
