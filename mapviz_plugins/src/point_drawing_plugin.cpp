@@ -320,12 +320,12 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-    for (const StampedPoint& point: points_)
+    for (const auto& pt : points_)
     {
-      success &= point.transformed;
-      if (point.transformed)
+      success &= pt.transformed;
+      if (pt.transformed)
       {
-        glVertex2d(point.transformed_point.getX(), point.transformed_point.getY());
+        glVertex2d(pt.transformed_point.getX(), pt.transformed_point.getY());
       }
     }
 
@@ -370,9 +370,9 @@ namespace mapviz_plugins
     glLineWidth(4);
     glBegin(GL_LINES);
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
-    for (const StampedPoint& point: points_)
+    for (const auto &pt : points_)
     {
-      success &= DrawArrow(point);
+      success &= DrawArrow(pt);
     }
 
     success &= DrawArrow(cur_point_);
@@ -446,19 +446,19 @@ namespace mapviz_plugins
   {
     bool transformed = false;
 
-    for (StampedPoint& point: points_)
+    for (auto &pt : points_)
     {
-      transformed = transformed | TransformPoint(point);
+      transformed = transformed | TransformPoint(pt);
     }
 
     transformed = transformed | TransformPoint(cur_point_);
     if (laps_.size() > 0)
     {
-      for (std::deque<StampedPoint>& lap: laps_)
+      for (auto &lap : laps_)
       {
-        for (StampedPoint& point: lap)
+        for (auto &pt : lap)
         {
-          transformed = transformed | TransformPoint(point);
+          transformed = transformed | TransformPoint(pt);
         }
       }
     }
@@ -490,12 +490,12 @@ namespace mapviz_plugins
         glBegin(GL_POINTS);
       }
 
-      for (const StampedPoint& point: laps_[i])
+      for (const auto& pt : laps_[i])
       {
-        if (point.transformed)
+        if (pt.transformed)
         {
-          glVertex2d(point.transformed_point.getX(),
-                     point.transformed_point.getY());
+          glVertex2d(pt.transformed_point.getX(),
+                     pt.transformed_point.getY());
         }
       }
       glEnd();
@@ -516,13 +516,13 @@ namespace mapviz_plugins
 
     if (points_.size() > 0)
     {
-      for (const StampedPoint& point: points_)
+      for (const auto &pt : points_)
       {
-        transformed &= point.transformed;
-        if (point.transformed)
+        transformed &= pt.transformed;
+        if (pt.transformed)
         {
-          glVertex2d(point.transformed_point.getX(),
-                     point.transformed_point.getY());
+          glVertex2d(pt.transformed_point.getX(),
+                     pt.transformed_point.getY());
         }
       }
     }
@@ -579,10 +579,10 @@ namespace mapviz_plugins
       for (size_t i = 0; i < laps_.size(); i++)
       {
         UpdateColor(base_color, static_cast<int>(i));
-        for (const StampedPoint& point: laps_[i])
+        for (const auto &pt : laps_[i])
         {
           glBegin(GL_LINE_STRIP);
-          success &= DrawArrow(point);
+          success &= DrawArrow(pt);
           glEnd();
         }
       }
@@ -598,10 +598,10 @@ namespace mapviz_plugins
 
     if (points_.size() > 0)
     {
-      for (const StampedPoint& point: points_)
+      for (const auto& pt : points_)
       {
         glBegin(GL_LINE_STRIP);
-        success &= DrawArrow(point);
+        success &= DrawArrow(pt);
         glEnd();
       }
     }

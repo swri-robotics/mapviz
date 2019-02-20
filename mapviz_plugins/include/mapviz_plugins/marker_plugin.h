@@ -32,24 +32,17 @@
 
 // C++ standard libraries
 #include <string>
-#include <list>
-#include <map>
+#include <unordered_map>
 
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
 #include <QGLWidget>
-#include <QObject>
-#include <QWidget>
-#include <QColor>
 
 // ROS libraries
-#include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 #include <topic_tools/shape_shifter.h>
-#include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <std_msgs/ColorRGBA.h>
 
 #include <mapviz/map_canvas.h>
 
@@ -58,6 +51,17 @@
 
 namespace mapviz_plugins
 {
+  using MarkerId = std::pair<std::string, int>;
+
+  struct MarkerIdHash {
+    std::size_t operator () (const MarkerId &p) const {
+      std::size_t seed = 0;
+      boost::hash_combine(seed, p.first);
+      boost::hash_combine(seed, p.second);
+      return seed;
+    }
+  };
+
   class MarkerPlugin : public mapviz::MapvizPlugin
   {
     Q_OBJECT
@@ -96,6 +100,11 @@ namespace mapviz_plugins
     void ClearHistory();
 
   private:
+    struct Color
+    {
+      float r, g, b, a;
+    };
+
     struct StampedPoint
     {
       tf::Point point;
@@ -108,7 +117,7 @@ namespace mapviz_plugins
       tf::Point transformed_arrow_left;
       tf::Point transformed_arrow_right;
 
-      QColor color;
+      Color color;
     };
 
     struct MarkerData
@@ -117,9 +126,9 @@ namespace mapviz_plugins
       ros::Time expire_time;
 
       int display_type;
-      QColor color;
+      Color color;
 
-      std::list<StampedPoint> points;
+      std::vector<StampedPoint> points;
       std::string text;
 
       float scale_x;
@@ -127,7 +136,7 @@ namespace mapviz_plugins
       float scale_z;
 
       std::string source_frame;
-      swri_transform_util::Transform local_transform;
+      tf::Transform local_transform;
       
       bool transformed;
     };
@@ -141,7 +150,7 @@ namespace mapviz_plugins
     bool connected_;
     bool has_message_;
 
-    std::map<std::string, std::map<int, MarkerData> > markers_;
+    std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;
 
     void handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg);
     void handleMarker(const visualization_msgs::Marker &marker);
