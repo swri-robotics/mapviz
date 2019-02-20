@@ -2,6 +2,27 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improve MarkerPlugin (`#603 <https://github.com/swri-robotics/mapviz/issues/603>`_)
+  * Improved performance of MarkerPlugin::handleMarker()
+  * Support Text marker alpha channel
+  * Don't use QColor for glColor4f
+  * Use marker namespace and id as markers map key
+* [mapviz_plugins/attitude_indicator] Minor refactoring and redundant logging removed (`#617 <https://github.com/swri-robotics/mapviz/issues/617>`_)
+* 606 sequential measuring (`#607 <https://github.com/swri-robotics/mapviz/issues/607>`_)
+  * Moved distance calculation to trigger on release of mouse. Added case to prevent distance calculation while moving map.
+  * Added vertices and lines between measurement points. Left click to add point. Right click to delete. Added color selection for points and clear button to ui.
+  * Added cumulative distance measurements from multiple points
+  * Fixed individual and cumulative distance measurements. Changed it to only measure distance between points and not from fixed origin and first point
+  * Moved distance calculation into separate function which is called when deleting a point, adding a point, or rearranging points.
+* Add image size check to textured marker plugin to prevent crashes. (`#613 <https://github.com/swri-robotics/mapviz/issues/613>`_)
+  * Add image size check to textured marker plugin to prevent crashes.
+* Fixed typo in string (`#608 <https://github.com/swri-robotics/mapviz/issues/608>`_)
+* 605 add reset button marker (`#609 <https://github.com/swri-robotics/mapviz/issues/609>`_)
+  * Added Clear all marker buttons, added case for clear all support to markers
+* Contributors: Arkady Shapkin, Matthew, jbdaniel18
+
 1.0.1 (2019-01-25)
 ------------------
 * Use shared tf manager in measuring_plugin (`#604 <https://github.com/swri-robotics/mapviz/issues/604>`_)
