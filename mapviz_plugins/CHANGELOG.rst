@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2019-02-20)
+------------------
 * Improve MarkerPlugin (`#603 <https://github.com/swri-robotics/mapviz/issues/603>`_)
   * Improved performance of MarkerPlugin::handleMarker()
   * Support Text marker alpha channel
