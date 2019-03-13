@@ -248,7 +248,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Timestamp Interval:</string>
+      <string>Draw Style:</string>
      </property>
     </widget>
    </item>
