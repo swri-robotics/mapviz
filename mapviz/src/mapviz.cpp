@@ -889,6 +889,7 @@ void Mapviz::SaveConfig()
   dialog.setFileMode(QFileDialog::AnyFile);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   dialog.setNameFilter(tr("Mapviz Config Files (*.mvc)"));
+  dialog.setDefaultSuffix("mvc");
 
   dialog.exec();
 
