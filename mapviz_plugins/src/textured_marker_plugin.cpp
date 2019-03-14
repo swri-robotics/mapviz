@@ -71,9 +71,13 @@ namespace mapviz_plugins
     p3.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p3);
 
+    // Initialize the alpha value to default
+    alphaVal = 1.0f;
+
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
+    QObject::connect(ui_.alphaSlide, SIGNAL(valueChanged(int)), this, SLOT(SetAlphaLevel(int)));
 
     // By using a signal/slot connection, we ensure that we only generate GL textures on the
     // main thread in case a non-main thread handles the ROS callbacks.
@@ -98,6 +102,28 @@ namespace mapviz_plugins
   {
     ROS_INFO("Marker Clear all");
     markers_.clear();
+  }
+
+  // TODO could instead use the value() function on alphaSlide when needed, assuming value is always good
+  // Modify min and max values by adjusting textured_marker_config.ui
+  void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
+  {
+    int _max = ui_.alphaSlide->maximum();
+    int _min = ui_.alphaSlide->minimum();
+
+    if(_max < 1 
+    || _min < 0
+    || alpha > _max 
+    || alpha < _min) // ignore negative min and max
+    {
+      alphaVal = 1.0f;
+      PrintWarning("Invalid alpha input.");
+    }
+    else
+    {
+      alphaVal = (static_cast<float>(alpha) / _max); // Ex. convert int in range 0-100 to float in range 0-1
+      ROS_INFO("Adjusting alpha value to: %f", alphaVal);
+    }
   }
 
   void TexturedMarkerPlugin::SelectTopic()
@@ -446,6 +472,8 @@ namespace mapviz_plugins
   {
     ros::Time now = ros::Time::now();
 
+    float _alphaVal = alphaVal; // Set all markers to same alpha value
+
     std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
@@ -453,6 +481,7 @@ namespace mapviz_plugins
       for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
+        marker.alpha_ = _alphaVal; // Update current marker's alpha value
 
         if (marker.expire_time > now)
         {
