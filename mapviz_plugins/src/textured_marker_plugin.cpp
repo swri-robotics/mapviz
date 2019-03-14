@@ -73,6 +73,7 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
 
     // By using a signal/slot connection, we ensure that we only generate GL textures on the
     // main thread in case a non-main thread handles the ROS callbacks.
@@ -95,6 +96,7 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::ClearHistory()
   {
+    ROS_INFO("Marker Clear all");
     markers_.clear();
   }
 
