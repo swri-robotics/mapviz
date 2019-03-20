@@ -57,7 +57,8 @@ namespace mapviz_plugins
 {
   TexturedMarkerPlugin::TexturedMarkerPlugin() :
     config_widget_(new QWidget()),
-    is_marker_array_(false)
+    is_marker_array_(false),
+    alphaVal_(1.0f) // Initialize the alpha value to default
   {
     ui_.setupUi(config_widget_);
 
@@ -73,6 +74,8 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
+    QObject::connect(ui_.alphaSlide, SIGNAL(valueChanged(int)), this, SLOT(SetAlphaLevel(int)));
 
     // By using a signal/slot connection, we ensure that we only generate GL textures on the
     // main thread in case a non-main thread handles the ROS callbacks.
@@ -95,7 +98,30 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::ClearHistory()
   {
+    ROS_INFO("TexturedMarkerPlugin::ClearHistory()");
     markers_.clear();
+  }
+
+  // TODO could instead use the value() function on alphaSlide when needed, assuming value is always good
+  // Modify min and max values by adjusting textured_marker_config.ui
+  void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
+  {
+    int max = ui_.alphaSlide->maximum();
+    int min = ui_.alphaSlide->minimum();
+
+    if(max < 1 
+    || min < 0
+    || alpha > max 
+    || alpha < min) // ignore negative min and max
+    {
+      alphaVal_ = 1.0f;
+      PrintWarning("Invalid alpha input.");
+    }
+    else
+    {
+      alphaVal_ = (static_cast<float>(alpha) / max); // Ex. convert int in range 0-100 to float in range 0-1
+      ROS_INFO("Adjusting alpha value to: %f", alphaVal_);
+    }
   }
 
   void TexturedMarkerPlugin::SelectTopic()
@@ -444,6 +470,8 @@ namespace mapviz_plugins
   {
     ros::Time now = ros::Time::now();
 
+    float alphaVal = alphaVal_; // Set all markers to same alpha value
+
     std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
@@ -451,6 +479,7 @@ namespace mapviz_plugins
       for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
+        marker.alpha_ = alphaVal; // Update current marker's alpha value
 
         if (marker.expire_time > now)
         {

@@ -108,6 +108,7 @@ set(UI_FILES
     ui/robot_image_config.ui
     ui/route_config.ui
     ui/string_config.ui
+    ui/textured_marker_config.ui
     ui/tf_frame_config.ui
     ui/topic_select.ui
 )

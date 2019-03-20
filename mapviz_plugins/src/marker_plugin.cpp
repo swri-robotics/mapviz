@@ -73,7 +73,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::ClearHistory()
   {
-    ROS_INFO("Marker Clear all");
+    ROS_INFO("MarkerPlugin::ClearHistory()");
     markers_.clear();
   }
 
