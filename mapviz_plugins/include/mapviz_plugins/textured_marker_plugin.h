@@ -100,7 +100,7 @@ namespace mapviz_plugins
     void ProcessMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr markers);
 
   private:
-    float alphaVal;
+    float alphaVal_;
 
     struct MarkerData
     {
