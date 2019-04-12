@@ -168,7 +168,7 @@ Tiles are named using the following format:
 
 ### NavSat
 
-Projects [sensor_msgs::NavSatFix](http://http://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene.
+Projects [sensor_msgs::NavSatFix](https://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene.
 
 **Parameters**
  * Topic: The GPS topic
