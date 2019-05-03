@@ -329,6 +329,8 @@ void Mapviz::Initialize()
       connect(&profile_timer_, SIGNAL(timeout()), this, SLOT(HandleProfileTimer()));
     }
 
+    setFocus(); // Set the main window as focused object, prevent other fields from obtaining focus at startup
+
     initialized_ = true;
   }
 }
