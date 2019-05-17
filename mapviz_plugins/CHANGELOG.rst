@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2019-05-17)
+------------------
 * Textured Marker Adjustments (`#611 <https://github.com/swri-robotics/mapviz/issues/611>`_, `#616 <https://github.com/swri-robotics/mapviz/issues/616>`_) (`#625 <https://github.com/swri-robotics/mapviz/issues/625>`_)
 * fixed issue `#623 <https://github.com/swri-robotics/mapviz/issues/623>`_ by updating UI field to read "Draw Style:" (`#624 <https://github.com/swri-robotics/mapviz/issues/624>`_)
 * Contributors: mattrich37

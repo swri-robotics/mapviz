@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2019-05-17)
+------------------
 * Set main window as in focus on start `#630 <https://github.com/swri-robotics/mapviz/issues/630>`_
 * Specify default configuration extension on save
 * Contributors: Daniel D'Souza, mattrich37, mrichardson
