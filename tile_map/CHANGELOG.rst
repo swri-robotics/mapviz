@@ -2,6 +2,9 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.0 (2019-02-20)
 ------------------
 * Fix non-Bing sources (`#615 <https://github.com/swri-robotics/mapviz/issues/615>`_)
