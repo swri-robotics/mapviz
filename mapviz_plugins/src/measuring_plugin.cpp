@@ -66,8 +66,8 @@ MeasuringPlugin::MeasuringPlugin():
   QObject::connect(ui_.clear, SIGNAL(clicked()), this,
                    SLOT(Clear()));
 #if QT_VERSION >= 0x050000
-  ui_.measurement->setText(tr("Click on the map; distance between clicks will appear here"));
-  ui_.totaldistance->setText(tr("Click on the map; Total distance between clicks will appear here"));
+  ui_.measurement->setText(tr("Click on the map. Distance between clicks will appear here"));
+  ui_.totaldistance->setText(tr("Click on the map. Total distance between clicks will appear here"));
 #endif
 }
 
@@ -82,8 +82,8 @@ MeasuringPlugin::~MeasuringPlugin()
 void MeasuringPlugin::Clear()
 {
   vertices_.clear();
-  ui_.measurement->setText(tr("Click on the map; distance between clicks will appear here"));
-  ui_.totaldistance->setText(tr("Click on the map; Total distance between clicks will appear here"));
+  ui_.measurement->setText(tr("Click on the map. Distance between clicks will appear here"));
+  ui_.totaldistance->setText(tr("Click on the map. Total distance between clicks will appear here"));
 }
 QWidget* MeasuringPlugin::GetConfigWidget(QWidget* parent)
 {
