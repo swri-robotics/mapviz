@@ -18,8 +18,8 @@
   <build_depend>libqt_opengl_dev</build_depend>
 
   <depend>cv_bridge</depend>
-  <depend>gps_common</depend>
   <depend>geometry_msgs</depend>
+  <depend>gps_common</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
