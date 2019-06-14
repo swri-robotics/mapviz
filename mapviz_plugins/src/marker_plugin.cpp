@@ -183,11 +183,12 @@ namespace mapviz_plugins
                                      marker.pose.orientation.w);
       }
 
-      markerData.local_transform = tf::Transform(
+      markerData.local_transform = swri_transform_util::Transform(
+        tf::Transform(
           orientation,
           tf::Vector3(marker.pose.position.x,
                       marker.pose.position.y,
-                      marker.pose.position.z));
+                      marker.pose.position.z)));
 
       markerData.points.clear();
       markerData.text = std::string();
@@ -283,15 +284,12 @@ namespace mapviz_plugins
         markerData.display_type == visualization_msgs::Marker::POINTS ||
         markerData.display_type == visualization_msgs::Marker::TRIANGLE_LIST)
       {
-        tf::Transform tfTransform(transform.GetTF());
-        tfTransform *= markerData.local_transform;
-
         markerData.points.reserve(marker.points.size());
         StampedPoint point;
         for (unsigned int i = 0; i < marker.points.size(); i++)
         {
           point.point = tf::Point(marker.points[i].x, marker.points[i].y, marker.points[i].z);
-          point.transformed_point = tfTransform * point.point;
+          point.transformed_point = transform * (markerData.local_transform * point.point);
 
           if (i < marker.colors.size())
           {
@@ -627,11 +625,9 @@ namespace mapviz_plugins
         }
         else
         {
-          tf::Transform tfTransform(transform.GetTF());
-          tfTransform *= marker.local_transform;
           for (auto &point : marker.points)
           {
-            point.transformed_point = tfTransform * point.point;
+            point.transformed_point = transform * (marker.local_transform * point.point);
           }
         }
       }
