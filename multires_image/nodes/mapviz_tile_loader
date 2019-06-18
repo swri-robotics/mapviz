@@ -12,6 +12,7 @@ import pyproj
 import rospy
 import yaml
 from collections import namedtuple
+from geometry_msgs.msg import PoseStamped
 from gps_common.msg import GPSFix
 from mapviz.srv import AddMapvizDisplay, AddMapvizDisplayRequest
 from marti_common_msgs.msg import KeyValue
@@ -38,6 +39,7 @@ def load_tiles():
     rate = max(0.1, rospy.get_param('~rate', 1.0))
     display_name = rospy.get_param('~display_name', 'satellite')
     draw_order = rospy.get_param('~draw_order', 1)
+    use_local_xy = rospy.get_param('~use_local_xy', False)
 
     gps_sub = rospy.Subscriber("gps", GPSFix, gps_callback)
 
@@ -121,41 +123,79 @@ def load_tiles():
 
     last_path = None
     while not rospy.is_shutdown():
-        if _gps_fix is not None:
-            # Select the geofile that contains the current GPS point.  If multiple
-            # geo-files contain the point, select the largest.  If no geo-files
-            # contain the point, select the closest one.
-            max_area = 0
-            path = None
-            for georef in georeferences:
-                if _gps_fix.latitude > georef.min_lat and _gps_fix.latitude < georef.max_lat and _gps_fix.longitude > georef.min_lon and _gps_fix.longitude < georef.max_lon and georef.area > max_area:
-                    path = georef.path
-                    max_area = georef.area
-            
-            if path is None:
-                min_dist = float("inf")
+        if use_local_xy:
+            if last_path is None and georeferences:
+                # Select the geofile that contains the current local_xy origin point.  If multiple
+                # geo-files contain the point, select the largest.  If no geo-files
+                # contain the point, select the closest one.
+
+                # get local xy origin
+                local_xy = rospy.wait_for_message("/local_xy_origin", PoseStamped)
+                max_area = 0
+                path = None
                 for georef in georeferences:
-                    lat = (georef.min_lat + georef.max_lat) / 2.0
-                    lon = (georef.min_lon + georef.max_lon) / 2.0
-                    dist = distance(lat, lon, _gps_fix.latitude, _gps_fix.longitude)
-                    if (dist < min_dist):
-                         min_dist = dist
-                         path = georef.path
-            
-            # If the geo-file has changed, call the service for adding/updating 
-            # the mapviz display
-            if path is not None and path != last_path:
-                rospy.loginfo("updating tileset: %s", path);
-                add_mapviz_display = rospy.ServiceProxy('add_mapviz_display', AddMapvizDisplay)
-                request = AddMapvizDisplayRequest(type='mapviz_plugins/multires_image', draw_order=draw_order, name=display_name, visible=True)
-                request.properties.append(KeyValue(key='path', value=path))
-                response = add_mapviz_display(request)
-                if response.success:
-                  last_path = path
-                else:
-                  rospy.logwarn("failed to update tileset: %s", response.message)
+                    if local_xy.pose.position.y > georef.min_lat and local_xy.pose.position.y < georef.max_lat and local_xy.pose.position.x > georef.min_lon and local_xy.pose.position.x < georef.max_lon and georef.area > max_area:
+                        path = georef.path
+                        max_area = georef.area
+
+                if path is None:
+                    min_dist = float("inf")
+                    for georef in georeferences:
+                        lat = (georef.min_lat + georef.max_lat) / 2.0
+                        lon = (georef.min_lon + georef.max_lon) / 2.0
+                        dist = distance(lat, lon, local_xy.pose.position.y, local_xy.pose.position.x)
+                        if (dist < min_dist):
+                            min_dist = dist
+                            path = georef.path
+
+                # If the geo-file has changed, call the service for adding/updating
+                # the mapviz display
+                if path is not None and path != last_path:
+                    rospy.loginfo("updating tileset: %s", path);
+                    add_mapviz_display = rospy.ServiceProxy('add_mapviz_display', AddMapvizDisplay)
+                    request = AddMapvizDisplayRequest(type='mapviz_plugins/multires_image', draw_order=draw_order, name=display_name, visible=True)
+                    request.properties.append(KeyValue(key='path', value=path))
+                    response = add_mapviz_display(request)
+                    if response.success:
+                        last_path = path
+                    else:
+                        rospy.logwarn("failed to update tileset: %s", response.message)
         else:
-            rospy.loginfo("waiting for gps message: %s", rospy.resolve_name('gps'))
+            if _gps_fix is not None:
+                # Select the geofile that contains the current GPS point.  If multiple
+                # geo-files contain the point, select the largest.  If no geo-files
+                # contain the point, select the closest one.
+                max_area = 0
+                path = None
+                for georef in georeferences:
+                    if _gps_fix.latitude > georef.min_lat and _gps_fix.latitude < georef.max_lat and _gps_fix.longitude > georef.min_lon and _gps_fix.longitude < georef.max_lon and georef.area > max_area:
+                        path = georef.path
+                        max_area = georef.area
+
+                if path is None:
+                    min_dist = float("inf")
+                    for georef in georeferences:
+                        lat = (georef.min_lat + georef.max_lat) / 2.0
+                        lon = (georef.min_lon + georef.max_lon) / 2.0
+                        dist = distance(lat, lon, _gps_fix.latitude, _gps_fix.longitude)
+                        if (dist < min_dist):
+                             min_dist = dist
+                             path = georef.path
+
+                # If the geo-file has changed, call the service for adding/updating
+                # the mapviz display
+                if path is not None and path != last_path:
+                    rospy.loginfo("updating tileset: %s", path);
+                    add_mapviz_display = rospy.ServiceProxy('add_mapviz_display', AddMapvizDisplay)
+                    request = AddMapvizDisplayRequest(type='mapviz_plugins/multires_image', draw_order=draw_order, name=display_name, visible=True)
+                    request.properties.append(KeyValue(key='path', value=path))
+                    response = add_mapviz_display(request)
+                    if response.success:
+                      last_path = path
+                    else:
+                      rospy.logwarn("failed to update tileset: %s", response.message)
+            else:
+                rospy.loginfo("waiting for gps message: %s", rospy.resolve_name('gps'))
         rospy.sleep(1.0 / rate)
 
 if __name__ == '__main__':
