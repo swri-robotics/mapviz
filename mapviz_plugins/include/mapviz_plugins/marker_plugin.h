@@ -38,6 +38,7 @@
 
 // QT libraries
 #include <QGLWidget>
+#include <QListWidgetItem>
 
 // ROS libraries
 #include <tf/transform_datatypes.h>
@@ -58,6 +59,14 @@ namespace mapviz_plugins
       std::size_t seed = 0;
       boost::hash_combine(seed, p.first);
       boost::hash_combine(seed, p.second);
+      return seed;
+    }
+  };
+
+  struct MarkerNsHash {
+    std::size_t operator () (const std::string &p) const {
+      std::size_t seed = 0;
+      boost::hash_combine(seed, p);
       return seed;
     }
   };
@@ -151,6 +160,7 @@ namespace mapviz_plugins
     bool has_message_;
 
     std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;
+    std::unordered_map<std::string, bool, MarkerNsHash> marker_visible_;
 
     void handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg);
     void handleMarker(const visualization_msgs::Marker &marker);
