@@ -34,6 +34,10 @@
 #include <QDateTime>
 #include <QMouseEvent>
 #include <QTextStream>
+//#include <QDialog>
+//#include <QGLWidget>
+#include <QPainter>
+//#include <QPalette>
 
 #if QT_VERSION >= 0x050000
 #include <QGuiApplication>
@@ -82,6 +86,7 @@ MeasuringPlugin::~MeasuringPlugin()
 void MeasuringPlugin::Clear()
 {
   vertices_.clear();
+  measurements_.clear();
   ui_.measurement->setText(tr("Click on the map. Distance between clicks will appear here"));
   ui_.totaldistance->setText(tr("Click on the map. Total distance between clicks will appear here"));
 }
@@ -233,6 +238,8 @@ void MeasuringPlugin::DistanceCalculation()
   double distance_sum = 0; //sum of distance from all points
   tf::Vector3 last_position_(0,0,0);
   std::string frame = target_frame_;
+  measurements_.clear();
+  measurements_.push_back(0); // reserve head of vector for distance_sum
   for (size_t i = 0; i < vertices_.size(); i++)
   {
       tf::Vector3 vertex = vertices_[i];
@@ -240,9 +247,12 @@ void MeasuringPlugin::DistanceCalculation()
       {
           distance_instant = last_position_.distance(vertex);
           distance_sum = distance_sum + distance_instant;
+          measurements_[0] = distance_sum;
+          measurements_.push_back(distance_instant);
       }
       last_position_ = vertex;
   }
+
   QString new_point;
   QTextStream stream(&new_point);
   stream.setRealNumberPrecision(4);
@@ -316,6 +326,47 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
   glEnd();
 
   PrintInfo("OK");
+}
+
+void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
+{
+
+  QTransform tf = painter->worldTransform();
+  QFont font("Helvetica", 10);
+  painter->setFont(font);
+  painter->save();
+  painter->resetTransform();
+
+  //set the draw color for the text to be the same as the rest
+  QPen pen(QBrush(ui_.color->color()), 1);
+  painter->setPen(pen);
+
+  QPointF qpoint;
+  QString distance;
+
+  for (int i=1; i<vertices_.size(); i++)
+  {
+    //draw measurement in middle
+    tf::Vector3 v1 = vertices_[i];
+    tf::Vector3 v2 = vertices_[i-1];
+    qpoint = tf.map(QPointF((v1.x()+v2.x())/2,
+                            (v1.y()+v2.y())/2));
+    
+    distance.setNum(measurements_[i], 'g', 4);
+    distance.append(" meters");
+    painter->drawText(qpoint, distance);
+  }
+  //only draw if measurements are active
+  if (!measurements_.empty() && !vertices_.empty())
+  {
+    qpoint = tf.map(QPointF(vertices_.back().x(),
+                            vertices_.back().y()));
+    distance.setNum(measurements_[0], 'g', 4);
+    distance.append(" meters");
+    distance.prepend("Total distance: ");
+    painter->drawText(qpoint, distance);
+  }
+  painter->restore();
 }
 
 void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)

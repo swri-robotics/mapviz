@@ -55,6 +55,7 @@ namespace mapviz_plugins
       bool Initialize(QGLWidget* canvas);
       void Shutdown() { };
 
+      void Paint(QPainter* painter, double x, double y, double scale);
       void Draw(double x, double y, double scale);
       void Transform() { };
 
@@ -68,6 +69,11 @@ namespace mapviz_plugins
       void PrintError(const std::string& message);
       void PrintInfo(const std::string& message);
       void PrintWarning(const std::string& message);
+
+      bool SupportsPainting()
+      {
+        return true;
+      }
 
     protected:
       bool eventFilter(QObject* object, QEvent* event);
@@ -95,6 +101,7 @@ namespace mapviz_plugins
 
       qint64 max_ms_;
       qreal max_distance_;
+      std::vector<double> measurements_;
   };
 
 
