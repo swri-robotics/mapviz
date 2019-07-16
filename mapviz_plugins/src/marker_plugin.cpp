@@ -99,6 +99,8 @@ namespace mapviz_plugins
     {
       initialized_ = false;
       markers_.clear();
+      marker_visible_.clear();
+      ui_.nsList->clear();
       has_message_ = false;
       PrintWarning("No messages received.");
 
@@ -166,6 +168,16 @@ namespace mapviz_plugins
       markerData.scale_z = static_cast<float>(marker.scale.z);
       markerData.transformed = true;
       markerData.source_frame = marker.header.frame_id;
+
+      if (marker_visible_.emplace(marker.ns, true).second)
+      {
+        QString name_string(marker.ns.c_str());
+        auto* item = new QListWidgetItem(name_string, ui_.nsList);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Unchecked);
+        item->setCheckState(Qt::Checked);
+        //item->setData(Qt::StatusTipRole, layer_string);
+      }
 
 
       // Since orientation was not implemented, many markers publish
@@ -405,6 +417,18 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Draw(double x, double y, double scale)
   {
+    for (size_t i = 0; i < ui_.nsList->count(); i++)
+    {
+      if (ui_.nsList->item(i)->checkState() == Qt::Checked)
+      {
+        marker_visible_[ui_.nsList->item(i)->text().toStdString()] = true;
+      }
+      else
+      {
+        marker_visible_[ui_.nsList->item(i)->text().toStdString()] = false;
+      }
+    }
+
     ros::Time now = ros::Time::now();
 
     for (auto markerIter = markers_.begin(); markerIter != markers_.end(); ++markerIter)
@@ -418,6 +442,11 @@ namespace mapviz_plugins
       }
 
       if (!marker.transformed) {
+        continue;
+      }
+
+      if (!marker_visible_[markerIter->first.first])
+      {
         continue;
       }
 
