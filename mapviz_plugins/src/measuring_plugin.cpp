@@ -34,10 +34,7 @@
 #include <QDateTime>
 #include <QMouseEvent>
 #include <QTextStream>
-//#include <QDialog>
-//#include <QGLWidget>
 #include <QPainter>
-//#include <QPalette>
 
 #if QT_VERSION >= 0x050000
 #include <QGuiApplication>
@@ -60,15 +57,21 @@ namespace mapviz_plugins
 MeasuringPlugin::MeasuringPlugin():
   config_widget_(new QWidget()),
   selected_point_(-1),
+  toggle_measurements_(true),
   is_mouse_down_(false),
   max_ms_(Q_INT64_C(500)),
   max_distance_(2.0),
   map_canvas_(NULL)
 {
   ui_.setupUi(config_widget_);
+  ui_.color->setColor(Qt::black);
 
   QObject::connect(ui_.clear, SIGNAL(clicked()), this,
                    SLOT(Clear()));
+  QObject::connect(ui_.toggle_measurements, SIGNAL(clicked()), this,
+                   SLOT(ToggleMeasurements()));
+  connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
+  
 #if QT_VERSION >= 0x050000
   ui_.measurement->setText(tr("Click on the map. Distance between clicks will appear here"));
   ui_.totaldistance->setText(tr("Click on the map. Total distance between clicks will appear here"));
@@ -90,6 +93,12 @@ void MeasuringPlugin::Clear()
   ui_.measurement->setText(tr("Click on the map. Distance between clicks will appear here"));
   ui_.totaldistance->setText(tr("Click on the map. Total distance between clicks will appear here"));
 }
+
+void MeasuringPlugin::ToggleMeasurements()
+{
+  toggle_measurements_ = !toggle_measurements_;
+}
+
 QWidget* MeasuringPlugin::GetConfigWidget(QWidget* parent)
 {
   config_widget_->setParent(parent);
@@ -330,6 +339,10 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
 
 void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
 {
+  if (!toggle_measurements_)
+  {
+    return;
+  }
 
   QTransform tf = painter->worldTransform();
   QFont font("Helvetica", 10);
@@ -342,41 +355,82 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   painter->setPen(pen);
 
   QPointF qpoint;
+  std::vector<QPointF> qpoints;
   QString distance;
 
-  for (int i=1; i<vertices_.size(); i++)
-  {
-    //draw measurement in middle
-    tf::Vector3 v1 = vertices_[i];
-    tf::Vector3 v2 = vertices_[i-1];
-    qpoint = tf.map(QPointF((v1.x()+v2.x())/2,
-                            (v1.y()+v2.y())/2));
-    
-    distance.setNum(measurements_[i], 'g', 4);
-    distance.append(" meters");
-    painter->drawText(qpoint, distance);
-  }
   //only draw if measurements are active
   if (!measurements_.empty() && !vertices_.empty())
   {
     qpoint = tf.map(QPointF(vertices_.back().x(),
                             vertices_.back().y()));
-    distance.setNum(measurements_[0], 'g', 4);
-    distance.append(" meters");
+    qpoints.push_back(qpoint);
+
+    //large rect for total distance tag
+    QRectF qrect(qpoint, QSizeF(145.0, 20.0));
+    distance.setNum(measurements_[0], 'g', 5);
+    distance.append(" m");
     distance.prepend("Total distance: ");
-    painter->drawText(qpoint, distance);
+
+    //medium rect for 0 distance tag
+    if (measurements_.size()==1)
+    {
+      qrect.setTopLeft(qpoint);
+      qrect.setSize(QSizeF(115.0, 20.0));
+    }
+    painter->drawText(qrect, distance);
+    painter->drawRect(qrect);
+  }
+
+  for (int i=1; i<vertices_.size(); i++)
+  {
+    //draw measurement at midpoint
+    tf::Vector3 v1 = vertices_[i];
+    tf::Vector3 v2 = vertices_[i-1];
+    qpoint = tf.map(QPointF((v1.x()+v2.x())/2,
+                            (v1.y()+v2.y())/2));
+    qpoints.push_back(qpoint);
+
+    //prevent any tags from overlapping
+    for (int j=0; j<i; j++)
+    {
+      double x_offset = qpoints[j].x() - qpoint.x();
+      double y_offset = qpoints[j].y() - qpoint.y();
+      if (((j == 0 && fabs(x_offset) < 145) || fabs(x_offset) < 80) 
+            && fabs(y_offset) < 20)
+      {
+        if (y_offset > 0)
+        {
+          qpoint.setY(qpoint.y() - (20 - y_offset));
+        }
+        else
+        {
+          qpoint.setY(qpoint.y() + (20 + y_offset));
+        }
+      }
+    }
+    //small rect for measurement tag
+    QRectF qrect(qpoint, QSizeF(80.0, 20.0));
+    distance.setNum(measurements_[i], 'g', 5);
+    distance.append(" m");
+    painter->drawText(qrect, distance);
+    painter->drawRect(qrect);
   }
   painter->restore();
 }
 
 void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
 {
-
+  if (node["color"])
+  {            
+    std::string color;
+    node["color"] >> color;
+    ui_.color->setColor(QColor(color.c_str()));
+  }
 }
 
 void MeasuringPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
 {
-
+  emitter << YAML::Key << "color" << YAML::Value << ui_.color->color().name().toStdString();
 }
 
 void MeasuringPlugin::PrintError(const std::string& message)
