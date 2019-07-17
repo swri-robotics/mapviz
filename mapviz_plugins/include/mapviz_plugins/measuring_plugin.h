@@ -31,6 +31,7 @@
 #define MAPVIZ_PLUGINS_MEASURING_PLUGIN_H_
 
 #include <mapviz/mapviz_plugin.h>
+#include <mapviz_plugins/point_drawing_plugin.h>
 
 // ROS Libraries
 #include <ros/ros.h>
@@ -83,7 +84,9 @@ namespace mapviz_plugins
 
     protected Q_SLOTS:
       void Clear();
-      void ToggleMeasurements();
+      void BkgndColorToggled(bool) { };
+      void MeasurementsToggled(bool) { };
+      void FontSizeChanged(int) { };
 
     private:
       Ui::measuring_config ui_;
@@ -96,7 +99,6 @@ namespace mapviz_plugins
       std::vector<tf::Vector3> transformed_vertices_;
 
       int selected_point_;
-      bool toggle_measurements_;
       bool is_mouse_down_;
       QPointF mouse_down_pos_;
       qint64 mouse_down_time_;
@@ -106,6 +108,11 @@ namespace mapviz_plugins
       std::vector<double> measurements_;
   };
 
+  struct MeasurementBox
+  {
+    QRectF rect;
+    QString string;
+  };
 
 }
 
