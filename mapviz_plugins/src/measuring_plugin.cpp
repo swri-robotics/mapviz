@@ -74,6 +74,8 @@ MeasuringPlugin::MeasuringPlugin():
                    SLOT(BkgndColorToggled(bool)));
   QObject::connect(ui_.font_size, SIGNAL(valueChanged(int)), this,
                    SLOT(FontSizeChanged(int)));
+  QObject::connect(ui_.alpha, SIGNAL(valueChanged(double)), this,
+                   SLOT(AlphaChanged(double)));
   connect(ui_.main_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
   connect(ui_.bkgnd_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
   
@@ -307,7 +309,7 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
 {
   glLineWidth(1);
   const QColor color = ui_.main_color->color();
-  glColor4d(color.redF(), color.greenF(), color.blueF(), 0.30);
+  glColor4d(color.redF(), color.greenF(), color.blueF(), ui_.alpha->value()/2.0);
   glBegin(GL_LINE_STRIP);
 
   for (const auto& vertex: vertices_)
@@ -319,7 +321,7 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
 
   glBegin(GL_LINES);
 
-  glColor4d(color.redF(), color.greenF(), color.blueF(), 0.25);
+  glColor4d(color.redF(), color.greenF(), color.blueF(), ui_.alpha->value()/2.0);
 
   glEnd();
 
@@ -351,7 +353,10 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   painter->resetTransform();
 
   //set the draw color for the text to be the same as the rest
-  QPen pen(QBrush(ui_.main_color->color()), 1);
+  QColor color = ui_.main_color->color();
+  double alpha = ui_.alpha->value()*2.0 < 1.0 ? ui_.alpha->value()*2.0 : 1.0;
+  color.setAlphaF(alpha);
+  QPen pen(QBrush(color), 1);
   painter->setPen(pen);
 
   const QRectF qrect = QRectF(0, 0, 0, 0);
@@ -405,8 +410,8 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
     if (ui_.show_bkgnd_color->isChecked())
     {
-      QColor color = ui_.bkgnd_color->color();
-      color.setAlphaF(.5);
+      color = ui_.bkgnd_color->color();
+      color.setAlphaF(ui_.alpha->value());
       painter->fillRect(tag.rect, color);
       painter->drawRect(tag.rect);
     }
@@ -454,6 +459,14 @@ void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path
     ui_.font_size->setValue(font_size);
     FontSizeChanged(font_size);
   }
+
+  if (node["alpha"])
+  {
+    double alpha;
+    node["alpha"] >> alpha;
+    ui_.alpha->setValue(alpha);
+    AlphaChanged(alpha);
+  }
 }
 
 void MeasuringPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -463,6 +476,7 @@ void MeasuringPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path
   emitter << YAML::Key << "show_bkgnd_color" << YAML::Value << ui_.show_bkgnd_color->isChecked();
   emitter << YAML::Key << "show_measurements" << YAML::Value << ui_.show_measurements->isChecked();
   emitter << YAML::Key << "font_size" << YAML::Value << ui_.font_size->value();
+  emitter << YAML::Key << "alpha" << YAML::Value << ui_.alpha->value();
 }
 
 void MeasuringPlugin::PrintError(const std::string& message)

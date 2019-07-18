@@ -87,6 +87,7 @@ namespace mapviz_plugins
       void BkgndColorToggled(bool) { };
       void MeasurementsToggled(bool) { };
       void FontSizeChanged(int) { };
+      void AlphaChanged(double) { };
 
     private:
       Ui::measuring_config ui_;
