@@ -413,6 +413,8 @@ namespace mapviz_plugins
     glPixelZoom(1.0f, -1.0f);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glDrawPixels(image->cols, image->rows, format, GL_UNSIGNED_BYTE, image->ptr());
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
 
     PrintInfo("OK");
   }
