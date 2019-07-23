@@ -16,6 +16,9 @@
   <class name="mapviz_plugins/odometry" type="mapviz_plugins::OdometryPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Odometry mapviz plugin.</description>
   </class>
+  <class name="mapviz_plugins/pose" type="mapviz_plugins::PosePlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Pose mapviz plugin.</description>
+  </class>
   <class name="mapviz_plugins/marker" type="mapviz_plugins::MarkerPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Marker mapviz plugin.</description>
   </class>
