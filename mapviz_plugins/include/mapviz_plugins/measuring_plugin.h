@@ -55,6 +55,7 @@ namespace mapviz_plugins
       bool Initialize(QGLWidget* canvas);
       void Shutdown() { };
 
+      void Paint(QPainter* painter, double x, double y, double scale);
       void Draw(double x, double y, double scale);
       void Transform() { };
 
@@ -69,6 +70,11 @@ namespace mapviz_plugins
       void PrintInfo(const std::string& message);
       void PrintWarning(const std::string& message);
 
+      bool SupportsPainting()
+      {
+        return true;
+      }
+
     protected:
       bool eventFilter(QObject* object, QEvent* event);
       bool handleMousePress(QMouseEvent*);
@@ -77,6 +83,10 @@ namespace mapviz_plugins
 
     protected Q_SLOTS:
       void Clear();
+      void BkgndColorToggled(bool) { };
+      void MeasurementsToggled(bool) { };
+      void FontSizeChanged(int) { };
+      void AlphaChanged(double) { };
 
     private:
       Ui::measuring_config ui_;
@@ -95,8 +105,14 @@ namespace mapviz_plugins
 
       qint64 max_ms_;
       qreal max_distance_;
+      std::vector<double> measurements_;
   };
 
+  struct MeasurementBox
+  {
+    QRectF rect;
+    QString string;
+  };
 
 }
 
