@@ -521,6 +521,18 @@ namespace mapviz_plugins
       ui_.alpha->setValue(alpha);
     }
 
+    if (node["scheme"])
+    {
+      std::string scheme;
+      node["scheme"] >> scheme;
+      int index = ui_.color_scheme->findText(QString::fromStdString(scheme), Qt::MatchExactly);
+      if (index >= 0)
+      {
+        ui_.color_scheme->setCurrentIndex(index);
+      }
+      colorSchemeUpdated(QString::fromStdString(scheme));
+    }
+
     TopicGridEdited();
   }
 
