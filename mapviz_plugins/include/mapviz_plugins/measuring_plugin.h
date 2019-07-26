@@ -31,7 +31,6 @@
 #define MAPVIZ_PLUGINS_MEASURING_PLUGIN_H_
 
 #include <mapviz/mapviz_plugin.h>
-#include <mapviz_plugins/point_drawing_plugin.h>
 
 // ROS Libraries
 #include <ros/ros.h>
