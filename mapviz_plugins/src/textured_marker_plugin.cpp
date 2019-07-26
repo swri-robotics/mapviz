@@ -325,6 +325,8 @@ namespace mapviz_plugins
         glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
       }
       
       glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(markerData.texture_id_));

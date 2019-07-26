@@ -350,6 +350,8 @@ namespace mapviz_plugins
           color_buffer_.data());
 
     glBindTexture(GL_TEXTURE_2D, 0);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
   }
 
 
