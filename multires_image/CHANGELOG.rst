@@ -2,6 +2,11 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use local_xy_origin for loading tiles of GPSFix not available (`#634 <https://github.com/swri-robotics/mapviz/issues/634>`_)
+* Contributors: agyoungs
+
 1.1.1 (2019-05-17)
 ------------------
 

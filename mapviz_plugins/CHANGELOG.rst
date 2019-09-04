@@ -2,6 +2,17 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add text to measuring plugin (`#640 <https://github.com/swri-robotics/mapviz/issues/640>`_)
+* Add mapviz plug-in for PoseStamped messages. (`#641 <https://github.com/swri-robotics/mapviz/issues/641>`_)
+* Fix occupancy grid to load color scheme from configuration. (`#642 <https://github.com/swri-robotics/mapviz/issues/642>`_)
+* Restore GL_UNPACK_ALIGNMENT to 4 to prevent corruption of Qt font rendering. (`#643 <https://github.com/swri-robotics/mapviz/issues/643>`_)
+* Add ability to show and hide markers by namespace (`#636 <https://github.com/swri-robotics/mapviz/issues/636>`_)
+* Fixed layout of MeasuringPlugin (`#633 <https://github.com/swri-robotics/mapviz/issues/633>`_)
+* Fixed marker plugin to use swri_transform_util to ensure wgs84 markers work properly (`#635 <https://github.com/swri-robotics/mapviz/issues/635>`_)
+* Contributors: Arkady Shapkin, Marc Alban, Matthew, Matthew Grogan, agyoungs
+
 1.1.1 (2019-05-17)
 ------------------
 * Textured Marker Adjustments (`#611 <https://github.com/swri-robotics/mapviz/issues/611>`_, `#616 <https://github.com/swri-robotics/mapviz/issues/616>`_) (`#625 <https://github.com/swri-robotics/mapviz/issues/625>`_)
