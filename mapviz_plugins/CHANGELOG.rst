@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2019-09-04)
+------------------
 * Add text to measuring plugin (`#640 <https://github.com/swri-robotics/mapviz/issues/640>`_)
 * Add mapviz plug-in for PoseStamped messages. (`#641 <https://github.com/swri-robotics/mapviz/issues/641>`_)
 * Fix occupancy grid to load color scheme from configuration. (`#642 <https://github.com/swri-robotics/mapviz/issues/642>`_)
