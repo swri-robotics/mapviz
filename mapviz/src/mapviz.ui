@@ -31,7 +31,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -286,6 +286,9 @@
        </property>
        <property name="defaultDropAction">
         <enum>Qt::MoveAction</enum>
+       </property>
+       <property name="verticalScrollMode">
+        <enum>QAbstractItemView::ScrollPerPixel</enum>
        </property>
       </widget>
      </item>
