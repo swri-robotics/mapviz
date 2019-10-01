@@ -465,9 +465,7 @@ void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int order)
 void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
 {
   
-  
-  plugin->Shutdown();
-  
+  plugin->Shutdown(); 
   plugins_.remove(plugin);
   
 }

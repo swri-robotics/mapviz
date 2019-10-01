@@ -910,26 +910,20 @@ void Mapviz::SaveConfig()
     {
       title = path;
     }
-
     title += " - mapviz";
-
     setWindowTitle(QString::fromStdString(title));
-
     Save(path);
   }
 }
 
 void Mapviz::ClearHistory()
 {
-  
   ROS_DEBUG("Mapviz::ClearHistory()");
   for (auto& plugin: plugins_)
   {
     if (plugin.second)
     {
       plugin.second->ClearHistory();
-      
-
     }
     else
     {
@@ -940,8 +934,7 @@ void Mapviz::ClearHistory()
       //QString qs = plugin.first->text(); 
       //std::string s = qs.toUtf8().constData();
       ROS_INFO("Clear Failed.");
-    }
-    
+    }  
   }
 }
 
