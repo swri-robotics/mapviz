@@ -161,7 +161,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::ClearHistory()
   {
-    ROS_INFO("LaserScan::ClearHistory(test)");
+    ROS_DEBUG("LaserScan::ClearHistory()");
     scans_.clear();
   }
 

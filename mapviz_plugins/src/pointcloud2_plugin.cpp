@@ -176,7 +176,7 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::ClearHistory()
   {
-    ROS_INFO("PointCloud2Plugin::ClearHistory(test)");
+    ROS_DEBUG("PointCloud2Plugin::ClearHistory()");
     scans_.clear();
   }
 

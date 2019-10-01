@@ -921,7 +921,8 @@ void Mapviz::SaveConfig()
 
 void Mapviz::ClearHistory()
 {
-  ROS_INFO("made it to loop");
+  
+  ROS_DEBUG("Mapviz::ClearHistory()");
   for (auto& plugin: plugins_)
   {
     if (plugin.second)
@@ -1458,7 +1459,7 @@ void Mapviz::Screenshot()
   }
   else
   {
-    ROS_ERROR("Failed to take/opt/ros/kinetic/lib/librqt_mapviz.so screenshot.");
+    ROS_ERROR("Failed to take screenshot.");
   }
 }
 
@@ -1490,7 +1491,7 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
   if (item)
   {
     canvas_->RemovePlugin(plugins_[item]);
-    plugins_[item] = MapvizPluginPtr();
+    
     plugins_.erase(item);
 
     delete item;
@@ -1506,7 +1507,7 @@ void Mapviz::ClearDisplays()
     QListWidgetItem* item = ui_.configs->takeItem(0);
 
     canvas_->RemovePlugin(plugins_[item]);
-    plugins_[item] = MapvizPluginPtr();
+    
     plugins_.erase(item);
 
     delete item;

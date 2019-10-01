@@ -98,7 +98,7 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::ClearHistory()
   {
-    ROS_INFO("TexturedMarkerPlugin::ClearHistory()");
+    ROS_DEBUG("TexturedMarkerPlugin::ClearHistory()");
     markers_.clear();
   }
 
