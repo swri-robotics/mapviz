@@ -921,20 +921,7 @@ void Mapviz::ClearHistory()
   ROS_DEBUG("Mapviz::ClearHistory()");
   for (auto& plugin: plugins_)
   {
-    if (plugin.second)
-    {
-      plugin.second->ClearHistory();
-    }
-    else
-    {
-      // May not be necessary now, but good to have as a failsafe / debugging tool.  
-      // Attempting to clear empty map elements previously led to segfault
-      
-      // trying to acces which plugins crash also result in a segfault.
-      //QString qs = plugin.first->text(); 
-      //std::string s = qs.toUtf8().constData();
-      ROS_INFO("Clear Failed.");
-    }  
+    plugin.second->ClearHistory();  
   }
 }
 
@@ -1484,7 +1471,6 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
   if (item)
   {
     canvas_->RemovePlugin(plugins_[item]);
-    
     plugins_.erase(item);
 
     delete item;
@@ -1500,7 +1486,6 @@ void Mapviz::ClearDisplays()
     QListWidgetItem* item = ui_.configs->takeItem(0);
 
     canvas_->RemovePlugin(plugins_[item]);
-    
     plugins_.erase(item);
 
     delete item;
