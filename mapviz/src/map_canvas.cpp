@@ -464,8 +464,12 @@ void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int order)
 
 void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
 {
+  
+  //plugin->ClearHistory();
   plugin->Shutdown();
+  
   plugins_.remove(plugin);
+  
 }
 
 void MapCanvas::TransformTarget(QPainter* painter)

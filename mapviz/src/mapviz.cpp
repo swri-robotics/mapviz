@@ -921,9 +921,26 @@ void Mapviz::SaveConfig()
 
 void Mapviz::ClearHistory()
 {
+  ROS_INFO("made it to loop");
   for (auto& plugin: plugins_)
   {
-    plugin.second->ClearHistory();
+    if (plugin.second)
+    {
+      plugin.second->ClearHistory();
+      
+
+    }
+    else
+    {
+      // May not be necessary now, but good to have as a failsafe / debugging tool.  
+      // Attempting to clear empty map elements previously led to segfault
+      
+      // trying to acces which plugins crash also result in a segfault.
+      //QString qs = plugin.first->text(); 
+      //std::string s = qs.toUtf8().constData();
+      ROS_INFO("Clear Failed.");
+    }
+    
   }
 }
 
@@ -1441,7 +1458,7 @@ void Mapviz::Screenshot()
   }
   else
   {
-    ROS_ERROR("Failed to take screenshot.");
+    ROS_ERROR("Failed to take/opt/ros/kinetic/lib/librqt_mapviz.so screenshot.");
   }
 }
 
@@ -1474,6 +1491,7 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
   {
     canvas_->RemovePlugin(plugins_[item]);
     plugins_[item] = MapvizPluginPtr();
+    plugins_.erase(item);
 
     delete item;
   }
@@ -1489,6 +1507,7 @@ void Mapviz::ClearDisplays()
 
     canvas_->RemovePlugin(plugins_[item]);
     plugins_[item] = MapvizPluginPtr();
+    plugins_.erase(item);
 
     delete item;
   }

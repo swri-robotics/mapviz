@@ -91,11 +91,20 @@ namespace mapviz_plugins
                      SLOT(CovariancedToggled(bool)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
+    //QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
+
   }
 
   OdometryPlugin::~OdometryPlugin()
   {
   }
+
+  void OdometryPlugin::ClearHistory()
+  {
+    ROS_INFO("OdometryPlugin::ClearHistory()");
+    ClearPoints();
+  }
+
 
   void OdometryPlugin::SelectTopic()
   {
