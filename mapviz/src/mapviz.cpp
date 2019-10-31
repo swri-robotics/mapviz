@@ -910,20 +910,18 @@ void Mapviz::SaveConfig()
     {
       title = path;
     }
-
     title += " - mapviz";
-
     setWindowTitle(QString::fromStdString(title));
-
     Save(path);
   }
 }
 
 void Mapviz::ClearHistory()
 {
+  ROS_DEBUG("Mapviz::ClearHistory()");
   for (auto& plugin: plugins_)
   {
-    plugin.second->ClearHistory();
+    plugin.second->ClearHistory();  
   }
 }
 
@@ -1473,7 +1471,7 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
   if (item)
   {
     canvas_->RemovePlugin(plugins_[item]);
-    plugins_[item] = MapvizPluginPtr();
+    plugins_.erase(item);
 
     delete item;
   }
@@ -1488,7 +1486,7 @@ void Mapviz::ClearDisplays()
     QListWidgetItem* item = ui_.configs->takeItem(0);
 
     canvas_->RemovePlugin(plugins_[item]);
-    plugins_[item] = MapvizPluginPtr();
+    plugins_.erase(item);
 
     delete item;
   }

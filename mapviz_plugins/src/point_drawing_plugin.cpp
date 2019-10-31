@@ -65,6 +65,7 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::ClearHistory()
   {
+    ROS_INFO("PointDrawingPlugin::ClearHistory()");
     points_.clear();
   }
 

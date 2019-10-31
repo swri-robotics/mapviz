@@ -87,6 +87,7 @@ namespace mapviz_plugins
    protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
+    
 
    private:
 
