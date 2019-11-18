@@ -108,6 +108,7 @@ namespace mapviz_plugins
     virtual void PositionToleranceChanged(double value);
     virtual void LapToggled(bool checked);
     virtual void CovariancedToggled(bool checked);
+    virtual void ShowAllCovariancesToggled(bool checked);
     void ResetTransformedPoints();
     void ClearPoints();
 
@@ -125,6 +126,7 @@ namespace mapviz_plugins
     double position_tolerance_;
     int buffer_size_;
     bool covariance_checked_;
+    bool show_all_covariances_checked_;
     bool new_lap_;
     QColor color_;
     bool lap_checked_;

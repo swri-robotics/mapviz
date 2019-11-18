@@ -89,6 +89,8 @@ namespace mapviz_plugins
                      SLOT(LapToggled(bool)));
     QObject::connect(ui_.show_covariance, SIGNAL(toggled(bool)), this,
                      SLOT(CovariancedToggled(bool)));
+    QObject::connect(ui_.show_all_covariances, SIGNAL(toggled(bool)), this,
+                     SLOT(ShowAllCovariancesToggled(bool)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
   }
@@ -338,6 +340,15 @@ namespace mapviz_plugins
       ui_.show_covariance->setChecked(show_covariance);
       CovariancedToggled(show_covariance);
     }
+
+    if (node["show_all_covariances"])
+    {
+      bool show_all_covariances = false;
+      node["show_all_covariances"] >> show_all_covariances;
+      ui_.show_all_covariances->setChecked(show_all_covariances);
+      ShowAllCovariancesToggled(show_all_covariances);
+    }
+
     if (node["show_laps"])
     {
       bool show_laps = false;
@@ -390,6 +401,9 @@ namespace mapviz_plugins
 
     bool show_covariance = ui_.show_covariance->isChecked();
     emitter << YAML::Key << "show_covariance" << YAML::Value << show_covariance;
+
+    bool show_all_covariances = ui_.show_all_covariances->isChecked();
+    emitter << YAML::Key << "show_all_covariances" << YAML::Value << show_all_covariances;
 
     emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
 
