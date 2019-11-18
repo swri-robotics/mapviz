@@ -296,9 +296,11 @@ namespace mapviz_plugins
       }
 
       std::string real_filename;
-      if (filename_.find("$(find ") != -1)
+      size_t spos = filename_.find("$(find ");
+      bool has_close = spos != -1 ? filename_.find(')', spos) != -1: false;
+      if (spos != -1 && spos + 7 < filename_.size() && has_close)
       {
-        std::string package = filename_.substr(filename_.find("$(find ") + 7);
+        std::string package = filename_.substr(spos + 7);
         package = package.substr(0, package.find(")"));
 
         real_filename = ros::package::getPath(package) + filename_.substr(filename_.find(')')+1);
