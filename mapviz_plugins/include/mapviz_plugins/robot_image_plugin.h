@@ -81,6 +81,7 @@ namespace mapviz_plugins
     void SelectFile();
     void SelectFrame();
     void FrameEdited();
+    void ImageEdited();
     void WidthChanged(double value);
     void HeightChanged(double value);
     void OffsetXChanged(double value);

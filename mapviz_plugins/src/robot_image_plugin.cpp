@@ -42,6 +42,7 @@
 
 // ROS libraries
 #include <ros/master.h>
+#include <ros/package.h>
 
 #include <mapviz/select_frame_dialog.h>
 
@@ -78,6 +79,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.browse, SIGNAL(clicked()), this, SLOT(SelectFile()));
     QObject::connect(ui_.selectframe, SIGNAL(clicked()), this, SLOT(SelectFrame()));
     QObject::connect(ui_.frame, SIGNAL(editingFinished()), this, SLOT(FrameEdited()));
+    QObject::connect(ui_.image, SIGNAL(editingFinished()), this, SLOT(ImageEdited()));
     QObject::connect(ui_.width, SIGNAL(valueChanged(double)), this, SLOT(WidthChanged(double)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(double)), this, SLOT(HeightChanged(double)));
     QObject::connect(ui_.offset_x, SIGNAL(valueChanged(double)), this, SLOT(OffsetXChanged(double)));
@@ -117,6 +119,12 @@ namespace mapviz_plugins
       ui_.frame->setText(QString::fromStdString(frame));
       FrameEdited();
     }
+  }
+
+  void RobotImagePlugin::ImageEdited()
+  {
+    filename_ = ui_.image->text().toStdString();
+    LoadImage();
   }
 
   void RobotImagePlugin::FrameEdited()
@@ -287,7 +295,24 @@ namespace mapviz_plugins
         texture_loaded_ = false;
       }
 
-      if (image_.load(filename_.c_str()))
+      const std::string prefix = "$(find ";
+      std::string real_filename;
+      size_t spos = filename_.find(prefix);
+      bool has_close = spos != -1 ? filename_.find(')', spos) != -1: false;
+      if (spos != -1 && spos + prefix.length() < filename_.size() && has_close)
+      {
+        std::string package = filename_.substr(spos + prefix.length());
+        package = package.substr(0, package.find(")"));
+
+        real_filename = ros::package::getPath(package) + filename_.substr(filename_.find(')')+1);
+      }
+      else
+      {
+        real_filename = filename_;
+      }
+
+
+      if (image_.load(real_filename.c_str()))
       {
         int width = image_.width();
         int height = image_.height();
