@@ -50,6 +50,7 @@ namespace mapviz_plugins
         position_tolerance_(0.0),
         buffer_size_(0),
         covariance_checked_(false),
+        show_all_covariances_checked_(false),
         new_lap_(true),
         lap_checked_(false),
         buffer_holder_(false),
@@ -158,6 +159,11 @@ namespace mapviz_plugins
   void PointDrawingPlugin::CovariancedToggled(bool checked)
   {
     covariance_checked_ = checked;
+  }
+
+  void PointDrawingPlugin::ShowAllCovariancesToggled(bool checked)
+  {
+    show_all_covariances_checked_ = checked;
   }
 
   void PointDrawingPlugin::ResetTransformedPoints()
@@ -552,7 +558,29 @@ namespace mapviz_plugins
 
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
 
-    if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
+    if (show_all_covariances_checked_)
+    {
+      for (const auto &pt : points_)
+      {
+        if (!pt.transformed || pt.transformed_cov_points.empty())
+        {
+          continue;
+        }
+        glBegin(GL_LINE_STRIP);
+
+        for (uint32_t i = 0; i < pt.transformed_cov_points.size(); i++)
+        {
+          glVertex2d(pt.transformed_cov_points[i].getX(),
+                     pt.transformed_cov_points[i].getY());
+        }
+
+        glVertex2d(pt.transformed_cov_points.front().getX(),
+                   pt.transformed_cov_points.front().getY());
+
+        glEnd();
+      }
+    }
+    else if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
     {
       glBegin(GL_LINE_STRIP);
 
