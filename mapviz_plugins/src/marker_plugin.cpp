@@ -431,7 +431,8 @@ namespace mapviz_plugins
 
     ros::Time now = ros::Time::now();
 
-    for (auto markerIter = markers_.begin(); markerIter != markers_.end(); ++markerIter)
+    auto markerIter = markers_.begin();
+    while (markerIter != markers_.end())
     {
       MarkerData& marker = markerIter->second;
 
@@ -442,11 +443,13 @@ namespace mapviz_plugins
       }
 
       if (!marker.transformed) {
+        markerIter++;
         continue;
       }
 
       if (!marker_visible_[markerIter->first.first])
       {
+        markerIter++;
         continue;
       }
 
@@ -583,6 +586,7 @@ namespace mapviz_plugins
         glEnd();
       }
 
+      markerIter++;
       PrintInfo("OK");
     }
   }
