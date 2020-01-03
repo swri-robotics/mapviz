@@ -412,28 +412,32 @@ namespace mapviz_plugins
     offset_y_ = offset;
   }
 
-#define IS_INSTANCE(msg, type) \
-  (msg->getDataType() == ros::message_traits::datatype<type>())
+  template <class T, class M>
+  bool is_instance(const M& msg)
+  {
+    return msg->getDataType() == ros::message_traits::datatype<T>();
+  }
+
   void FloatPlugin::floatCallback(const topic_tools::ShapeShifter::ConstPtr& msg)
   {
     double value = 0.0;
-    if (IS_INSTANCE(msg, std_msgs::Float32))
+    if (is_instance<std_msgs::Float32>(msg))
     {
       value = msg->instantiate<std_msgs::Float32>()->data;
     }
-    if (IS_INSTANCE(msg, std_msgs::Float64))
+    if (is_instance<std_msgs::Float64>(msg))
     {
       value = msg->instantiate<std_msgs::Float64>()->data;
     }
-    else if (IS_INSTANCE(msg, marti_common_msgs::Float32Stamped))
+    else if (is_instance<marti_common_msgs::Float32Stamped>(msg))
     {
       value = msg->instantiate<marti_common_msgs::Float32Stamped>()->value;
     }
-    else if (IS_INSTANCE(msg, marti_common_msgs::Float64Stamped))
+    else if (is_instance<marti_common_msgs::Float64Stamped>(msg))
     {
       value = msg->instantiate<marti_common_msgs::Float64Stamped>()->value;
     }
-    else if (IS_INSTANCE(msg, marti_sensor_msgs::Velocity))
+    else if (is_instance<marti_sensor_msgs::Velocity>(msg))
     {
       value = msg->instantiate<marti_sensor_msgs::Velocity>()->velocity;
     }
