@@ -73,6 +73,9 @@
   <class name="mapviz_plugins/string" type="mapviz_plugins::StringPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Displays a std_msgs/String at a fixed point on the canvas.</description>
   </class>
+  <class name="mapviz_plugins/float" type="mapviz_plugins::FloatPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Displays a float and velocity messages at a fixed point on the canvas.</description>
+  </class>
   <class name="mapviz_plugins/occupancy_grid" type="mapviz_plugins::OccupancyGridPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Display maps and other OccupancyGrids</description>
   </class>
