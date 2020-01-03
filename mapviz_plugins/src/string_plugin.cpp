@@ -387,15 +387,19 @@ namespace mapviz_plugins
     offset_y_ = offset;
   }
 
-#define IS_INSTANCE(msg, type) \
-  (msg->getDataType() == ros::message_traits::datatype<type>())
+  template <class T, class M>
+  bool is_instance(const M& msg)
+  {
+    return msg->getDataType() == ros::message_traits::datatype<T>();
+  }
+
   void StringPlugin::stringCallback(const topic_tools::ShapeShifter::ConstPtr& msg)
   {
-    if (IS_INSTANCE(msg, std_msgs::String))
+    if (is_instance<std_msgs::String>(msg))
     {
       message_.setText(QString(msg->instantiate<std_msgs::String>()->data.c_str()));
     }
-    else if (IS_INSTANCE(msg, marti_common_msgs::StringStamped))
+    else if (is_instance<marti_common_msgs::StringStamped>(msg))
     {
       message_.setText(QString(msg->instantiate<marti_common_msgs::StringStamped>()->value.c_str()));
     }
