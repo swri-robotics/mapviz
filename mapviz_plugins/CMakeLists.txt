@@ -9,6 +9,7 @@ set(DEPENDENCIES
   mapviz
   marti_common_msgs
   marti_nav_msgs
+  marti_sensor_msgs
   marti_visualization_msgs
   move_base_msgs
   nav_msgs
