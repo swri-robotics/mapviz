@@ -53,9 +53,10 @@
 #include <QMainWindow>
 
 // ROS libraries
-#include <ros/ros.h>
+// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <pluginlib/class_loader.h>
-#include <tf/transform_listener.h>
+#include <tf2_ros/transform_listener.h>
 #include <yaml-cpp/yaml.h>
 #include <std_srvs/Empty.h>
 
@@ -64,12 +65,12 @@
 #include "ui_pluginselect.h"
 
 #include <swri_transform_util/transform_manager.h>
-#include <mapviz/AddMapvizDisplay.h>
+#include <mapviz/AddMapvizDisplay.hpp>  // Service
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 #include <mapviz/video_writer.h>
 
-#include "stopwatch.h"
+// #include "stopwatch.h"
 
 namespace mapviz
 {
@@ -78,7 +79,11 @@ namespace mapviz
     Q_OBJECT
 
   public:
-    Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    Mapviz(bool is_standalone,
+      int argc,
+      char** argv,
+      QWidget *parent = 0,
+      Qt::WindowFlags flags = 0);
     ~Mapviz();
 
     void Initialize();
@@ -203,6 +208,6 @@ namespace mapviz
     static const QString MAPVIZ_CONFIG_FILE;
     static const std::string IMAGE_TRANSPORT_PARAM;
   };
-}
+}   // namespace mapviz
 
 #endif  // MAPVIZ_MAPVIZ_H_

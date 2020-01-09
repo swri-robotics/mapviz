@@ -94,7 +94,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
 
 MapCanvas::~MapCanvas()
 {
-  if(pixel_buffer_size_ != 0)
+  if (pixel_buffer_size_ != 0)
   {
     glDeleteBuffersARB(2, pixel_buffer_ids_);
   }
@@ -107,7 +107,7 @@ void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
 
 void MapCanvas::InitializePixelBuffers()
 {
-  if(has_pixel_buffers_)
+  if (has_pixel_buffers_)
   {
     int32_t buffer_size = width() * height() * 4;
 
@@ -195,8 +195,9 @@ void MapCanvas::CaptureFrame(bool force)
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[pixel_buffer_index_]);
     glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[next_index]);
-    GLubyte* data = reinterpret_cast<GLubyte*>(glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
-    if(data)
+    GLubyte* data = reinterpret_cast<GLubyte*>(
+      glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
+    if (data)
     {
       capture_buffer_.resize(pixel_buffer_size_);
 
@@ -377,7 +378,7 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
         diff = e->y() - mouse_previous_y_;
         if (diff != 0)
         {
-          Zoom(((float)diff) / 10.0f);
+          Zoom((static_cast<float>(diff)) / 10.0f);
         }
         mouse_previous_y_ = e->y();
         break;
@@ -464,10 +465,8 @@ void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int order)
 
 void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
 {
-  
-  plugin->Shutdown(); 
+  plugin->Shutdown();
   plugins_.remove(plugin);
-  
 }
 
 void MapCanvas::TransformTarget(QPainter* painter)
@@ -515,7 +514,8 @@ void MapCanvas::TransformTarget(QPainter* painter)
     qtransform_ = qtransform_.rotateRadians(yaw);
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
-    qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(), transform_.getOrigin().getY());
+    qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(),
+      transform_.getOrigin().getY());
 
     tf::Point point(view_center_x_, view_center_y_, 0);
 

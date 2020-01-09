@@ -47,6 +47,6 @@ namespace mapviz
   private:
     bool notify(QObject* receiver, QEvent* event);
   };
-}
+}   // namespace mapviz
 
 #endif

@@ -56,7 +56,7 @@ namespace mapviz
     void SetName(QString name);
     void SetType(QString type);
     void SetWidget(QWidget* widget);
-    
+
     void SetListItem(QListWidgetItem* item) { item_ = item; }
     bool Collapsed() const { return ui_.content->isHidden(); }
     QString Name() const { return name_; }
@@ -85,6 +85,6 @@ namespace mapviz
     QAction* remove_item_action_;
     bool visible_;
   };
-}
+}   // namespace mapviz
 
 #endif  // MAPVIZ_CONFIG_ITEM_H_

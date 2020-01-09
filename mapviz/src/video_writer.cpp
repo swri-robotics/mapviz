@@ -29,7 +29,8 @@
 
 #include <mapviz/video_writer.h>
 
-#include <ros/ros.h>
+// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -43,7 +44,10 @@ namespace mapviz
       width_ = width;
       height_ = height;
 
-      ROS_INFO("Initializing recording:\nWidth/Height/Filename: %d / %d / %s", width_, height_, directory.c_str() );
+      ROS_INFO("Initializing recording:\nWidth/Height/Filename: %d / %d / %s",
+        width_,
+        height_,
+        directory.c_str());
       video_writer_ = boost::make_shared<cv::VideoWriter>(
           directory,
           CV_FOURCC('M', 'J', 'P', 'G'),
@@ -118,4 +122,4 @@ namespace mapviz
     QMutexLocker locker(&video_mutex_);
     video_writer_.reset();
   }
-}
+}   // namespace mapviz

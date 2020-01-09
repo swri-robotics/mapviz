@@ -61,6 +61,6 @@ namespace mapviz
                                   const qt_gui_cpp::Settings& instance_settings)
   {
   }
-}
+}   // namespace mapviz
 
 PLUGINLIB_EXPORT_CLASS(mapviz::RqtMapviz, rqt_gui_cpp::Plugin)

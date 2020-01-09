@@ -43,7 +43,7 @@
 #undef slots
 #undef signals
 
-#include "mapviz.h"
+#include "mapviz.hpp"
 
 namespace mapviz
 {

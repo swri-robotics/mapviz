@@ -57,12 +57,12 @@ namespace mapviz
   {
     if (visible_ != toggled)
     {
-      visible_ = toggled;      
+      visible_ = toggled;
       if (ui_.show->isChecked() != toggled)
       {
         ui_.show->setChecked(toggled);
       }
-      
+
       Q_EMIT ToggledDraw(item_, toggled);
     }
   }
@@ -97,12 +97,12 @@ namespace mapviz
   {
     bool ok;
     QString text = QInputDialog::getText(
-      this, 
+      this,
       tr("Set Display name"),
-      tr(""), 
+      tr(""),
       QLineEdit::Normal,
       name_, &ok);
-     
+
     if (ok && !text.isEmpty())
     {
       SetName(text);
@@ -129,4 +129,4 @@ namespace mapviz
 
     Q_EMIT UpdateSizeHint();
   }
-}
+}   // namespace mapviz

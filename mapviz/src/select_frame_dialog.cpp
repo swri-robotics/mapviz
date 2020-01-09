@@ -39,7 +39,7 @@
 #include <QLabel>
 #include <QTimerEvent>
 
-#include <tf/transform_listener.h>
+#include <tf2_ros/transform_listener.h>
 
 namespace mapviz
 {
@@ -102,18 +102,18 @@ SelectFrameDialog::SelectFrameDialog(
           this, SLOT(updateDisplayedFrames()));
 
   ok_button_->setDefault(true);
-  
+
   allowMultipleFrames(false);
   setWindowTitle("Select frames...");
 
   resize(600, 600);
-  
+
   fetch_frames_timer_id_ = startTimer(1000);
   fetchFrames();
 }
 
 void SelectFrameDialog::timerEvent(QTimerEvent *event)
-{  
+{
   if (event->timerId() == fetch_frames_timer_id_) {
     fetchFrames();
   }
@@ -156,12 +156,12 @@ std::vector<std::string> SelectFrameDialog::selectedFrames() const
     if (!qt_selection[i].isValid()) {
       continue;
     }
-    
+
     int row = qt_selection[i].row();
     if (row < 0 || static_cast<size_t>(row) >= displayed_frames_.size()) {
       continue;
     }
-    
+
     selection[i] = displayed_frames_[row];
   }
 
@@ -171,7 +171,7 @@ std::vector<std::string> SelectFrameDialog::selectedFrames() const
 void SelectFrameDialog::fetchFrames()
 {
   if (!tf_) { return; }
-  
+
   known_frames_.clear();
   tf_->getFrameStrings(known_frames_);
   std::sort(known_frames_.begin(), known_frames_.end());
@@ -193,22 +193,22 @@ std::vector<std::string> SelectFrameDialog::filterFrames(
 
     filtered.push_back(frames[i]);
   }
-  
-  return filtered;  
+
+  return filtered;
 }
 
 void SelectFrameDialog::updateDisplayedFrames()
 {
   std::vector<std::string> next_displayed_frames = filterFrames(known_frames_);
-  
+
   // It's a lot more work to keep track of the additions/removals like
   // this compared to resetting the QListWidget's items each time, but
   // it allows Qt to properly track the selection and current items
   // across updates, which results in much less frustration for the user.
-  
+
   std::set<std::string> prev_names;
   prev_names.insert(displayed_frames_.begin(), displayed_frames_.end());
-  
+
   std::set<std::string> next_names;
   next_names.insert(next_displayed_frames.begin(), next_displayed_frames.end());
 
@@ -246,6 +246,6 @@ void SelectFrameDialog::updateDisplayedFrames()
     }
   }
 
-  displayed_frames_.swap(next_displayed_frames);  
+  displayed_frames_.swap(next_displayed_frames);
 }
 }  // namespace mapviz

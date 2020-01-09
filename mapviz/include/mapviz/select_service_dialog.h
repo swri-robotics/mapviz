@@ -40,7 +40,8 @@
 #include <QMetaType>
 #include <QThread>
 
-#include <ros/ros.h>
+// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -63,7 +64,7 @@ namespace mapviz
   {
     Q_OBJECT
   public:
-    ServiceUpdaterThread(ros::NodeHandle& nh, const std::string& allowed_datatype, QObject* parent) :
+    ServiceUpdaterThread(rclcpp::Node& nh, const std::string& allowed_datatype, QObject* parent) :
       QThread(parent),
       nh_(nh),
       allowed_datatype_(allowed_datatype)
@@ -164,6 +165,6 @@ namespace mapviz
     QPushButton *ok_button_;
     boost::shared_ptr<ServiceUpdaterThread> worker_thread_;
   };
-}
+}   //namespace mapviz
 
 #endif //MAPVIZ_SELECT_SERVICE_DIALOG_H

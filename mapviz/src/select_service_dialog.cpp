@@ -17,12 +17,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL Southwest Research Institute® BE LIABLE 
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
+// ARE DISCLAIMED. IN NO EVENT SHALL Southwest Research Institute® BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 // OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 //
@@ -39,9 +39,12 @@
 #include <QPushButton>
 #include <QTimerEvent>
 #include <QVBoxLayout>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node_interfaces/node_graph.hpp>
 
-#include <rosapi/Services.h>
-#include <rosapi/ServicesForType.h>
+// REPLACE THESE CALLS WITH THE RCLCPP SERVICE QUERIES
+// #include <rosapi/Services.h>
+// #include <rosapi/ServicesForType.h>
 
 namespace mapviz
 {
@@ -51,10 +54,13 @@ namespace mapviz
 
     if (allowed_datatype_.empty())
     {
+      // See about replacing with NodeGraph::get_service_names_and_types(),
+      // and stripping out type info
       client = nh_.serviceClient<rosapi::Services>("/rosapi/services");
     }
     else
     {
+      // See about replacing with NodeGraph::get_service_names_and_types()
       client = nh_.serviceClient<rosapi::ServicesForType>("/rosapi/services_for_type");
     }
 
@@ -75,7 +81,8 @@ namespace mapviz
         Q_EMIT servicesFetched(srv.response.services);
       }
     }
-    else {
+    else
+    {
       rosapi::ServicesForType srv;
       srv.request.type = allowed_datatype_;
 
@@ -306,4 +313,4 @@ namespace mapviz
     killTimer(fetch_services_timer_id_);
     QDialog::closeEvent(event);
   }
-}
+}   // namespace mapviz

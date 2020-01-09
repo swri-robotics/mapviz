@@ -66,7 +66,7 @@ class SelectFrameDialog : public QDialog
    */
   static std::string selectFrame(
     boost::shared_ptr<tf::TransformListener> tf_listener,
-    QWidget *parent=0);
+    QWidget *parent = 0);
 
   /**
    * Present the user with a dialog to select a multiple TF frames.
@@ -76,14 +76,14 @@ class SelectFrameDialog : public QDialog
    */
   static std::vector<std::string> selectFrames(
     boost::shared_ptr<tf::TransformListener> tf_listener,
-    QWidget *parent=0);
+    QWidget *parent = 0);
 
   /**
    * Constructor for the SelectFrameDialog.
    */
   SelectFrameDialog(boost::shared_ptr<tf::TransformListener> tf_listener,
-                    QWidget *parent=0);
-  
+                    QWidget *parent = 0);
+
   /**
    * Choose whether the user can select one (allow=false) or multiple
    * (allow=true) frames.  The default is false.

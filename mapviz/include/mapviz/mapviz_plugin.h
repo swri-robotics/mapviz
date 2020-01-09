@@ -42,15 +42,17 @@
 #include <QObject>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
-#include <swri_transform_util/transform.h>
-#include <swri_transform_util/transform_manager.h>
-#include <swri_yaml_util/yaml_util.h>
+// #include <ros/ros.h>
+// #include <tf/transform_datatypes.h>
+// #include <swri_transform_util/transform.h>
+// #include <swri_transform_util/transform_manager.h>
+// #include <swri_yaml_util/yaml_util.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
 
 #include <mapviz/widgets.h>
 
-#include "stopwatch.h"
+// #include "stopwatch.h"
 
 namespace mapviz
 {
@@ -132,7 +134,7 @@ namespace mapviz
         meas_draw_.stop();
       }
     }
-    
+
     void PaintPlugin(QPainter* painter, double x, double y, double scale)
     {
       if (visible_ && initialized_)
@@ -140,7 +142,7 @@ namespace mapviz
         meas_transform_.start();
         Transform();
         meas_transform_.stop();
-         
+
         meas_paint_.start();
         Paint(painter, x, y, scale);
         meas_paint_.start();
@@ -172,7 +174,9 @@ namespace mapviz
       }
     }
 
-    bool GetTransform(const ros::Time& stamp, swri_transform_util::Transform& transform, bool use_latest_transforms = true)
+    bool GetTransform(const ros::Time& stamp,
+      swri_transform_util::Transform& transform,
+      bool use_latest_transforms = true)
     {
       if (!initialized_)
         return false;
@@ -207,8 +211,10 @@ namespace mapviz
 
       return false;
     }
-    
-    bool GetTransform(const std::string& source, const ros::Time& stamp, swri_transform_util::Transform& transform)
+
+    bool GetTransform(const std::string& source,
+      const ros::Time& stamp,
+      swri_transform_util::Transform& transform)
     {
       if (!initialized_)
         return false;
@@ -300,7 +306,7 @@ namespace mapviz
 
     boost::shared_ptr<tf::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
-    
+
     std::string target_frame_;
     std::string source_frame_;
     std::string type_;
@@ -342,10 +348,12 @@ namespace mapviz
         return;
       }
 
-      if( throttle > 0.0){
+      if (throttle > 0.0)
+      {
           ROS_ERROR_THROTTLE(throttle, "Error: %s", message.c_str());
       }
-      else{
+      else
+      {
           ROS_ERROR("Error: %s", message.c_str());
       }
       QPalette p(status_label->palette());
@@ -362,10 +370,12 @@ namespace mapviz
         return;
       }
 
-      if( throttle > 0.0){
+      if (throttle > 0.0)
+      {
           ROS_INFO_THROTTLE(throttle, "%s", message.c_str());
       }
-      else{
+      else
+      {
           ROS_INFO("%s", message.c_str());
       }
       QPalette p(status_label->palette());
@@ -382,10 +392,11 @@ namespace mapviz
         return;
       }
 
-      if( throttle > 0.0){
+      if (throttle > 0.0){
           ROS_WARN_THROTTLE(throttle, "%s", message.c_str());
       }
-      else{
+      else
+      {
           ROS_WARN("%s", message.c_str());
       }
       QPalette p(status_label->palette());
@@ -394,6 +405,7 @@ namespace mapviz
       status_label->setText(message.c_str());
   }
 
-}
+}   // namespace mapviz
+
 #endif  // MAPVIZ_MAPVIZ_PLUGIN_H_
 

@@ -29,13 +29,16 @@
 #ifndef MAPVIZ_SELECT_TOPIC_DIALOG_H_
 #define MAPVIZ_SELECT_TOPIC_DIALOG_H_
 
+#include <QDialog>
+
 #include <set>
 #include <string>
 #include <vector>
 
-#include <QDialog>
+#include <rclcpp/rclcpp.hpp>
 
-#include <ros/master.h>
+// #include <ros/master.h>
+// #include <rclcpp/rclcpp.hpp>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -64,9 +67,10 @@ class SelectTopicDialog : public QDialog
    * selection, the topic and datatype fields of the returned topic
    * info will be empty.
    */
-  static ros::master::TopicInfo selectTopic(
+  //  static ros::master::TopicInfo selectTopic(
+  static std::string selectTopic(
     const std::string &datatype,
-    QWidget *parent=0);
+    QWidget *parent = 0);
 
   /**
    * Present the user with a dialog to select a single topic This is a
@@ -76,10 +80,11 @@ class SelectTopicDialog : public QDialog
    * selection, the topic and datatype fields of the returned topic
    * info will be empty.
    */
-  static ros::master::TopicInfo selectTopic(
+  //  static ros::master::TopicInfo selectTopic(
+  static std::string selectTopic(
     const std::string &datatype1,
     const std::string &datatype2,
-    QWidget *parent=0);
+    QWidget *parent = 0);
 
   /**
    * Present the user with a dialog to select a single topic.
@@ -88,10 +93,11 @@ class SelectTopicDialog : public QDialog
    * selection, the topic and datatype fields of the returned topic
    * info will be empty.
    */
-  static ros::master::TopicInfo selectTopic(
+  // static ros::master::TopicInfo selectTopic(
+  static std::string selectTopic(
     const std::vector<std::string> &datatypes,
-    QWidget *parent=0);
-  
+    QWidget *parent = 0);
+
   /**
    * Present the user with a dialog to select a multiple topics.  This
    * is a convenience wrapper for the common case where only one
@@ -100,9 +106,10 @@ class SelectTopicDialog : public QDialog
    * If the user cancels the selection or doesn't make a valid
    * selection, the returned vector will be empty.
    */
-  static std::vector<ros::master::TopicInfo> selectTopics(
+  // static std::vector<ros::master::TopicInfo> selectTopics(
+  static std::vector<std::string> selectTopics(
     const std::string &datatype,
-    QWidget *parent=0);
+    QWidget *parent = 0);
 
   /**
    * Present the user with a dialog to select a multiple topics.  This
@@ -112,10 +119,11 @@ class SelectTopicDialog : public QDialog
    * If the user cancels the selection or doesn't make a valid
    * selection, the returned vector will be empty.
    */
-  static std::vector<ros::master::TopicInfo> selectTopics(
+  // static std::vector<ros::master::TopicInfo> selectTopics(
+  static std::vector<std::string> selectTopics(
     const std::string &datatype1,
     const std::string &datatype2,
-    QWidget *parent=0);
+    QWidget *parent = 0);
 
   /**
    * Present the user with a dialog to select a multiple topics.
@@ -123,15 +131,16 @@ class SelectTopicDialog : public QDialog
    * If the user cancels the selection or doesn't make a valid
    * selection, the returned vector will be empty.
    */
-  static std::vector<ros::master::TopicInfo> selectTopics(
+  // static std::vector<ros::master::TopicInfo> selectTopics(
+  static std::vector<std::string> selectTopics(
     const std::vector<std::string> &datatypes,
-    QWidget *parent=0);
+    QWidget *parent = 0);
 
   /**
    * Constructor for the SelectTopicDialog.
    */
-  SelectTopicDialog(QWidget *parent=0);
-  
+  explicit SelectTopicDialog(QWidget *parent = 0);
+
   /**
    * Choose whether the user can select one (allow=false) or multiple
    * (allow=true) topics.  The default is false.
@@ -151,19 +160,23 @@ class SelectTopicDialog : public QDialog
    * there is no selection, the returned info will have an empty topic
    * name and datatype.
    */
-  ros::master::TopicInfo selectedTopic() const;
+  // ros::master::TopicInfo selectedTopic() const;
+  std::string selectedTopic() const;
   /**
    * Returns the currently selected topics.  If there is no selection,
    * the returned vector will be empty.
    */
-  std::vector<ros::master::TopicInfo> selectedTopics() const;
+  // std::vector<ros::master::TopicInfo> selectedTopics() const;
+  std::vector<std::string> selectedTopics() const;
 
  private:
   void timerEvent(QTimerEvent *);
   void closeEvent(QCloseEvent *);
 
-  std::vector<ros::master::TopicInfo> filterTopics(
-    const std::vector<ros::master::TopicInfo> &) const;
+  // std::vector<ros::master::TopicInfo> filterTopics(
+  std::vector<std::string> filterTopics(
+    // const std::vector<ros::master::TopicInfo> &) const;
+    const std::vector<std::string> &) const;
 
  private Q_SLOTS:
   void fetchTopics();
@@ -171,8 +184,10 @@ class SelectTopicDialog : public QDialog
 
  private:
   std::set<std::string> allowed_datatypes_;
-  std::vector<ros::master::TopicInfo> known_topics_;
-  std::vector<ros::master::TopicInfo> displayed_topics_;
+  // std::vector<ros::master::TopicInfo> known_topics_;
+  std::vector<std::string> known_topics_;
+  // std::vector<ros::master::TopicInfo> displayed_topics_;
+  std::vector<std::string> displayed_topics_;
   int fetch_topics_timer_id_;
 
   QPushButton *ok_button_;

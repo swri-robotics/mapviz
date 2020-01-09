@@ -19,3 +19,5 @@ srv_gen/
 *.cfgc
 version.txt
 cmake-build-debug/
+mapviz/log
+mapviz/install

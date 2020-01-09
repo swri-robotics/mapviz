@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz/mapviz.h>
+#include <mapviz/mapviz.hpp>
 
 // C++ standard libraries
 #include <cmath>
@@ -71,7 +71,7 @@
 
 #include <swri_math_util/constants.h>
 #include <swri_transform_util/frames.h>
-#include <swri_yaml_util/yaml_util.h>
+// #include <swri_yaml_util/yaml_util.h>
 
 #include <mapviz/config_item.h>
 #include <QtGui/QtGui>
@@ -111,26 +111,26 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   ui_.statusbar->addPermanentWidget(lat_lon_pos_label_);
 
   spacer1_ = new QWidget(ui_.statusbar);
-  spacer1_->setMaximumSize(22,22);
-  spacer1_->setMinimumSize(22,22);
+  spacer1_-> setMaximumSize(22, 22);
+  spacer1_-> setMinimumSize(22, 22);
   ui_.statusbar->addPermanentWidget(spacer1_);
 
   screenshot_button_ = new QPushButton();
   screenshot_button_->setMinimumSize(22, 22);
-  screenshot_button_->setMaximumSize(22,22);
+  screenshot_button_->setMaximumSize(22, 22);
   screenshot_button_->setIcon(QIcon(":/images/image-x-generic.png"));
   screenshot_button_->setFlat(true);
   screenshot_button_->setToolTip("Capture screenshot of display canvas");
   ui_.statusbar->addPermanentWidget(screenshot_button_);
 
   spacer2_ = new QWidget(ui_.statusbar);
-  spacer2_->setMaximumSize(22,22);
-  spacer2_->setMinimumSize(22,22);
+  spacer2_->setMaximumSize(22, 22);
+  spacer2_->setMinimumSize(22, 22);
   ui_.statusbar->addPermanentWidget(spacer2_);
 
   rec_button_ = new QPushButton();
   rec_button_->setMinimumSize(22, 22);
-  rec_button_->setMaximumSize(22,22);
+  rec_button_->setMaximumSize(22, 22);
   rec_button_->setIcon(QIcon(":/images/media-record.png"));
   rec_button_->setCheckable(true);
   rec_button_->setFlat(true);
@@ -139,7 +139,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
   stop_button_ = new QPushButton();
   stop_button_->setMinimumSize(22, 22);
-  stop_button_->setMaximumSize(22,22);
+  stop_button_->setMaximumSize(22, 22);
   stop_button_->setIcon(QIcon(":/images/media-playback-stop.png"));
   stop_button_->setToolTip("Stop recording video of display canvas");
   stop_button_->setEnabled(false);
@@ -147,8 +147,8 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   ui_.statusbar->addPermanentWidget(stop_button_);
 
   spacer3_ = new QWidget(ui_.statusbar);
-  spacer3_->setMaximumSize(22,22);
-  spacer3_->setMinimumSize(22,22);
+  spacer3_->setMaximumSize(22, 22);
+  spacer3_->setMinimumSize(22, 22);
   ui_.statusbar->addPermanentWidget(spacer3_);
 
   recenter_button_ = new QPushButton();
@@ -172,10 +172,16 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   canvas_ = new MapCanvas(this);
   setCentralWidget(canvas_);
 
-  connect(canvas_, SIGNAL(Hover(double,double,double)), this, SLOT(Hover(double,double,double)));
+  connect(canvas_,
+    SIGNAL(Hover(double, double, double)),
+      this,
+      SLOT(Hover(double, double, double)));
   connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
-  connect(ui_.bg_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectBackgroundColor(const QColor &)));
+  connect(ui_.bg_color,
+    SIGNAL(colorEdited(const QColor &)),
+    this,
+    SLOT(SelectBackgroundColor(const QColor &)));
 
   connect(recenter_button_, SIGNAL(clicked()), this, SLOT(Recenter()));
   connect(rec_button_, SIGNAL(toggled(bool)), this, SLOT(ToggleRecord(bool)));
@@ -218,7 +224,7 @@ void Mapviz::closeEvent(QCloseEvent* event)
 {
   AutoSave();
 
-  for (auto& display: plugins_)
+  for (auto& display : plugins_)
   {
     MapvizPluginPtr plugin = display.second;
     canvas_->RemovePlugin(plugin);
@@ -236,19 +242,23 @@ void Mapviz::Initialize()
       // If this Mapviz is running as a standalone application, it needs to init
       // ROS and start spinning.  If it's running as an rqt plugin, rqt will
       // take care of that.
-      ros::init(argc_, argv_, "mapviz", ros::init_options::AnonymousName);
+      // ros::init(argc_, argv_, "mapviz", ros::init_options::AnonymousName);
+      rclcpp::init(argc_, argv_);
+      node_ = rclcpp::Node::make_shared("mapviz");
 
       spin_timer_.start(30);
       connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
     }
 
-    node_ = new ros::NodeHandle("~");
+    // node_ = new ros::NodeHandle("~");
 
     // Create a sub-menu that lists all available Image Transports
     image_transport::ImageTransport it(*node_);
     std::vector<std::string> transports = it.getLoadableTransports();
     QActionGroup* group = new QActionGroup(image_transport_menu_);
-    for (std::vector<std::string>::iterator iter = transports.begin(); iter != transports.end(); iter++)
+    for (std::vector<std::string>::iterator iter = transports.begin();
+      iter != transports.end();
+      iter++)
     {
       QString transport = QString::fromStdString(*iter).replace(
           QString::fromStdString(IMAGE_TRANSPORT_PARAM) + "/", "");
@@ -269,7 +279,7 @@ void Mapviz::Initialize()
     std::vector<std::string> plugins = loader_->getDeclaredClasses();
     for (unsigned int i = 0; i < plugins.size(); i++)
     {
-      ROS_INFO("Found mapviz plugin: %s", plugins[i].c_str());
+      RCLCPP_INFO(node_->get_logger(), "Found mapviz plugin: %s", plugins[i].c_str());
     }
 
     canvas_->InitializeTf(tf_);
@@ -294,7 +304,7 @@ void Mapviz::Initialize()
       }
       else
       {
-        ROS_WARN("Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
+        RCLCPP_WARN(node_->get_logger(), "Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
                  ws_path.toStdString().c_str());
       }
     }
@@ -329,7 +339,8 @@ void Mapviz::Initialize()
       connect(&profile_timer_, SIGNAL(timeout()), this, SLOT(HandleProfileTimer()));
     }
 
-    setFocus(); // Set the main window as focused object, prevent other fields from obtaining focus at startup
+    setFocus();   // Set the main window as focused object,
+                  // prevent other fields from obtaining focus at startup
 
     initialized_ = true;
   }
@@ -337,10 +348,10 @@ void Mapviz::Initialize()
 
 void Mapviz::SpinOnce()
 {
-  if (ros::ok())
+  if (rclcpp::ok())
   {
     meas_spin_.start();
-    ros::spinOnce();
+    rclcpp::spinOnce(node_);
     meas_spin_.stop();
   }
   else
@@ -779,16 +790,28 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "target_frame" << YAML::Value << ui_.targetframe->currentText().toStdString();
   out << YAML::Key << "fix_orientation" << YAML::Value << ui_.actionFix_Orientation->isChecked();
   out << YAML::Key << "rotate_90" << YAML::Value << ui_.actionRotate_90->isChecked();
-  out << YAML::Key << "enable_antialiasing" << YAML::Value << ui_.actionEnable_Antialiasing->isChecked();
-  out << YAML::Key << "show_displays" << YAML::Value << ui_.actionConfig_Dock->isChecked();
+  out << YAML::Key
+      << "enable_antialiasing"
+      << YAML::Value
+      << ui_.actionEnable_Antialiasing->isChecked();
+  out << YAML::Key
+      << "show_displays"
+      << YAML::Value
+      << ui_.actionConfig_Dock->isChecked();
   out << YAML::Key << "show_status_bar" << YAML::Value << ui_.actionShow_Status_Bar->isChecked();
-  out << YAML::Key << "show_capture_tools" << YAML::Value << ui_.actionShow_Capture_Tools->isChecked();
+  out << YAML::Key
+      << "show_capture_tools"
+      << YAML::Value
+      << ui_.actionShow_Capture_Tools->isChecked();
   out << YAML::Key << "window_width" << YAML::Value << width();
   out << YAML::Key << "window_height" << YAML::Value << height();
   out << YAML::Key << "view_scale" << YAML::Value << canvas_->ViewScale();
   out << YAML::Key << "offset_x" << YAML::Value << canvas_->OffsetX();
   out << YAML::Key << "offset_y" << YAML::Value << canvas_->OffsetY();
-  out << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.uselatesttransforms->isChecked();
+  out << YAML::Key
+      << "use_latest_transforms"
+      << YAML::Value
+      << ui_.uselatesttransforms->isChecked();
   out << YAML::Key << "background" << YAML::Value << background_.name().toStdString();
   std::string image_transport;
   if (node_->getParam(IMAGE_TRANSPORT_PARAM, image_transport))
@@ -814,12 +837,19 @@ void Mapviz::Save(const std::string& filename)
     {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << plugins_[ui_.configs->item(i)]->Type();
-      out << YAML::Key << "name" << YAML::Value << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Name().toStdString();
+      out << YAML::Key
+          << "name"
+          << YAML::Value
+          << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))
+                ->Name().toStdString();
       out << YAML::Key << "config" << YAML::Value;
       out << YAML::BeginMap;
 
       out << YAML::Key << "visible" << YAML::Value << plugins_[ui_.configs->item(i)]->Visible();
-      out << YAML::Key << "collapsed" << YAML::Value << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Collapsed();
+      out << YAML::Key
+          << "collapsed"
+          << YAML::Value
+          << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Collapsed();
 
       plugins_[ui_.configs->item(i)]->SaveConfig(out, config_path);
 
@@ -919,9 +949,9 @@ void Mapviz::SaveConfig()
 void Mapviz::ClearHistory()
 {
   ROS_DEBUG("Mapviz::ClearHistory()");
-  for (auto& plugin: plugins_)
+  for (auto& plugin : plugins_)
   {
-    plugin.second->ClearHistory();  
+    plugin.second->ClearHistory();
   }
 }
 
@@ -957,7 +987,8 @@ void Mapviz::SelectNewDisplay()
     catch (const pluginlib::LibraryLoadException& e)
     {
       std::stringstream message;
-      message << "Unable to load " << type << "." << std::endl << "Check the ROS log for more details.";
+      message << "Unable to load " << type << "." << std::endl
+              << "Check the ROS log for more details.";
       QMessageBox::warning(this, "Plugin failed to load", QString::fromStdString(message.str()));
       ROS_ERROR("%s", e.what());
     }
@@ -969,7 +1000,7 @@ bool Mapviz::AddDisplay(
       AddMapvizDisplay::Response& resp)
 {
   std::map<std::string, std::string> properties;
-  for (auto& property: req.properties)
+  for (auto& property : req.properties)
   {
     properties[property.key] = property.value;
   }
@@ -981,7 +1012,7 @@ bool Mapviz::AddDisplay(
     return false;
   }
 
-  for (auto& display: plugins_)
+  for (auto& display : plugins_)
   {
     MapvizPluginPtr plugin = display.second;
     if (!plugin)
@@ -1084,7 +1115,8 @@ void Mapviz::Hover(double x, double y, double scale)
       QString lat_lon_text = "lat/lon: ";
 
       double lat_scale = (1.0 / 111111.0) * scale;
-      int32_t lat_precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / lat_scale))));
+      int32_t lat_precision = static_cast<int32_t>(
+        std::ceil(std::max(0.0, std::log10(1.0 / lat_scale))));
 
       std::ostringstream lat_ss;
       lat_ss << std::fixed << std::setprecision(lat_precision);
@@ -1093,8 +1125,10 @@ void Mapviz::Hover(double x, double y, double scale)
 
       lat_lon_text += ", ";
 
-      double lon_scale = (1.0 / (111111.0 * std::cos(point.y() * swri_math_util::_deg_2_rad))) * scale;
-      int32_t lon_precision = static_cast<int32_t>(std::ceil(std::max(0.0, std::log10(1.0 / lon_scale))));
+      double lon_scale = (1.0
+        / (111111.0 * std::cos(point.y() * swri_math_util::_deg_2_rad))) * scale;
+      int32_t lon_precision = static_cast<int32_t>(
+        std::ceil(std::max(0.0, std::log10(1.0 / lon_scale))));
 
       std::ostringstream lon_ss;
       lon_ss << std::fixed << std::setprecision(lon_precision);
@@ -1165,8 +1199,14 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   config_item->SetListItem(item);
   item->setSizeHint(config_item->sizeHint());
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
-  connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
-  connect(config_item, SIGNAL(RemoveRequest(QListWidgetItem*)), this, SLOT(RemoveDisplay(QListWidgetItem*)));
+  connect(config_item,
+    SIGNAL(ToggledDraw(QListWidgetItem*, bool)),
+      this,
+      SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
+  connect(config_item,
+    SIGNAL(RemoveRequest(QListWidgetItem*)),
+      this,
+      SLOT(RemoveDisplay(QListWidgetItem*)));
   connect(plugin.get(), SIGNAL(VisibleChanged(bool)), config_item, SLOT(ToggleDraw(bool)));
   connect(plugin.get(), SIGNAL(SizeChanged()), this, SLOT(UpdateSizeHints()));
 
@@ -1525,7 +1565,7 @@ void Mapviz::HandleProfileTimer()
 {
   ROS_INFO("Mapviz Profiling Data");
   meas_spin_.printInfo("ROS SpinOnce()");
-  for (auto& display: plugins_)
+  for (auto& display : plugins_)
   {
     MapvizPluginPtr plugin = display.second;
     if (plugin)
@@ -1534,4 +1574,4 @@ void Mapviz::HandleProfileTimer()
     }
   }
 }
-}
+}   // namespace mapviz
