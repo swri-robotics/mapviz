@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED thread)
 
 ### OpenGL ###
+cmake_policy(SET CMP0072 NEW)
 find_package(OpenGL REQUIRED)
 
 ### OpenCV ###
