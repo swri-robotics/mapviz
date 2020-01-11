@@ -68,6 +68,7 @@ endif()
 set(QT_USE_QTOPENGL TRUE)
 
 ### OpenGL ###
+cmake_policy(SET CMP0072 NEW)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
