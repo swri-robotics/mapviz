@@ -31,6 +31,7 @@
 
 #include <QDialog>
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -176,7 +177,7 @@ class SelectTopicDialog : public QDialog
   // std::vector<ros::master::TopicInfo> filterTopics(
   std::vector<std::string> filterTopics(
     // const std::vector<ros::master::TopicInfo> &) const;
-    const std::vector<std::string> &) const;
+    const std::map<std::string, std::vector<std::string>> &) const;
 
  private Q_SLOTS:
   void fetchTopics();
@@ -185,8 +186,10 @@ class SelectTopicDialog : public QDialog
  private:
   std::set<std::string> allowed_datatypes_;
   // std::vector<ros::master::TopicInfo> known_topics_;
-  std::vector<std::string> known_topics_;
+  std::map<std::string, std::vector<std::string>> known_topics_;
+  
   // std::vector<ros::master::TopicInfo> displayed_topics_;
+  // std::map<std::string, std::vector<std::string>> displayed_topics_;
   std::vector<std::string> displayed_topics_;
   int fetch_topics_timer_id_;
 

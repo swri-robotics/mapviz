@@ -246,26 +246,55 @@ void SelectTopicDialog::fetchTopics()
 // std::vector<ros::master::TopicInfo> SelectTopicDialog::filterTopics(
 //   const std::vector<ros::master::TopicInfo> &topics) const
 std::vector<std::string> SelectTopicDialog::filterTopics(
-  const std::vector<std::string> &topics) const
+  const std::map<std::string, std::vector<std::string>> &topics) const
 {
   QString topic_filter = name_filter_->text();
   // std::vector<ros::master::TopicInfo> filtered;
   std::vector<std::string> filtered;
 
-  for (size_t i = 0; i < topics.size(); i++) {
-    if (!allowed_datatypes_.empty() &&
-        allowed_datatypes_.count(topics[i].datatype) == 0) {
-      continue;
+  for (auto const& topic : topics) {
+  //   if (!allowed_datatypes_.empty() &&
+  //       allowed_datatypes_.count(topic.second) == 0) {
+  //         continue;
+  //   }
+
+    if (!allowed_datatypes_.empty()) {
+      // Skip any topic names that don't contain allowed types
+      bool missing_allowed_type = true;   // Assume the worst
+      for (auto const& datatype : topic.second) {
+        if (allowed_datatypes_.count(datatype) == 1) {
+          missing_allowed_type = false;
+          break;
+        }
+      }
+      if (missing_allowed_type) {
+        continue;
+      }
     }
 
-    QString topic_name = QString::fromStdString(topics[i].name);
+    QString topic_name = QString::fromStdString(topic.first);
     if (!topic_filter.isEmpty() &&
         !topic_name.contains(topic_filter, Qt::CaseInsensitive)) {
-      continue;
+          continue;
     }
 
-    filtered.push_back(topics[i]);
+    filtered.push_back(topic.first);
   }
+
+  // for (size_t i = 0; i < topics.size(); i++) {
+  //   if (!allowed_datatypes_.empty() &&
+  //       allowed_datatypes_.count(topics[i].datatype) == 0) {
+  //     continue;
+  //   }
+
+  //   QString topic_name = QString::fromStdString(topics[i].name);
+  //   if (!topic_filter.isEmpty() &&
+  //       !topic_name.contains(topic_filter, Qt::CaseInsensitive)) {
+  //     continue;
+  //   }
+
+  //   filtered.push_back(topics[i]);
+  // }
 
   return filtered;
 }
@@ -282,12 +311,14 @@ void SelectTopicDialog::updateDisplayedTopics()
 
   std::set<std::string> prev_names;
   for (size_t i = 0; i < displayed_topics_.size(); i++) {
-    prev_names.insert(displayed_topics_[i].name);
+    // prev_names.insert(displayed_topics_[i].name);
+    prev_names.insert(displayed_topics_[i]);
   }
 
   std::set<std::string> next_names;
   for (size_t i = 0; i < next_displayed_topics.size(); i++) {
-    next_names.insert(next_displayed_topics[i].name);
+    // next_names.insert(next_displayed_topics[i].name);
+    next_names.insert(next_displayed_topics[i]);
   }
 
   std::set<std::string> added_names;
@@ -303,7 +334,8 @@ void SelectTopicDialog::updateDisplayedTopics()
   // Remove all the removed names
   size_t removed = 0;
   for (size_t i = 0; i < displayed_topics_.size(); i++) {
-    if (removed_names.count(displayed_topics_[i].name) == 0) {
+    // if (removed_names.count(displayed_topics_[i].name) == 0) {
+    if (removed_names.count(displayed_topics_[i]) == 0) {
       continue;
     }
 
@@ -314,11 +346,13 @@ void SelectTopicDialog::updateDisplayedTopics()
 
   // Now we can add the new items.
   for (size_t i = 0; i < next_displayed_topics.size(); i++) {
-    if (added_names.count(next_displayed_topics[i].name) == 0) {
+    // if (added_names.count(next_displayed_topics[i].name) == 0) {
+    if (added_names.count(next_displayed_topics[i]) == 0) {
       continue;
     }
 
-    list_widget_->insertItem(i, QString::fromStdString(next_displayed_topics[i].name));
+    // list_widget_->insertItem(i, QString::fromStdString(next_displayed_topics[i].name));
+    list_widget_->insertItem(i, QString::fromStdString(next_displayed_topics[i]));
     if (list_widget_->count() == 1) {
       list_widget_->setCurrentRow(0);
     }
