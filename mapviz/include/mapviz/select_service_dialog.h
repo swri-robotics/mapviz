@@ -17,12 +17,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL Southwest Research Institute® BE LIABLE 
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
+// ARE DISCLAIMED. IN NO EVENT SHALL Southwest Research Institute® BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 // OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 //
@@ -31,15 +31,15 @@
 #ifndef MAPVIZ_SELECT_SERVICE_DIALOG_H
 #define MAPVIZ_SELECT_SERVICE_DIALOG_H
 
-#include <set>
-#include <vector>
-
-#include <boost/shared_ptr.hpp>
-
 #include <QDialog>
 #include <QMetaType>
 #include <QThread>
 
+#include <set>
+#include <string>
+#include <vector>
+
+#include <boost/shared_ptr.hpp>
 // #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
 
@@ -77,7 +77,7 @@ namespace mapviz
     void fetchingFailed(const QString error_msg);
 
   private:
-    ros::NodeHandle& nh_;
+    rclcpp::Node& nh_;
     const std::string& allowed_datatype_;
   };
 
@@ -98,7 +98,7 @@ namespace mapviz
      * @param[in] parent The dialog's parent widget.
      * @return The name of the selected service, or an empty string if there was none.
      */
-    static std::string selectService(const std::string& datatype, QWidget* parent=0);
+    static std::string selectService(const std::string& datatype, QWidget* parent = 0);
 
     /**
      * Constructs a new SelectServiceDialog and automatically starts a timer that
@@ -107,7 +107,7 @@ namespace mapviz
      *                     the user a list of all services.
      * @param[in] parent The dialog's parent widget.
      */
-    SelectServiceDialog(const std::string& datatype = "", QWidget* parent=0);
+    SelectServiceDialog(const std::string& datatype = "", QWidget* parent = 0);
     virtual ~SelectServiceDialog();
 
     /**
@@ -151,7 +151,7 @@ namespace mapviz
     void timerEvent(QTimerEvent *);
     void closeEvent(QCloseEvent *);
 
-    ros::NodeHandle nh_;
+    rclcpp::Node nh_;
 
     std::string allowed_datatype_;
     std::vector<std::string> displayed_services_;
@@ -165,6 +165,6 @@ namespace mapviz
     QPushButton *ok_button_;
     boost::shared_ptr<ServiceUpdaterThread> worker_thread_;
   };
-}   //namespace mapviz
+}   //  namespace mapviz
 
-#endif //MAPVIZ_SELECT_SERVICE_DIALOG_H
+#endif   //  MAPVIZ_SELECT_SERVICE_DIALOG_H

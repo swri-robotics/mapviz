@@ -50,55 +50,73 @@ namespace mapviz
 {
   void ServiceUpdaterThread::run()
   {
-    ros::ServiceClient client;
+    // ros::ServiceClient client;
+    std::map<std::string, std::vector<std::string>> service_map =
+      nh_.get_service_names_and_types();
+
+    // if (allowed_datatype_.empty())
+    // {
+    //   // See about replacing with NodeGraph::get_service_names_and_types(),
+    //   // and stripping out type info
+    //   // client_list = nh_.serviceClient<rosapi::Services>("/rosapi/services");
+    //   client_list = nh_.get_service_names_and_types();
+    // }
+    // else
+    // {
+    //   // See about replacing with NodeGraph::get_service_names_and_types()
+    //   client_list = nh_.serviceClient<rosapi::ServicesForType>("/rosapi/services_for_type");
+    // }
+
+    // if (!client.waitForExistence(ros::Duration(1)))
+    // {
+    //   // Check to see whether the rosapi services are actually running.
+    //   Q_EMIT fetchingFailed(tr("Unable to list ROS services.  Is rosapi_node running?"));
+    //   return;
+    // }
 
     if (allowed_datatype_.empty())
     {
-      // See about replacing with NodeGraph::get_service_names_and_types(),
-      // and stripping out type info
-      client = nh_.serviceClient<rosapi::Services>("/rosapi/services");
+      // rosapi::Services srv;
+
+      // ROS_DEBUG("Listing all services.");
+      // Q_EMIT
+      // if (client.call(srv))
+      // {
+      //   Q_EMIT servicesFetched(srv.response.services);
+      // }
+      std::vector<std::string> service_list;
+      for (auto const& service : service_map) {
+        service_list.push_back(service.first);
+      }
+      Q_EMIT servicesFetched(service_list);
     }
     else
     {
-      // See about replacing with NodeGraph::get_service_names_and_types()
-      client = nh_.serviceClient<rosapi::ServicesForType>("/rosapi/services_for_type");
-    }
+      // rosapi::ServicesForType srv;
+      // srv.request.type = allowed_datatype_;
 
-    if (!client.waitForExistence(ros::Duration(1)))
-    {
-      // Check to see whether the rosapi services are actually running.
-      Q_EMIT fetchingFailed(tr("Unable to list ROS services.  Is rosapi_node running?"));
-      return;
-    }
-
-    if (allowed_datatype_.empty())
-    {
-      rosapi::Services srv;
-
-      ROS_DEBUG("Listing all services.");
-      if (client.call(srv))
-      {
-        Q_EMIT servicesFetched(srv.response.services);
+      // ROS_DEBUG("Listing services for type %s", srv.request.type.c_str());
+      // if (client.call(srv))
+      // {
+      //   Q_EMIT servicesFetched(srv.response.services);
+      // }
+      // else
+      // {
+      //   // If there are any dead or unreachable nodes that provide services, even if
+      //   // they're not of the service type we're looking for, the services_for_type
+      //   // service will have an error and not return anything.  Super annoying.
+      //   Q_EMIT fetchingFailed(tr("Unable to list ROS services.  You may have " \
+      //                         "dead nodes; try running \"rosnode cleanup\"."));
+      // }
+      std::vector<std::string> service_list;
+      for (auto const& service : service_map) {
+        if (std::find(service.second.begin(),
+              service.second.end(),
+              allowed_datatype_) != service.second.end()) {
+          service_list.push_back(service.first);
+        }
       }
-    }
-    else
-    {
-      rosapi::ServicesForType srv;
-      srv.request.type = allowed_datatype_;
-
-      ROS_DEBUG("Listing services for type %s", srv.request.type.c_str());
-      if (client.call(srv))
-      {
-        Q_EMIT servicesFetched(srv.response.services);
-      }
-      else
-      {
-        // If there are any dead or unreachable nodes that provide services, even if
-        // they're not of the service type we're looking for, the services_for_type
-        // service will have an error and not return anything.  Super annoying.
-        Q_EMIT fetchingFailed(tr("Unable to list ROS services.  You may have " \
-                              "dead nodes; try running \"rosnode cleanup\"."));
-      }
+      Q_EMIT servicesFetched(service_list);
     }
   }
 
