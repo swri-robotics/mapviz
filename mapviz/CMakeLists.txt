@@ -44,6 +44,7 @@ find_package(rqt_gui_cpp)
 find_package(std_srvs)
 # find_package(swri_transform_util)
 # find_package(swri_yaml_util)
+find_package(tf2_ros)
 find_package(tf2)
 
 # find_package(ament_cmake REQUIRED COMPONENTS
@@ -104,6 +105,8 @@ include_directories(SYSTEM
   ${GLEW_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${rqt_gui_cpp_INCLUDE_DIRS}
+  ${tf2_ros_INCLUDE_DIRS}
+  ${tf2_INCLUDE_DIRS}
 )
 
 # Qt UI files
