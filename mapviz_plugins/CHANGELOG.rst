@@ -2,6 +2,68 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2019-09-04)
+------------------
+* Add text to measuring plugin (`#640 <https://github.com/swri-robotics/mapviz/issues/640>`_)
+* Add mapviz plug-in for PoseStamped messages. (`#641 <https://github.com/swri-robotics/mapviz/issues/641>`_)
+* Fix occupancy grid to load color scheme from configuration. (`#642 <https://github.com/swri-robotics/mapviz/issues/642>`_)
+* Restore GL_UNPACK_ALIGNMENT to 4 to prevent corruption of Qt font rendering. (`#643 <https://github.com/swri-robotics/mapviz/issues/643>`_)
+* Add ability to show and hide markers by namespace (`#636 <https://github.com/swri-robotics/mapviz/issues/636>`_)
+* Fixed layout of MeasuringPlugin (`#633 <https://github.com/swri-robotics/mapviz/issues/633>`_)
+* Fixed marker plugin to use swri_transform_util to ensure wgs84 markers work properly (`#635 <https://github.com/swri-robotics/mapviz/issues/635>`_)
+* Contributors: Arkady Shapkin, Marc Alban, Matthew, Matthew Grogan, agyoungs
+
+1.1.1 (2019-05-17)
+------------------
+* Textured Marker Adjustments (`#611 <https://github.com/swri-robotics/mapviz/issues/611>`_, `#616 <https://github.com/swri-robotics/mapviz/issues/616>`_) (`#625 <https://github.com/swri-robotics/mapviz/issues/625>`_)
+* fixed issue `#623 <https://github.com/swri-robotics/mapviz/issues/623>`_ by updating UI field to read "Draw Style:" (`#624 <https://github.com/swri-robotics/mapviz/issues/624>`_)
+* Contributors: mattrich37
+
+1.1.0 (2019-02-20)
+------------------
+* Improve MarkerPlugin (`#603 <https://github.com/swri-robotics/mapviz/issues/603>`_)
+  * Improved performance of MarkerPlugin::handleMarker()
+  * Support Text marker alpha channel
+  * Don't use QColor for glColor4f
+  * Use marker namespace and id as markers map key
+* [mapviz_plugins/attitude_indicator] Minor refactoring and redundant logging removed (`#617 <https://github.com/swri-robotics/mapviz/issues/617>`_)
+* 606 sequential measuring (`#607 <https://github.com/swri-robotics/mapviz/issues/607>`_)
+  * Moved distance calculation to trigger on release of mouse. Added case to prevent distance calculation while moving map.
+  * Added vertices and lines between measurement points. Left click to add point. Right click to delete. Added color selection for points and clear button to ui.
+  * Added cumulative distance measurements from multiple points
+  * Fixed individual and cumulative distance measurements. Changed it to only measure distance between points and not from fixed origin and first point
+  * Moved distance calculation into separate function which is called when deleting a point, adding a point, or rearranging points.
+* Add image size check to textured marker plugin to prevent crashes. (`#613 <https://github.com/swri-robotics/mapviz/issues/613>`_)
+  * Add image size check to textured marker plugin to prevent crashes.
+* Fixed typo in string (`#608 <https://github.com/swri-robotics/mapviz/issues/608>`_)
+* 605 add reset button marker (`#609 <https://github.com/swri-robotics/mapviz/issues/609>`_)
+  * Added Clear all marker buttons, added case for clear all support to markers
+* Contributors: Arkady Shapkin, Matthew, jbdaniel18
+
+1.0.1 (2019-01-25)
+------------------
+* Use shared tf manager in measuring_plugin (`#604 <https://github.com/swri-robotics/mapviz/issues/604>`_)
+* Contributors: jgassaway
+
+1.0.0 (2019-01-23)
+------------------
+* Sharing tf_manager\_ between main app and plugins (`#555 <https://github.com/swri-robotics/mapviz/issues/555>`_)
+* Fix potential segfault in pointcloud plug-in. (`#602 <https://github.com/swri-robotics/mapviz/issues/602>`_)
+* Add Measuring Plugin (`#598 <https://github.com/swri-robotics/mapviz/issues/598>`_)
+* Contributors: Davide Faconti, Marc Alban, Matthew
+
+0.3.0 (2018-11-16)
+------------------
+* Merge all -devel branches into a single master branch
+* Don't transform laser scans twice (`#544 <https://github.com/swri-robotics/mapviz/issues/544>`_)
+* Improving point_drawing plugins and bug fix of tf_plugin (`#557 <https://github.com/swri-robotics/mapviz/issues/557>`_)
+* OpenGL rendering of PointClouds  (2X speedup) (`#558 <https://github.com/swri-robotics/mapviz/issues/558>`_)
+* Occupancy grid (new plugin) (`#568 <https://github.com/swri-robotics/mapviz/issues/568>`_)
+* Bug fix in image plugin (`#563 <https://github.com/swri-robotics/mapviz/issues/563>`_)
+* Fix Indigo build, clean up warnings (`#597 <https://github.com/swri-robotics/mapviz/issues/597>`_)
+* Create Coordinate Picker plugin (`#593 <https://github.com/swri-robotics/mapviz/issues/593>`_)
+* Contributors: Davide Faconti, Ed Venator, Edward Venator, Elliot Johnson, Jerry Towler, Marc Alban, Matthew, Matthew Bries, Mikael Arguedas, Neal Seegmiller, Nicholas Alton, P. J. Reed, Vincent Rousseau
+
 0.2.6 (2018-07-31)
 ------------------
 * Fix timestamp interval (`#588 <https://github.com/swri-robotics/mapviz/issues/588>`_)

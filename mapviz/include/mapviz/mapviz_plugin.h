@@ -57,16 +57,16 @@ namespace mapviz
   class MapvizPlugin : public QObject
   {
     Q_OBJECT;
-
   public:
     virtual ~MapvizPlugin() {}
 
     virtual bool Initialize(
         boost::shared_ptr<tf::TransformListener> tf_listener,
+        swri_transform_util::TransformManagerPtr tf_manager,
         QGLWidget* canvas)
     {
       tf_ = tf_listener;
-      tf_manager_.Initialize(tf_);
+      tf_manager_ = tf_manager;
       return Initialize(canvas);
     }
 
@@ -191,7 +191,7 @@ namespace mapviz
         return false;
       }
 
-      if (tf_manager_.GetTransform(target_frame_, source_frame_, time, transform))
+      if (tf_manager_->GetTransform(target_frame_, source_frame_, time, transform))
       {
         return true;
       }
@@ -199,7 +199,7 @@ namespace mapviz
       {
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
-        if (tf_manager_.GetTransform(target_frame_, source_frame_,  ros::Time(), transform))
+        if (tf_manager_->GetTransform(target_frame_, source_frame_,  ros::Time(), transform))
         {
           return true;
         }
@@ -227,7 +227,7 @@ namespace mapviz
         return false;
       }
 
-      if (tf_manager_.GetTransform(target_frame_, source, time, transform))
+      if (tf_manager_->GetTransform(target_frame_, source, time, transform))
       {
         return true;
       }
@@ -235,7 +235,7 @@ namespace mapviz
       {
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
-        if (tf_manager_.GetTransform(target_frame_, source,  ros::Time(), transform))
+        if (tf_manager_->GetTransform(target_frame_, source,  ros::Time(), transform))
         {
           return true;
         }
@@ -299,7 +299,7 @@ namespace mapviz
     ros::NodeHandle node_;
 
     boost::shared_ptr<tf::TransformListener> tf_;
-    swri_transform_util::TransformManager tf_manager_;
+    swri_transform_util::TransformManagerPtr tf_manager_;
     
     std::string target_frame_;
     std::string source_frame_;

@@ -171,7 +171,7 @@ namespace mapviz
     ros::NodeHandle* node_;
     ros::ServiceServer add_display_srv_;
     boost::shared_ptr<tf::TransformListener> tf_;
-    swri_transform_util::TransformManager tf_manager_;
+    swri_transform_util::TransformManagerPtr tf_manager_;
 
     pluginlib::ClassLoader<MapvizPlugin>* loader_;
     MapCanvas* canvas_;

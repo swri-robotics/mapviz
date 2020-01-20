@@ -49,12 +49,14 @@ namespace mapviz_plugins
 {
   MultiresImagePlugin::MultiresImagePlugin() :
     loaded_(false),
+    center_x_(0.0),
+    center_y_(0.0),
+    offset_x_(0.0),
+    offset_y_(0.0),
     tile_set_(NULL),
     tile_view_(NULL),
     config_widget_(new QWidget()),
-    transformed_(false),
-    offset_x_(0.0),
-    offset_y_(0.0)
+    transformed_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -228,13 +230,13 @@ namespace mapviz_plugins
     if (!loaded_)
       return;
 
-    if (!tf_manager_.GetTransform(target_frame_, source_frame_, transform_))
+    if (!tf_manager_->GetTransform(target_frame_, source_frame_, transform_))
     {
       PrintError("Failed transform from " + source_frame_ + " to " + target_frame_);
       return;
     }
 
-    if (!tf_manager_.GetTransform(source_frame_, target_frame_, inverse_transform_))
+    if (!tf_manager_->GetTransform(source_frame_, target_frame_, inverse_transform_))
     {
       PrintError("Failed inverse transform from " + target_frame_ + " to " + source_frame_);
       return;

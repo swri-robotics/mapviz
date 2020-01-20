@@ -45,13 +45,20 @@
 #include <boost/make_shared.hpp>
 
 // OpenCV libraries
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/videoio.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#if CV_MAJOR_VERSION > 2
+#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/videoio/videoio.hpp>
+#endif
 
 // QT libraries
+#if QT_VERSION >= 0x050000
 #include <QtWidgets/QApplication>
+#else
+#include <QtGui/QApplication>
+#endif
 #include <QFileDialog>
 #include <QActionGroup>
 #include <QColorDialog>
@@ -253,7 +260,8 @@ void Mapviz::Initialize()
     connect(group, SIGNAL(triggered(QAction*)), this, SLOT(SetImageTransport(QAction*)));
 
     tf_ = boost::make_shared<tf::TransformListener>();
-    tf_manager_.Initialize(tf_);
+    tf_manager_ = boost::make_shared<swri_transform_util::TransformManager>();
+    tf_manager_->Initialize(tf_);
 
     loader_ = new pluginlib::ClassLoader<MapvizPlugin>(
         "mapviz", "mapviz::MapvizPlugin");
@@ -320,6 +328,8 @@ void Mapviz::Initialize()
       profile_timer_.start(2000);
       connect(&profile_timer_, SIGNAL(timeout()), this, SLOT(HandleProfileTimer()));
     }
+
+    setFocus(); // Set the main window as focused object, prevent other fields from obtaining focus at startup
 
     initialized_ = true;
   }
@@ -881,6 +891,7 @@ void Mapviz::SaveConfig()
   dialog.setFileMode(QFileDialog::AnyFile);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   dialog.setNameFilter(tr("Mapviz Config Files (*.mvc)"));
+  dialog.setDefaultSuffix("mvc");
 
   dialog.exec();
 
@@ -899,20 +910,18 @@ void Mapviz::SaveConfig()
     {
       title = path;
     }
-
     title += " - mapviz";
-
     setWindowTitle(QString::fromStdString(title));
-
     Save(path);
   }
 }
 
 void Mapviz::ClearHistory()
 {
+  ROS_DEBUG("Mapviz::ClearHistory()");
   for (auto& plugin: plugins_)
   {
-    plugin.second->ClearHistory();
+    plugin.second->ClearHistory();  
   }
 }
 
@@ -1061,10 +1070,10 @@ void Mapviz::Hover(double x, double y, double scale)
     xy_pos_label_->update();
 
     swri_transform_util::Transform transform;
-    if (tf_manager_.SupportsTransform(
+    if (tf_manager_->SupportsTransform(
            swri_transform_util::_wgs84_frame,
            ui_.fixedframe->currentText().toStdString()) &&
-        tf_manager_.GetTransform(
+        tf_manager_->GetTransform(
            swri_transform_util::_wgs84_frame,
            ui_.fixedframe->currentText().toStdString(),
            transform))
@@ -1130,8 +1139,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
   plugin->SetIcon(config_item->ui_.icon);
-
-  plugin->Initialize(tf_, canvas_);
+  plugin->Initialize(tf_, tf_manager_, canvas_);
   plugin->SetType(real_type.c_str());
   plugin->SetName(name);
   plugin->SetNode(*node_);
@@ -1463,7 +1471,7 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
   if (item)
   {
     canvas_->RemovePlugin(plugins_[item]);
-    plugins_[item] = MapvizPluginPtr();
+    plugins_.erase(item);
 
     delete item;
   }
@@ -1478,7 +1486,7 @@ void Mapviz::ClearDisplays()
     QListWidgetItem* item = ui_.configs->takeItem(0);
 
     canvas_->RemovePlugin(plugins_[item]);
-    plugins_[item] = MapvizPluginPtr();
+    plugins_.erase(item);
 
     delete item;
   }

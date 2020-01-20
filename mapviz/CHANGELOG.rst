@@ -2,6 +2,32 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2019-09-04)
+------------------
+
+1.1.1 (2019-05-17)
+------------------
+* Set main window as in focus on start `#630 <https://github.com/swri-robotics/mapviz/issues/630>`_
+* Specify default configuration extension on save
+* Contributors: Daniel D'Souza, mattrich37, mrichardson
+
+1.1.0 (2019-02-20)
+------------------
+
+1.0.1 (2019-01-25)
+------------------
+
+1.0.0 (2019-01-23)
+------------------
+* Sharing tf_manager\_ between main app and plugins (`#555 <https://github.com/swri-robotics/mapviz/issues/555>`_)
+* Contributors: Davide Faconti
+
+0.3.0 (2018-11-16)
+------------------
+* Merge all -devel branches into a single master branch
+* Add function to lock canvas movement (`#596 <https://github.com/swri-robotics/mapviz/issues/596>`_)
+* Contributors: P. J. Reed
+
 0.2.6 (2018-07-31)
 ------------------
 

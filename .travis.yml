@@ -1,5 +1,5 @@
 sudo: required 
-dist: trusty 
+dist: xenial
 language: generic 
 compiler:
   - gcc
@@ -7,13 +7,39 @@ notifications:
   email:
     on_success: always
     on_failure: always
-env:
-  global:
-    - USE_DEB=true
-    - ROS_DISTRO="kinetic"
-  matrix:
-    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-    - ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+jobs:
+  include:
+    - stage: build
+      env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+      arch: amd64
+    - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+      arch: arm64
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+      arch: amd64
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+      arch: arm64
+    - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+      arch: amd64
+    - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+      arch: arm64
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+      arch: amd64
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+      arch: arm64
+    - env: JOB="catkin_lint"
+      sudo: false
+      install: pip install --user -q catkin-lint
+      script: catkin_lint -W2 --explain .
+  allow_failures:
+    - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+      arch: amd64
+    - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+      arch: arm64
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+      arch: amd64
+    - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+      arch: arm64
+    - env: JOB="catkin_lint"
 matrix:
   allow_failures:
     - env: ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
@@ -21,4 +47,3 @@ install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script: 
   - source .ci_config/travis.sh
-#  - source ./travis.sh  # Enable this when you have a package-local script 

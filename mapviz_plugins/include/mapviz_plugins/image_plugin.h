@@ -126,7 +126,7 @@ namespace mapviz_plugins
     int offset_y_;
     double width_;
     double height_;
-    QString transport_;
+    std::string transport_;
 
     bool force_resubscribe_;
     bool has_image_;

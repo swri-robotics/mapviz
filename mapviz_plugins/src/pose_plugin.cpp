@@ -1,23 +1,34 @@
-// *****************************************************************************
-//
-// Copyright (C) 2013 All Right Reserved, Southwest Research Institute® (SwRI®)
-//
-// Contract No.  10-58058A
-// Contractor    Southwest Research Institute® (SwRI®)
-// Address       6220 Culebra Road, San Antonio, Texas 78228-0510
-// Contact       Steve Dellenback <sdellenback@swri.org> (210) 522-3914
-//
-// This code was developed as part of an internal research project fully funded
-// by Southwest Research Institute®.
-//
-// THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
-// KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
-// *****************************************************************************
+/**
+ * Copyright 2019 Hatchbed L.L.C.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, 
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation 
+ *    and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors 
+ *    may be used to endorse or promote products derived from this software 
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE.
+ **/ 
 
-#include <mapviz_plugins/gps_plugin.h>
+#include <mapviz_plugins/pose_plugin.h>
 
 // C++ standard libraries
 #include <cstdio>
@@ -39,11 +50,11 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GpsPlugin, mapviz::MapvizPlugin)
+PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PosePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  GpsPlugin::GpsPlugin() : config_widget_(new QWidget())
+  PosePlugin::PosePlugin() : config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 
@@ -81,14 +92,14 @@ namespace mapviz_plugins
                      SLOT(ClearPoints()));
   }
 
-  GpsPlugin::~GpsPlugin()
+  PosePlugin::~PosePlugin()
   {
   }
 
-  void GpsPlugin::SelectTopic()
+  void PosePlugin::SelectTopic()
   {
     ros::master::TopicInfo topic =
-        mapviz::SelectTopicDialog::selectTopic("gps_common/GPSFix");
+        mapviz::SelectTopicDialog::selectTopic("geometry_msgs/PoseStamped");
 
     if (!topic.name.empty())
     {
@@ -97,7 +108,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::TopicEdited()
+  void PosePlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
     if (topic != topic_)
@@ -107,24 +118,20 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      gps_sub_.shutdown();
+      pose_sub_.shutdown();
 
       topic_ = topic;
       if (!topic.empty())
       {
-        gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::GPSFixCallback, this);
+        pose_sub_ = node_.subscribe(topic_, 1, &PosePlugin::PoseCallback, this);
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void GpsPlugin::GPSFixCallback(const gps_common::GPSFixConstPtr& gps)
+  void PosePlugin::PoseCallback(const geometry_msgs::PoseStampedConstPtr& pose)
   {  
-    if (!tf_manager_->LocalXyUtil()->Initialized())
-    {
-      return;
-    }
     if (!has_message_)
     {
       initialized_ = true;
@@ -132,47 +139,45 @@ namespace mapviz_plugins
     }
 
     StampedPoint stamped_point;
-    stamped_point.stamp = gps->header.stamp;
-    stamped_point.source_frame = tf_manager_->LocalXyUtil()->Frame();
-    double x;
-    double y;
-    tf_manager_->LocalXyUtil()->ToLocalXy(gps->latitude, gps->longitude, x, y);
+    stamped_point.stamp = pose->header.stamp;
+    stamped_point.source_frame = pose->header.frame_id;
 
-    stamped_point.point = tf::Point(x, y, gps->altitude);
+    stamped_point.point = tf::Point(pose->pose.position.x,
+                                    pose->pose.position.y,
+                                    pose->pose.position.z);
 
-    // The GPS "track" is in degrees, but createQuaternionFromYaw expects
-    // radians.
-    // Furthermore, the track rotates in the opposite direction and is also
-    // offset by 90 degrees, so all of that has to be compensated for.
-    stamped_point.orientation =
-        tf::createQuaternionFromYaw((-gps->track * (M_PI / 180.0)) + M_PI_2);
+    stamped_point.orientation = tf::Quaternion(
+        pose->pose.orientation.x,
+        pose->pose.orientation.y,
+        pose->pose.orientation.z,
+        pose->pose.orientation.w);
 
     pushPoint( std::move( stamped_point) );
   }
 
-  void GpsPlugin::PrintError(const std::string& message)
+  void PosePlugin::PrintError(const std::string& message)
   {
     PrintErrorHelper(ui_.status, message);
   }
 
-  void GpsPlugin::PrintInfo(const std::string& message)
+  void PosePlugin::PrintInfo(const std::string& message)
   {
     PrintInfoHelper(ui_.status, message);
   }
 
-  void GpsPlugin::PrintWarning(const std::string& message)
+  void PosePlugin::PrintWarning(const std::string& message)
   {
     PrintWarningHelper(ui_.status, message);
   }
 
-  QWidget* GpsPlugin::GetConfigWidget(QWidget* parent)
+  QWidget* PosePlugin::GetConfigWidget(QWidget* parent)
   {
     config_widget_->setParent(parent);
 
     return config_widget_;
   }
 
-  bool GpsPlugin::Initialize(QGLWidget* canvas)
+  bool PosePlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
     SetColor(ui_.color->color());
@@ -180,7 +185,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void GpsPlugin::Draw(double x, double y, double scale)
+  void PosePlugin::Draw(double x, double y, double scale)
   {
     if (DrawPoints(scale))
     {
@@ -188,7 +193,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void PosePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     if (node["topic"])
     {
@@ -269,7 +274,7 @@ namespace mapviz_plugins
     TopicEdited();
   }
 
-  void GpsPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void PosePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;

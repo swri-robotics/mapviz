@@ -87,9 +87,9 @@ namespace mapviz_plugins
    protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
+    
 
    private:
-    void DrawCovariance();
 
     Ui::odometry_config ui_;
     QWidget* config_widget_;

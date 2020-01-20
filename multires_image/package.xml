@@ -1,6 +1,6 @@
 <package format="2">
   <name>multires_image</name>
-  <version>0.2.6</version>
+  <version>1.2.0</version>
   <description>
 
      multires_image
@@ -12,20 +12,25 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>qt_qmake</buildtool_depend>
 
-  <depend>libqt5-core</depend>
-  <depend>libqt5-gui</depend>
-  <depend>libqt5-opengl</depend>
-  <build_depend>libqt5-opengl-dev</build_depend>
-  <depend>libqt5-widgets</depend>
+  <build_depend>libqt_dev</build_depend>
+  <build_depend>libqt_opengl_dev</build_depend>
+
+  <depend>cv_bridge</depend>
+  <depend>geometry_msgs</depend>
+  <depend>gps_common</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
-  <depend>rospy</depend>
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
+
+  <exec_depend>libqt_core</exec_depend>
+  <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>rospy</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

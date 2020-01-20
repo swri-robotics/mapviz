@@ -2,6 +2,30 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2019-09-04)
+------------------
+* Use local_xy_origin for loading tiles of GPSFix not available (`#634 <https://github.com/swri-robotics/mapviz/issues/634>`_)
+* Contributors: agyoungs
+
+1.1.1 (2019-05-17)
+------------------
+
+1.1.0 (2019-02-20)
+------------------
+
+1.0.1 (2019-01-25)
+------------------
+
+1.0.0 (2019-01-23)
+------------------
+* Sharing tf_manager\_ between main app and plugins (`#555 <https://github.com/swri-robotics/mapviz/issues/555>`_)
+* Contributors: Davide Faconti
+
+0.3.0 (2018-11-16)
+------------------
+* Merge all -devel branches into a single master branch
+* Contributors: P. J. Reed
+
 0.2.6 (2018-07-31)
 ------------------
 

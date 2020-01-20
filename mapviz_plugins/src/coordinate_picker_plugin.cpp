@@ -34,6 +34,12 @@
 #include <QMouseEvent>
 #include <QTextStream>
 
+#if QT_VERSION >= 0x050000
+#include <QGuiApplication>
+#else
+#include <QApplication>
+#endif
+
 // ROS Libraries
 #include <ros/ros.h>
 
@@ -64,6 +70,10 @@ CoordinatePickerPlugin::CoordinatePickerPlugin()
                    this, SLOT(ToggleCopyOnClick(int)));
   QObject::connect(ui_.clearListButton, SIGNAL(clicked()),
                    this, SLOT(ClearCoordList()));
+
+#if QT_VERSION >= 0x050000
+  ui_.coordTextEdit->setPlaceholderText(tr("Click on the map; coordinates appear here"));
+#endif
 }
 
 CoordinatePickerPlugin::~CoordinatePickerPlugin()
@@ -109,7 +119,11 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
+#if QT_VERSION >= 0x050000
   QPointF point = event->localPos();
+#else
+  QPointF point = event->posF();
+#endif
   ROS_DEBUG("Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;
@@ -124,7 +138,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   // fixed frame, we get it in the `target_frame_` frame.
   //
   // Then we translate from that frame into *our* target frame, `frame`.
-  if (tf_manager_.GetTransform(frame, target_frame_, transform))
+  if (tf_manager_->GetTransform(frame, target_frame_, transform))
   {
     ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
               target_frame_.c_str(),
@@ -146,15 +160,20 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
     return false;
   }
 
+
   ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
   QString new_point;
   QTextStream stream(&new_point);
-  stream.setRealNumberPrecision(9);
-  stream << point.x() << "," << point.y();
+  stream.setRealNumberPrecision(4);
+  stream << point.x() << ", " << point.y();
 
   if (copy_on_click_)
   {
+#if QT_VERSION >= 0x050000
     QClipboard* clipboard = QGuiApplication::clipboard();
+#else
+    QClipboard* clipboard = QApplication::clipboard();
+#endif
     clipboard->setText(new_point);
   }
 

@@ -32,38 +32,6 @@
    <property name="verticalSpacing">
     <number>4</number>
    </property>
-   <item row="14" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Status:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="14" column="1" colspan="3">
-    <widget class="QLabel" name="status">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>No topic</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="3">
     <widget class="QPushButton" name="selecttopic">
      <property name="maximumSize">
@@ -122,6 +90,9 @@
      </property>
     </widget>
    </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="color_transformer"/>
+   </item>
    <item row="6" column="1">
     <widget class="QDoubleSpinBox" name="alpha">
      <property name="maximum">
@@ -148,7 +119,7 @@
      </property>
     </widget>
    </item>
-   <item row="12" column="1">
+   <item row="13" column="1">
     <spacer name="verticalSpacer_3">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -160,9 +131,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="5" column="1">
-    <widget class="QComboBox" name="color_transformer"/>
    </item>
    <item row="4" column="0">
     <widget class="QLabel" name="label_4">
@@ -440,6 +408,51 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="12" column="1">
+    <widget class="QLabel" name="status">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>No topic</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Status:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="3">
+    <widget class="QPushButton" name="buttonResetBuffer">
+     <property name="maximumSize">
+      <size>
+       <width>55</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Clear</string>
+     </property>
     </widget>
    </item>
   </layout>

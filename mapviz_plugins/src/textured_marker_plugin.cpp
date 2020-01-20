@@ -57,7 +57,8 @@ namespace mapviz_plugins
 {
   TexturedMarkerPlugin::TexturedMarkerPlugin() :
     config_widget_(new QWidget()),
-    is_marker_array_(false)
+    is_marker_array_(false),
+    alphaVal_(1.0f) // Initialize the alpha value to default
   {
     ui_.setupUi(config_widget_);
 
@@ -73,6 +74,8 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
+    QObject::connect(ui_.alphaSlide, SIGNAL(valueChanged(int)), this, SLOT(SetAlphaLevel(int)));
 
     // By using a signal/slot connection, we ensure that we only generate GL textures on the
     // main thread in case a non-main thread handles the ROS callbacks.
@@ -95,7 +98,30 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::ClearHistory()
   {
+    ROS_DEBUG("TexturedMarkerPlugin::ClearHistory()");
     markers_.clear();
+  }
+
+  // TODO could instead use the value() function on alphaSlide when needed, assuming value is always good
+  // Modify min and max values by adjusting textured_marker_config.ui
+  void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
+  {
+    int max = ui_.alphaSlide->maximum();
+    int min = ui_.alphaSlide->minimum();
+
+    if(max < 1 
+    || min < 0
+    || alpha > max 
+    || alpha < min) // ignore negative min and max
+    {
+      alphaVal_ = 1.0f;
+      PrintWarning("Invalid alpha input.");
+    }
+    else
+    {
+      alphaVal_ = (static_cast<float>(alpha) / max); // Ex. convert int in range 0-100 to float in range 0-1
+      ROS_INFO("Adjusting alpha value to: %f", alphaVal_);
+    }
   }
 
   void TexturedMarkerPlugin::SelectTopic()
@@ -262,21 +288,32 @@ namespace mapviz_plugins
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+        size_t bpp = 0;
         if (markerData.encoding_ == sensor_msgs::image_encodings::BGRA8)
         {
+          bpp = 4;
           markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 4));
         }
         else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8)
         {
+          bpp = 3;
           markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 3));
         }
         else if (markerData.encoding_ == sensor_msgs::image_encodings::MONO8)
         {
+          bpp = 1;
           markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_));
         }
         else
         {
           ROS_WARN("Unsupported encoding: %s", markerData.encoding_.c_str());
+        }
+
+        size_t expected = marker.image.height*marker.image.width*bpp;
+        if (markerData.texture_.size() > 0 && marker.image.data.size() < expected)
+        {
+          ROS_ERROR("TexturedMarker image had expected data size %i but only got %i. Dropping message.", expected, marker.image.data.size());
+          return;
         }
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -288,6 +325,8 @@ namespace mapviz_plugins
         glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
       }
       
       glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(markerData.texture_id_));
@@ -433,6 +472,8 @@ namespace mapviz_plugins
   {
     ros::Time now = ros::Time::now();
 
+    float alphaVal = alphaVal_; // Set all markers to same alpha value
+
     std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
@@ -440,6 +481,7 @@ namespace mapviz_plugins
       for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
+        marker.alpha_ = alphaVal; // Update current marker's alpha value
 
         if (marker.expire_time > now)
         {

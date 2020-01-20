@@ -64,9 +64,9 @@ namespace mapviz
     Q_OBJECT
   public:
     ServiceUpdaterThread(ros::NodeHandle& nh, const std::string& allowed_datatype, QObject* parent) :
+      QThread(parent),
       nh_(nh),
-      allowed_datatype_(allowed_datatype),
-      QThread(parent)
+      allowed_datatype_(allowed_datatype)
     {
     }
     void run();
@@ -150,19 +150,18 @@ namespace mapviz
     void timerEvent(QTimerEvent *);
     void closeEvent(QCloseEvent *);
 
-    std::string allowed_datatype_;
-
     ros::NodeHandle nh_;
 
-    std::vector<std::string> known_services_;
+    std::string allowed_datatype_;
     std::vector<std::string> displayed_services_;
+    std::vector<std::string> known_services_;
 
     int fetch_services_timer_id_;
 
-    QPushButton *ok_button_;
     QPushButton *cancel_button_;
     QListWidget *list_widget_;
     QLineEdit *name_filter_;
+    QPushButton *ok_button_;
     boost::shared_ptr<ServiceUpdaterThread> worker_thread_;
   };
 }
