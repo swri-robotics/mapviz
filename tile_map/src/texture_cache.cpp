@@ -33,12 +33,13 @@
 
 #include <boost/make_shared.hpp>
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+//#include <GL/glew.h>
+//#include <GL/gl.h>
+//#include <GL/glu.h>
 
 #include <ros/ros.h>
 
+#include <QGLFunctions>
 #include <QGLWidget>
 #include <QImage>
 
@@ -109,8 +110,8 @@ namespace tile_map
             ROS_ERROR("FAILED TO CREATE TEXTURE");
 
             GLenum err = glGetError();
-            const GLubyte *errString = gluErrorString(err);
-            ROS_ERROR("GL ERROR(%u): %s", err, errString);
+            //const GLubyte *errString = gluErrorString(err);
+            ROS_ERROR("GL ERROR(%u): %s", err, "unknown");
             return texture;
           }
 

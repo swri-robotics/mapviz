@@ -33,9 +33,10 @@
 
 #include <boost/make_shared.hpp>
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+//#include <GL/glew.h>
+//#include <GL/gl.h>
+//#include <GL/glu.h>
+#include <QGLFunctions>
 
 #include <ros/ros.h>
 
