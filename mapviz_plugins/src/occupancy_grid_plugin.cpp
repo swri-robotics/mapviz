@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <GL/glew.h>
+//#include <GL/glew.h>
 
 #include <mapviz_plugins/occupancy_grid_plugin.h>
 #include <GL/glut.h>

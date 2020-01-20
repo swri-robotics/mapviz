@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <GL/glew.h>
+//#include <GL/glew.h>
 #include <mapviz_plugins/pointcloud2_plugin.h>
 
 // C++ standard libraries
