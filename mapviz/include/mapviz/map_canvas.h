@@ -40,6 +40,7 @@
 
 // QT libraries
 #include <QGLWidget>
+#include <QGLFunctions>
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QColor>
@@ -54,7 +55,7 @@
 
 namespace mapviz
 {
-  class MapCanvas : public QGLWidget
+  class MapCanvas : public QGLWidget, protected QGLFunctions
   {
     Q_OBJECT
 
