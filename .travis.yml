@@ -12,9 +12,13 @@ jobs:
     - stage: build-shadow-fixed
       env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
     - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - env: ROS_DISTRO="kinetic" INJECT_QEMU=aarch64 DOCKER_BASE_IMAGE='arm64v8/ros:kinetic' ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - env: ROS_DISTRO="melodic" INJECT_QEMU=aarch64 DOCKER_BASE_IMAGE='arm64v8/ros:melodic' ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
     - stage: build-released
       env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="kinetic" INJECT_QEMU=aarch64 DOCKER_BASE_IMAGE='arm64v8/ros:kinetic' ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="melodic" INJECT_QEMU=aarch64 DOCKER_BASE_IMAGE='arm64v8/ros:melodic' ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - stage: lint
       sudo: false
       install: pip install --user -q catkin-lint
@@ -23,6 +27,8 @@ jobs:
   allow_failures:
     - env: ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - env: ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="kinetic" INJECT_QEMU=aarch64 DOCKER_BASE_IMAGE='arm64v8/ros:kinetic' ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO="melodic" INJECT_QEMU=aarch64 DOCKER_BASE_IMAGE='arm64v8/ros:melodic' ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - env: JOB="catkin_lint"
 matrix:
   allow_failures:
@@ -30,5 +36,6 @@ matrix:
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script: 
+  - sudo apt-get install qemu-user-static
   - source .ci_config/travis.sh
 #  - source ./travis.sh  # Enable this when you have a package-local script 
