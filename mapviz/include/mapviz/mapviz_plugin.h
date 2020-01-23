@@ -52,6 +52,10 @@
 
 #include "stopwatch.h"
 
+#ifdef __aarch64__
+#include <GL/gl.h>
+#endif
+
 namespace mapviz
 {
   class MapvizPlugin : public QObject

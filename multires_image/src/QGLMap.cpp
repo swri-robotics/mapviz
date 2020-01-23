@@ -29,6 +29,8 @@
 
 #include <multires_image/QGLMap.h>
 
+#include <GL/gl.h>
+
 // C++ standard libraries
 #include <cmath>
 

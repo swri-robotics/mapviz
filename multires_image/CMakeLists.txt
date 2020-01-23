@@ -95,6 +95,7 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   ${Qt_LIBRARIES}
+  ${OPENGL_gl_LIBRARY}
   ${GLU_LIBRARY}
 )
 
