@@ -203,7 +203,7 @@ void MapCanvas::CaptureFrame(bool force)
     int32_t next_index = (pixel_buffer_index_ + 1) % 2;
 
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[pixel_buffer_index_]);
-    glReadPixelsARB(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
+    glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[next_index]);
     GLubyte* data = reinterpret_cast<GLubyte*>(glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
     if(data)

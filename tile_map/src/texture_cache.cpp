@@ -106,8 +106,7 @@ namespace tile_map
             ROS_ERROR("FAILED TO CREATE TEXTURE");
 
             GLenum err = glGetError();
-            //const GLubyte *errString = gluErrorString(err);
-            ROS_ERROR("GL ERROR(%u): %s", err, "unknown");
+            ROS_ERROR("GL ERROR(%u)", err);
             return texture;
           }
 
