@@ -27,11 +27,6 @@
 //
 // *****************************************************************************
 
-
-//#include <GL/glew.h>
-//#include <GL/gl.h>
-//#include <GL/glu.h>
-
 #include <mapviz/map_canvas.h>
 
 // C++ standard libraries
