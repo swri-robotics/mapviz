@@ -33,6 +33,12 @@
 #include <cmath>
 #include <swri_math_util/constants.h>
 
+#ifndef __aarch64__
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#endif
+
 namespace mapviz
 {
 
@@ -89,10 +95,12 @@ MapCanvas::MapCanvas(QWidget* parent) :
 
 MapCanvas::~MapCanvas()
 {
+#ifndef __aarch64__
   if(pixel_buffer_size_ != 0)
   {
-    glDeleteBuffers(2, pixel_buffer_ids_);
+    glDeleteBuffersARB(2, pixel_buffer_ids_);
   }
+#endif
 }
 
 void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
@@ -100,12 +108,9 @@ void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
   tf_ = tf;
 }
 
-void* (*glMapBuffer)(GLenum target, GLenum buffer);
-
-void (*glUnmapBuffer)(GLenum target);
-
 void MapCanvas::InitializePixelBuffers()
 {
+#ifndef __aarch64__
   if(has_pixel_buffers_)
   {
     int32_t buffer_size = width() * height() * 4;
@@ -114,37 +119,39 @@ void MapCanvas::InitializePixelBuffers()
     {
       if (pixel_buffer_size_ != 0)
       {
-        glDeleteBuffers(2, pixel_buffer_ids_);
+        glDeleteBuffersARB(2, pixel_buffer_ids_);
       }
 
-      glGenBuffers(2, pixel_buffer_ids_);
-      glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[0]);
-      glBufferData(GL_PIXEL_PACK_BUFFER, buffer_size, 0, GL_STREAM_READ);
-      glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[1]);
-      glBufferData(GL_PIXEL_PACK_BUFFER, buffer_size, 0, GL_STREAM_READ);
-      glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+      glGenBuffersARB(2, pixel_buffer_ids_);
+      glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[0]);
+      glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, buffer_size, 0, GL_STREAM_READ_ARB);
+      glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[1]);
+      glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, buffer_size, 0, GL_STREAM_READ_ARB);
+      glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 
       pixel_buffer_size_ = buffer_size;
     }
   }
+#endif
 }
 
 void MapCanvas::initializeGL()
 {
-  //GLenum err = glewInit();
-  if (false)//GLEW_OK != err)
+#ifndef __aarch64__
+  GLenum err = glewInit();
+  if (GLEW_OK != err)
   {
-    //ROS_ERROR("Error: %s\n", glewGetErrorString(err));
+    ROS_ERROR("Error: %s\n", glewGetErrorString(err));
   }
   else
   {
     // Check if pixel buffers are available for asynchronous capturing
     std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
-    has_pixel_buffers_ = false;//extensions.find("GL_ARB_pixel_buffer_object") != std::string::npos;
-    
-	// now load the extension...
-	//glMapBuffer = glXGetProcAddress("glMapBuffer");
+    has_pixel_buffers_ = extensions.find("GL_ARB_pixel_buffer_object") != std::string::npos;
   }
+#else
+  has_pixel_buffers_ = false;
+#endif
 
   glClearColor(0.58f, 0.56f, 0.5f, 1);
   if (enable_antialiasing_)
@@ -187,6 +194,7 @@ void MapCanvas::CaptureFrame(bool force)
   // Ensure the pixel size is actually 4
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
+#ifndef __aarch64__
   if (has_pixel_buffers_ && !force)
   {
     InitializePixelBuffers();
@@ -194,21 +202,22 @@ void MapCanvas::CaptureFrame(bool force)
     pixel_buffer_index_ = (pixel_buffer_index_ + 1) % 2;
     int32_t next_index = (pixel_buffer_index_ + 1) % 2;
 
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[pixel_buffer_index_]);
-    glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[next_index]);
-    GLubyte* data = reinterpret_cast<GLubyte*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[pixel_buffer_index_]);
+    glReadPixelsARB(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
+    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[next_index]);
+    GLubyte* data = reinterpret_cast<GLubyte*>(glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
     if(data)
     {
       capture_buffer_.resize(pixel_buffer_size_);
 
       memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
 
-      glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+      glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
     }
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
   }
   else
+#endif
   {
     int32_t buffer_size = width() * height() * 4;
     capture_buffer_.clear();
