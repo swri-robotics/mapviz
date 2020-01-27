@@ -27,17 +27,17 @@
 //
 // *****************************************************************************
 
-#include <mapviz/map_canvas.h>
-
-// C++ standard libraries
-#include <cmath>
-#include <swri_math_util/constants.h>
-
 #ifndef __aarch64__
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #endif
+
+#include <mapviz/map_canvas.h>
+
+// C++ standard libraries
+#include <cmath>
+#include <swri_math_util/constants.h>
 
 namespace mapviz
 {
