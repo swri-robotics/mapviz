@@ -48,7 +48,7 @@
 // ROS libraries
 // #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_ros/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
 #include <tf2_ros/transform_listener.h>
 // #include <tf2/transform_listener.h>
 
@@ -64,7 +64,7 @@ namespace mapviz
     explicit MapCanvas(QWidget *parent = 0);
     ~MapCanvas();
 
-    void InitializeTf(boost::shared_ptr<tf::TransformListener> tf);
+    void InitializeTf(boost::shared_ptr<tf2_ros::TransformListener> tf);
 
     void AddPlugin(MapvizPluginPtr plugin, int order);
     void RemovePlugin(MapvizPluginPtr plugin);
@@ -247,7 +247,7 @@ namespace mapviz
     std::string target_frame_;
 
     boost::shared_ptr<tf::TransformListener> tf_;
-    tf::StampedTransform transform_;
+    tf2::StampedTransform transform_;
     QTransform qtransform_;
     std::list<MapvizPluginPtr> plugins_;
 
