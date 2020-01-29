@@ -49,6 +49,7 @@
 // #include <swri_yaml_util/yaml_util.h>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <mapviz/widgets.h>
 
@@ -63,7 +64,7 @@ namespace mapviz
     virtual ~MapvizPlugin() {}
 
     virtual bool Initialize(
-        boost::shared_ptr<tf::TransformListener> tf_listener,
+        boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
         swri_transform_util::TransformManagerPtr tf_manager,
         QGLWidget* canvas)
     {
@@ -116,7 +117,7 @@ namespace mapviz
       }
     }
 
-    virtual void SetNode(const ros::NodeHandle& node)
+    virtual void SetNode(const rclcpp::NodeHandle& node)
     {
       node_ = node;
     }
@@ -174,23 +175,28 @@ namespace mapviz
       }
     }
 
-    bool GetTransform(const ros::Time& stamp,
+    // bool GetTransform(const ros::Time& stamp,
+    bool GetTransform(const rclcpp::Time& stamp,
       swri_transform_util::Transform& transform,
       bool use_latest_transforms = true)
     {
       if (!initialized_)
         return false;
 
-      ros::Time time = stamp;
+      // ros::Time time = stamp;
+      rclcpp::Time time = stamp;
 
       if (use_latest_transforms_ && use_latest_transforms)
       {
-        time = ros::Time();
+        // time = ros::Time();
+        time = rclcpp::Time();
       }
 
-      ros::Duration elapsed = ros::Time::now() - time;
+      // ros::Duration elapsed = ros::Time::now() - time;
+      rclcpp::Duration elapsed = rclcpp::Time::now() - time;
 
-      if (time != ros::Time() && elapsed > tf_->getCacheLength())
+      // if (time != ros::Time() && elapsed > tf_->getCacheLength())
+      if (time != rclcpp::Time() && elapsed > tf_->getCacheLength())
       {
         return false;
       }
@@ -203,7 +209,8 @@ namespace mapviz
       {
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
-        if (tf_manager_->GetTransform(target_frame_, source_frame_,  ros::Time(), transform))
+        // if (tf_manager_->GetTransform(target_frame_, source_frame_,  ros::Time(), transform))
+        if (tf_manager_->GetTransform(target_frame_, source_frame_, rclcpp::Time(), transform))
         {
           return true;
         }
@@ -213,22 +220,27 @@ namespace mapviz
     }
 
     bool GetTransform(const std::string& source,
-      const ros::Time& stamp,
+      // const ros::Time& stamp,
+      const rclcpp::Time& stamp,
       swri_transform_util::Transform& transform)
     {
       if (!initialized_)
         return false;
 
-      ros::Time time = stamp;
+      // ros::Time time = stamp;
+      rclcpp::Time time = stamp;
 
       if (use_latest_transforms_)
       {
-        time = ros::Time();
+        // time = ros::Time();
+        time = rclcpp::Time();
       }
 
-      ros::Duration elapsed = ros::Time::now() - time;
+      // ros::Duration elapsed = ros::Time::now() - time;
+      rclcpp::Duration elapsed = rclcpp::Time::now() - time;
 
-      if (time != ros::Time() && elapsed > tf_->getCacheLength())
+      // if (time != ros::Time() && elapsed > tf_->getCacheLength())
+      if (time != rclcpp::Time() && elapsed > tf_->getCacheLength())
       {
         return false;
       }
@@ -241,7 +253,8 @@ namespace mapviz
       {
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
-        if (tf_manager_->GetTransform(target_frame_, source,  ros::Time(), transform))
+        // if (tf_manager_->GetTransform(target_frame_, source,  ros::Time(), transform))
+        if (tf_manager->GetTransform(target_frame_, source, rclcpp::Time(), transform))
         {
           return true;
         }
@@ -302,9 +315,9 @@ namespace mapviz
     QGLWidget* canvas_;
     IconWidget* icon_;
 
-    ros::NodeHandle node_;
+    rclcpp::NodeHandle node_;
 
-    boost::shared_ptr<tf::TransformListener> tf_;
+    boost::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
 
     std::string target_frame_;

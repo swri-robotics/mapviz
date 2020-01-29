@@ -44,7 +44,7 @@ namespace mapviz
       width_ = width;
       height_ = height;
 
-      ROS_INFO("Initializing recording:\nWidth/Height/Filename: %d / %d / %s",
+      RCLCPP_INFO(rclcpp::get_logger("default"), "Initializing recording:\nWidth/Height/Filename: %d / %d / %s",
         width_,
         height_,
         directory.c_str());
@@ -56,7 +56,8 @@ namespace mapviz
 
       if (!video_writer_->isOpened())
       {
-        ROS_ERROR("Failed to open video file for writing.");
+        // ROS_ERROR("Failed to open video file for writing.");
+        RCLCPP_ERROR("Failed to open video file for writing.");
         stop();
         return false;
       }
@@ -74,12 +75,14 @@ namespace mapviz
   {
     try
     {
-      ROS_DEBUG_THROTTLE(1.0, "VideoWriter::processFrame()");
+      // ROS_DEBUG_THROTTLE(1.0, "VideoWriter::processFrame()");
+      RCLCPP_DEBUG_THROTTLE(1.0, "VideoWriter::processFrame()");
       {
         QMutexLocker locker(&video_mutex_);
         if (!video_writer_)
         {
-          ROS_WARN_THROTTLE(1.0, "Got frame, but video writer wasn't open.");
+          // ROS_WARN_THROTTLE(1.0, "Got frame, but video writer wasn't open.");
+          RCLCPP_WARN_THROTTLE(1.0, "Got frame, but video writer wasn't open.");
           return;
         }
       }
@@ -118,7 +121,7 @@ namespace mapviz
 
   void VideoWriter::stop()
   {
-    ROS_INFO("Stopping video recording.");
+    ROS_INFO(rclcpp::get_logger("default"), "Stopping video recording.");
     QMutexLocker locker(&video_mutex_);
     video_writer_.reset();
   }
