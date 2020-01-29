@@ -363,11 +363,14 @@ namespace mapviz
 
       if (throttle > 0.0)
       {
-          ROS_ERROR_THROTTLE(throttle, "Error: %s", message.c_str());
+          // ROS_ERROR_THROTTLE(throttle, "Error: %s", message.c_str());
+          // RCLCPP_ERROR_THROTTLE(rclcpp::get_logger("mapviz"), throttle, "Error: %s", message.c_str());
+          RCLCPP_ERROR(rclcpp::get_logger("mapviz"), throttle, "Error: %s", message.c_str());
       }
       else
       {
-          ROS_ERROR("Error: %s", message.c_str());
+          // ROS_ERROR("Error: %s", message.c_str());
+          RCLCPP_ERROR(rclcpp::get_logger("mapviz", "%s", message.c_str()));
       }
       QPalette p(status_label->palette());
       p.setColor(QPalette::Text, Qt::red);
@@ -385,11 +388,14 @@ namespace mapviz
 
       if (throttle > 0.0)
       {
-          ROS_INFO_THROTTLE(throttle, "%s", message.c_str());
+          // ROS_INFO_THROTTLE(throttle, "%s", message.c_str());
+          // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("mapviz"), "%s", message.c_str());
+          RCLCPP_INFO(rclcpp::get_logger("mapviz"), "%s", message.c_str());
       }
       else
       {
-          ROS_INFO("%s", message.c_str());
+          // ROS_INFO("%s", message.c_str());
+          RCLCPP_INFO(rclcpp::get_logger("mapviz"), "%s", message.c_str());
       }
       QPalette p(status_label->palette());
       p.setColor(QPalette::Text, Qt::darkGreen);
@@ -406,11 +412,14 @@ namespace mapviz
       }
 
       if (throttle > 0.0){
-          ROS_WARN_THROTTLE(throttle, "%s", message.c_str());
+          // ROS_WARN_THROTTLE(throttle, "%s", message.c_str());
+          // RCLCPP_WARN_THROTTLE(rclcpp::get_logger("mapviz"), "%s", message.c_str());
+          RCLCPP_WARN(rclcpp::get_logger("mapviz"), "%s", message.c_str());
       }
       else
       {
-          ROS_WARN("%s", message.c_str());
+          // ROS_WARN("%s", message.c_str());
+          RCLCPP_WARN(rclcpp::get_logger("mapviz"), "%s", message.c_str());
       }
       QPalette p(status_label->palette());
       p.setColor(QPalette::Text, Qt::darkYellow);
