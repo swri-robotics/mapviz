@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>tile_map</name>
   <version>1.2.0</version>
   <description>
@@ -13,30 +13,28 @@
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <buildtool_depend>qt_qmake</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>qt5-qmake</buildtool_depend>
 
   <build_depend>libjsoncpp-dev</build_depend>
-  <build_depend>libqt_dev</build_depend>
-  <build_depend>libqt_opengl_dev</build_depend>
+  <depend>libqt5-core</depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
 
   <depend>libglew-dev</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
-  <depend>roscpp</depend>
+  <depend>rclcpp</depend>
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
-  <depend>swri_yaml_util</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
 
   <exec_depend>libjsoncpp</exec_depend>
-  <exec_depend>libqt_core</exec_depend>
-  <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
 
   <export>
+    <build_type>ament_cmake</build_type>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
   </export>
-
 </package>
 
 
