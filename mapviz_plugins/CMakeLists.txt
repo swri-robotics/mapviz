@@ -64,7 +64,9 @@ else()
 endif()
 
 ### OpenGL ###
-cmake_policy(SET CMP0072 NEW)
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.11.0")
+  cmake_policy(SET CMP0072 NEW)
+endif()
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
