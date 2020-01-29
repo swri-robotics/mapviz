@@ -21,3 +21,5 @@ version.txt
 cmake-build-debug/
 mapviz/log
 mapviz/install
+install/
+log/
