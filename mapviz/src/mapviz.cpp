@@ -175,6 +175,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(canvas_, SIGNAL(Hover(double,double,double)), this, SLOT(Hover(double,double,double)));
   connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
+  connect(ui_.actionClear, SIGNAL(triggered()), this, SLOT(ClearConfig()));
   connect(ui_.bg_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectBackgroundColor(const QColor &)));
 
   connect(recenter_button_, SIGNAL(clicked()), this, SLOT(Recenter()));
@@ -883,6 +884,11 @@ void Mapviz::OpenConfig()
     std::string path = dialog.selectedFiles().first().toStdString();
     Open(path);
   }
+}
+
+void Mapviz::ClearConfig()
+{
+  ClearDisplays();
 }
 
 void Mapviz::SaveConfig()
