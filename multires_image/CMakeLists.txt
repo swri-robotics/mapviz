@@ -17,6 +17,9 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED thread)
 
 ### OpenGL ###
+if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+  cmake_policy(SET CMP0072 NEW)
+endif()
 find_package(OpenGL REQUIRED)
 
 ### OpenCV ###

@@ -31,7 +31,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -41,6 +41,7 @@
     <addaction name="actionOpen_config"/>
     <addaction name="separator"/>
     <addaction name="actionSave_config"/>
+    <addaction name="actionClear"/>
     <addaction name="separator"/>
     <addaction name="actionSet_Capture_Directory"/>
     <addaction name="actionExit"/>
@@ -484,6 +485,11 @@
   <action name="actionClear_History">
    <property name="text">
     <string>Clear History</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear Config</string>
    </property>
   </action>
  </widget>
