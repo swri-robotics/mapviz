@@ -87,6 +87,7 @@ namespace mapviz
     void AutoSave();
     void OpenConfig();
     void SaveConfig();
+    void ClearConfig();
     void SelectNewDisplay();
     void RemoveDisplay();
     void RemoveDisplay(QListWidgetItem* item);
