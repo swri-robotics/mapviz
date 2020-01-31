@@ -42,7 +42,7 @@ class QListWidget;
 class QPushButton;
 QT_END_NAMESPACE
 
-namespace tf {
+namespace tf2_ros {
 class TransformListener;
 }  // namespace tf
 
@@ -65,7 +65,7 @@ class SelectFrameDialog : public QDialog
    * selection, the returned string be empty.
    */
   static std::string selectFrame(
-    boost::shared_ptr<tf::TransformListener> tf_listener,
+    boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
     QWidget *parent = 0);
 
   /**
@@ -75,13 +75,13 @@ class SelectFrameDialog : public QDialog
    * selection, the returned vector will be empty.
    */
   static std::vector<std::string> selectFrames(
-    boost::shared_ptr<tf::TransformListener> tf_listener,
+    boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
     QWidget *parent = 0);
 
   /**
    * Constructor for the SelectFrameDialog.
    */
-  SelectFrameDialog(boost::shared_ptr<tf::TransformListener> tf_listener,
+  SelectFrameDialog(boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
                     QWidget *parent = 0);
 
   /**
