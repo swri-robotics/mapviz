@@ -44,8 +44,8 @@
 // ROS libraries
 // #include <ros/ros.h>
 // #include <tf/transform_datatypes.h>
-// #include <swri_transform_util/transform.h>
-// #include <swri_transform_util/transform_manager.h>
+#include <swri_transform_util/transform.h>
+#include <swri_transform_util/transform_manager.h>
 // #include <swri_yaml_util/yaml_util.h>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/transform_datatypes.h>
@@ -370,7 +370,7 @@ namespace mapviz
       else
       {
           // ROS_ERROR("Error: %s", message.c_str());
-          RCLCPP_ERROR(rclcpp::get_logger("mapviz", "%s", message.c_str()));
+          RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", message.c_str());
       }
       QPalette p(status_label->palette());
       p.setColor(QPalette::Text, Qt::red);

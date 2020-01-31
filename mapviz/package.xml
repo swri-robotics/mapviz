@@ -34,7 +34,7 @@
   <depend>rqt_gui_cpp</depend>
   <depend>rqt_gui</depend>
   <depend>std_srvs</depend>
-  <!-- <depend>swri_transform_util</depend> -->
+  <depend>swri_transform_util</depend>
   <!-- <depend>swri_yaml_util</depend> -->
   <depend>tf2</depend>
 
