@@ -115,7 +115,7 @@ class SelectFrameDialog : public QDialog
   void updateDisplayedFrames();
 
  private:
-  boost::shared_ptr<tf::TransformListener> tf_;
+  boost::shared_ptr<tf2_ros::TransformListener> tf_;
   std::vector<std::string> known_frames_;
   std::vector<std::string> displayed_frames_;
   int fetch_frames_timer_id_;
