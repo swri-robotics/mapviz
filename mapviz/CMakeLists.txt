@@ -13,13 +13,11 @@ set(COMMON_DEPS
   image_transport
   marti_common_msgs
   pluginlib
-  rosapi
   rclcpp
   rqt_gui
   rqt_gui_cpp
   std_srvs
-  # swri_transform_util
-  # swri_yaml_util
+  swri_transform_util
   tf2
 )
 set(BUILD_DEPS
@@ -91,9 +89,10 @@ find_package(GLEW REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
 
-# generate_messages(DEPENDENCIES
-#   marti_common_msgs
-# )
+rosidl_generate_interfaces(${PROJECT_NAME}_interfaces
+  srv/AddMapvizDisplay.srv
+  DEPENDENCIES marti_common_msgs
+)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
@@ -162,13 +161,17 @@ target_link_libraries(rqt_${PROJECT_NAME}
   ${GLUT_LIBRARY}
   ${GLEW_LIBRARIES}
   ${OpenCV_LIBS}
-  ${catkin_LIBRARIES}
 )
+ament_target_dependencies(rqt_${PROJECT_NAME}
+  ${COMMON_DEPS}
+)
+rosidl_target_interfaces(rqt_${PROJECT_NAME}
+  ${PROJECT_NAME}_interfaces "rosidl_typesupport_cpp")
 # add_dependencies(rqt_${PROJECT_NAME}
 #   ${catkin_EXPORTED_TARGETS}
 # )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )
 # add_dependencies(rqt_${PROJECT_NAME}
 #   ${PROJECT_NAME}_gencpp
@@ -223,7 +226,3 @@ ament_export_dependencies(${RUNTIME_DEPS} Qt)
 ament_export_include_directories(include)
 ament_export_libraries(rqt_${PROJECT_NAME})
 ament_package()
-  # LIBRARIES rqt_${PROJECT_NAME}
-  # INCLUDE_DIRS include
-  # DEPENDS Qt
-  # CATKIN_DEPENDS ${RUNTIME_DEPS}

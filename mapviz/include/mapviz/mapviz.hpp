@@ -65,7 +65,7 @@
 #include "ui_pluginselect.h"
 
 #include <swri_transform_util/transform_manager.h>
-#include <mapviz/AddMapvizDisplay.hpp>  // Service
+#include <mapviz/srv/add_mapviz_display.hpp>  // Service
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 #include <mapviz/video_writer.h>
