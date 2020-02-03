@@ -174,8 +174,8 @@ namespace mapviz
 
     bool updating_frames_;
 
-    ros::NodeHandle* node_;
-    ros::ServiceServer add_display_srv_;
+    rclcpp::NodeHandle* node_;
+    rclcpp::ServiceServer add_display_srv_;
     boost::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
 
