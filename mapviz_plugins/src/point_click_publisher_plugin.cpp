@@ -137,7 +137,7 @@ namespace mapviz_plugins
     ss << "Point in " << output_frame.c_str() << ": " << transformed.x() << "," << transformed.y();
     PrintInfo(ss.str());
 
-    boost::shared_ptr<geometry_msgs::PointStamped> stamped = boost::make_shared<geometry_msgs::PointStamped>();
+    std::shared_ptr<geometry_msgs::PointStamped> stamped = std::make_shared<geometry_msgs::PointStamped>();
     stamped->header.frame_id = output_frame;
     stamped->header.stamp = ros::Time::now();
     stamped->point.x = transformed.x();

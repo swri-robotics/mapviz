@@ -87,7 +87,7 @@ namespace tile_map
     void ResetTileCache();
 
   private:
-    void selectTileSource(const boost::shared_ptr<TileSource>& tile_source);
+    void selectTileSource(const std::shared_ptr<TileSource>& tile_source);
     void startCustomEditing();
     void stopCustomEditing();
 
@@ -100,7 +100,7 @@ namespace tile_map
     bool transformed_;
     
     TileMapView tile_map_;
-    std::map<QString, boost::shared_ptr<TileSource> > tile_sources_;
+    std::map<QString, std::shared_ptr<TileSource> > tile_sources_;
 
     double last_center_x_;
     double last_center_y_;

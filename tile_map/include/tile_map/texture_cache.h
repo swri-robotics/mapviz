@@ -47,7 +47,7 @@ namespace tile_map
 
     bool failed;
   };
-  typedef boost::shared_ptr<Texture> TexturePtr;
+  typedef std::shared_ptr<Texture> TexturePtr;
 
   class TextureCache
   {
@@ -64,7 +64,7 @@ namespace tile_map
 
     ImageCachePtr image_cache_;
   };
-  typedef boost::shared_ptr<TextureCache> TextureCachePtr;
+  typedef std::shared_ptr<TextureCache> TextureCachePtr;
 }
 
 #endif  // TILE_MAP_TEXTURE_CACHE_H_

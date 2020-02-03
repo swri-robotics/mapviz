@@ -267,8 +267,8 @@ void Mapviz::Initialize()
 
     connect(group, SIGNAL(triggered(QAction*)), this, SLOT(SetImageTransport(QAction*)));
 
-    tf_ = boost::make_shared<tf::TransformListener>();
-    tf_manager_ = boost::make_shared<swri_transform_util::TransformManager>();
+    tf_ = std::make_shared<tf::TransformListener>();
+    tf_manager_ = std::make_shared<swri_transform_util::TransformManager>();
     tf_manager_->Initialize(tf_);
 
     loader_ = new pluginlib::ClassLoader<MapvizPlugin>(

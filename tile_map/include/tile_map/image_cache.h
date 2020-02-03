@@ -60,7 +60,7 @@ namespace tile_map
     QString Uri() const { return uri_; }
     size_t UriHash() const { return uri_hash_; }
 
-    boost::shared_ptr<QImage> GetImage() { return image_; }
+    std::shared_ptr<QImage> GetImage() { return image_; }
 
     void InitializeImage();
     void ClearImage();
@@ -91,11 +91,11 @@ namespace tile_map
     bool failed_;
     uint64_t priority_;
 
-    mutable boost::shared_ptr<QImage> image_;
+    mutable std::shared_ptr<QImage> image_;
 
     static const int MAXIMUM_FAILURES;
   };
-  typedef boost::shared_ptr<Image> ImagePtr;
+  typedef std::shared_ptr<Image> ImagePtr;
 
   class ImageCache : public QObject
   {
@@ -159,7 +159,7 @@ namespace tile_map
   };
 
 
-  typedef boost::shared_ptr<ImageCache> ImageCachePtr;
+  typedef std::shared_ptr<ImageCache> ImageCachePtr;
 }
 
 #endif  // TILE_MAP_IMAGE_CACHE_H_

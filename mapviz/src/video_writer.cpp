@@ -48,7 +48,7 @@ namespace mapviz
         width_,
         height_,
         directory.c_str());
-      video_writer_ = boost::make_shared<cv::VideoWriter>(
+      video_writer_ = std::make_shared<cv::VideoWriter>(
           directory,
           CV_FOURCC('M', 'J', 'P', 'G'),
           30,

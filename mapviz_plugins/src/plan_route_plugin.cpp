@@ -135,7 +135,7 @@ namespace mapviz_plugins
     {
       if (plan_route.response.success)
       {
-        route_preview_ = boost::make_shared<sru::Route>(plan_route.response.route);
+        route_preview_ = std::make_shared<sru::Route>(plan_route.response.route);
         failed_service_ = false;
       }
       else

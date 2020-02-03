@@ -1,57 +1,28 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
+
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
+
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 project(mapviz)
 
-set(COMMON_DEPS
-  cv_bridge
-  image_transport
-  marti_common_msgs
-  pluginlib
-  rclcpp
-  rqt_gui
-  rqt_gui_cpp
-  std_srvs
-  swri_transform_util
-  tf2
-)
-set(BUILD_DEPS
-  ${COMMON_DEPS}
-  message_generation
-)
-set(RUNTIME_DEPS
-  ${COMMON_DEPS}
-  message_runtime
-)
-
+### ROS Packages ###
 find_package(ament_cmake REQUIRED)
-find_package(cv_bridge)
-find_package(image_transport)
-find_package(marti_common_msgs)
-find_package(pluginlib)
-# find_package(ros2api
-find_package(rclcpp)
-# find_package(rqt)
-find_package(rqt_gui_cpp)
-# find_package(rqt_gui)
-find_package(std_srvs)
-find_package(swri_transform_util)
-# find_package(swri_yaml_util)
-find_package(tf2_ros)
-find_package(tf2)
-
-# find_package(ament_cmake REQUIRED COMPONENTS
-#   ${BUILD_DEPS}
-# )
-
-# find_package(catkin REQUIRED COMPONENTS
-#   ${BUILD_DEPS}
-# )
+find_package(cv_bridge REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(marti_common_msgs REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(rqt_gui_cpp REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(swri_transform_util REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 ### Boost ###
 find_package(Boost REQUIRED system filesystem)
@@ -65,15 +36,6 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-set(Qt_FOUND TRUE)
-set(Qt_INCLUDE_DIRS "${Qt5Concurrent_INCLUDE_DIRS};${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
-set(Qt_LIBRARIES
-  Qt5::Concurrent
-  Qt5::Core
-  Qt5::Gui
-  Qt5::OpenGL
-  Qt5::Widgets
-)
 add_definitions(-DWFlags=WindowFlags)
 set(QT_USE_QTOPENGL TRUE)
 
@@ -87,8 +49,6 @@ find_package(GLUT REQUIRED)
 ### GLEW ###
 find_package(GLEW REQUIRED)
 
-find_package(rosidl_default_generators REQUIRED)
-
 rosidl_generate_interfaces(${PROJECT_NAME}_interfaces
   srv/AddMapvizDisplay.srv
   DEPENDENCIES marti_common_msgs
@@ -101,14 +61,10 @@ add_definitions(-DQT_NO_KEYWORDS)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
-  ${catkin_INCLUDE_DIRS}
   ${Qt_INCLUDE_DIRS}
   ${OpenGL_INCLUDE_DIR}
   ${GLEW_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ${rqt_gui_cpp_INCLUDE_DIRS}
-  ${tf2_ros_INCLUDE_DIRS}
-  ${tf2_INCLUDE_DIRS}
 )
 
 # Qt UI files
@@ -156,26 +112,35 @@ add_library(rqt_${PROJECT_NAME}
   ${RCC_SRCS}
 )
 target_link_libraries(rqt_${PROJECT_NAME}
-  ${Qt_LIBRARIES}
   ${OpenGL_LIBRARY}
   ${GLUT_LIBRARY}
   ${GLEW_LIBRARIES}
   ${OpenCV_LIBS}
+  Qt5::Concurrent
+  Qt5::Core
+  Qt5::Gui
+  Qt5::OpenGL
+  Qt5::Widgets
 )
 ament_target_dependencies(rqt_${PROJECT_NAME}
-  ${COMMON_DEPS}
+  ament_cmake
+  cv_bridge
+  image_transport
+  marti_common_msgs
+  pluginlib
+  rclcpp
+  rosidl_default_generators
+  rqt_gui_cpp
+  std_srvs
+  swri_transform_util
+  tf2
+  tf2_ros
 )
 rosidl_target_interfaces(rqt_${PROJECT_NAME}
   ${PROJECT_NAME}_interfaces "rosidl_typesupport_cpp")
-# add_dependencies(rqt_${PROJECT_NAME}
-#   ${catkin_EXPORTED_TARGETS}
-# )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )
-# add_dependencies(rqt_${PROJECT_NAME}
-#   ${PROJECT_NAME}_gencpp
-# )
 
 ### Build mapviz as a standalone executable ###
 add_executable(${PROJECT_NAME}
@@ -190,17 +155,10 @@ target_link_libraries(${PROJECT_NAME}
   ${GLEW_LIBRARIES}
   ${GLU_LIBRARY}
   ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}
 )
-# add_dependencies(${PROJECT_NAME}
-#   ${catkin_EXPORTED_TARGETS}
-# )
 set_target_properties(${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )
-# add_dependencies(${PROJECT_NAME}
-#   ${PROJECT_NAME}_gencpp
-# )
 
 ### Install mapviz ###
 install(DIRECTORY include/${PROJECT_NAME}/

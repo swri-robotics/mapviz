@@ -100,7 +100,7 @@ MapCanvas::~MapCanvas()
   }
 }
 
-void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
+void MapCanvas::InitializeTf(std::shared_ptr<tf::TransformListener> tf)
 {
   tf_ = tf;
 }

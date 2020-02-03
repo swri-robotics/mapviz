@@ -81,21 +81,21 @@ namespace tile_map
     ui_.setupUi(config_widget_);
 
     tile_sources_[STAMEN_TERRAIN_NAME] =
-        boost::make_shared<WmtsSource>(STAMEN_TERRAIN_NAME,
+        std::make_shared<WmtsSource>(STAMEN_TERRAIN_NAME,
                                        "http://tile.stamen.com/terrain/{level}/{x}/{y}.png",
                                        false,
                                        15);
     tile_sources_[STAMEN_TONER_NAME] =
-        boost::make_shared<WmtsSource>(STAMEN_TONER_NAME,
+        std::make_shared<WmtsSource>(STAMEN_TONER_NAME,
                                        "http://tile.stamen.com/toner/{level}/{x}/{y}.png",
                                        false,
                                        19);
     tile_sources_[STAMEN_WATERCOLOR_NAME] =
-        boost::make_shared<WmtsSource>(STAMEN_WATERCOLOR_NAME,
+        std::make_shared<WmtsSource>(STAMEN_WATERCOLOR_NAME,
                                        "http://tile.stamen.com/watercolor/{level}/{x}/{y}.jpg",
                                        false,
                                        19);
-    boost::shared_ptr<BingSource> bing = boost::make_shared<BingSource>(BING_NAME);
+    std::shared_ptr<BingSource> bing = std::make_shared<BingSource>(BING_NAME);
     tile_sources_[BING_NAME] = bing;
 
     QPalette p(config_widget_->palette());
@@ -157,7 +157,7 @@ namespace tile_map
       startCustomEditing();
     }
 
-    std::map<QString, boost::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(source);
+    std::map<QString, std::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(source);
 
     // If the previously selected source was Bing, these will have been changed, so
     // they should be changed back.  There's not an easy way to know here what the
@@ -194,7 +194,7 @@ namespace tile_map
     QString current_source = ui_.source_combo->currentText();
     QString default_name = "";
 
-    std::map<QString, boost::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(current_source);
+    std::map<QString, std::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(current_source);
     if (iter != tile_sources_.end())
     {
       if (iter->second->IsCustom())
@@ -221,7 +221,7 @@ namespace tile_map
     name = name.trimmed();
     if (ok && !name.isEmpty())
     {
-      boost::shared_ptr<WmtsSource> source = boost::make_shared<WmtsSource>(name,
+      std::shared_ptr<WmtsSource> source = std::make_shared<WmtsSource>(name,
                         ui_.base_url_text->text(),
                         true,
                         ui_.max_zoom_spin_box->value());
@@ -356,7 +356,7 @@ namespace tile_map
           // If the type isn't set, we'll assume it's WMTS
           (*source_iter)[TYPE_KEY] >> type;
         }
-        boost::shared_ptr<TileSource> source;
+        std::shared_ptr<TileSource> source;
         if (type == "wmts" || type.empty())
         {
           std::string name;
@@ -365,7 +365,7 @@ namespace tile_map
           (*source_iter)[NAME_KEY] >> name;
           (*source_iter)[BASE_URL_KEY] >> base_url;
           (*source_iter)[MAX_ZOOM_KEY] >> max_zoom;
-          source = boost::make_shared<WmtsSource>(
+          source = std::make_shared<WmtsSource>(
               QString::fromStdString(name),
               QString::fromStdString(base_url),
               true,
@@ -375,7 +375,7 @@ namespace tile_map
         {
           std::string name;
           (*source_iter)[NAME_KEY] >> name;
-          source = boost::make_shared<BingSource>(QString::fromStdString(name));
+          source = std::make_shared<BingSource>(QString::fromStdString(name));
         }
         tile_sources_[source->GetName()] = source;
         ui_.source_combo->addItem(source->GetName());
@@ -410,7 +410,7 @@ namespace tile_map
   {
     emitter << YAML::Key << CUSTOM_SOURCES_KEY << YAML::Value << YAML::BeginSeq;
 
-    std::map<QString, boost::shared_ptr<TileSource> >::iterator iter;
+    std::map<QString, std::shared_ptr<TileSource> >::iterator iter;
     for (iter = tile_sources_.begin(); iter != tile_sources_.end(); iter++)
     {
       if (iter->second->IsCustom())
@@ -433,7 +433,7 @@ namespace tile_map
                YAML::Value << boost::trim_copy(ui_.source_combo->currentText().toStdString());
   }
 
-  void TileMapPlugin::selectTileSource(const boost::shared_ptr<TileSource>& tile_source)
+  void TileMapPlugin::selectTileSource(const std::shared_ptr<TileSource>& tile_source)
   {
     last_height_ = 0; // This will force us to recalculate our view
     tile_map_.SetTileSource(tile_source);

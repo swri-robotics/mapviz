@@ -52,8 +52,8 @@ namespace tile_map
     width_(100),
     height_(100)
   {
-    ImageCachePtr image_cache = boost::make_shared<ImageCache>("/tmp/tile_map");
-    tile_cache_ = boost::make_shared<TextureCache>(image_cache);
+    ImageCachePtr image_cache = std::make_shared<ImageCache>("/tmp/tile_map");
+    tile_cache_ = std::make_shared<TextureCache>(image_cache);
   }
 
   bool TileMapView::IsReady()
@@ -66,7 +66,7 @@ namespace tile_map
     tile_cache_->Clear();
   }
 
-  void TileMapView::SetTileSource(const boost::shared_ptr<TileSource>& tile_source)
+  void TileMapView::SetTileSource(const std::shared_ptr<TileSource>& tile_source)
   {
     tile_source_ = tile_source;
     level_ = -1;
