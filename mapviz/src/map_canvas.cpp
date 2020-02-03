@@ -542,21 +542,25 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
     success = true;
   }
-  catch (const tf::LookupException& e)
+  catch (const tf2_ros::LookupException& e)
   {
-    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
-  catch (const tf::ConnectivityException& e)
+  catch (const tf2_ros::ConnectivityException& e)
   {
-    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
-  catch (const tf::ExtrapolationException& e)
+  catch (const tf2_ros::ExtrapolationException& e)
   {
-    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_longer("mapviz"), "%s", e.what());
   }
   catch (...)
   {
-    ROS_ERROR_THROTTLE(2.0, "Error looking up transform");
+    // ROS_ERROR_THROTTLE(2.0, "Error looking up transform");
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error looking up transform");
   }
 
   if (!success)
@@ -605,7 +609,8 @@ void MapCanvas::Recenter()
 void MapCanvas::setFrameRate(const double fps)
 {
   if (fps <= 0.0) {
-    ROS_ERROR("Invalid frame rate: %f", fps);
+    // ROS_ERROR("Invalid frame rate: %f", fps);
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Invalid frame rate: %f", fps);
     return;
   }
 

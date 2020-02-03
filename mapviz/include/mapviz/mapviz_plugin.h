@@ -365,7 +365,7 @@ namespace mapviz
       {
           // ROS_ERROR_THROTTLE(throttle, "Error: %s", message.c_str());
           // RCLCPP_ERROR_THROTTLE(rclcpp::get_logger("mapviz"), throttle, "Error: %s", message.c_str());
-          RCLCPP_ERROR(rclcpp::get_logger("mapviz"), throttle, "Error: %s", message.c_str());
+          RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error: %s", message.c_str());
       }
       else
       {

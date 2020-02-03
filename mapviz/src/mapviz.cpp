@@ -741,19 +741,22 @@ void Mapviz::Open(const std::string& filename)
         catch (const pluginlib::LibraryLoadException& e)
         {
           failed_plugins.push_back(type);
-          ROS_ERROR("%s", e.what());
+          // ROS_ERROR("%s", e.what());
+          RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
         }
       }
     }
   }
   catch (const YAML::ParserException& e)
   {
-    ROS_ERROR("%s", e.what());
+    // ROS_ERROR("%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
     return;
   }
   catch (const YAML::Exception& e)
   {
-    ROS_ERROR("%s", e.what());
+    // ROS_ERROR("%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
     return;
   }
 
@@ -773,7 +776,8 @@ void Mapviz::Save(const std::string& filename)
   std::ofstream fout(filename.c_str());
   if (fout.fail())
   {
-    ROS_ERROR("Failed to open file: %s", filename.c_str());
+    // ROS_ERROR("Failed to open file: %s", filename.c_str());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to ppen file: %s", filename.c_str());
     return;
   }
 
@@ -888,8 +892,11 @@ void Mapviz::AutoSave()
     }
     else
     {
-      ROS_WARN("Could not write config file to %s.  Trying home directory.",
-               (ws_path + MAPVIZ_CONFIG_FILE).toStdString().c_str());
+      // ROS_WARN("Could not write config file to %s.  Trying home directory.",
+      //          (ws_path + MAPVIZ_CONFIG_FILE).toStdString().c_str());
+      RCLCPP_WARN(rclcpp::get_logger("mapviz"),
+                  "Could not write config file to %s. Trying home directory.",
+                  (ws_path + MAPVIZ_CONFIG_FILE).toStdString().c_str());
     }
   }
   default_path += MAPVIZ_CONFIG_FILE;
@@ -951,7 +958,8 @@ void Mapviz::SaveConfig()
 
 void Mapviz::ClearHistory()
 {
-  ROS_DEBUG("Mapviz::ClearHistory()");
+  // ROS_DEBUG("Mapviz::ClearHistory()");
+  RCLCPP_DEBUG(rclcpp::get_logger("mapviz"), "Mapviz::ClearHistory()");
   for (auto& plugin : plugins_)
   {
     plugin.second->ClearHistory();
@@ -960,7 +968,8 @@ void Mapviz::ClearHistory()
 
 void Mapviz::SelectNewDisplay()
 {
-  ROS_INFO("Select new display ...");
+  // ROS_INFO("Select new display ...");
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Select new display ...");
   QDialog dialog;
   Ui::pluginselect ui;
   ui.setupUi(&dialog);
@@ -993,7 +1002,8 @@ void Mapviz::SelectNewDisplay()
       message << "Unable to load " << type << "." << std::endl
               << "Check the ROS log for more details.";
       QMessageBox::warning(this, "Plugin failed to load", QString::fromStdString(message.str()));
-      ROS_ERROR("%s", e.what());
+      // ROS_ERROR("%s", e.what());
+      RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
     }
   }
 }
@@ -1170,7 +1180,8 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   }
 
 
-  ROS_INFO("creating: %s", real_type.c_str());
+  // ROS_INFO("creating: %s", real_type.c_str());
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "creating: %s", real_type.c_str());
   MapvizPluginPtr plugin = loader_->createInstance(real_type.c_str());
 
   // Setup configure widget
@@ -1253,7 +1264,8 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
 void Mapviz::ToggleShowPlugin(QListWidgetItem* item, bool visible)
 {
-  ROS_INFO("Toggle show plugin");
+  // ROS_INFO("Toggle show plugin");
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Toggle show plugin");
 
   if (plugins_.count(item) == 1)
   {
@@ -1266,7 +1278,9 @@ void Mapviz::FixedFrameSelected(const QString& text)
 {
   if (!updating_frames_)
   {
-    ROS_INFO("Fixed frame selected: %s", text.toStdString().c_str());
+    // ROS_INFO("Fixed frame selected: %s", text.toStdString().c_str());
+    RCLCPP_INFO(rclcpp::get_logger("mapviz"), "fixed frame selected: %s",
+                text.toStdString().c_str());
     if (canvas_ != NULL)
     {
       canvas_->SetFixedFrame(text.toStdString().c_str());
@@ -1278,7 +1292,9 @@ void Mapviz::TargetFrameSelected(const QString& text)
 {
   if (!updating_frames_)
   {
-    ROS_INFO("Target frame selected: %s", text.toStdString().c_str());
+    // ROS_INFO("Target frame selected: %s", text.toStdString().c_str());
+    RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Target frame selected: %s",
+                text.toStdString().c_str());
 
     if (canvas_ != NULL)
     {
@@ -1366,12 +1382,14 @@ void Mapviz::ToggleRecord(bool on)
 
       if (!vid_writer_->initializeWriter(filename, canvas_->width(), canvas_->height()))
       {
-        ROS_ERROR("Failed to open video file for writing.");
+        // ROS_ERROR("Failed to open video file for writing.");
+        RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to open video file for writing");
         StopRecord();
         return;
       }
 
-      ROS_INFO("Writing video to: %s", filename.c_str());
+      // ROS_INFO("Writing video to: %s", filename.c_str());
+      RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Writing video to: %s", filename.c_str());
       ui_.statusbar->showMessage("Recording video to " + QString::fromStdString(filename));
 
       canvas_->updateGL();
@@ -1390,7 +1408,9 @@ void Mapviz::ToggleRecord(bool on)
 void Mapviz::SetImageTransport(QAction* transport_action)
 {
   std::string transport = transport_action->text().toStdString();
-  ROS_INFO("Setting %s to %s", IMAGE_TRANSPORT_PARAM.c_str(), transport.c_str());
+  // ROS_INFO("Setting %s to %s", IMAGE_TRANSPORT_PARAM.c_str(), transport.c_str());
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Setting %s to %s", IMAGE_TRANSPORT_PARAM.c_str(),
+              transport.c_str());
   node_->setParam(IMAGE_TRANSPORT_PARAM, transport);
 
   Q_EMIT(ImageTransportChanged());
@@ -1411,8 +1431,11 @@ void Mapviz::UpdateImageTransportMenu()
     }
   }
 
-  ROS_WARN("%s param was set to an unrecognized value: %s",
-           IMAGE_TRANSPORT_PARAM.c_str(), current_transport.c_str());
+  // ROS_WARN("%s param was set to an unrecognized value: %s",
+  //          IMAGE_TRANSPORT_PARAM.c_str(), current_transport.c_str());
+  RCLCPP_WARN(rclcpp::get_logger("mapviz"),
+              "%s param was set to an unrecognized value: %s",
+              _IMAGE_TRANSPORT_PARAM.c_str(), current_transport.c_str());
 }
 
 void Mapviz::CaptureVideoFrame()
@@ -1430,7 +1453,8 @@ void Mapviz::CaptureVideoFrame()
   }
   else
   {
-    ROS_ERROR("Failed to get capture buffer");
+    // ROS_ERROR("Failed to get capture buffer");
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to get capture buffer");
   }
 }
 
@@ -1475,14 +1499,16 @@ void Mapviz::Screenshot()
     std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
     boost::replace_all(filename, "~", getenv("HOME"));
 
-    ROS_INFO("Writing screenshot to: %s", filename.c_str());
+    // ROS_INFO("Writing screenshot to: %s", filename.c_str());
+    RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Writing screenshot to: %s", filename.c_str());
     ui_.statusbar->showMessage("Saved image to " + QString::fromStdString(filename));
 
     cv::imwrite(filename, screenshot);
   }
   else
   {
-    ROS_ERROR("Failed to take screenshot.");
+    // ROS_ERROR("Failed to take screenshot.");
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to take screenshot.");
   }
 }
 
@@ -1509,7 +1535,8 @@ void Mapviz::RemoveDisplay()
 
 void Mapviz::RemoveDisplay(QListWidgetItem* item)
 {
-  ROS_INFO("Remove display ...");
+  // ROS_INFO("Remove display ...");
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Remove display ...");
 
   if (item)
   {
@@ -1524,7 +1551,8 @@ void Mapviz::ClearDisplays()
 {
   while (ui_.configs->count() > 0)
   {
-    ROS_INFO("Remove display ...");
+    // ROS_INFO("Remove display ...");
+    RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Remove display ...");
 
     QListWidgetItem* item = ui_.configs->takeItem(0);
 
@@ -1537,7 +1565,8 @@ void Mapviz::ClearDisplays()
 
 void Mapviz::ReorderDisplays()
 {
-  ROS_INFO("Reorder displays");
+  // ROS_INFO("Reorder displays");
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Reorder displays");
   for (int i = 0; i < ui_.configs->count(); i++)
   {
     plugins_[ui_.configs->item(i)]->SetDrawOrder(i);
@@ -1566,7 +1595,8 @@ void Mapviz::SetCaptureDirectory()
 
 void Mapviz::HandleProfileTimer()
 {
-  ROS_INFO("Mapviz Profiling Data");
+  // ROS_INFO("Mapviz Profiling Data");
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Mapviz Profiling Data");
   meas_spin_.printInfo("ROS SpinOnce()");
   for (auto& display : plugins_)
   {
