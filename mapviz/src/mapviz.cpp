@@ -1435,7 +1435,7 @@ void Mapviz::UpdateImageTransportMenu()
   //          IMAGE_TRANSPORT_PARAM.c_str(), current_transport.c_str());
   RCLCPP_WARN(rclcpp::get_logger("mapviz"),
               "%s param was set to an unrecognized value: %s",
-              _IMAGE_TRANSPORT_PARAM.c_str(), current_transport.c_str());
+              IMAGE_TRANSPORT_PARAM.c_str(), current_transport.c_str());
 }
 
 void Mapviz::CaptureVideoFrame()
