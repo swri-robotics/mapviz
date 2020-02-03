@@ -65,7 +65,7 @@ class SelectFrameDialog : public QDialog
    * selection, the returned string be empty.
    */
   static std::string selectFrame(
-    boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener,
     QWidget *parent = 0);
 
   /**
@@ -75,13 +75,13 @@ class SelectFrameDialog : public QDialog
    * selection, the returned vector will be empty.
    */
   static std::vector<std::string> selectFrames(
-    boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener,
     QWidget *parent = 0);
 
   /**
    * Constructor for the SelectFrameDialog.
    */
-  SelectFrameDialog(boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
+  SelectFrameDialog(std::shared_ptr<tf2_ros::TransformListener> tf_listener,
                     QWidget *parent = 0);
 
   /**
@@ -115,7 +115,7 @@ class SelectFrameDialog : public QDialog
   void updateDisplayedFrames();
 
  private:
-  boost::shared_ptr<tf2_ros::TransformListener> tf_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_;
   std::vector<std::string> known_frames_;
   std::vector<std::string> displayed_frames_;
   int fetch_frames_timer_id_;

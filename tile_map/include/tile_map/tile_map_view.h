@@ -67,7 +67,7 @@ namespace tile_map
 
     void ResetCache();
 
-    void SetTileSource(const boost::shared_ptr<TileSource>& tile_source);
+    void SetTileSource(const std::shared_ptr<TileSource>& tile_source);
 
     void SetTransform(const swri_transform_util::Transform& transform);
 
@@ -83,7 +83,7 @@ namespace tile_map
   private:
     void DrawTiles(std::vector<Tile> &tiles ,int priority);
 
-    boost::shared_ptr<TileSource> tile_source_;
+    std::shared_ptr<TileSource> tile_source_;
 
     swri_transform_util::Transform transform_;
 

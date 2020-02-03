@@ -163,7 +163,7 @@ namespace mapviz
     QListWidget *list_widget_;
     QLineEdit *name_filter_;
     QPushButton *ok_button_;
-    boost::shared_ptr<ServiceUpdaterThread> worker_thread_;
+    std::shared_ptr<ServiceUpdaterThread> worker_thread_;
   };
 }   //  namespace mapviz
 

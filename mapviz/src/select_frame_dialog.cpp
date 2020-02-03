@@ -43,7 +43,7 @@
 namespace mapviz
 {
 std::string SelectFrameDialog::selectFrame(
-  boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener,
   QWidget *parent)
 {
   SelectFrameDialog dialog(tf_listener, parent);
@@ -56,7 +56,7 @@ std::string SelectFrameDialog::selectFrame(
 }
 
 std::vector<std::string> SelectFrameDialog::selectFrames(
-  boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener,
   QWidget *parent)
 {
   SelectFrameDialog dialog(tf_listener, parent);
@@ -69,7 +69,7 @@ std::vector<std::string> SelectFrameDialog::selectFrames(
 }
 
 SelectFrameDialog::SelectFrameDialog(
-  boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener,
   QWidget *parent)
   :
   tf_(tf_listener),

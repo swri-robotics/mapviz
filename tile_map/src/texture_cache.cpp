@@ -90,7 +90,7 @@ namespace tile_map
       if (image)
       {
         failed = image->Failed();
-        boost::shared_ptr<QImage> image_ptr = image->GetImage();
+        std::shared_ptr<QImage> image_ptr = image->GetImage();
         if (image_ptr)
         {
           // All of the OpenGL calls need to occur on the main thread and so
@@ -114,7 +114,7 @@ namespace tile_map
             return texture;
           }
 
-          texture_ptr = new TexturePtr(boost::make_shared<Texture>(ids[0], url_hash));
+          texture_ptr = new TexturePtr(std::make_shared<Texture>(ids[0], url_hash));
           texture = *texture_ptr;
 
           float max_dim = std::max(qimage.width(), qimage.height());

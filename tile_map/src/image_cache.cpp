@@ -65,7 +65,7 @@ namespace tile_map
 
   void Image::InitializeImage()
   {
-    image_ = boost::make_shared<QImage>();
+    image_ = std::make_shared<QImage>();
   }
 
   void Image::ClearImage()
@@ -135,7 +135,7 @@ namespace tile_map
     if (!image_ptr)
     {
       // If the image is not in the cache, create a new reference.
-      image_ptr = new ImagePtr(boost::make_shared<Image>(uri, uri_hash));
+      image_ptr = new ImagePtr(std::make_shared<Image>(uri, uri_hash));
       image = *image_ptr;
       if (!cache_.insert(uri_hash, image_ptr))
       {

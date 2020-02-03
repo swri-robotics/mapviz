@@ -64,7 +64,7 @@ namespace mapviz
     virtual ~MapvizPlugin() {}
 
     virtual bool Initialize(
-        boost::shared_ptr<tf2_ros::TransformListener> tf_listener,
+        std::shared_ptr<tf2_ros::TransformListener> tf_listener,
         swri_transform_util::TransformManagerPtr tf_manager,
         QGLWidget* canvas)
     {
@@ -317,7 +317,7 @@ namespace mapviz
 
     rclcpp::NodeHandle node_;
 
-    boost::shared_ptr<tf2_ros::TransformListener> tf_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
 
     std::string target_frame_;
@@ -349,7 +349,7 @@ namespace mapviz
     Stopwatch meas_paint_;
     Stopwatch meas_draw_;
   };
-  typedef boost::shared_ptr<MapvizPlugin> MapvizPluginPtr;
+  typedef std::shared_ptr<MapvizPlugin> MapvizPluginPtr;
 
   // Implementation
 

@@ -284,7 +284,7 @@ namespace mapviz_plugins
 
       if (!topic_.empty())
       {
-        boost::shared_ptr<image_transport::ImageTransport> it;
+        std::shared_ptr<image_transport::ImageTransport> it;
         if (transport_ == "default")
         {
           ROS_DEBUG("Using default transport.");

@@ -62,7 +62,7 @@ namespace mapviz
     int height_;
     int width_;
     QMutex video_mutex_;
-    boost::shared_ptr<cv::VideoWriter> video_writer_;
+    std::shared_ptr<cv::VideoWriter> video_writer_;
   };
 }
 
