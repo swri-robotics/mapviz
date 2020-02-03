@@ -1122,7 +1122,7 @@ void Mapviz::Hover(double x, double y, double scale)
            ui_.fixedframe->currentText().toStdString(),
            transform))
     {
-      tf::Vector3 point(x, y, 0);
+      tf2::Vector3 point(x, y, 0);
       point = transform * point;
 
       QString lat_lon_text = "lat/lon: ";
