@@ -304,7 +304,7 @@ void Mapviz::Initialize()
       }
       else
       {
-        RCLCPP_WARN(node_->get_logger(), "Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
+        RCLCPP_WARN(node_->get_logger("mapviz"), "Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
                  ws_path.toStdString().c_str());
       }
     }
@@ -568,129 +568,129 @@ void Mapviz::Open(const std::string& filename)
 
     ClearDisplays();
 
-    if (doc.FindValue("capture_directory"))
+    if (doc["capture_directory"])
     {
       // doc["capture_directory"] >> capture_directory_;
       capture_directory_ = doc["capture_directory"];
     }
 
-    if (doc.FindValue("fixed_frame"))
+    if (doc["fixed_frame"])
     {
       std::string fixed_frame;
       // doc["fixed_frame"] >> fixed_frame;
-      fixed_frame = doc["fixed_frame"];
+      fixed_frame = doc["fixed_frame"].as<std::string>();
       ui_.fixedframe->setEditText(fixed_frame.c_str());
     }
 
-    if (doc.FindValue("target_frame"))
+    if (doc["target_frame"])
     {
       std::string target_frame;
       // doc["target_frame"] >> target_frame;
-      target_frame = doc["target_frame"];
+      target_frame = doc["target_frame"].as<std::string>();
       ui_.targetframe->setEditText(target_frame.c_str());
     }
 
-    if (doc.FindValue("fix_orientation"))
+    if (doc["fix_orientation"])
     {
       bool fix_orientation = false;
       // doc["fix_orientation"] >> fix_orientation;
-      fix_orientation = doc["fix_orientation"];
+      fix_orientation = doc["fix_orientation"].as<bool>();
       ui_.actionFix_Orientation->setChecked(fix_orientation);
     }
 
-    if (doc.FindValue("rotate_90"))
+    if (doc["rotate_90"])
     {
       bool rotate_90 = false;
       // doc["rotate_90"] >> rotate_90;
-      rotate_90 = doc["rotate_90"];
+      rotate_90 = doc["rotate_90"].as<bool>();
       ui_.actionRotate_90->setChecked(rotate_90);
     }
 
-    if (doc.FindValue("enable_antialiasing"))
+    if (doc["enable_antialiasing"])
     {
       bool enable_antialiasing = true;
       // doc["enable_antialiasing"] >> enable_antialiasing;
-      enable_antialiasing = doc["enable_antialiasing"];
+      enable_antialiasing = doc["enable_antialiasing"].as<bool>();
       ui_.actionEnable_Antialiasing->setChecked(enable_antialiasing);
     }
 
-    if (doc.FindValue("show_displays"))
+    if (doc["show_displays"])
     {
       bool show_displays = false;
       // doc["show_displays"] >> show_displays;
-      show_displays = doc["show_displays"];
+      show_displays = doc["show_displays"].as<bool>();
       ui_.actionConfig_Dock->setChecked(show_displays);
     }
 
-    if (doc.FindValue("show_capture_tools"))
+    if (doc["show_capture_tools"])
     {
       bool show_capture_tools = false;
       // doc["show_capture_tools"] >> show_capture_tools;
-      show_capture_tools = doc["show_capture_tools"];
+      show_capture_tools = doc["show_capture_tools"].as<bool>();
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
-    if (doc.FindValue("show_status_bar"))
+    if (doc["show_status_bar"])
     {
       bool show_status_bar = false;
       // doc["show_status_bar"] >> show_status_bar;
-      show_status_bar = doc["show_status_bar"];
+      show_status_bar = doc["show_status_bar"].as<bool>();
       ui_.actionShow_Status_Bar->setChecked(show_status_bar);
     }
 
-    if (doc.FindValue("show_capture_tools"))
+    if (doc["show_capture_tools"])
     {
       bool show_capture_tools = false;
       // doc["show_capture_tools"] >> show_capture_tools;
-      show_capture_tools = doc["show_capture_tools"];
+      show_capture_tools = doc["show_capture_tools"].as<bool>();
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
-    if (doc.FindValue("window_width"))
+    if (doc["window_width"])
     {
       int window_width = 0;
       // doc["window_width"] >> window_width;
-      window_width = doc["window_width"];
+      window_width = doc["window_width"].as<int>();
       resize(window_width, height());
     }
 
-    if (doc.FindValue("window_height"))
+    if (doc["window_height"])
     {
       int window_height = 0;
       // doc["window_height"] >> window_height;
-      window_height = doc["window_height"];
+      window_height = doc["window_height"].as<int>();
       resize(width(), window_height);
     }
 
-    if (doc.FindValue("view_scale"))
+    if (doc["view_scale"])
     {
       float scale = 0;
       // doc["view_scale"] >> scale;
-      scale = doc["view_scale"];
+      scale = doc["view_scale"].as<float>();
       canvas_->SetViewScale(scale);
     }
 
-    if (doc.FindValue("offset_x"))
+    if (doc["offset_x"])
     {
       float x = 0;
       // doc["offset_x"] >> x;
-      x = doc["offset_x"];
+      x = doc["offset_x"].as<float>();
       canvas_->SetOffsetX(x);
     }
 
-    if (doc.FindValue("offset_y"))
+    if (doc["offset_y"])
     {
       float y = 0;
       // doc["offset_y"] >> y;
-      y = doc["offset_y"];
+      y = doc["offset_y"].as<float>();
       canvas_->SetOffsetY(y);
     }
 
-    if (doc.FindValue("force_720p"))
+    if (doc["force_720p"])
     {
       bool force_720p;
       // doc["force_720p"] >> force_720p;
-      force_720p = doc["force_720p"];
+      force_720p = doc["force_720p"].as<bool>();
 
       if (force_720p)
       {
@@ -698,11 +698,11 @@ void Mapviz::Open(const std::string& filename)
       }
     }
 
-    if (doc.FindValue("force_480p"))
+    if (doc["force_480p"])
     {
       bool force_480p;
       // doc["force_480p"] >> force_480p;
-      force_480p = doc["force_480p"];
+      force_480p = doc["force_480p"].as<bool>();
 
       if (force_480p)
       {
@@ -710,35 +710,35 @@ void Mapviz::Open(const std::string& filename)
       }
     }
 
-    if (doc.FindValue(IMAGE_TRANSPORT_PARAM))
+    if (doc[IMAGE_TRANSPORT_PARAM])
     {
       std::string image_transport;
       // doc[IMAGE_TRANSPORT_PARAM] >> image_transport;
-      image_transport = doc[IMAGE_TRANSPORT_PARAM];
+      image_transport = doc[IMAGE_TRANSPORT_PARAM].as<std::string>();
 
       node_->setParam(IMAGE_TRANSPORT_PARAM, image_transport);
     }
 
     bool use_latest_transforms = true;
-    if (doc.FindValue("use_latest_transforms"))
+    if (doc["use_latest_transforms"])
     {
       // doc["use_latest_transforms"] >> use_latest_transforms;
-      use_latest_transforms = doc["use_latest_transforms"];
+      use_latest_transforms = doc["use_latest_transforms"].as<bool>();
     }
     ui_.uselatesttransforms->setChecked(use_latest_transforms);
     canvas_->ToggleUseLatestTransforms(use_latest_transforms);
 
-    if (doc.FindValue("background"))
+    if (doc["background"])
     {
       std::string color;
       // doc["background"] >> color;
-      color = doc["background"];
+      color = doc["background"].as<std::string>();
       background_ = QColor(color.c_str());
       ui_.bg_color->setColor(background_);
       canvas_->SetBackground(background_);
     }
 
-    if (doc.FindValue("displays"))
+    if (doc["displays"])
     {
       const YAML::Node& displays = doc["displays"];
       for (uint32_t i = 0; i < displays.size(); i++)
@@ -746,18 +746,18 @@ void Mapviz::Open(const std::string& filename)
         std::string type, name;
         // displays[i]["type"] >> type;
         // displays[i]["name"] >> name;
-        type = displays[i]["type"];
-        name = displays[i]["name"];
+        type = displays[i]["type"].as<std::string>();
+        name = displays[i]["name"].as<std::string>();
 
-        const YAML::Node& config = displays[i]["config"]->as<std::string>();
+        const YAML::Node& config = displays[i]["config"];
 
         bool visible = false;
         // config["visible"] >> visible;
-        visible = config["visible"];
+        visible = config["visible"].as<bool>();
 
         bool collapsed = false;
         // config["collapsed"] >> collapsed;
-        collapsed = config["collapsed"];
+        collapsed = config["collapsed"].as<bool>();
 
         try
         {
