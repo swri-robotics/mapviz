@@ -78,6 +78,8 @@
 
 #include <image_transport/image_transport.h>
 
+#include <yaml-cpp/yaml.h>
+
 namespace mapviz
 {
 const QString Mapviz::ROS_WORKSPACE_VAR = "ROS_WORKSPACE";
@@ -267,7 +269,7 @@ void Mapviz::Initialize()
 
     connect(group, SIGNAL(triggered(QAction*)), this, SLOT(SetImageTransport(QAction*)));
 
-    tf_ = std::make_shared<tf::TransformListener>();
+    tf_ = std::make_shared<tf2_ros::TransformListener>();
     tf_manager_ = std::make_shared<swri_transform_util::TransformManager>();
     tf_manager_->Initialize(tf_);
 
@@ -284,7 +286,7 @@ void Mapviz::Initialize()
     canvas_->SetFixedFrame(ui_.fixedframe->currentText().toStdString());
     canvas_->SetTargetFrame(ui_.targetframe->currentText().toStdString());
 
-    ros::NodeHandle priv("~");
+    rclcpp::NodeHandle priv("~");
 
     add_display_srv_ = node_->advertiseService("add_mapviz_display", &Mapviz::AddDisplay, this);
 
@@ -531,7 +533,8 @@ void Mapviz::AdjustWindowSize()
 
 void Mapviz::Open(const std::string& filename)
 {
-  ROS_INFO("Loading configuration from: %s", filename.c_str());
+  // ROS_INFO("Loading configuration from: %s", filename.c_str());
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Loading configuration from %s", filename.c_str());
 
   std::string title;
   size_t last_slash = filename.find_last_of('/');
@@ -548,10 +551,11 @@ void Mapviz::Open(const std::string& filename)
   title += " - mapviz";
   setWindowTitle(QString::fromStdString(title));
 
-  YAML::Node doc;
-  if (!swri_yaml_util::LoadFile(filename, doc))
+  YAML::Node doc = YAML::LoadFile(filename);
+  if (!YAML::LoadFile(filename, doc))
   {
-    ROS_ERROR("Failed to load file: %s", filename.c_str());
+    // ROS_ERROR("Failed to load file: %s", filename.c_str());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to load file: %s", filename.c_str());
     return;
   }
 
@@ -564,113 +568,129 @@ void Mapviz::Open(const std::string& filename)
 
     ClearDisplays();
 
-    if (swri_yaml_util::FindValue(doc, "capture_directory"))
+    if (doc.FindValue("capture_directory"))
     {
-      doc["capture_directory"] >> capture_directory_;
+      // doc["capture_directory"] >> capture_directory_;
+      capture_directory_ = doc["capture_directory"];
     }
 
-    if (swri_yaml_util::FindValue(doc, "fixed_frame"))
+    if (doc.FindValue("fixed_frame"))
     {
       std::string fixed_frame;
-      doc["fixed_frame"] >> fixed_frame;
+      // doc["fixed_frame"] >> fixed_frame;
+      fixed_frame = doc["fixed_frame"];
       ui_.fixedframe->setEditText(fixed_frame.c_str());
     }
 
-    if (swri_yaml_util::FindValue(doc, "target_frame"))
+    if (doc.FindValue("target_frame"))
     {
       std::string target_frame;
-      doc["target_frame"] >> target_frame;
+      // doc["target_frame"] >> target_frame;
+      target_frame = doc["target_frame"];
       ui_.targetframe->setEditText(target_frame.c_str());
     }
 
-    if (swri_yaml_util::FindValue(doc, "fix_orientation"))
+    if (doc.FindValue("fix_orientation"))
     {
       bool fix_orientation = false;
-      doc["fix_orientation"] >> fix_orientation;
+      // doc["fix_orientation"] >> fix_orientation;
+      fix_orientation = doc["fix_orientation"];
       ui_.actionFix_Orientation->setChecked(fix_orientation);
     }
 
-    if (swri_yaml_util::FindValue(doc, "rotate_90"))
+    if (doc.FindValue("rotate_90"))
     {
       bool rotate_90 = false;
-      doc["rotate_90"] >> rotate_90;
+      // doc["rotate_90"] >> rotate_90;
+      rotate_90 = doc["rotate_90"];
       ui_.actionRotate_90->setChecked(rotate_90);
     }
 
-    if (swri_yaml_util::FindValue(doc, "enable_antialiasing"))
+    if (doc.FindValue("enable_antialiasing"))
     {
       bool enable_antialiasing = true;
-      doc["enable_antialiasing"] >> enable_antialiasing;
+      // doc["enable_antialiasing"] >> enable_antialiasing;
+      enable_antialiasing = doc["enable_antialiasing"];
       ui_.actionEnable_Antialiasing->setChecked(enable_antialiasing);
     }
 
-    if (swri_yaml_util::FindValue(doc, "show_displays"))
+    if (doc.FindValue("show_displays"))
     {
       bool show_displays = false;
-      doc["show_displays"] >> show_displays;
+      // doc["show_displays"] >> show_displays;
+      show_displays = doc["show_displays"];
       ui_.actionConfig_Dock->setChecked(show_displays);
     }
 
-    if (swri_yaml_util::FindValue(doc, "show_capture_tools"))
+    if (doc.FindValue("show_capture_tools"))
     {
       bool show_capture_tools = false;
-      doc["show_capture_tools"] >> show_capture_tools;
+      // doc["show_capture_tools"] >> show_capture_tools;
+      show_capture_tools = doc["show_capture_tools"];
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
-    if (swri_yaml_util::FindValue(doc, "show_status_bar"))
+    if (doc.FindValue("show_status_bar"))
     {
       bool show_status_bar = false;
-      doc["show_status_bar"] >> show_status_bar;
+      // doc["show_status_bar"] >> show_status_bar;
+      show_status_bar = doc["show_status_bar"];
       ui_.actionShow_Status_Bar->setChecked(show_status_bar);
     }
 
-    if (swri_yaml_util::FindValue(doc, "show_capture_tools"))
+    if (doc.FindValue("show_capture_tools"))
     {
       bool show_capture_tools = false;
-      doc["show_capture_tools"] >> show_capture_tools;
+      // doc["show_capture_tools"] >> show_capture_tools;
+      show_capture_tools = doc["show_capture_tools"];
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
-    if (swri_yaml_util::FindValue(doc, "window_width"))
+    if (doc.FindValue("window_width"))
     {
       int window_width = 0;
-      doc["window_width"] >> window_width;
+      // doc["window_width"] >> window_width;
+      window_width = doc["window_width"];
       resize(window_width, height());
     }
 
-    if (swri_yaml_util::FindValue(doc, "window_height"))
+    if (doc.FindValue("window_height"))
     {
       int window_height = 0;
-      doc["window_height"] >> window_height;
+      // doc["window_height"] >> window_height;
+      window_height = doc["window_height"];
       resize(width(), window_height);
     }
 
-    if (swri_yaml_util::FindValue(doc, "view_scale"))
+    if (doc.FindValue("view_scale"))
     {
       float scale = 0;
-      doc["view_scale"] >> scale;
+      // doc["view_scale"] >> scale;
+      scale = doc["view_scale"];
       canvas_->SetViewScale(scale);
     }
 
-    if (swri_yaml_util::FindValue(doc, "offset_x"))
+    if (doc.FindValue("offset_x"))
     {
       float x = 0;
-      doc["offset_x"] >> x;
+      // doc["offset_x"] >> x;
+      x = doc["offset_x"];
       canvas_->SetOffsetX(x);
     }
 
-    if (swri_yaml_util::FindValue(doc, "offset_x"))
+    if (doc.FindValue("offset_y"))
     {
       float y = 0;
-      doc["offset_y"] >> y;
+      // doc["offset_y"] >> y;
+      y = doc["offset_y"];
       canvas_->SetOffsetY(y);
     }
 
-    if (swri_yaml_util::FindValue(doc, "force_720p"))
+    if (doc.FindValue("force_720p"))
     {
       bool force_720p;
-      doc["force_720p"] >> force_720p;
+      // doc["force_720p"] >> force_720p;
+      force_720p = doc["force_720p"];
 
       if (force_720p)
       {
@@ -678,10 +698,11 @@ void Mapviz::Open(const std::string& filename)
       }
     }
 
-    if (swri_yaml_util::FindValue(doc, "force_480p"))
+    if (doc.FindValue("force_480p"))
     {
       bool force_480p;
-      doc["force_480p"] >> force_480p;
+      // doc["force_480p"] >> force_480p;
+      force_480p = doc["force_480p"];
 
       if (force_480p)
       {
@@ -689,47 +710,54 @@ void Mapviz::Open(const std::string& filename)
       }
     }
 
-    if (swri_yaml_util::FindValue(doc, IMAGE_TRANSPORT_PARAM))
+    if (doc.FindValue(IMAGE_TRANSPORT_PARAM))
     {
       std::string image_transport;
-      doc[IMAGE_TRANSPORT_PARAM] >> image_transport;
+      // doc[IMAGE_TRANSPORT_PARAM] >> image_transport;
+      image_transport = doc[IMAGE_TRANSPORT_PARAM];
 
       node_->setParam(IMAGE_TRANSPORT_PARAM, image_transport);
     }
 
     bool use_latest_transforms = true;
-    if (swri_yaml_util::FindValue(doc, "use_latest_transforms"))
+    if (doc.FindValue("use_latest_transforms"))
     {
-      doc["use_latest_transforms"] >> use_latest_transforms;
+      // doc["use_latest_transforms"] >> use_latest_transforms;
+      use_latest_transforms = doc["use_latest_transforms"];
     }
     ui_.uselatesttransforms->setChecked(use_latest_transforms);
     canvas_->ToggleUseLatestTransforms(use_latest_transforms);
 
-    if (swri_yaml_util::FindValue(doc, "background"))
+    if (doc.FindValue("background"))
     {
       std::string color;
-      doc["background"] >> color;
+      // doc["background"] >> color;
+      color = doc["background"];
       background_ = QColor(color.c_str());
       ui_.bg_color->setColor(background_);
       canvas_->SetBackground(background_);
     }
 
-    if (swri_yaml_util::FindValue(doc, "displays"))
+    if (doc.FindValue("displays"))
     {
       const YAML::Node& displays = doc["displays"];
       for (uint32_t i = 0; i < displays.size(); i++)
       {
         std::string type, name;
-        displays[i]["type"] >> type;
-        displays[i]["name"] >> name;
+        // displays[i]["type"] >> type;
+        // displays[i]["name"] >> name;
+        type = displays[i]["type"];
+        name = displays[i]["name"];
 
-        const YAML::Node& config = displays[i]["config"];
+        const YAML::Node& config = displays[i]["config"]->as<std::string>();
 
         bool visible = false;
-        config["visible"] >> visible;
+        // config["visible"] >> visible;
+        visible = config["visible"];
 
         bool collapsed = false;
-        config["collapsed"] >> collapsed;
+        // config["collapsed"] >> collapsed;
+        collapsed = config["collapsed"];
 
         try
         {
@@ -1374,7 +1402,7 @@ void Mapviz::ToggleRecord(bool on)
 
       canvas_->CaptureFrames(true);
 
-      std::string posix_time = boost::posix_time::to_iso_string(ros::WallTime::now().toBoost());
+      std::string posix_time = boost::posix_time::to_iso_string(rclcpp::WallTime::now().toBoost());
       boost::replace_all(posix_time, ".", "_");
       std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".avi";
       boost::replace_all(filename, "~", getenv("HOME"));
@@ -1494,7 +1522,7 @@ void Mapviz::Screenshot()
 
     cv::flip(screenshot, screenshot, 0);
 
-    std::string posix_time = boost::posix_time::to_iso_string(ros::WallTime::now().toBoost());
+    std::string posix_time = boost::posix_time::to_iso_string(rclcpp::WallTime::now().toBoost());
     boost::replace_all(posix_time, ".", "_");
     std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
     boost::replace_all(filename, "~", getenv("HOME"));
