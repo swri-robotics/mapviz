@@ -304,8 +304,9 @@ void Mapviz::Initialize()
       }
       else
       {
-        RCLCPP_WARN(node_->get_logger("mapviz"), "Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
-                 ws_path.toStdString().c_str());
+        RCLCPP_WARN(node_->get_logger("mapviz"),
+                    "Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
+                    ws_path.toStdString().c_str());
       }
     }
     default_path += MAPVIZ_CONFIG_FILE;
@@ -552,7 +553,8 @@ void Mapviz::Open(const std::string& filename)
   setWindowTitle(QString::fromStdString(title));
 
   YAML::Node doc = YAML::LoadFile(filename);
-  if (!YAML::LoadFile(filename, doc))
+  // if (!YAML::LoadFile(filename, doc))
+  if (!doc)
   {
     // ROS_ERROR("Failed to load file: %s", filename.c_str());
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to load file: %s", filename.c_str());
@@ -571,7 +573,7 @@ void Mapviz::Open(const std::string& filename)
     if (doc["capture_directory"])
     {
       // doc["capture_directory"] >> capture_directory_;
-      capture_directory_ = doc["capture_directory"];
+      capture_directory_ = doc["capture_directory"].as<std::string>();
     }
 
     if (doc["fixed_frame"])
