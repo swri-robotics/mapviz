@@ -34,6 +34,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 
 #include <boost/shared_ptr.hpp>
 
@@ -176,7 +177,7 @@ namespace mapviz
 
     rclcpp::NodeHandle* node_;
     rclcpp::ServiceServer add_display_srv_;
-    boost::shared_ptr<tf2_ros::TransformListener> tf_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
 
     pluginlib::ClassLoader<MapvizPlugin>* loader_;
