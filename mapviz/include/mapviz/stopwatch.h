@@ -28,6 +28,8 @@
 // *****************************************************************************
 #pragma once
 
+#include <algorithm>
+
 // #include <ros/time.h>
 // #include <ros/console.h>
 #include <rclcpp/rclcpp.hpp>
@@ -47,7 +49,8 @@ class Stopwatch
     count_(0),
     total_time_(0, 0),
     max_time_(0, 0),
-    start_(0, 0)
+    start_(0, 0),
+    clock()
   {
   }
 
@@ -55,7 +58,7 @@ class Stopwatch
   void start()
   {
     // start_ = ros::WallTime::now();
-    start_ = rclcpp::Clock::now();
+    start_ = clock.now();
   }
 
   /* End the current time interval and update the measurements.
@@ -64,7 +67,7 @@ class Stopwatch
   void stop()
   {
     // ros::WallDuration dt = ros::WallTime::now() - start_;
-    rclcpp::Duration dt = rclcpp::Clock::now() - start_;
+    rclcpp::Duration dt = clock.now() - start_;
     count_ += 1;
     total_time_ = total_time_ + dt;
     max_time_ = std::max(max_time_, dt);
@@ -89,7 +92,7 @@ class Stopwatch
     }
     else
     {
-      return rclcpp::Duration::Duration(0, 0);
+      return rclcpp::Duration(0, 0);
     }
   }
 
@@ -116,6 +119,7 @@ class Stopwatch
 
  private:
   int count_;
+  rclcpp::Clock clock;
   // ros::WallDuration total_time_;
   // ros::WallDuration max_time_;
   rclcpp::Duration total_time_;
