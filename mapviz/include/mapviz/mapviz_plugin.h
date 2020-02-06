@@ -53,7 +53,7 @@
 
 #include <mapviz/widgets.h>
 
-// #include "stopwatch.h"
+#include "stopwatch.h"
 
 namespace mapviz
 {
@@ -117,7 +117,7 @@ namespace mapviz
       }
     }
 
-    virtual void SetNode(const rclcpp::NodeHandle& node)
+    virtual void SetNode(const rclcpp::Node& node)
     {
       node_ = node;
     }
@@ -193,7 +193,7 @@ namespace mapviz
       }
 
       // ros::Duration elapsed = ros::Time::now() - time;
-      rclcpp::Duration elapsed = rclcpp::Time::now() - time;
+      rclcpp::Duration elapsed = node_.now() - time;
 
       // if (time != ros::Time() && elapsed > tf_->getCacheLength())
       if (time != rclcpp::Time() && elapsed > tf_->getCacheLength())
@@ -205,7 +205,7 @@ namespace mapviz
       {
         return true;
       }
-      else if (elapsed.toSec() < 0.1)
+      else if (elapsed.seconds() < 0.1)
       {
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
@@ -237,7 +237,7 @@ namespace mapviz
       }
 
       // ros::Duration elapsed = ros::Time::now() - time;
-      rclcpp::Duration elapsed = rclcpp::Time::now() - time;
+      rclcpp::Duration elapsed = node_.now() - time;
 
       // if (time != ros::Time() && elapsed > tf_->getCacheLength())
       if (time != rclcpp::Time() && elapsed > tf_->getCacheLength())
@@ -249,7 +249,7 @@ namespace mapviz
       {
         return true;
       }
-      else if (elapsed.toSec() < 0.1)
+      else if ((elapsed.nanoseconds() / 1e9) < 0.1)
       {
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
@@ -279,9 +279,9 @@ namespace mapviz
     void PrintMeasurements()
     {
       std::string header = type_ + " (" + name_ + ")";
-      meas_transform_.printInfo(header + " Transform()");
-      meas_paint_.printInfo(header + " Paint()");
-      meas_draw_.printInfo(header + " Draw()");
+      meas_transform_.printInfo(node_.get_logger(), header + " Transform()");
+      meas_paint_.printInfo(node_.get_logger(), header + " Paint()");
+      meas_draw_.printInfo(node_.get_logger(), header + " Draw()");
     }
 
     static void PrintErrorHelper(QLabel *status_label, const std::string& message, double throttle = 0.0);
@@ -315,7 +315,7 @@ namespace mapviz
     QGLWidget* canvas_;
     IconWidget* icon_;
 
-    rclcpp::NodeHandle node_;
+    rclcpp::Node node_;
 
     std::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;

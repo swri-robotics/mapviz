@@ -71,7 +71,7 @@
 #include <mapviz/map_canvas.h>
 #include <mapviz/video_writer.h>
 
-// #include "stopwatch.h"
+#include "stopwatch.h"
 
 namespace mapviz
 {
@@ -175,7 +175,7 @@ namespace mapviz
 
     bool updating_frames_;
 
-    rclcpp::NodeHandle* node_;
+    std::shared_ptr<rclcpp::Node> node_;
     rclcpp::ServiceServer add_display_srv_;
     std::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
@@ -184,6 +184,7 @@ namespace mapviz
     MapCanvas* canvas_;
     std::map<QListWidgetItem*, MapvizPluginPtr> plugins_;
 
+    // Stopwatch meas_spin_;
     Stopwatch meas_spin_;
 
     void Open(const std::string& filename);
