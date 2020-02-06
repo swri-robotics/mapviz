@@ -71,7 +71,7 @@
 #include <mapviz/map_canvas.h>
 #include <mapviz/video_writer.h>
 
-#include "stopwatch.h"
+#include "mapviz/stopwatch.h"
 
 namespace mapviz
 {

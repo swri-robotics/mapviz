@@ -53,7 +53,7 @@
 
 #include <mapviz/widgets.h>
 
-#include "stopwatch.h"
+#include "mapviz/stopwatch.h"
 
 namespace mapviz
 {
