@@ -172,7 +172,7 @@ void SelectFrameDialog::fetchFrames()
   if (!tf_) { return; }
 
   known_frames_.clear();
-  tf_->getFrameStrings(known_frames_);
+  tf_buf_->getFrameStrings(known_frames_);
   std::sort(known_frames_.begin(), known_frames_.end());
   updateDisplayedFrames();
 }

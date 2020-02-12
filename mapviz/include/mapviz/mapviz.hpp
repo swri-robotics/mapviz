@@ -57,6 +57,7 @@
 // #include <ros/ros.h>
 #include "rclcpp/rclcpp.hpp"
 #include <pluginlib/class_loader.hpp>
+#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <yaml-cpp/yaml.h>
 #include <std_srvs/srv/empty.hpp>
@@ -176,7 +177,9 @@ namespace mapviz
     bool updating_frames_;
 
     std::shared_ptr<rclcpp::Node> node_;
-    rclcpp::ServiceServer add_display_srv_;
+    // rclcpp::ServiceServer add_display_srv_;
+    rclcpp::service::Service add_display_srv_;
+    std::shared_ptr<tf2_ros::Buffer> tf_buf_;
     std::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
 
@@ -198,8 +201,8 @@ namespace mapviz
         int draw_order = 0);
 
     bool AddDisplay(
-      AddMapvizDisplay::Request& req,
-      AddMapvizDisplay::Response& resp);
+      mapviz::srv::AddMapvizDisplay::Request& req,
+      mapviz::srv::AddMapvizDisplay::Response& resp);
 
     void ClearDisplays();
     void AdjustWindowSize();

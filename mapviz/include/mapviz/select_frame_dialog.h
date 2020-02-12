@@ -29,6 +29,7 @@
 #ifndef MAPVIZ_SELECT_FRAME_DIALOG_H_
 #define MAPVIZ_SELECT_FRAME_DIALOG_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -115,6 +116,7 @@ class SelectFrameDialog : public QDialog
   void updateDisplayedFrames();
 
  private:
+  std::shared_ptr<tf2_ros::Buffer> tf_buf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_;
   std::vector<std::string> known_frames_;
   std::vector<std::string> displayed_frames_;

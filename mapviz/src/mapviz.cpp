@@ -269,7 +269,8 @@ void Mapviz::Initialize()
 
     connect(group, SIGNAL(triggered(QAction*)), this, SLOT(SetImageTransport(QAction*)));
 
-    tf_ = std::make_shared<tf2_ros::TransformListener>();
+    tf_buf_ = std::make_shared<tf2_ros::Buffer>();
+    tf_ = std::make_shared<tf2_ros::TransformListener>(*tf_buf_);
     tf_manager_ = std::make_shared<swri_transform_util::TransformManager>();
     tf_manager_->Initialize(tf_);
 
@@ -288,7 +289,9 @@ void Mapviz::Initialize()
 
     rclcpp::Node priv("~");
 
-    add_display_srv_ = node_->create_service("add_mapviz_display", &Mapviz::AddDisplay, this);
+    // add_display_srv_ = node_->create_service("add_mapviz_display", &Mapviz::AddDisplay, this);
+    add_display_srv_ = node_->create_service(std::string("add_mapviz_display"),
+                                              &Mapviz::AddDisplay);
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     QString default_path = QDir::homePath();
@@ -367,7 +370,8 @@ void Mapviz::SpinOnce()
 void Mapviz::UpdateFrames()
 {
   std::vector<std::string> frames;
-  tf_->getFrameStrings(frames);
+  // tf_->getFrameStrings(frames);
+  tf_buf_->_getFrameStrings(frames);
   std::sort(frames.begin(), frames.end());
 
   if (ui_.fixedframe->count() >= 0 &&
@@ -1043,8 +1047,8 @@ void Mapviz::SelectNewDisplay()
 }
 
 bool Mapviz::AddDisplay(
-      AddMapvizDisplay::Request& req,
-      AddMapvizDisplay::Response& resp)
+      mapviz::srv::AddMapvizDisplay::Request& req,
+      mapviz::srv::AddMapvizDisplay::Response& resp)
 {
   std::map<std::string, std::string> properties;
   for (auto& property : req.properties)
@@ -1053,7 +1057,12 @@ bool Mapviz::AddDisplay(
   }
 
   YAML::Node config;
-  if (!swri_yaml_util::LoadMap(properties, config))
+  // if (!YAML::LoadMap(properties, config))
+  for (auto& property_pair : properties)
+  {
+    config[property_pair.first] = property_pair.second;
+  }
+  if (!config)
   {
     // ROS_ERROR("Failed to parse properties into YAML.");
     RCLCPP_ERROR(node_->get_logger(), "Failed to parse properties into YAML.");
@@ -1460,7 +1469,7 @@ void Mapviz::UpdateImageTransportMenu()
 
   std::string current_transport;
   // node_->param<std::string>(IMAGE_TRANSPORT_PARAM, current_transport, "raw");
-  node_->get_parameter_or(IMAGE_TRANSPORT_PARAM, current_transport, std::string("raw");
+  node_->get_parameter_or(IMAGE_TRANSPORT_PARAM, current_transport, std::string("raw"));
   Q_FOREACH(QAction* action, actions)
   {
     if (action->text() == QString::fromStdString(current_transport))

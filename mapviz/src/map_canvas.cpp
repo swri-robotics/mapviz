@@ -81,10 +81,10 @@ MapCanvas::MapCanvas(QWidget* parent) :
   scene_top_(10),
   scene_bottom_(-10)
 {
-  ROS_INFO("View scale: %f meters/pixel", view_scale_);
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "View scale: %f meters/pixel", view_scale_);
   setMouseTracking(true);
 
-  transform_.setIdentity();
+  // transform_.setIdentity();
 
   QObject::connect(&frame_rate_timer_, SIGNAL(timeout()), this, SLOT(update()));
   setFrameRate(50.0);
@@ -100,7 +100,7 @@ MapCanvas::~MapCanvas()
   }
 }
 
-void MapCanvas::InitializeTf(std::shared_ptr<tf::TransformListener> tf)
+void MapCanvas::InitializeTf(std::shared_ptr<tf2_ros::TransformListener> tf)
 {
   tf_ = tf;
 }
@@ -135,7 +135,8 @@ void MapCanvas::initializeGL()
   GLenum err = glewInit();
   if (GLEW_OK != err)
   {
-    ROS_ERROR("Error: %s\n", glewGetErrorString(err));
+    // ROS_ERROR("Error: %s\n", glewGetErrorString(err));
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error: %s\n", glewGetErrorString(err));
   }
   else
   {
@@ -393,7 +394,8 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
   double x = center_x + (e->x() - width() / 2.0) * view_scale_;
   double y = center_y + (height() / 2.0 - e->y()) * view_scale_;
 
-  tf::Point point(x, y, 0);
+  // tf2::Point point(x, y, 0);
+  geometry_msgs::msg::Point(x, y, 0)
   point = transform_ * point;
 
   mouse_hovering_ = true;
@@ -493,18 +495,18 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
   try
   {
-    tf_->lookupTransform(fixed_frame_, target_frame_, ros::Time(0), transform_);
+    tf_buf_->lookupTransform(fixed_frame_, target_frame_, rclcpp::Time(0), transform_);
 
     // If the viewer orientation is fixed don't rotate the center point.
     if (fix_orientation_)
     {
-      transform_.setRotation(tf::Transform::getIdentity().getRotation());
+      transform_.setRotation(tf2::Transform::getIdentity().getRotation());
     }
 
     if (rotate_90_)
     {
       transform_.setRotation(
-          tf::createQuaternionFromYaw(-swri_math_util::_half_pi) * transform_.getRotation());
+          tf2::createQuaternionFromYaw(-swri_math_util::_half_pi) * transform_.getRotation());
     }
 
     double roll, pitch, yaw;
@@ -517,9 +519,9 @@ void MapCanvas::TransformTarget(QPainter* painter)
     qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(),
       transform_.getOrigin().getY());
 
-    tf::Point point(view_center_x_, view_center_y_, 0);
+    tf2::Point point(view_center_x_, view_center_y_, 0);
 
-    tf::Point center = transform_ * point;
+    tf2::Point center = transform_ * point;
 
     view_center_x_ = center.getX();
     view_center_y_ = center.getY();
@@ -534,7 +536,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
       double x = center_x + (mouse_hover_x_ - width() / 2.0) * view_scale_;
       double y = center_y + (height() / 2.0  - mouse_hover_y_) * view_scale_;
 
-      tf::Point hover(x, y, 0);
+      tf2::Point hover(x, y, 0);
       hover = transform_ * hover;
 
       Q_EMIT Hover(hover.x(), hover.y(), view_scale_);
@@ -542,20 +544,20 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
     success = true;
   }
-  catch (const tf2_ros::LookupException& e)
+  catch (const tf2::LookupException& e)
   {
     // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
-  catch (const tf2_ros::ConnectivityException& e)
+  catch (const tf2::ConnectivityException& e)
   {
     // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
-  catch (const tf2_ros::ExtrapolationException& e)
+  catch (const tf2::ExtrapolationException& e)
   {
     // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
-    RCLCPP_ERROR(rclcpp::get_longer("mapviz"), "%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
   catch (...)
   {

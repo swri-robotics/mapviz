@@ -31,6 +31,7 @@
 #define MAPVIZ_MAPVIZ_PLUGIN_H_
 
 // C++ standard libraries
+#include <memory>
 #include <string>
 
 #include <boost/make_shared.hpp>
@@ -49,6 +50,7 @@
 // #include <swri_yaml_util/yaml_util.h>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/transform_datatypes.h>
+#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
 #include <mapviz/widgets.h>
@@ -64,10 +66,12 @@ namespace mapviz
     virtual ~MapvizPlugin() {}
 
     virtual bool Initialize(
+        std::shared_ptr<tf2_ros::Buffer> tf_buffer,
         std::shared_ptr<tf2_ros::TransformListener> tf_listener,
         swri_transform_util::TransformManagerPtr tf_manager,
         QGLWidget* canvas)
     {
+      tf_buf_ = tf_buffer;
       tf_ = tf_listener;
       tf_manager_ = tf_manager;
       return Initialize(canvas);
@@ -193,15 +197,16 @@ namespace mapviz
       }
 
       // ros::Duration elapsed = ros::Time::now() - time;
-      rclcpp::Duration elapsed = node_.now() - time;
+      rclcpp::Duration elapsed = node_->now() - time;
 
       // if (time != ros::Time() && elapsed > tf_->getCacheLength())
-      if (time != rclcpp::Time() && elapsed > tf_->getCacheLength())
+      if (time != rclcpp::Time() && elapsed > tf_buf_->getCacheLength())
       {
         return false;
       }
 
-      if (tf_manager_->GetTransform(target_frame_, source_frame_, time, transform))
+      if (tf_manager_->GetTransform(target_frame_, source_frame_,
+                                    tf2::timeFromSec(time.seconds()), transform))
       {
         return true;
       }
@@ -210,7 +215,8 @@ namespace mapviz
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
         // if (tf_manager_->GetTransform(target_frame_, source_frame_,  ros::Time(), transform))
-        if (tf_manager_->GetTransform(target_frame_, source_frame_, rclcpp::Time(), transform))
+        if (tf_manager_->GetTransform(target_frame_, source_frame_, 
+                                      tf2::timeFromSec(rclcpp::Time().seconds()), transform))
         {
           return true;
         }
@@ -237,24 +243,26 @@ namespace mapviz
       }
 
       // ros::Duration elapsed = ros::Time::now() - time;
-      rclcpp::Duration elapsed = node_.now() - time;
+      rclcpp::Duration elapsed = node_->now() - time;
 
       // if (time != ros::Time() && elapsed > tf_->getCacheLength())
-      if (time != rclcpp::Time() && elapsed > tf_->getCacheLength())
+      if (time != rclcpp::Time() && elapsed > tf_buf_->getCacheLength())
       {
         return false;
       }
 
-      if (tf_manager_->GetTransform(target_frame_, source, time, transform))
+      if (tf_manager_->GetTransform(target_frame_, source,
+                                    tf2::timeFromSec(time.seconds()), transform))
       {
         return true;
       }
-      else if ((elapsed.nanoseconds() / 1e9) < 0.1)
+      else if (elapsed.seconds() < 0.1)
       {
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
         // if (tf_manager_->GetTransform(target_frame_, source,  ros::Time(), transform))
-        if (tf_manager->GetTransform(target_frame_, source, rclcpp::Time(), transform))
+        if (tf_manager_->GetTransform(target_frame_, source,
+                                      tf2::timeFromSec(rclcpp::Time().seconds()), transform))
         {
           return true;
         }
@@ -279,9 +287,9 @@ namespace mapviz
     void PrintMeasurements()
     {
       std::string header = type_ + " (" + name_ + ")";
-      meas_transform_.printInfo(node_.get_logger(), header + " Transform()");
-      meas_paint_.printInfo(node_.get_logger(), header + " Paint()");
-      meas_draw_.printInfo(node_.get_logger(), header + " Draw()");
+      meas_transform_.printInfo(node_->get_logger(), header + " Transform()");
+      meas_paint_.printInfo(node_->get_logger(), header + " Paint()");
+      meas_draw_.printInfo(node_->get_logger(), header + " Draw()");
     }
 
     static void PrintErrorHelper(QLabel *status_label, const std::string& message, double throttle = 0.0);
@@ -315,8 +323,9 @@ namespace mapviz
     QGLWidget* canvas_;
     IconWidget* icon_;
 
-    rclcpp::Node node_;
+    std::shared_ptr<rclcpp::Node> node_;
 
+    std::shared_ptr<tf2_ros::Buffer> tf_buf_;
     std::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
 
@@ -340,7 +349,8 @@ namespace mapviz
       target_frame_(""),
       source_frame_(""),
       use_latest_transforms_(false),
-      draw_order_(0) {}
+      draw_order_(0),
+      node_(NULL) {}
 
    private:
     // Collect basic profiling info to know how much time each plugin

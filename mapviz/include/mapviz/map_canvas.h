@@ -51,6 +51,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/transform_datatypes.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 // #include <tf2/transform_listener.h>
 
 #include <mapviz/mapviz_plugin.h>
@@ -248,7 +249,8 @@ namespace mapviz
     std::string target_frame_;
 
     std::shared_ptr<tf2_ros::TransformListener> tf_;
-    tf2::StampedTransform transform_;
+    // tf2::StampedTransform transform_;
+    geometry_msgs::msg::TransformStamped transform_;
     QTransform qtransform_;
     std::list<MapvizPluginPtr> plugins_;
 
