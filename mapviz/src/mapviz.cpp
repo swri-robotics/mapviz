@@ -253,7 +253,7 @@ void Mapviz::Initialize()
     // node_ = new ros::NodeHandle("~");
 
     // Create a sub-menu that lists all available Image Transports
-    image_transport::ImageTransport it(*node_);
+    image_transport::ImageTransport it(node_);
     std::vector<std::string> transports = it.getLoadableTransports();
     QActionGroup* group = new QActionGroup(image_transport_menu_);
     for (std::vector<std::string>::iterator iter = transports.begin();
@@ -272,7 +272,8 @@ void Mapviz::Initialize()
     tf_buf_ = std::make_shared<tf2_ros::Buffer>();
     tf_ = std::make_shared<tf2_ros::TransformListener>(*tf_buf_);
     tf_manager_ = std::make_shared<swri_transform_util::TransformManager>();
-    tf_manager_->Initialize(tf_);
+    // tf_manager_->Initialize(tf_);
+    tf_manager_->Initialize();
 
     loader_ = new pluginlib::ClassLoader<MapvizPlugin>(
         "mapviz", "mapviz::MapvizPlugin");
@@ -290,7 +291,8 @@ void Mapviz::Initialize()
     rclcpp::Node priv("~");
 
     // add_display_srv_ = node_->create_service("add_mapviz_display", &Mapviz::AddDisplay, this);
-    add_display_srv_ = node_->create_service(std::string("add_mapviz_display"),
+    add_display_srv_ = node_->create_service<mapviz::srv::AddMapvizDisplay>(
+                                              std::string("add_mapviz_display"),
                                               &Mapviz::AddDisplay);
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
@@ -1233,7 +1235,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
   plugin->SetIcon(config_item->ui_.icon);
-  plugin->Initialize(tf_, tf_manager_, canvas_);
+  plugin->Initialize(tf_buf_, tf_, tf_manager_, canvas_);
   plugin->SetType(real_type.c_str());
   plugin->SetName(name);
   plugin->SetNode(*node_);

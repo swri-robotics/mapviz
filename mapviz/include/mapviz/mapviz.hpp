@@ -178,7 +178,7 @@ namespace mapviz
 
     std::shared_ptr<rclcpp::Node> node_;
     // rclcpp::ServiceServer add_display_srv_;
-    rclcpp::service::Service add_display_srv_;
+    rclcpp::Service<mapviz::srv::AddMapvizDisplay> add_display_srv_;
     std::shared_ptr<tf2_ros::Buffer> tf_buf_;
     std::shared_ptr<tf2_ros::TransformListener> tf_;
     swri_transform_util::TransformManagerPtr tf_manager_;
