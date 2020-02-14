@@ -36,6 +36,7 @@
 
 // C++ standard libraries
 #include <cmath>
+#include <geometry_msgs/msg/point.h>
 #include <swri_math_util/constants.h>
 
 namespace mapviz
@@ -395,14 +396,21 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
   double y = center_y + (height() / 2.0 - e->y()) * view_scale_;
 
   // tf2::Point point(x, y, 0);
-  geometry_msgs::msg::Point(x, y, 0)
-  point = transform_ * point;
+  // geometry_msgs::msg::Point point(x, y, 0);
+  geometry_msgs::msg::Point point;
+  point.set__x(x);
+  point.set__y(y);
+  point.set__z(0.0);
+  // point = transform_ * point;
+  geometry_msgs::msg::TransformStamped tfm_temp =
+    tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform_);
+  tf2::doTransform(point, point, tfm_temp);
 
   mouse_hovering_ = true;
   mouse_hover_x_ = e->x();
   mouse_hover_y_ = e->y();
 
-  Q_EMIT Hover(point.x(), point.y(), view_scale_);
+  Q_EMIT Hover(point.x, point.y, view_scale_);
 }
 
 void MapCanvas::leaveEvent(QEvent* e)
@@ -495,7 +503,10 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
   try
   {
-    tf_buf_->lookupTransform(fixed_frame_, target_frame_, rclcpp::Time(0), transform_);
+    auto tfrm = tf_buf_->lookupTransform(fixed_frame_, target_frame_,
+                                          tf2::TimePointZero, std::chrono::seconds(1));
+
+    tf2::fromMsg(tfrm, transform_);
 
     // If the viewer orientation is fixed don't rotate the center point.
     if (fix_orientation_)
@@ -505,8 +516,11 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
     if (rotate_90_)
     {
-      transform_.setRotation(
-          tf2::createQuaternionFromYaw(-swri_math_util::_half_pi) * transform_.getRotation());
+      tf2::Quaternion yaw90;
+      yaw90.setRPY(0, 0, -swri_math_util::_half_pi);
+      // transform_.setRotation(
+      //     tf2::createQuaternionFromYaw(-swri_math_util::_half_pi) * transform_.getRotation());
+      transform_.setRotation(yaw90 * transform_.getRotation());
     }
 
     double roll, pitch, yaw;
@@ -519,12 +533,22 @@ void MapCanvas::TransformTarget(QPainter* painter)
     qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(),
       transform_.getOrigin().getY());
 
-    tf2::Point point(view_center_x_, view_center_y_, 0);
+    // geometry_msgs::msg::Point point(view_center_x_, view_center_y_, 0.0);
+    geometry_msgs::msg::Point point;
+    point.set__x(view_center_x_);
+    point.set__y(view_center_y_);
+    point.set__z(0.0);
 
-    tf2::Point center = transform_ * point;
+    // geometry_msgs::msg::Point center = transform_ * point;
+    geometry_msgs::msg::Point center;
+    geometry_msgs::msg::TransformStamped tfm_temp =
+      tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform_);
+    tf2::doTransform(point, center, tfm_temp);
 
-    view_center_x_ = center.getX();
-    view_center_y_ = center.getY();
+    // view_center_x_ = center.getX();
+    view_center_x_ = center.x;
+    // view_center_y_ = center.getY();
+    view_center_y_ = center.y;
 
     qtransform_ = qtransform_.scale(1, -1);
     painter->setWorldTransform(qtransform_, false);
@@ -536,10 +560,18 @@ void MapCanvas::TransformTarget(QPainter* painter)
       double x = center_x + (mouse_hover_x_ - width() / 2.0) * view_scale_;
       double y = center_y + (height() / 2.0  - mouse_hover_y_) * view_scale_;
 
-      tf2::Point hover(x, y, 0);
-      hover = transform_ * hover;
+      // geometry_msgs::msg::Point hover(x, y, 0.0);
+      geometry_msgs::msg::Point hover;
+      hover.set__x(x);
+      hover.set__y(y);
+      hover.set__z(0.0);
 
-      Q_EMIT Hover(hover.x(), hover.y(), view_scale_);
+      // hover = transform_ * hover;
+      tfm_temp = tf2::toMsg<tf2::Stamped<tf2::Transform>,
+                            geometry_msgs::msg::TransformStamped>(transform_);
+      tf2::doTransform(hover, hover, tfm_temp);
+
+      Q_EMIT Hover(hover.x, hover.y, view_scale_);
     }
 
     success = true;

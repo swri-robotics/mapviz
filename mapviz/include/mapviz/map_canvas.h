@@ -248,9 +248,10 @@ namespace mapviz
     std::string fixed_frame_;
     std::string target_frame_;
 
+    std::shared_ptr<tf2_ros::Buffer> tf_buf_;
     std::shared_ptr<tf2_ros::TransformListener> tf_;
     // tf2::StampedTransform transform_;
-    geometry_msgs::msg::TransformStamped transform_;
+    tf2::Stamped<tf2::Transform> transform_;
     QTransform qtransform_;
     std::list<MapvizPluginPtr> plugins_;
 
