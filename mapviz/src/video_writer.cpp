@@ -44,7 +44,8 @@ namespace mapviz
       width_ = width;
       height_ = height;
 
-      RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Initializing recording:\nWidth/Height/Filename: %d / %d / %s",
+      RCLCPP_INFO(rclcpp::get_logger("mapviz"),
+        "Initializing recording:\nWidth/Height/Filename: %d / %d / %s",
         width_,
         height_,
         directory.c_str());
@@ -77,14 +78,14 @@ namespace mapviz
     {
       // ROS_DEBUG_THROTTLE(1.0, "VideoWriter::processFrame()");
       // RCLCPP_DEBUG_THROTTLE(1.0, "VideoWriter::processFrame()");
-      RCLCPP_DEBUG(rclcpp::get_logger("mapviz"), 1.0, "VideoWriter::processFrame():");
+      RCLCPP_DEBUG(rclcpp::get_logger("mapviz"), "VideoWriter::processFrame():");
       {
         QMutexLocker locker(&video_mutex_);
         if (!video_writer_)
         {
           // ROS_WARN_THROTTLE(1.0, "Got frame, but video writer wasn't open.");
           // RCLCPP_WARN_THROTTLE(1.0, "Got frame, but video writer wasn't open.");
-          RCLCPP_WARN(rclcpp::get_logger("mapviz"), 1.0, "Got frame, but video writer wasn't open.");
+          RCLCPP_WARN(rclcpp::get_logger("mapviz"), "Got frame, but video writer wasn't open.");
           return;
         }
       }
@@ -104,7 +105,7 @@ namespace mapviz
         default:
           // ROS_WARN_THROTTLE(1.0, "Unexpected image format: %d", frame.format());
           // RCLCPP_WARN_THROTTLE(1.0, "Unexpected image format: %d", frame.format());
-          RCLCPP_WARN(rclcpp::get_logger("mapviz"), 1.0, "Unexpected image format: %d", frame.format());
+          RCLCPP_WARN(rclcpp::get_logger("mapviz"), "Unexpected image format: %d", frame.format());
           return;
       }
 
@@ -114,7 +115,7 @@ namespace mapviz
         {
           // ROS_DEBUG_THROTTLE(1.0, "Writing frame.");
           // RCLCPP_DEBUG_THROTTLE(1.0, "Writing frame.");
-          RCLCPP_DEBUG(rclcpp::get_logger("mapviz"), 1.0, "Writing frame.");
+          RCLCPP_DEBUG(rclcpp::get_logger("mapviz"), "Writing frame.");
           video_writer_->write(image);
         }
       }
@@ -123,7 +124,7 @@ namespace mapviz
     {
       // ROS_ERROR_THROTTLE(1.0, "Error when processing video frame: %s", e.what());
       // RCLCPP_ERROR_THROTTLE(1.0, "Error when processing video frame: %s", e.what());
-      RCLCPP_ERROR(rclcpp::get_logger("mapviz"), 1.0, "Error when processing video frame: %s", e.what());
+      RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error when processing video frame: %s", e.what());
     }
   }
 
