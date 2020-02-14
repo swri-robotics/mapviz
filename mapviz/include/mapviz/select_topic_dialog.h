@@ -32,6 +32,7 @@
 #include <QDialog>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -192,6 +193,8 @@ class SelectTopicDialog : public QDialog
   // std::map<std::string, std::vector<std::string>> displayed_topics_;
   std::vector<std::string> displayed_topics_;
   int fetch_topics_timer_id_;
+
+  std::shared_ptr<rclcpp::Node> nh_;   // This may need to be a shared instance of Mapviz's node
 
   QPushButton *ok_button_;
   QPushButton *cancel_button_;

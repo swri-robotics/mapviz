@@ -64,7 +64,7 @@ namespace mapviz
   {
     Q_OBJECT
   public:
-    ServiceUpdaterThread(rclcpp::Node& nh, const std::string& allowed_datatype, QObject* parent) :
+    ServiceUpdaterThread(std::shared_ptr<rclcpp::Node>& nh, const std::string& allowed_datatype, QObject* parent) :
       QThread(parent),
       nh_(nh),
       allowed_datatype_(allowed_datatype)
@@ -77,7 +77,7 @@ namespace mapviz
     void fetchingFailed(const QString error_msg);
 
   private:
-    rclcpp::Node& nh_;
+    std::shared_ptr<rclcpp::Node> nh_;
     const std::string& allowed_datatype_;
   };
 
@@ -151,7 +151,7 @@ namespace mapviz
     void timerEvent(QTimerEvent *);
     void closeEvent(QCloseEvent *);
 
-    rclcpp::Node nh_;
+    std::shared_ptr<rclcpp::Node> nh_;
 
     std::string allowed_datatype_;
     std::vector<std::string> displayed_services_;
