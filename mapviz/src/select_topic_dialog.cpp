@@ -122,7 +122,8 @@ SelectTopicDialog::SelectTopicDialog(QWidget *parent)
   ok_button_(new QPushButton("&Ok")),
   cancel_button_(new QPushButton("&Cancel")),
   list_widget_(new QListWidget()),
-  name_filter_(new QLineEdit())
+  name_filter_(new QLineEdit()),
+  nh_(rclcpp::Node::make_shared("SelectTopicDialog"))
 {
   QHBoxLayout *filter_box = new QHBoxLayout();
   filter_box->addWidget(new QLabel("Filter:"));
@@ -238,8 +239,14 @@ static bool topicSort(const std::string &info1,
 void SelectTopicDialog::fetchTopics()
 {
   // ros::master::getTopics(known_topics_);
-  std::string(known_topics_);
-  std::sort(known_topics_.begin(), known_topics_.end(), topicSort);
+  known_topics_ = nh_->get_topic_names_and_types();
+  // std::string(known_topics_);
+  std::vector<std::string> map_keys;
+  for (auto const& element : known_topics_)
+  {
+    map_keys.push_back(element.first);
+  }
+  std::sort(map_keys.begin(), map_keys.end(), topicSort);
   updateDisplayedTopics();
 }
 

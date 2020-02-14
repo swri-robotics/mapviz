@@ -138,7 +138,8 @@ namespace mapviz
       cancel_button_(new QPushButton("&Cancel")),
       list_widget_(new QListWidget()),
       name_filter_(new QLineEdit()),
-      ok_button_(new QPushButton("&Ok"))
+      ok_button_(new QPushButton("&Ok")),
+      nh_(rclcpp::Node::make_shared("SelectServiceDialog"))  // May need to be a Mapviz node
   {
     QHBoxLayout *filter_box = new QHBoxLayout();
     filter_box->addWidget(new QLabel("Filter:"));
@@ -197,7 +198,7 @@ namespace mapviz
     // finished, start a new one.
     if (!worker_thread_ || worker_thread_->isFinished())
     {
-      worker_thread_.reset(new ServiceUpdaterThread(nh_, allowed_datatype_, this));
+      worker_thread_.reset(new ServiceUpdaterThread(*nh_, allowed_datatype_, this));
       QObject::connect(worker_thread_.get(),
                        SIGNAL(servicesFetched(ServiceStringVector)),
                        this,
