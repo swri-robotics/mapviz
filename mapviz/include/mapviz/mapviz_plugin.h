@@ -54,6 +54,7 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <mapviz/widgets.h>
+#include <yaml-cpp/yaml.h>
 
 #include "mapviz/stopwatch.h"
 
@@ -123,7 +124,8 @@ namespace mapviz
 
     virtual void SetNode(const rclcpp::Node& node)
     {
-      node_ = node;
+      // node_ = node;
+      node_ = std::make_shared<rclcpp::Node>(node);
     }
 
     void DrawPlugin(double x, double y, double scale)
