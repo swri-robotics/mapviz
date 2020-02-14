@@ -35,6 +35,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <tf2_ros/buffer.h>
+
 #include <QDialog>
 
 QT_BEGIN_NAMESPACE
