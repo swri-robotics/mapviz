@@ -28,6 +28,8 @@
 // *****************************************************************************
 #include <mapviz/select_frame_dialog.h>
 
+#include <tf2_ros/transform_listener.h>
+
 #include <QListWidget>
 #include <QLineEdit>
 #include <QVBoxLayout>
@@ -37,8 +39,11 @@
 #include <QTimerEvent>
 
 #include <algorithm>
+#include <memory>
 #include <set>
-#include <tf2_ros/transform_listener.h>
+#include <string>
+#include <vector>
+
 
 namespace mapviz
 {

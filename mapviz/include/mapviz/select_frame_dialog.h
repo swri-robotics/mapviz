@@ -26,18 +26,18 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#ifndef MAPVIZ_SELECT_FRAME_DIALOG_H_
-#define MAPVIZ_SELECT_FRAME_DIALOG_H_
+#ifndef MAPVIZ__SELECT_FRAME_DIALOG_H_
+#define MAPVIZ__SELECT_FRAME_DIALOG_H_
+
+#include <tf2_ros/buffer.h>
+#include <boost/shared_ptr.hpp>
+
+#include <QDialog>
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-
-#include <tf2_ros/buffer.h>
-
-#include <QDialog>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -47,7 +47,7 @@ QT_END_NAMESPACE
 
 namespace tf2_ros {
 class TransformListener;
-}  // namespace tf
+}  // namespace tf2_ros
 
 namespace mapviz
 {
@@ -130,4 +130,4 @@ class SelectFrameDialog : public QDialog
   QLineEdit *name_filter_;
 };  // class SelectFrameDialog
 }  // namespace mapviz
-#endif  // MAPVIZ_SELECT_FRAME_DIALOG_H_
+#endif  // MAPVIZ__SELECT_FRAME_DIALOG_H_

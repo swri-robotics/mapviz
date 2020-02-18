@@ -26,8 +26,10 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#ifndef MAPVIZ_SELECT_TOPIC_DIALOG_H_
-#define MAPVIZ_SELECT_TOPIC_DIALOG_H_
+#ifndef MAPVIZ__SELECT_TOPIC_DIALOG_H_
+#define MAPVIZ__SELECT_TOPIC_DIALOG_H_
+
+#include <rclcpp/rclcpp.hpp>
 
 #include <QDialog>
 
@@ -37,7 +39,6 @@
 #include <string>
 #include <vector>
 
-#include <rclcpp/rclcpp.hpp>
 
 // #include <ros/master.h>
 // #include <rclcpp/rclcpp.hpp>
@@ -188,7 +189,7 @@ class SelectTopicDialog : public QDialog
   std::set<std::string> allowed_datatypes_;
   // std::vector<ros::master::TopicInfo> known_topics_;
   std::map<std::string, std::vector<std::string>> known_topics_;
-  
+
   // std::vector<ros::master::TopicInfo> displayed_topics_;
   // std::map<std::string, std::vector<std::string>> displayed_topics_;
   std::vector<std::string> displayed_topics_;
@@ -202,4 +203,5 @@ class SelectTopicDialog : public QDialog
   QLineEdit *name_filter_;
 };  // class SelectTopicDialog
 }  // namespace mapviz
-#endif  // MAPVIZ_SELECT_TOPIC_DIALOG_H_
+
+#endif  // MAPVIZ__SELECT_TOPIC_DIALOG_H_

@@ -42,6 +42,11 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node_interfaces/node_graph.hpp>
 
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
 // REPLACE THESE CALLS WITH THE RCLCPP SERVICE QUERIES
 // #include <rosapi/Services.h>
 // #include <rosapi/ServicesForType.h>
@@ -52,7 +57,7 @@ namespace mapviz
   {
     // ros::ServiceClient client;
     std::map<std::string, std::vector<std::string>> service_map =
-      nh_.get_service_names_and_types();
+      nh_->get_service_names_and_types();
 
     // if (allowed_datatype_.empty())
     // {
@@ -89,9 +94,7 @@ namespace mapviz
         service_list.push_back(service.first);
       }
       Q_EMIT servicesFetched(service_list);
-    }
-    else
-    {
+    } else {
       // rosapi::ServicesForType srv;
       // srv.request.type = allowed_datatype_;
 
@@ -198,7 +201,7 @@ namespace mapviz
     // finished, start a new one.
     if (!worker_thread_ || worker_thread_->isFinished())
     {
-      worker_thread_.reset(new ServiceUpdaterThread(*nh_, allowed_datatype_, this));
+      worker_thread_.reset(new ServiceUpdaterThread(nh_, allowed_datatype_, this));
       QObject::connect(worker_thread_.get(),
                        SIGNAL(servicesFetched(ServiceStringVector)),
                        this,

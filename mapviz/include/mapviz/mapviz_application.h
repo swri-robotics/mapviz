@@ -27,26 +27,26 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_MAPVIZ_APPLICATION_H
-#define MAPVIZ_MAPVIZ_APPLICATION_H
+#ifndef MAPVIZ__MAPVIZ_APPLICATION_H_
+#define MAPVIZ__MAPVIZ_APPLICATION_H_
 
 #include <QApplication>
 #include <QEvent>
 
 namespace mapviz
 {
-  /**
-   * This class exists solely so that we can override QApplication::notify and
-   * log exceptions in the event loop as errors rather than letting them
-   * crash the entire program.
-   */
-  class MapvizApplication : public QApplication
-  {
-  public:
-    MapvizApplication(int &argc, char** argv);
-  private:
-    bool notify(QObject* receiver, QEvent* event);
-  };
+/**
+ * This class exists solely so that we can override QApplication::notify and
+ * log exceptions in the event loop as errors rather than letting them
+ * crash the entire program.
+ */
+class MapvizApplication : public QApplication
+{
+public:
+  MapvizApplication(int &argc, char** argv);
+private:
+  bool notify(QObject* receiver, QEvent* event);
+};
 }   // namespace mapviz
 
-#endif
+#endif  // MAPVIZ__MAPVIZ_APPLICATION_H_

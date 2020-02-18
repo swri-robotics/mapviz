@@ -55,11 +55,9 @@ namespace mapviz
 
   void ConfigItem::ToggleDraw(bool toggled)
   {
-    if (visible_ != toggled)
-    {
+    if (visible_ != toggled) {
       visible_ = toggled;
-      if (ui_.show->isChecked() != toggled)
-      {
+      if (ui_.show->isChecked() != toggled) {
         ui_.show->setChecked(toggled);
       }
 
@@ -103,8 +101,7 @@ namespace mapviz
       QLineEdit::Normal,
       name_, &ok);
 
-    if (ok && !text.isEmpty())
-    {
+    if (ok && !text.isEmpty()) {
       SetName(text);
     }
   }
@@ -116,13 +113,10 @@ namespace mapviz
 
   void ConfigItem::Hide()
   {
-    if (!ui_.content->isHidden())
-    {
+    if (!ui_.content->isHidden()) {
       ui_.content->hide();
       ui_.signlabel->setText(" + ");
-    }
-    else
-    {
+    } else {
       ui_.content->show();
       ui_.signlabel->setText(" - ");
     }

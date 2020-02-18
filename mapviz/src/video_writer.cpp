@@ -34,6 +34,9 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <memory>
+#include <string>
+
 namespace mapviz
 {
   bool VideoWriter::initializeWriter(const std::string& directory, int width, int height)

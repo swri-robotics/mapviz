@@ -1,4 +1,4 @@
-﻿// *****************************************************************************
+﻿  // *****************************************************************************
 //
 // Copyright (c) 2014, Southwest Research Institute® (SwRI®)
 // All rights reserved.
@@ -27,17 +27,22 @@
 //
 // *****************************************************************************
 
+#include <mapviz/map_canvas.h>
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include <mapviz/map_canvas.h>
+#include <geometry_msgs/msg/point.h>
+#include <swri_math_util/constants.h>
+
 
 // C++ standard libraries
 #include <cmath>
-#include <geometry_msgs/msg/point.h>
-#include <swri_math_util/constants.h>
+#include <list>
+#include <memory>
+#include <string>
+
 
 namespace mapviz
 {
@@ -95,8 +100,7 @@ MapCanvas::MapCanvas(QWidget* parent) :
 
 MapCanvas::~MapCanvas()
 {
-  if (pixel_buffer_size_ != 0)
-  {
+  if (pixel_buffer_size_ != 0) {
     glDeleteBuffersARB(2, pixel_buffer_ids_);
   }
 }
@@ -108,14 +112,11 @@ void MapCanvas::InitializeTf(std::shared_ptr<tf2_ros::TransformListener> tf)
 
 void MapCanvas::InitializePixelBuffers()
 {
-  if (has_pixel_buffers_)
-  {
+  if (has_pixel_buffers_) {
     int32_t buffer_size = width() * height() * 4;
 
-    if (pixel_buffer_size_ != buffer_size)
-    {
-      if (pixel_buffer_size_ != 0)
-      {
+    if (pixel_buffer_size_ != buffer_size) {
+      if (pixel_buffer_size_ != 0) {
         glDeleteBuffersARB(2, pixel_buffer_ids_);
       }
 
@@ -134,21 +135,17 @@ void MapCanvas::InitializePixelBuffers()
 void MapCanvas::initializeGL()
 {
   GLenum err = glewInit();
-  if (GLEW_OK != err)
-  {
+  if (GLEW_OK != err) {
     // ROS_ERROR("Error: %s\n", glewGetErrorString(err));
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error: %s\n", glewGetErrorString(err));
-  }
-  else
-  {
+  } else {
     // Check if pixel buffers are available for asynchronous capturing
     std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
     has_pixel_buffers_ = extensions.find("GL_ARB_pixel_buffer_object") != std::string::npos;
   }
 
   glClearColor(0.58f, 0.56f, 0.5f, 1);
-  if (enable_antialiasing_)
-  {
+  if (enable_antialiasing_) {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_POINT_SMOOTH);
     glEnable(GL_LINE_SMOOTH);
@@ -156,9 +153,7 @@ void MapCanvas::initializeGL()
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-  }
-  else
-  {
+  } else {
     glDisable(GL_MULTISAMPLE);
     glDisable(GL_POINT_SMOOTH);
     glDisable(GL_LINE_SMOOTH);
@@ -187,8 +182,7 @@ void MapCanvas::CaptureFrame(bool force)
   // Ensure the pixel size is actually 4
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
-  if (has_pixel_buffers_ && !force)
-  {
+  if (has_pixel_buffers_ && !force) {
     InitializePixelBuffers();
 
     pixel_buffer_index_ = (pixel_buffer_index_ + 1) % 2;
@@ -199,8 +193,7 @@ void MapCanvas::CaptureFrame(bool force)
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[next_index]);
     GLubyte* data = reinterpret_cast<GLubyte*>(
       glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
-    if (data)
-    {
+    if (data) {
       capture_buffer_.resize(pixel_buffer_size_);
 
       memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
@@ -208,9 +201,7 @@ void MapCanvas::CaptureFrame(bool force)
       glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
     }
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
-  }
-  else
-  {
+  } else {
     int32_t buffer_size = width() * height() * 4;
     capture_buffer_.clear();
     capture_buffer_.resize(buffer_size);
@@ -221,8 +212,7 @@ void MapCanvas::CaptureFrame(bool force)
 
 void MapCanvas::paintEvent(QPaintEvent* event)
 {
-  if (capture_frames_)
-  {
+  if (capture_frames_) {
     CaptureFrame();
   }
 
@@ -260,8 +250,7 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   glEnd();
 
   std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     // Before we let a plugin do any drawing, push all matrices and attributes.
     // This helps to ensure that plugins can't accidentally mess something up
     // for the next plugin.
@@ -269,8 +258,7 @@ void MapCanvas::paintEvent(QPaintEvent* event)
 
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
 
-    if ((*it)->SupportsPainting())
-    {
+    if ((*it)->SupportsPainting()) {
       p.endNativePainting();
       (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
       p.beginNativePainting();
@@ -334,8 +322,7 @@ void MapCanvas::mousePressEvent(QMouseEvent* e)
 void MapCanvas::keyPressEvent(QKeyEvent* event)
 {
   std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     (*it)->event(event);
   }
 }
@@ -363,23 +350,19 @@ void MapCanvas::mouseReleaseEvent(QMouseEvent* e)
 
 void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 {
-  if (mouse_pressed_ && canvas_able_to_move_)
-  {
+  if (mouse_pressed_ && canvas_able_to_move_) {
     int diff;
-    switch (mouse_button_)
-    {
+    switch (mouse_button_) {
       case Qt::LeftButton:
       case Qt::MiddleButton:
-        if (((mouse_x_ - e->x()) != 0 || (mouse_y_ - e->y()) != 0))
-        {
+        if (((mouse_x_ - e->x()) != 0 || (mouse_y_ - e->y()) != 0)) {
           drag_x_ = -((mouse_x_ - e->x()) * view_scale_);
           drag_y_ = ((mouse_y_ - e->y()) * view_scale_);
         }
         break;
       case Qt::RightButton:
         diff = e->y() - mouse_previous_y_;
-        if (diff != 0)
-        {
+        if (diff != 0) {
           Zoom((static_cast<float>(diff)) / 10.0f);
         }
         mouse_previous_y_ = e->y();
@@ -423,8 +406,7 @@ void MapCanvas::SetFixedFrame(const std::string& frame)
 {
   fixed_frame_ = frame;
   std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     (*it)->SetTargetFrame(frame);
   }
 }
@@ -462,8 +444,7 @@ void MapCanvas::ToggleEnableAntialiasing(bool on)
 void MapCanvas::ToggleUseLatestTransforms(bool on)
 {
   std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     (*it)->SetUseLatestTransforms(on);
   }
 }
@@ -491,8 +472,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
   view_center_x_ = -offset_x_ - drag_x_;
   view_center_y_ = -offset_y_ - drag_y_;
 
-  if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
-  {
+  if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>") {
     qtransform_ = qtransform_.scale(1, -1);
     painter->setWorldTransform(qtransform_, false);
 
@@ -503,19 +483,20 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
   try
   {
-    auto tfrm = tf_buf_->lookupTransform(fixed_frame_, target_frame_,
-                                          tf2::TimePointZero, std::chrono::seconds(1));
+    auto tfrm = tf_buf_->lookupTransform(
+      fixed_frame_,
+      target_frame_,
+      tf2::TimePointZero,
+      std::chrono::seconds(1));
 
     tf2::fromMsg(tfrm, transform_);
 
     // If the viewer orientation is fixed don't rotate the center point.
-    if (fix_orientation_)
-    {
+    if (fix_orientation_) {
       transform_.setRotation(tf2::Transform::getIdentity().getRotation());
     }
 
-    if (rotate_90_)
-    {
+    if (rotate_90_) {
       tf2::Quaternion yaw90;
       yaw90.setRPY(0, 0, -swri_math_util::_half_pi);
       // transform_.setRotation(
@@ -530,7 +511,8 @@ void MapCanvas::TransformTarget(QPainter* painter)
     qtransform_ = qtransform_.rotateRadians(yaw);
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
-    qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(),
+    qtransform_ = qtransform_.translate(
+      -transform_.getOrigin().getX(),
       transform_.getOrigin().getY());
 
     // geometry_msgs::msg::Point point(view_center_x_, view_center_y_, 0.0);
@@ -553,8 +535,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
     qtransform_ = qtransform_.scale(1, -1);
     painter->setWorldTransform(qtransform_, false);
 
-    if (mouse_hovering_)
-    {
+    if (mouse_hovering_) {
       double center_x = -offset_x_ - drag_x_;
       double center_y = -offset_y_ - drag_y_;
       double x = center_x + (mouse_hover_x_ - width() / 2.0) * view_scale_;
@@ -606,8 +587,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
 void MapCanvas::UpdateView()
 {
-  if (initialized_)
-  {
+  if (initialized_) {
     Recenter();
 
     glViewport(0, 0, width(), height());

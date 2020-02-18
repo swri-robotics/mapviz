@@ -26,13 +26,17 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#pragma once
-
-#include <algorithm>
+// #pragma once
+#ifndef MAPVIZ__STOPWATCH_H_
+#define MAPVIZ__STOPWATCH_H_
 
 // #include <ros/time.h>
 // #include <ros/console.h>
 #include <rclcpp/rclcpp.hpp>
+
+#include <algorithm>
+#include <string>
+
 
 namespace mapviz
 {
@@ -86,12 +90,9 @@ class Stopwatch
   /* Returns the average duration spent in the interval. */
   rclcpp::Duration avgTime() const
   {
-    if (count_)
-    {
+    if (count_) {
       return total_time_*(1.0/count_);
-    }
-    else
-    {
+    } else {
       return rclcpp::Duration(0, 0);
     }
   }
@@ -99,17 +100,14 @@ class Stopwatch
   /* Print measurement info to the ROS console. */
   void printInfo(rclcpp::Logger logger, const std::string &name) const
   {
-    if (count_)
-    {
+    if (count_) {
       RCLCPP_INFO(logger,
                 "%s -- calls: %d, avg time: %.2fms, max time: %.2fms",
                 name.c_str(),
                 count_,
                 avgTime().seconds()*1000.0,
                 maxTime().seconds()*1000.0);
-    }
-    else
-    {
+    } else {
       RCLCPP_INFO(logger,
                 "%s -- calls: %d, avg time: --ms, max time: --ms",
                 name.c_str(),
@@ -129,3 +127,5 @@ class Stopwatch
   rclcpp::Time start_;
 };  // class PluginInstrumentation
 }  // namespace mapviz
+
+#endif  // MAPVIZ__STOPWATCH_H_
