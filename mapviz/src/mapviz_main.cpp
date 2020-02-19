@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include "mapviz/mapviz.h"
+#include "mapviz/mapviz.hpp"
 #include "mapviz/mapviz_application.h"
 #include <GL/glut.h>
 

@@ -20,6 +20,7 @@ find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -112,7 +113,7 @@ add_library(rqt_${PROJECT_NAME}
   ${RCC_SRCS}
 )
 target_link_libraries(rqt_${PROJECT_NAME}
-  ${OpenGL_LIBRARY}
+  OpenGL::GL
   ${GLUT_LIBRARY}
   ${GLEW_LIBRARIES}
   ${OpenCV_LIBS}
@@ -132,6 +133,7 @@ ament_target_dependencies(rqt_${PROJECT_NAME}
   rosidl_default_generators
   rqt_gui_cpp
   std_srvs
+  swri_math_util
   swri_transform_util
   tf2
   tf2_ros

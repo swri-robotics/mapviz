@@ -277,9 +277,9 @@ void Mapviz::Initialize()
 
     connect(group, SIGNAL(triggered(QAction*)), this, SLOT(SetImageTransport(QAction*)));
 
-    tf_buf_ = std::make_shared<tf2_ros::Buffer>();
+    tf_buf_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_ = std::make_shared<tf2_ros::TransformListener>(*tf_buf_);
-    tf_manager_ = std::make_shared<swri_transform_util::TransformManager>();
+    tf_manager_ = std::make_shared<swri_transform_util::TransformManager>(node_);
     // tf_manager_->Initialize(tf_);
     tf_manager_->Initialize();
 
