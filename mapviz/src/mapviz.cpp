@@ -109,6 +109,9 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     node_(NULL),
     canvas_(NULL)
 {
+  /// TODO PJR Pass in node options and make name anonymous if necessary
+  node_ = std::make_shared<rclcpp::Node>("mapviz");
+
   ui_.setupUi(this);
 
   xy_pos_label_->setVisible(false);
@@ -246,13 +249,6 @@ void Mapviz::Initialize()
 {
   if (!initialized_) {
     if (is_standalone_) {
-      // If this Mapviz is running as a standalone application, it needs to init
-      // ROS and start spinning.  If it's running as an rqt plugin, rqt will
-      // take care of that.
-      // ros::init(argc_, argv_, "mapviz", ros::init_options::AnonymousName);
-      rclcpp::init(argc_, argv_);
-      node_ = rclcpp::Node::make_shared("mapviz");
-
       spin_timer_.start(30);
       connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
     }
@@ -364,7 +360,7 @@ void Mapviz::SpinOnce()
 {
   if (rclcpp::ok()) {
     meas_spin_.start();
-    rclcpp::spin_some(node_->shared_from_this());
+    rclcpp::spin_some(node_);
     meas_spin_.stop();
   } else {
     QApplication::exit();
