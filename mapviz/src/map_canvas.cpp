@@ -381,20 +381,20 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 
   // tf2::Point point(x, y, 0);
   // geometry_msgs::msg::Point point(x, y, 0);
-  geometry_msgs::msg::Point point;
-  point.set__x(x);
-  point.set__y(y);
-  point.set__z(0.0);
+  geometry_msgs::msg::PointStamped point_in, point_out;
+  point_in.point.x = x;
+  point_in.point.y = y;
+  point_in.point.z = 0;
   // point = transform_ * point;
   geometry_msgs::msg::TransformStamped tfm_temp =
     tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform_);
-  tf2::doTransform(point, point, tfm_temp);
+  tf2::doTransform(point_in, point_out, tfm_temp);
 
   mouse_hovering_ = true;
   mouse_hover_x_ = e->x();
   mouse_hover_y_ = e->y();
 
-  Q_EMIT Hover(point.x, point.y, view_scale_);
+  Q_EMIT Hover(point_out.point.x, point_out.point.y, view_scale_);
 }
 
 void MapCanvas::leaveEvent(QEvent* e)
@@ -517,21 +517,21 @@ void MapCanvas::TransformTarget(QPainter* painter)
       transform_.getOrigin().getY());
 
     // geometry_msgs::msg::Point point(view_center_x_, view_center_y_, 0.0);
-    geometry_msgs::msg::Point point;
-    point.set__x(view_center_x_);
-    point.set__y(view_center_y_);
-    point.set__z(0.0);
+    geometry_msgs::msg::PointStamped point;
+    point.point.x = view_center_x_;
+    point.point.y = view_center_y_;
+    point.point.z = 0;
 
     // geometry_msgs::msg::Point center = transform_ * point;
-    geometry_msgs::msg::Point center;
+    geometry_msgs::msg::PointStamped center;
     geometry_msgs::msg::TransformStamped tfm_temp =
       tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform_);
     tf2::doTransform(point, center, tfm_temp);
 
     // view_center_x_ = center.getX();
-    view_center_x_ = center.x;
+    view_center_x_ = center.point.x;
     // view_center_y_ = center.getY();
-    view_center_y_ = center.y;
+    view_center_y_ = center.point.y;
 
     qtransform_ = qtransform_.scale(1, -1);
     painter->setWorldTransform(qtransform_, false);
@@ -543,17 +543,17 @@ void MapCanvas::TransformTarget(QPainter* painter)
       double y = center_y + (height() / 2.0  - mouse_hover_y_) * view_scale_;
 
       // geometry_msgs::msg::Point hover(x, y, 0.0);
-      geometry_msgs::msg::Point hover;
-      hover.set__x(x);
-      hover.set__y(y);
-      hover.set__z(0.0);
+      geometry_msgs::msg::PointStamped hover_in, hover_out;
+      hover_in.point.x = x;
+      hover_in.point.y = y;
+      hover_in.point.z = 0;
 
       // hover = transform_ * hover;
       tfm_temp = tf2::toMsg<tf2::Stamped<tf2::Transform>,
                             geometry_msgs::msg::TransformStamped>(transform_);
-      tf2::doTransform(hover, hover, tfm_temp);
+      tf2::doTransform(hover_in, hover_out, tfm_temp);
 
-      Q_EMIT Hover(hover.x, hover.y, view_scale_);
+      Q_EMIT Hover(hover_out.point.x, hover_out.point.y, view_scale_);
     }
 
     success = true;

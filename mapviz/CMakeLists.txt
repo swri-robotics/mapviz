@@ -23,6 +23,7 @@ find_package(std_srvs REQUIRED)
 find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
 ### PkgConfig ###
@@ -30,7 +31,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(YamlCpp yaml-cpp)
 
 ### Boost ###
-find_package(Boost REQUIRED system filesystem)
+find_package(Boost REQUIRED date_time system filesystem)
 
 ### OpenCV 3 on ROS2 ###
 find_package(OpenCV 3.1 COMPONENTS core imgproc imgcodecs videoio REQUIRED)
@@ -142,6 +143,7 @@ ament_target_dependencies(rqt_${PROJECT_NAME}
   swri_math_util
   swri_transform_util
   tf2
+  tf2_geometry_msgs
   tf2_ros
 )
 rosidl_target_interfaces(rqt_${PROJECT_NAME}
