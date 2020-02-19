@@ -166,6 +166,10 @@ target_link_libraries(${PROJECT_NAME}
   ${GLU_LIBRARY}
   ${OpenCV_LIBRARIES}
 )
+ament_target_dependencies(${PROJECT_NAME}
+  swri_math_util
+  swri_transform_util
+)
 set_target_properties(${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )
