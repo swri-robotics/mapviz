@@ -70,8 +70,8 @@
 #include <memory>
 
 // Auto-generated UI files
-#include "mapviz/ui_mapviz.h"
-#include "mapviz/ui_pluginselect.h"
+#include "ui_mapviz.h"
+#include "ui_pluginselect.h"
 
 
 #include "mapviz/stopwatch.h"

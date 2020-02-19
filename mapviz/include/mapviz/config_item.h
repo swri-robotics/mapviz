@@ -41,7 +41,7 @@
 #include <vector>
 
 // Auto-generated UI files
-#include "mapviz/ui_configitem.h"
+#include "ui_configitem.h"
 
 namespace mapviz
 {

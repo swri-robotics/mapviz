@@ -27,11 +27,12 @@
 //
 // *****************************************************************************
 
-#include <mapviz/map_canvas.h>
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+
+#include <mapviz/map_canvas.h>
 
 #include <geometry_msgs/msg/point.h>
 #include <swri_math_util/constants.h>

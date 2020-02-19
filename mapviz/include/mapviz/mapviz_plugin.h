@@ -177,7 +177,7 @@ public:
   // bool GetTransform(const ros::Time& stamp,
   bool GetTransform(
     const rclcpp::Time& stamp,
-    const swri_transform_util::Transform& transform,
+    swri_transform_util::Transform& transform,
     bool use_latest_transforms = true)
   {
     if (!initialized_) {
@@ -199,7 +199,6 @@ public:
     if (time != rclcpp::Time() && elapsed > tf_buf_->getCacheLength()) {
       return false;
     }
-
     if (tf_manager_->GetTransform(
       target_frame_,
       source_frame_,
