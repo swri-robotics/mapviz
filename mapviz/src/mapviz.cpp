@@ -89,7 +89,7 @@ namespace mapviz
 {
 const QString Mapviz::ROS_WORKSPACE_VAR = "ROS_WORKSPACE";
 const QString Mapviz::MAPVIZ_CONFIG_FILE = "/.mapviz_config";
-const char Mapviz::IMAGE_TRANSPORT_PARAM[] = "image_transport";
+const std::string Mapviz::IMAGE_TRANSPORT_PARAM = "image_transport";
 
 Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::WindowFlags flags) :
     QMainWindow(parent, flags),
