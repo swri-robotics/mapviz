@@ -226,7 +226,7 @@ public:
   bool GetTransform(const std::string& source,
     // const ros::Time& stamp,
     const rclcpp::Time& stamp,
-    const swri_transform_util::Transform& transform)
+    swri_transform_util::Transform& transform)
   {
     if (!initialized_) {
       return false;
