@@ -14,10 +14,10 @@ project(mapviz)
 find_package(ament_cmake REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
+find_package(mapviz_interfaces REQUIRED)
 find_package(marti_common_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(swri_math_util REQUIRED)
@@ -54,11 +54,6 @@ find_package(GLUT REQUIRED)
 
 ### GLEW ###
 find_package(GLEW REQUIRED)
-
-rosidl_generate_interfaces(${PROJECT_NAME}_interfaces
-  srv/AddMapvizDisplay.srv
-  DEPENDENCIES marti_common_msgs
-)
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
@@ -134,10 +129,10 @@ ament_target_dependencies(rqt_${PROJECT_NAME}
   ament_cmake
   cv_bridge
   image_transport
+  mapviz_interfaces
   marti_common_msgs
   pluginlib
   rclcpp
-  rosidl_default_generators
   rqt_gui_cpp
   std_srvs
   swri_math_util
@@ -146,8 +141,6 @@ ament_target_dependencies(rqt_${PROJECT_NAME}
   tf2_geometry_msgs
   tf2_ros
 )
-rosidl_target_interfaces(rqt_${PROJECT_NAME}
-  ${PROJECT_NAME}_interfaces "rosidl_typesupport_cpp")
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )

@@ -49,7 +49,7 @@
 #include <QMainWindow>
 
 #include <swri_transform_util/transform_manager.h>
-#include <mapviz/srv/add_mapviz_display.hpp>  // Service
+#include <mapviz_interfaces/srv/add_mapviz_display.hpp>  // Service
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
 #include <mapviz/video_writer.h>
@@ -180,7 +180,7 @@ protected:
 
   std::shared_ptr<rclcpp::Node> node_;
   // rclcpp::ServiceServer add_display_srv_;
-  rclcpp::Service<mapviz::srv::AddMapvizDisplay>::SharedPtr add_display_srv_;
+  rclcpp::Service<mapviz_interfaces::srv::AddMapvizDisplay>::SharedPtr add_display_srv_;
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_;
   swri_transform_util::TransformManagerPtr tf_manager_;
@@ -203,8 +203,8 @@ protected:
       int draw_order = 0);
 
   void AddDisplay(
-    const mapviz::srv::AddMapvizDisplay::Request::SharedPtr req,
-    mapviz::srv::AddMapvizDisplay::Response::SharedPtr resp);
+    const mapviz_interfaces::srv::AddMapvizDisplay::Request::SharedPtr req,
+    mapviz_interfaces::srv::AddMapvizDisplay::Response::SharedPtr resp);
 
   void ClearDisplays();
   void AdjustWindowSize();

@@ -13,7 +13,6 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>pkg-config</buildtool_depend>
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
   <buildtool_depend>qt5-qmake</buildtool_depend>
 
   <depend>libqt5-core</depend>
@@ -25,6 +24,7 @@
   <depend>libglew-dev</depend>
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
+  <depend>mapviz_interfaces</depend>
   <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
   <!-- <depend>rosapi</depend> -->
@@ -40,9 +40,6 @@
   <depend>tf2_ros</depend>
 
   <exec_depend>libqt5-opengl</exec_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
-
-  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -277,7 +277,14 @@ void Mapviz::Initialize()
     tf_ = std::make_shared<tf2_ros::TransformListener>(*tf_buf_);
     tf_manager_ = std::make_shared<swri_transform_util::TransformManager>(node_);
     // tf_manager_->Initialize(tf_);
-    tf_manager_->Initialize();
+    try
+    {
+      tf_manager_->Initialize();
+    }
+    catch (...)
+    {
+      RCLCPP_ERROR(node_->get_logger(), "Error initializing tf_manager");
+    }
 
     loader_ = new pluginlib::ClassLoader<MapvizPlugin>(
         "mapviz", "mapviz::MapvizPlugin");
@@ -291,10 +298,8 @@ void Mapviz::Initialize()
     canvas_->SetFixedFrame(ui_.fixedframe->currentText().toStdString());
     canvas_->SetTargetFrame(ui_.targetframe->currentText().toStdString());
 
-    rclcpp::Node priv("~");
-
     // add_display_srv_ = node_->create_service("add_mapviz_display", &Mapviz::AddDisplay, this);
-    add_display_srv_ = node_->create_service<mapviz::srv::AddMapvizDisplay>(
+    add_display_srv_ = node_->create_service<mapviz_interfaces::srv::AddMapvizDisplay>(
                                               "add_mapviz_display",
                                               std::bind(&Mapviz::AddDisplay,
                                                   this,
@@ -322,11 +327,11 @@ void Mapviz::Initialize()
 
     std::string config;
     // priv.param("config", config, default_path.toStdString());
-    priv.get_parameter_or("config", config, default_path.toStdString());
+    node_->get_parameter_or("config", config, default_path.toStdString());
 
     bool auto_save;
     // priv.param("auto_save_backup", auto_save, true);
-    priv.get_parameter_or("auto_save_backup", auto_save, true);
+    node_->get_parameter_or("auto_save_backup", auto_save, true);
 
     Open(config);
 
@@ -343,7 +348,7 @@ void Mapviz::Initialize()
 
     bool print_profile_data;
     // priv.param("print_profile_data", print_profile_data, false);
-    priv.get_parameter_or("print_profile_data", print_profile_data, false);
+    node_->get_parameter_or("print_profile_data", print_profile_data, false);
     if (print_profile_data) {
       profile_timer_.start(2000);
       connect(&profile_timer_, SIGNAL(timeout()), this, SLOT(HandleProfileTimer()));
@@ -981,8 +986,8 @@ void Mapviz::SelectNewDisplay()
 }
 
 void Mapviz::AddDisplay(
-      const mapviz::srv::AddMapvizDisplay::Request::SharedPtr req,
-      mapviz::srv::AddMapvizDisplay::Response::SharedPtr resp)
+      const mapviz_interfaces::srv::AddMapvizDisplay::Request::SharedPtr req,
+      mapviz_interfaces::srv::AddMapvizDisplay::Response::SharedPtr resp)
 {
   std::map<std::string, std::string> properties;
   for (auto& property : req->properties) {

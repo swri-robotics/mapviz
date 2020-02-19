@@ -47,11 +47,11 @@ namespace mapviz
     }
     // catch (const ros::Exception& e) {
     catch (const rclcpp::exceptions::RCLError& e) {
-      RCLCPP_ERROR(rclcpp::get_logger("default"),
+      RCLCPP_ERROR(rclcpp::get_logger("mapviz::MapvizApplication"),
         "Unhandled RCLError in Qt event loop: %s", e.what());
     }
     catch (const std::exception& e) {
-      RCLCPP_ERROR(rclcpp::get_logger("default"),
+      RCLCPP_ERROR(rclcpp::get_logger("mapviz::MapvizApplication"),
         "Unhandled std::exception in Qt event loop: %s", e.what());
     }
 
