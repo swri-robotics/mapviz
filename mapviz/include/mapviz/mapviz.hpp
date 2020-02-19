@@ -180,7 +180,7 @@ protected:
 
   std::shared_ptr<rclcpp::Node> node_;
   // rclcpp::ServiceServer add_display_srv_;
-  rclcpp::Service<mapviz::srv::AddMapvizDisplay> add_display_srv_;
+  rclcpp::Service<mapviz::srv::AddMapvizDisplay>::SharedPtr add_display_srv_;
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_;
   swri_transform_util::TransformManagerPtr tf_manager_;
@@ -202,9 +202,9 @@ protected:
       bool collapsed,
       int draw_order = 0);
 
-  bool AddDisplay(
-    mapviz::srv::AddMapvizDisplay::Request& req,
-    mapviz::srv::AddMapvizDisplay::Response& resp);
+  void AddDisplay(
+    const mapviz::srv::AddMapvizDisplay::Request::SharedPtr req,
+    mapviz::srv::AddMapvizDisplay::Response::SharedPtr resp);
 
   void ClearDisplays();
   void AdjustWindowSize();
@@ -214,7 +214,7 @@ protected:
 
   static const QString ROS_WORKSPACE_VAR;
   static const QString MAPVIZ_CONFIG_FILE;
-  static const std::string IMAGE_TRANSPORT_PARAM;
+  static const char IMAGE_TRANSPORT_PARAM[];
 };
 }   // namespace mapviz
 

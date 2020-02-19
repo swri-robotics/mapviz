@@ -89,7 +89,7 @@ namespace mapviz
 {
 const QString Mapviz::ROS_WORKSPACE_VAR = "ROS_WORKSPACE";
 const QString Mapviz::MAPVIZ_CONFIG_FILE = "/.mapviz_config";
-const std::string Mapviz::IMAGE_TRANSPORT_PARAM = "image_transport";
+const char Mapviz::IMAGE_TRANSPORT_PARAM[] = "image_transport";
 
 Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::WindowFlags flags) :
     QMainWindow(parent, flags),
@@ -299,8 +299,11 @@ void Mapviz::Initialize()
 
     // add_display_srv_ = node_->create_service("add_mapviz_display", &Mapviz::AddDisplay, this);
     add_display_srv_ = node_->create_service<mapviz::srv::AddMapvizDisplay>(
-                                              std::string("add_mapviz_display"),
-                                              &Mapviz::AddDisplay);
+                                              "add_mapviz_display",
+                                              std::bind(&Mapviz::AddDisplay,
+                                                  this,
+                                                  std::placeholders::_1,
+                                                  std::placeholders::_2));
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     QString default_path = QDir::homePath();
@@ -981,12 +984,12 @@ void Mapviz::SelectNewDisplay()
   }
 }
 
-bool Mapviz::AddDisplay(
-      mapviz::srv::AddMapvizDisplay::Request& req,
-      mapviz::srv::AddMapvizDisplay::Response& resp)
+void Mapviz::AddDisplay(
+      const mapviz::srv::AddMapvizDisplay::Request::SharedPtr req,
+      mapviz::srv::AddMapvizDisplay::Response::SharedPtr resp)
 {
   std::map<std::string, std::string> properties;
-  for (auto& property : req.properties) {
+  for (auto& property : req->properties) {
     properties[property.key] = property.value;
   }
 
@@ -999,7 +1002,8 @@ bool Mapviz::AddDisplay(
   if (!config) {
     // ROS_ERROR("Failed to parse properties into YAML.");
     RCLCPP_ERROR(node_->get_logger(), "Failed to parse properties into YAML.");
-    return false;
+    resp->success = false;
+    throw std::runtime_error("Failed to parse properties into YAML.");
   }
 
   for (auto& display : plugins_) {
@@ -1010,45 +1014,44 @@ bool Mapviz::AddDisplay(
       continue;
     }
 
-    if (plugin->Name() == req.name && plugin->Type() ==req.type) {
+    if (plugin->Name() == req->name && plugin->Type() == req->type) {
       plugin->LoadConfig(config, "");
-      plugin->SetVisible(req.visible);
+      plugin->SetVisible(req->visible);
 
-      if (req.draw_order > 0) {
-        display.first->setData(Qt::UserRole, QVariant(req.draw_order - 1.1));
+      if (req->draw_order > 0) {
+        display.first->setData(Qt::UserRole, QVariant(req->draw_order - 1.1));
         ui_.configs->sortItems();
 
         ReorderDisplays();
-      } else if (req.draw_order < 0) {
-        display.first->setData(Qt::UserRole, QVariant(ui_.configs->count() + req.draw_order + 0.1));
+      } 
+      else if (req->draw_order < 0) {
+        display.first->setData(Qt::UserRole, QVariant(ui_.configs->count() + req->draw_order + 0.1));
         ui_.configs->sortItems();
 
         ReorderDisplays();
       }
 
-      resp.success = true;
+      resp->success = true;
 
-      return true;
+      return;
     }
   }
 
   try
   {
     MapvizPluginPtr plugin =
-      CreateNewDisplay(req.name, req.type, req.visible, false, req.draw_order);
+      CreateNewDisplay(req->name, req->type, req->visible, false, req->draw_order);
     plugin->LoadConfig(config, "");
     plugin->DrawIcon();
-    resp.success = true;
+    resp->success = true;
   }
   catch (const pluginlib::LibraryLoadException& e)
   {
     // ROS_ERROR("%s", e.what());
     RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
-    resp.success = false;
-    resp.message = "Failed to load display plug-in.";
+    resp->success = false;
+    resp->message = "Failed to load display plug-in.";
   }
-
-  return true;
 }
 
 void Mapviz::Hover(double x, double y, double scale)
@@ -1366,7 +1369,7 @@ void Mapviz::SetImageTransport(QAction* transport_action)
   RCLCPP_INFO(
     node_->get_logger(),
     "Setting %s to %s",
-    IMAGE_TRANSPORT_PARAM.c_str(),
+    IMAGE_TRANSPORT_PARAM,
     transport.c_str());
   node_->set_parameter({IMAGE_TRANSPORT_PARAM, transport});
 
@@ -1394,7 +1397,7 @@ void Mapviz::UpdateImageTransportMenu()
   RCLCPP_WARN(
     node_->get_logger(),
     "%s param was set to an unrecognized value: %s",
-    IMAGE_TRANSPORT_PARAM.c_str(),
+    IMAGE_TRANSPORT_PARAM,
     current_transport.c_str());
 }
 
