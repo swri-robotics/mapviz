@@ -119,10 +119,10 @@ public:
     }
   }
 
-  virtual void SetNode(const rclcpp::Node& node)
+  virtual void SetNode(rclcpp::Node& node)
   {
     // node_ = node;
-    node_ = std::make_shared<rclcpp::Node>(node);
+    node_ = node.shared_from_this();
   }
 
   void DrawPlugin(double x, double y, double scale)
