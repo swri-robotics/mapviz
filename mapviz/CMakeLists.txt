@@ -25,6 +25,10 @@ find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 
+### PkgConfig ###
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YamlCpp yaml-cpp)
+
 ### Boost ###
 find_package(Boost REQUIRED system filesystem)
 
@@ -66,6 +70,7 @@ include_directories(SYSTEM
   ${OpenGL_INCLUDE_DIR}
   ${GLEW_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${YamlCpp_INCLUDE_DIR}
 )
 
 # Qt UI files
@@ -117,6 +122,7 @@ target_link_libraries(rqt_${PROJECT_NAME}
   ${GLUT_LIBRARY}
   ${GLEW_LIBRARIES}
   ${OpenCV_LIBS}
+  ${YamlCpp_LIBRARIES}
   Qt5::Concurrent
   Qt5::Core
   Qt5::Gui
