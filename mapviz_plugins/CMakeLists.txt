@@ -221,7 +221,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
 )
 
-ament_package()
 
 ### Install the plugins ###
 install(DIRECTORY include/${PROJECT_NAME}/
@@ -238,3 +237,4 @@ install(FILES ${PROJECT_NAME}.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+ament_package()
