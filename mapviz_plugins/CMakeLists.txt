@@ -168,13 +168,8 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/tf_frame_plugin.h
 )
     
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  qt4_wrap_ui(UI_SRC_FILES ${UI_FILES})
-  qt4_wrap_cpp(MOC_FILES ${HEADER_FILES})
-else()
-  qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
-  qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
-endif()
+qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
+qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
 
 add_library(${PROJECT_NAME}
     ${MOC_FILES}
