@@ -212,4 +212,5 @@ install(FILES ${PROJECT_NAME}.xml
 
 ament_export_dependencies(${RUNTIME_DEPS} Qt)
 ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
 ament_package()
