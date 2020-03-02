@@ -47,11 +47,7 @@ set(Qt_LIBS
     )
 add_definitions(-DWFlags=WindowFlags)
 
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  find_package(OpenCV 2 REQUIRED)
-else()
-  find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
-endif()
+find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
 
 ### OpenGL ###
 if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
