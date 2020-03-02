@@ -87,12 +87,12 @@ endif()
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  DEPENDS Qt
-  CATKIN_DEPENDS ${DEPENDENCIES}
-)
+# catkin_package(
+#   INCLUDE_DIRS include
+#   LIBRARIES ${PROJECT_NAME}
+#   DEPENDS Qt
+#   CATKIN_DEPENDS ${DEPENDENCIES}
+# )
 
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
@@ -220,6 +220,8 @@ target_link_libraries(${PROJECT_NAME}
 set_target_properties(${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
 )
+
+ament_package()
 
 ### Install the plugins ###
 install(DIRECTORY include/${PROJECT_NAME}/
