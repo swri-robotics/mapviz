@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mapviz_plugins)
 
+set(CMAKE_CXX_STANDARD 14)
+
 set(DEPENDENCIES
   actionlib
   cv_bridge
