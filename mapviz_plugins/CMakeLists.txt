@@ -196,7 +196,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # )
 
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include
+  DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )
 
