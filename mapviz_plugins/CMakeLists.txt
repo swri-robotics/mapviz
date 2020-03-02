@@ -38,6 +38,7 @@ endif()
 # )
 
 # find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
+# Ros Packages
 find_package(ament_cmake REQUIRED)
 find_package(actionlib REQUIRED)
 find_package(cv_bridge REQUIRED)
