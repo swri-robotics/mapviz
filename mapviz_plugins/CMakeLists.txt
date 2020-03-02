@@ -9,35 +9,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
 endif()
 
 project(mapviz_plugins)
-# set(DEPENDENCIES
-#   actionlib
-#   cv_bridge
-#   gps_common
-#   image_transport
-#   mapviz
-#   marti_common_msgs
-#   marti_nav_msgs
-#   marti_visualization_msgs
-#   move_base_msgs
-#   nav_msgs
-#   map_msgs
-#   pluginlib 
-#   rclcpp 
-#   sensor_msgs
-#   std_msgs 
-#   stereo_msgs
-#   swri_image_util
-#   swri_math_util
-#   swri_route_util
-#   swri_transform_util
-#   swri_yaml_util
-#   tf2 
-#   tf2_geometry_msgs
-#   tf2_ros
-#   visualization_msgs
-# )
 
-# find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
 # Ros Packages
 find_package(ament_cmake REQUIRED)
 find_package(actionlib REQUIRED)
