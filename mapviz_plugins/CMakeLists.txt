@@ -238,4 +238,6 @@ install(FILES ${PROJECT_NAME}.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+ament_export_dependencies(${RUNTIME_DEPS} Qt)
+ament_export_include_directories(include)
 ament_package()
