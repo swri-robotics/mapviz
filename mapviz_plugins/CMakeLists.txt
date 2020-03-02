@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10)
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -12,7 +12,7 @@ project(mapviz_plugins)
 
 # Ros Packages
 find_package(ament_cmake REQUIRED)
-find_package(actionlib REQUIRED)
+# find_package(actionlib REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(gps_common REQUIRED)
 find_package(image_transport REQUIRED)
