@@ -217,7 +217,7 @@ install(TARGETS ${PROJECT_NAME} rqt_${PROJECT_NAME}
 # )
 
 install(DIRECTORY launch
-  DESTINATION share
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_dependencies(${RUNTIME_DEPS} Qt)
