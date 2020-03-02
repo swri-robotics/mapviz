@@ -1,35 +1,66 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mapviz_plugins)
 
-set(CMAKE_CXX_STANDARD 14)
+if (NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-set(DEPENDENCIES
-  actionlib
-  cv_bridge
-  gps_common
-  image_transport
-  mapviz
-  marti_common_msgs
-  marti_nav_msgs
-  marti_visualization_msgs
-  move_base_msgs
-  nav_msgs
-  map_msgs
-  pluginlib 
-  roscpp 
-  sensor_msgs
-  std_msgs 
-  stereo_msgs
-  swri_image_util
-  swri_math_util
-  swri_route_util
-  swri_transform_util
-  swri_yaml_util
-  tf 
-  visualization_msgs
-)
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
-find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
+# set(DEPENDENCIES
+#   actionlib
+#   cv_bridge
+#   gps_common
+#   image_transport
+#   mapviz
+#   marti_common_msgs
+#   marti_nav_msgs
+#   marti_visualization_msgs
+#   move_base_msgs
+#   nav_msgs
+#   map_msgs
+#   pluginlib 
+#   rclcpp 
+#   sensor_msgs
+#   std_msgs 
+#   stereo_msgs
+#   swri_image_util
+#   swri_math_util
+#   swri_route_util
+#   swri_transform_util
+#   swri_yaml_util
+#   tf2 
+#   tf2_geometry_msgs
+#   tf2_ros
+#   visualization_msgs
+# )
+
+# find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
+find_package(ament_cmake REQUIRED)
+find_package(actionlib REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(gps_common REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(mapviz REQUIRED)
+find_package(marti_common_msgs REQUIRED)
+find_package(move_base_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(map_msgs REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(stereo_msgs REQUIRED)
+find_package(swri_image_util REQUIRED)
+find_package(swri_math_util REQUIRED)
+find_package(swri_route_util REQUIRED)
+find_package(swri_transform_util REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 ### QT ###
 find_package(Qt5Core REQUIRED)
