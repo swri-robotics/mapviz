@@ -67,7 +67,7 @@ set(UI_FILES
     # ui/draw_polygon_config.ui
     # ui/gps_config.ui
     # ui/grid_config.ui
-    # ui/image_config.ui
+    ui/image_config.ui
     # ui/laserscan_config.ui
     # ui/marker_config.ui
     # ui/measuring_config.ui
@@ -96,7 +96,7 @@ set(SRC_FILES
     # src/draw_polygon_plugin.cpp
     # src/gps_plugin.cpp
     # src/grid_plugin.cpp
-    # src/image_plugin.cpp
+    src/image_plugin.cpp
     # src/laserscan_plugin.cpp
     # src/marker_plugin.cpp 
     # src/measuring_plugin.cpp 
@@ -126,7 +126,7 @@ set(HEADER_FILES
     # include/${PROJECT_NAME}/draw_polygon_plugin.h
     # include/${PROJECT_NAME}/gps_plugin.h
     # include/${PROJECT_NAME}/grid_plugin.h
-    # include/${PROJECT_NAME}/image_plugin.h
+    include/${PROJECT_NAME}/image_plugin.h
     # include/${PROJECT_NAME}/laserscan_plugin.h
     # include/${PROJECT_NAME}/marker_plugin.h
     # include/${PROJECT_NAME}/measuring_plugin.h
