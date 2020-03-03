@@ -298,12 +298,20 @@ namespace mapviz_plugins
 
   void StringPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-        "std_msgs/String");
+    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+    //      "std_msgs/String");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+      "std_msgs/msg/String"
+    );
 
-    if (!topic.name.empty())
+    // if (!topic.name.empty())
+    // {
+    //   ui_.topic->setText(QString::fromStdString(topic.name));
+    //   TopicEdited();
+    // }
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
   }
