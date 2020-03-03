@@ -188,7 +188,13 @@ install(FILES plugin.xml
   DESTINATION share/${PROJECT_NAME} 
 )
 
-ament_export_dependencies(${RUNTIME_DEPS} Qt)
+ament_export_dependencies(${RUNTIME_DEPS}
+  Qt5Concurrent
+  Qt5Core
+  Qt5Gui
+  Qt5OpenGL
+  Qt5Widgets
+)
 ament_export_include_directories(include)
 ament_export_libraries(rqt_${PROJECT_NAME})
 ament_package()

@@ -12,9 +12,7 @@ project(mapviz_plugins)
 
 # Ros Packages
 find_package(ament_cmake REQUIRED)
-# find_package(actionlib REQUIRED)
 find_package(cv_bridge REQUIRED)
-# find_package(gps_common REQUIRED)
 find_package(gps_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz REQUIRED)
@@ -41,15 +39,6 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-set(Qt_FOUND TRUE)
-set(Qt_INCLUDE_DIRS "${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
-set(Qt_LIBRARIES "${Qt5Core_LIBRARIES};${Qt5Gui_LIBRARIES};${Qt5OpenGL_LIBRARIES};${Qt5Widgets_LIBRARIES}")
-set(Qt_LIBS
-    Qt5::Core
-    Qt5::Gui
-    Qt5::OpenGL
-    Qt5::Widgets
-    )
 add_definitions(-DWFlags=WindowFlags)
 
 find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
@@ -61,13 +50,6 @@ endif()
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
-# catkin_package(
-#   INCLUDE_DIRS include
-#   LIBRARIES ${PROJECT_NAME}
-#   DEPENDS Qt
-#   CATKIN_DEPENDS ${DEPENDENCIES}
-# )
-
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
@@ -75,9 +57,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
-  ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ${Qt_INCLUDE_DIRS}
 )
 
 set(UI_FILES
@@ -177,13 +157,38 @@ add_library(${PROJECT_NAME}
     ${SRC_FILES}
     ${UI_SRC_FILES}
 )
-
+ament_target_dependencies(${PROJECT_NAME}
+    ament_cmake
+    cv_bridge
+    gps_msgs
+    image_transport
+    mapviz
+    marti_common_msgs
+    move_base_msgs
+    nav_msgs
+    map_msgs
+    pluginlib
+    rclcpp
+    sensor_msgs
+    std_msgs
+    stereo_msgs
+    swri_image_util
+    swri_math_util
+    swri_route_util
+    swri_transform_util
+    tf2
+    tf2_geometry_msgs
+    tf2_ros
+    visualization_msgs
+)
 target_link_libraries(${PROJECT_NAME}
-    ${catkin_LIBRARIES}
+    Qt5::Core
+    Qt5::Gui
+    Qt5::OpenGL
+    Qt5::Widgets
     ${GLU_LIBRARY}
     ${GLUT_LIBRARY}
     ${OpenCV_LIBS}
-    ${Qt_LIBRARIES}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
