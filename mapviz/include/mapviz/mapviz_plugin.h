@@ -275,7 +275,7 @@ public:
   virtual void Transform() = 0;
 
   virtual void LoadConfig(const YAML::Node& load, const std::string& path) = 0;
-  virtual void SaveConfig(const YAML::Emitter& emitter, const std::string& path) = 0;
+  virtual void SaveConfig(YAML::Emitter& emitter, const std::string& path) = 0;
 
   virtual QWidget* GetConfigWidget(QWidget* parent) { return NULL; }
 
