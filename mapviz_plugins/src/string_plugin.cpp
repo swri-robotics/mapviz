@@ -37,6 +37,8 @@
 // #include <pluginlib/class_list_macros.h>
 #include <pluginlib/class_list_macros.hpp>
 
+#include <string>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::StringPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -129,9 +131,7 @@ namespace mapviz_plugins
 
       painter->restore();
       PrintInfo("OK");
-    }
-    else
-    {
+    } else {
       PrintWarning("No messages received.");
     }
   }
@@ -348,37 +348,21 @@ namespace mapviz_plugins
     if (anchor == "top left")
     {
       anchor_ = TOP_LEFT;
-    }
-    else if (anchor == "top center")
-    {
+    } else if (anchor == "top center") {
       anchor_ = TOP_CENTER;
-    }
-    else if (anchor == "top right")
-    {
+    } else if (anchor == "top right") {
       anchor_ = TOP_RIGHT;
-    }
-    else if (anchor == "center left")
-    {
+    } else if (anchor == "center left") {
       anchor_ = CENTER_LEFT;
-    }
-    else if (anchor == "center")
-    {
+    } else if (anchor == "center") {
       anchor_ = CENTER;
-    }
-    else if (anchor == "center right")
-    {
+    } else if (anchor == "center right") {
       anchor_ = CENTER_RIGHT;
-    }
-    else if (anchor == "bottom left")
-    {
+    } else if (anchor == "bottom left") {
       anchor_ = BOTTOM_LEFT;
-    }
-    else if (anchor == "bottom center")
-    {
+    } else if (anchor == "bottom center") {
       anchor_ = BOTTOM_CENTER;
-    }
-    else if (anchor == "bottom right")
-    {
+    } else if (anchor == "bottom right") {
       anchor_ = BOTTOM_RIGHT;
     }
   }
@@ -388,9 +372,7 @@ namespace mapviz_plugins
     if (units == "pixels")
     {
       units_ = PIXELS;
-    }
-    else if (units == "percent")
-    {
+    } else if (units == "percent") {
       units_ = PERCENT;
     }
   }
@@ -422,37 +404,21 @@ namespace mapviz_plugins
     if (anchor == TOP_LEFT)
     {
       anchor_string = "top left";
-    }
-    else if (anchor == TOP_CENTER)
-    {
+    } else if (anchor == TOP_CENTER) {
       anchor_string = "top center";
-    }
-    else if (anchor == TOP_RIGHT)
-    {
+    } else if (anchor == TOP_RIGHT) {
       anchor_string = "top right";
-    }
-    else if (anchor == CENTER_LEFT)
-    {
+    } else if (anchor == CENTER_LEFT) {
       anchor_string = "center left";
-    }
-    else if (anchor == CENTER)
-    {
+    } else if (anchor == CENTER) {
       anchor_string = "center";
-    }
-    else if (anchor == CENTER_RIGHT)
-    {
+    } else if (anchor == CENTER_RIGHT) {
       anchor_string = "center right";
-    }
-    else if (anchor == BOTTOM_LEFT)
-    {
+    } else if (anchor == BOTTOM_LEFT) {
       anchor_string = "bottom left";
-    }
-    else if (anchor == BOTTOM_CENTER)
-    {
+    } else if (anchor == BOTTOM_CENTER) {
       anchor_string = "bottom center";
-    }
-    else if (anchor == BOTTOM_RIGHT)
-    {
+    } else if (anchor == BOTTOM_RIGHT) {
       anchor_string = "bottom right";
     }
 
@@ -466,12 +432,10 @@ namespace mapviz_plugins
     if (units == PIXELS)
     {
       units_string = "pixels";
-    }
-    else if (units == PERCENT)
-    {
+    } else if (units == PERCENT) {
       units_string = "percent";
     }
 
     return units_string;
   }
-}
+}   // namespace mapviz_plugins
