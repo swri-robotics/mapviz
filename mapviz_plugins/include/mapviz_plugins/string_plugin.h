@@ -125,7 +125,7 @@ namespace mapviz_plugins
     int offset_y_;
 
     // ros::Subscriber string_sub_;
-    rclcpp::Subscription<const std_msgs::msg::String>::SharedPtr string_sub_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr string_sub_;
     bool has_message_;
     bool has_painted_;
 
@@ -134,7 +134,7 @@ namespace mapviz_plugins
     QStaticText message_;
 
     // void stringCallback(const std_msgs::StringConstPtr& str);
-    void stringCallback(const std_msgs::msg::String str);
+    void stringCallback(const std_msgs::msg::String::SharedPtr str);
 
     std::string AnchorToString(Anchor anchor);
     std::string UnitsToString(Units units);
