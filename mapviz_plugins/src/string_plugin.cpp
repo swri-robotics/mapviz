@@ -141,14 +141,18 @@ namespace mapviz_plugins
     int y_offset = offset_y_;
     if (units_ == PERCENT)
     {
-      x_offset = static_cast<int>((float)(offset_x_ * canvas_->width()) / 100.0);
-      y_offset = static_cast<int>((float)(offset_y_ * canvas_->height()) / 100.0);
+      x_offset = static_cast<int>(static_cast<float>(offset_x_ * canvas_->width()) / 100.0);
+      y_offset = static_cast<int>(static_cast<float>(offset_y_ * canvas_->height()) / 100.0);
     }
 
-    int right = static_cast<int>((float)canvas_->width() - message_.size().width()) - x_offset;
-    int bottom = static_cast<int>((float)canvas_->height() - message_.size().height()) - y_offset;
-    int yCenter = static_cast<int>((float)canvas_->height() / 2.0 - message_.size().height()/2.0);
-    int xCenter = static_cast<int>((float)canvas_->width() / 2.0 - message_.size().width()/2.0);
+    int right = static_cast<int>(
+                  static_cast<float>(canvas_->width()) - message_.size().width()) - x_offset;
+    int bottom = static_cast<int>(
+                  static_cast<float>(canvas_->height()) - message_.size().height()) - y_offset;
+    int yCenter = static_cast<int>(
+                  static_cast<float>(canvas_->height()) / 2.0 - message_.size().height()/2.0);
+    int xCenter = static_cast<int>(
+                  static_cast<float>(canvas_->width()) / 2.0 - message_.size().width()/2.0);
 
     QPoint ulPoint;
 
