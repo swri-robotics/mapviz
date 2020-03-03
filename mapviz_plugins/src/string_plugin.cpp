@@ -330,9 +330,12 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        string_sub_ = node_.subscribe(topic_, 1, &StringPlugin::stringCallback, this);
+        // string_sub_ = node_.subscribe(topic_, 1, &StringPlugin::stringCallback, this);
+        node_->create_subscription<std_msgs::msg::String>(topic_, 1,
+          std::bind(&StringPlugin::stringCallback, node_, std::placeholders::_1));
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        // ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscripbing to %s", topic_.c_str());
       }
     }
   }
@@ -399,7 +402,7 @@ namespace mapviz_plugins
     offset_y_ = offset;
   }
 
-  void StringPlugin::stringCallback(const std_msgs::StringConstPtr& str)
+  void StringPlugin::stringCallback(const std_msgs::msg::String::ConstPtr& str)
   {
     message_.setText(QString(str->data.c_str()));
     message_.prepare(QTransform(), font_);

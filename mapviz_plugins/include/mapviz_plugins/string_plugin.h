@@ -125,7 +125,7 @@ namespace mapviz_plugins
     int offset_y_;
 
     // ros::Subscriber string_sub_;
-    rclcpp::Subscription<std_msgs::msg::String> string_sub_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr string_sub_;
     bool has_message_;
     bool has_painted_;
 
