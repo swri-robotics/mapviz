@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2014-2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -77,14 +77,13 @@ namespace mapviz_plugins
     enum Units {PIXELS, PERCENT};
 
     ImagePlugin();
-    ~ImagePlugin() override;
+    ~ImagePlugin() override = default;
 
     bool Initialize(QGLWidget* canvas) override;
     void Shutdown() override {}
 
     void Draw(double x, double y, double scale) override;
 
-    void CreateLocalNode();
     void SetNode(rclcpp::Node& node) override;
 
     void Transform() override {}
@@ -135,11 +134,8 @@ namespace mapviz_plugins
     double last_height_;
     double original_aspect_ratio_;
 
-    std::shared_ptr<rclcpp::Node> local_node_;
     image_transport::Subscriber image_sub_;
     bool has_message_;
-
-    sensor_msgs::msg::Image image_;
 
     cv_bridge::CvImagePtr cv_image_;
     cv::Mat scaled_image_;
