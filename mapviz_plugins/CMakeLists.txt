@@ -61,31 +61,31 @@ include_directories(SYSTEM
 )
 
 set(UI_FILES
-    # ui/attitude_indicator_config.ui
-    # ui/coordinate_picker_config.ui
-    # ui/disparity_config.ui
-    # ui/draw_polygon_config.ui
-    # ui/gps_config.ui
-    # ui/grid_config.ui
-    # ui/image_config.ui
-    # ui/laserscan_config.ui
-    # ui/marker_config.ui
-    # ui/measuring_config.ui
-    # ui/move_base_config.ui
-    # ui/navsat_config.ui
-    # ui/occupancy_grid_config.ui
-    # ui/odometry_config.ui
-    # ui/path_config.ui
-    # ui/plan_route_config.ui
-    # ui/point_click_publisher_config.ui
-    # ui/pointcloud2_config.ui
-    # ui/pose_config.ui
-    # ui/robot_image_config.ui
-    # ui/route_config.ui
+    ui/attitude_indicator_config.ui
+    ui/coordinate_picker_config.ui
+    ui/disparity_config.ui
+    ui/draw_polygon_config.ui
+    ui/gps_config.ui
+    ui/grid_config.ui
+    ui/image_config.ui
+    ui/laserscan_config.ui
+    ui/marker_config.ui
+    ui/measuring_config.ui
+    ui/move_base_config.ui
+    ui/navsat_config.ui
+    ui/occupancy_grid_config.ui
+    ui/odometry_config.ui
+    ui/path_config.ui
+    ui/plan_route_config.ui
+    ui/point_click_publisher_config.ui
+    ui/pointcloud2_config.ui
+    ui/pose_config.ui
+    ui/robot_image_config.ui
+    ui/route_config.ui
     ui/string_config.ui
-    # ui/textured_marker_config.ui
-    # ui/tf_frame_config.ui
-    # ui/topic_select.ui
+    ui/textured_marker_config.ui
+    ui/tf_frame_config.ui
+    ui/topic_select.ui
 )
 
 set(SRC_FILES
@@ -152,11 +152,12 @@ set(HEADER_FILES
 qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
 qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
     ${MOC_FILES}
     ${SRC_FILES}
     ${UI_SRC_FILES}
 )
+target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 ament_target_dependencies(${PROJECT_NAME}
     ament_cmake
     cv_bridge
@@ -197,34 +198,19 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 ### Install the plugins ###
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-# )
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )
 
-# install(TARGETS ${PROJECT_NAME}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-# )
-
 install(TARGETS ${PROJECT_NAME}
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
 
-# install(FILES ${PROJECT_NAME}.xml
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
-
-install(FILES ${PROJECT_NAME}.xml
-  DESTINATION share/${PROJECT_NAME}
-)
+pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
 ament_export_dependencies(${RUNTIME_DEPS} Qt)
 ament_export_include_directories(include)

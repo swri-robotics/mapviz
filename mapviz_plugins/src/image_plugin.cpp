@@ -45,7 +45,7 @@
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::ImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -202,7 +202,7 @@ namespace mapviz_plugins
     else if(!visible)
     {
       image_sub_.shutdown();
-      ROS_INFO("Dropped subscription to %s", topic_.c_str());
+      RCLCPP_INFO(node_->get_logger(), "Dropped subscription to %s", topic_.c_str());
     }
     else
     {
@@ -213,7 +213,7 @@ namespace mapviz_plugins
   void ImagePlugin::SetTransport(const QString& transport)
   {
     transport_ = transport.toStdString();
-    ROS_INFO("Changing image_transport to %s.", transport_.c_str());
+    RCLCPP_INFO(node_->get_logger(), "Changing image_transport to %s.", transport_.c_str());
     TopicEdited();
   }
 
@@ -237,18 +237,18 @@ namespace mapviz_plugins
 
   void ImagePlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(
       "sensor_msgs/Image");
 
-    if(topic.name.empty())
+    if(topic.empty())
     {
-      topic.name.clear();
+      topic.clear();
       TopicEdited();
 
     }
-    if (!topic.name.empty())
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
   }
@@ -284,32 +284,34 @@ namespace mapviz_plugins
 
       if (!topic_.empty())
       {
-        std::shared_ptr<image_transport::ImageTransport> it;
         if (transport_ == "default")
         {
-          ROS_DEBUG("Using default transport.");
+          RCLCPP_DEBUG(node_->get_logger(), "Using default transport.");
           image_transport::ImageTransport it(node_);
-          image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this);
+          image_sub_ = it.subscribe(topic_, 1,
+              std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1));
         }
         else
         {
-          ROS_DEBUG("Setting transport to %s on %s.",
-                   transport_.c_str(), local_node_.getNamespace().c_str());
+          RCLCPP_DEBUG(node_->get_logger(), "Setting transport to %s on %s.",
+                   transport_.c_str(), local_node_->get_fully_qualified_name());
 
-          local_node_.setParam("image_transport", transport_);
+          // local_node_->set_parameter()
+          // local_node_.setParam("image_transport", transport_);
           image_transport::ImageTransport it(local_node_);
-          image_sub_ = it.subscribe(topic_, 1, &ImagePlugin::imageCallback, this,
-                                    image_transport::TransportHints(transport_,
-                                                                    ros::TransportHints(),
-                                                                    local_node_));
+          image_sub_ = image_transport::create_subscription(local_node_.get(),
+              topic_,
+              std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1),
+              transport_,
+              rclcpp::QoS(1).get_rmw_qos_profile());
         }
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void ImagePlugin::imageCallback(const sensor_msgs::ImageConstPtr& image)
+  void ImagePlugin::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image)
   {
     if (!has_message_)
     {
@@ -517,7 +519,7 @@ namespace mapviz_plugins
     // subscribe.
     if (node["image_transport"])
     {
-      node["image_transport"] >> transport_;
+      transport_ = node["image_transport"].as<std::string>();
       int index = ui_.transport_combo_box->findText( QString::fromStdString(transport_) );
       if (index != -1)
       {
@@ -525,7 +527,7 @@ namespace mapviz_plugins
       }
       else
       {
-        ROS_WARN("Saved image transport %s is unavailable.",
+        RCLCPP_WARN(node_->get_logger(), "Saved image transport %s is unavailable.",
                  transport_.c_str());
       }
     }
@@ -533,7 +535,7 @@ namespace mapviz_plugins
     if (node["topic"])
     {
       std::string topic;
-      node["topic"] >> topic;
+      topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
       TopicEdited();
     }
@@ -541,7 +543,7 @@ namespace mapviz_plugins
     if (node["anchor"])
     {
       std::string anchor;
-      node["anchor"] >> anchor;
+      anchor = node["anchor"].as<std::string>();
       ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
       SetAnchor(anchor.c_str());
     }
@@ -549,39 +551,39 @@ namespace mapviz_plugins
     if (node["units"])
     {
       std::string units;
-      node["units"] >> units;
+      units = node["units"].as<std::string>();
       ui_.units->setCurrentIndex(ui_.units->findText(units.c_str()));
       SetUnits(units.c_str());
     }
 
     if (node["offset_x"])
     {
-      node["offset_x"] >> offset_x_;
+      offset_x_ = node["offset_x"].as<int>();
       ui_.offsetx->setValue(offset_x_);
     }
 
     if (node["offset_y"])
     {
-      node["offset_y"] >> offset_y_;
+      offset_y_ = node["offset_y"].as<int>();
       ui_.offsety->setValue(offset_y_);
     }
 
     if (node["width"])
     {
-      node["width"] >> width_;
+      width_ = node["width"].as<int>();
       ui_.width->setValue(width_);
     }
 
     if (node["height"])
     {
-      node["height"] >> height_;
+      height_ = node["height"].as<int>();
       ui_.height->setValue(height_);
     }
 
     if (node["keep_ratio"])
     {
       bool keep;
-      node["keep_ratio"] >> keep;
+      keep = node["keep_ratio"].as<bool>();
       ui_.keep_ratio->setChecked( keep );
     }
   }
@@ -665,20 +667,20 @@ namespace mapviz_plugins
     // See http://docs.ros.org/api/roscpp/html/this__node_8cpp_source.html
     // Giving each image plugin a unique node means that we can control
     // its image transport individually.
-    char buf[200];
-    snprintf(buf, sizeof(buf), "image_%llu", (unsigned long long)ros::WallTime::now().toNSec());
-    local_node_ = ros::NodeHandle(node_, buf);
+    //char buf[200];
+    //snprintf(buf, sizeof(buf), "image_%llu", (unsigned long long)ros::WallTime::now().toNSec());
+    local_node_ = node_; //ros::NodeHandle(node_, buf);
   }
 
-  void ImagePlugin::SetNode(const ros::NodeHandle& node)
+  void ImagePlugin::SetNode(rclcpp::Node& node)
   {
-    node_ = node;
+    node_ = node.shared_from_this();
 
     // As soon as we have a node, we can find the available image transports
     // and add them to our combo box.
     image_transport::ImageTransport it(node_);
     std::vector<std::string> transports = it.getLoadableTransports();
-    Q_FOREACH (const std::string& transport, transports)
+    for (const std::string& transport : transports)
     {
       QString qtransport = QString::fromStdString(transport).replace("image_transport/", "");
       ui_.transport_combo_box->addItem(qtransport);

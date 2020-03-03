@@ -77,27 +77,27 @@ namespace mapviz_plugins
     enum Units {PIXELS, PERCENT};
 
     ImagePlugin();
-    virtual ~ImagePlugin();
+    ~ImagePlugin() override;
 
-    bool Initialize(QGLWidget* canvas);
-    void Shutdown() {}
+    bool Initialize(QGLWidget* canvas) override;
+    void Shutdown() override {}
 
-    void Draw(double x, double y, double scale);
+    void Draw(double x, double y, double scale) override;
 
     void CreateLocalNode();
-    virtual void SetNode(const std::shared_ptr<rclcpp::Node>& node);
+    void SetNode(rclcpp::Node& node) override;
 
-    void Transform() {}
+    void Transform() override {}
 
-    void LoadConfig(const YAML::Node& node, const std::string& path);
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-    QWidget* GetConfigWidget(QWidget* parent);
+    QWidget* GetConfigWidget(QWidget* parent) override;
 
   protected:
-    void PrintError(const std::string& message);
-    void PrintInfo(const std::string& message);
-    void PrintWarning(const std::string& message);
+    void PrintError(const std::string& message) override;
+    void PrintInfo(const std::string& message) override;
+    void PrintWarning(const std::string& message) override;
 
   public Q_SLOTS:
     void Resubscribe();
@@ -135,16 +135,16 @@ namespace mapviz_plugins
     double last_height_;
     double original_aspect_ratio_;
 
-    ros::NodeHandle local_node_;
+    std::shared_ptr<rclcpp::Node> local_node_;
     image_transport::Subscriber image_sub_;
     bool has_message_;
 
-    sensor_msgs::Image image_;
+    sensor_msgs::msg::Image image_;
 
     cv_bridge::CvImagePtr cv_image_;
     cv::Mat scaled_image_;
 
-    void imageCallback(const sensor_msgs::ImageConstPtr& image);
+    void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image);
 
     void ScaleImage(double width, double height);
     void DrawIplImage(cv::Mat *image);

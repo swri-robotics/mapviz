@@ -1,4 +1,4 @@
-<library path="lib/libmapviz_plugins">
+<library path="mapviz_plugins">
   <class name="mapviz_plugins/attitude_indicator" 
          type="mapviz_plugins::AttitudeIndicatorPlugin" 
          base_class_type="mapviz::MapvizPlugin">
