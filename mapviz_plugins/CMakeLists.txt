@@ -67,7 +67,7 @@ set(UI_FILES
     # ui/draw_polygon_config.ui
     # ui/gps_config.ui
     # ui/grid_config.ui
-    # ui/image_config.ui
+    ui/image_config.ui
     # ui/laserscan_config.ui
     # ui/marker_config.ui
     # ui/measuring_config.ui
