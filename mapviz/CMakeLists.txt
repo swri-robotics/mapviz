@@ -169,12 +169,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 ### Install mapviz ###
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include
+  DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )
 
 install(TARGETS ${PROJECT_NAME} rqt_${PROJECT_NAME}
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
@@ -185,7 +185,7 @@ install(DIRECTORY launch
 )
 
 install(FILES plugin.xml
-  DESTINATION share 
+  DESTINATION share/${PROJECT_NAME} 
 )
 
 ament_export_dependencies(${RUNTIME_DEPS} Qt)
