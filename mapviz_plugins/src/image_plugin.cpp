@@ -38,8 +38,8 @@
 #include <QGLWidget>
 
 // ROS libraries
-#include <ros/master.h>
-#include <sensor_msgs/image_encodings.h>
+// #include <ros/master.h>
+#include <sensor_msgs/image_encodings.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <mapviz/select_topic_dialog.h>

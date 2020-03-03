@@ -43,9 +43,9 @@
 #include <QColor>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
-#include <sensor_msgs/Image.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
+#include <sensor_msgs/msg/image.hpp>
 #include <opencv/highgui.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
@@ -85,7 +85,7 @@ namespace mapviz_plugins
     void Draw(double x, double y, double scale);
 
     void CreateLocalNode();
-    virtual void SetNode(const ros::NodeHandle& node);
+    virtual void SetNode(const std::shared_ptr<rclcpp::Node>& node);
 
     void Transform() {}
 
