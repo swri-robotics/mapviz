@@ -30,7 +30,8 @@
 
 #include <mapviz_plugins/string_plugin.h>
 
-#include <pluginlib/class_list_macros.h>
+// #include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <mapviz/select_topic_dialog.h>
 
 #include <QFontDialog>
@@ -325,13 +326,14 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      string_sub_.shutdown();
+      // string_sub_.shutdown();
+      string_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
         // string_sub_ = node_.subscribe(topic_, 1, &StringPlugin::stringCallback, this);
-        node_->create_subscription<std_msgs::msg::String>(topic_, 1,
+        string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_, 1,
           std::bind(&StringPlugin::stringCallback, node_, std::placeholders::_1));
 
         // ROS_INFO("Subscribing to %s", topic_.c_str());
