@@ -15,6 +15,7 @@ find_package(ament_cmake REQUIRED)
 # find_package(actionlib REQUIRED)
 find_package(cv_bridge REQUIRED)
 # find_package(gps_common REQUIRED)
+find_package(gps_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz REQUIRED)
 find_package(marti_common_msgs REQUIRED)
@@ -216,7 +217,7 @@ install(TARGETS ${PROJECT_NAME}
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-install(DIRECTORY launch
+install(FILES ${PROJECT_NAME}.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
