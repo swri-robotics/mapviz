@@ -31,8 +31,6 @@
 #include <opencv2/core/core.hpp>
 
 // ROS libraries
-#include <ros/master.h>
-
 #include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
 
@@ -76,18 +74,14 @@ namespace mapviz_plugins
                      SLOT(ClearPoints()));
   }
 
-  NavSatPlugin::~NavSatPlugin()
-  {
-  }
-
   void NavSatPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic =
+    std::string topic =
         mapviz::SelectTopicDialog::selectTopic("sensor_msgs/NavSatFix");
 
-    if (!topic.name.empty())
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
   }
@@ -102,19 +96,23 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      navsat_sub_.shutdown();
+      navsat_sub_.reset();
       topic_ = topic;
       if (!topic.empty())
       {
-        navsat_sub_ = node_.subscribe(topic_, 1, &NavSatPlugin::NavSatFixCallback, this);
+        navsat_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
+            topic_,
+            rclcpp::QoS(1),
+            std::bind(&NavSatPlugin::NavSatFixCallback, this, std::placeholders::_1)); 
+            //node_.subscribe(topic_, 1, &NavSatPlugin::NavSatFixCallback, this);
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
   void NavSatPlugin::NavSatFixCallback(
-      const sensor_msgs::NavSatFixConstPtr navsat)
+      const sensor_msgs::msg::NavSatFix::ConstSharedPtr navsat)
   {
     if (!tf_manager_->LocalXyUtil()->Initialized())
     {
@@ -133,8 +131,8 @@ namespace mapviz_plugins
     double y;
     tf_manager_->LocalXyUtil()->ToLocalXy(navsat->latitude, navsat->longitude, x, y);
 
-    stamped_point.point = tf::Point(x, y, navsat->altitude);
-    stamped_point.orientation = tf::createQuaternionFromYaw(0.0);
+    stamped_point.point = tf2::Vector3(x, y, navsat->altitude);
+    stamped_point.orientation.setRPY(0, 0, 0);
     stamped_point.source_frame = tf_manager_->LocalXyUtil()->Frame();
 
     pushPoint( std::move(stamped_point ) );
@@ -181,15 +179,13 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
     }
 
     if (node["color"])
     {
-      std::string color;
-      node["color"] >> color;
+      std::string color = node["color"].as<std::string>();
       QColor qcolor(color.c_str());
       SetColor(qcolor);
       ui_.color->setColor(qcolor);
@@ -197,8 +193,7 @@ namespace mapviz_plugins
 
     if (node["draw_style"])
     {
-      std::string draw_style;
-      node["draw_style"] >> draw_style;
+      std::string draw_style = node["draw_style"].as<std::string>();
 
       if (draw_style == "lines")
       {
@@ -214,16 +209,14 @@ namespace mapviz_plugins
 
     if (node["position_tolerance"])
     {
-      double position_tolerance;
-      node["position_tolerance"] >> position_tolerance;
+      auto position_tolerance = node["position_tolerance"].as<double>();
       ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
     }
 
     if (node["buffer_size"])
     {
-      double buffer_size;
-      node["buffer_size"] >> buffer_size;
+      auto buffer_size = node["buffer_size"].as<int>();
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
