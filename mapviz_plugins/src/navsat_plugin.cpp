@@ -19,10 +19,6 @@
 
 #include <mapviz_plugins/navsat_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -38,6 +34,13 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::NavSatPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -103,8 +106,8 @@ namespace mapviz_plugins
         navsat_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
             topic_,
             rclcpp::QoS(1),
-            std::bind(&NavSatPlugin::NavSatFixCallback, this, std::placeholders::_1)); 
-            //node_.subscribe(topic_, 1, &NavSatPlugin::NavSatFixCallback, this);
+            std::bind(&NavSatPlugin::NavSatFixCallback, this, std::placeholders::_1));
+            // node_.subscribe(topic_, 1, &NavSatPlugin::NavSatFixCallback, this);
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
@@ -199,9 +202,7 @@ namespace mapviz_plugins
       {
         ui_.drawstyle->setCurrentIndex(0);
         SetDrawStyle( LINES );
-      }
-      else if (draw_style == "points")
-      {
+      } else if (draw_style == "points") {
         ui_.drawstyle->setCurrentIndex(1);
         SetDrawStyle( POINTS );
       }
@@ -240,4 +241,4 @@ namespace mapviz_plugins
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
   }
-}
+}   // namespace mapviz_plugins
