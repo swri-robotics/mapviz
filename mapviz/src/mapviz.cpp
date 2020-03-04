@@ -1024,9 +1024,9 @@ void Mapviz::AddDisplay(
         ui_.configs->sortItems();
 
         ReorderDisplays();
-      } 
-      else if (req->draw_order < 0) {
-        display.first->setData(Qt::UserRole, QVariant(ui_.configs->count() + req->draw_order + 0.1));
+      } else if (req->draw_order < 0) {
+        display.first->setData(
+          Qt::UserRole, QVariant(ui_.configs->count() + req->draw_order + 0.1));
         ui_.configs->sortItems();
 
         ReorderDisplays();
