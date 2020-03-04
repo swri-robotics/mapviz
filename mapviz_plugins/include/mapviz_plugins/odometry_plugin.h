@@ -43,9 +43,12 @@
 #include <QWidget>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
-#include <nav_msgs/Odometry.h>
+// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
+// #include <tf/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
+// #include <nav_msgs/Odometry.h>
+#include <nav_msgs/msg/odometry.hpp>
 
 #include <mapviz/map_canvas.h>
 
@@ -94,9 +97,11 @@ namespace mapviz_plugins
     Ui::odometry_config ui_;
     QWidget* config_widget_;
     std::string topic_;
-    ros::Subscriber odometry_sub_;
+    // ros::Subscriber odometry_sub_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
     bool has_message_;
-    void odometryCallback(const nav_msgs::OdometryConstPtr odometry);
+    // void odometryCallback(const nav_msgs::OdometryConstPtr odometry);
+    void odometryCallback(const nav_msgs::msg::Odometry::SharedPtr odometry);
   };
 }
 
