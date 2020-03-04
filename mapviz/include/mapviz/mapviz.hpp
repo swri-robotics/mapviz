@@ -141,6 +141,32 @@ Q_SIGNALS:
   void ImageTransportChanged();
 
 protected:
+  void Open(const std::string& filename);
+  void Save(const std::string& filename);
+
+  MapvizPluginPtr CreateNewDisplay(
+      const std::string& name,
+      const std::string& type,
+      bool visible,
+      bool collapsed,
+      int draw_order = 0);
+
+  void AddDisplay(
+    const mapviz_interfaces::srv::AddMapvizDisplay::Request::SharedPtr req,
+    mapviz_interfaces::srv::AddMapvizDisplay::Response::SharedPtr resp);
+
+  void ClearDisplays();
+  void AdjustWindowSize();
+
+  QString GetDefaultConfigPath();
+
+  virtual void showEvent(QShowEvent* event);
+  virtual void closeEvent(QCloseEvent* event);
+
+  static const QString ROS_WORKSPACE_VAR;
+  static const QString MAPVIZ_CONFIG_FILE;
+  static const char IMAGE_TRANSPORT_PARAM[];
+
   Ui::mapviz ui_;
 
   QMenu* image_transport_menu_;
@@ -191,30 +217,6 @@ protected:
 
   // Stopwatch meas_spin_;
   Stopwatch meas_spin_;
-
-  void Open(const std::string& filename);
-  void Save(const std::string& filename);
-
-  MapvizPluginPtr CreateNewDisplay(
-      const std::string& name,
-      const std::string& type,
-      bool visible,
-      bool collapsed,
-      int draw_order = 0);
-
-  void AddDisplay(
-    const mapviz_interfaces::srv::AddMapvizDisplay::Request::SharedPtr req,
-    mapviz_interfaces::srv::AddMapvizDisplay::Response::SharedPtr resp);
-
-  void ClearDisplays();
-  void AdjustWindowSize();
-
-  virtual void showEvent(QShowEvent* event);
-  virtual void closeEvent(QCloseEvent* event);
-
-  static const QString ROS_WORKSPACE_VAR;
-  static const QString MAPVIZ_CONFIG_FILE;
-  static const char IMAGE_TRANSPORT_PARAM[];
 };
 }   // namespace mapviz
 

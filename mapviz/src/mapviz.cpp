@@ -111,6 +111,12 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   /// TODO PJR Pass in node options and make name anonymous if necessary
   node_ = std::make_shared<rclcpp::Node>("mapviz");
 
+  QString default_path = GetDefaultConfigPath();
+  node_->declare_parameter("config", default_path.toStdString());
+  node_->declare_parameter("auto_save_backup", true);
+  node_->declare_parameter("print_profile_data", false);
+  node_->declare_parameter(IMAGE_TRANSPORT_PARAM, "raw");
+
   ui_.setupUi(this);
 
   xy_pos_label_->setVisible(false);
@@ -299,24 +305,7 @@ void Mapviz::Initialize()
                                                   std::placeholders::_1,
                                                   std::placeholders::_2));
 
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    QString default_path = QDir::homePath();
-    if (env.contains(ROS_WORKSPACE_VAR)) {
-      // If the ROS_WORKSPACE environment variable is defined, try to read our
-      // config file out of that.  If we can't read it, fall back to trying to
-      // read one from the user's home directory.
-      QString ws_path = env.value(ROS_WORKSPACE_VAR, default_path);
-      if (QFileInfo(ws_path + MAPVIZ_CONFIG_FILE).isReadable()) {
-        default_path = ws_path;
-      } else {
-        RCLCPP_WARN(
-          node_->get_logger(),
-          "Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
-          ws_path.toStdString().c_str());
-      }
-    }
-    default_path += MAPVIZ_CONFIG_FILE;
-
+    QString default_path = GetDefaultConfigPath();
 
     std::string config;
     // priv.param("config", config, default_path.toStdString());
@@ -352,6 +341,30 @@ void Mapviz::Initialize()
 
     initialized_ = true;
   }
+}
+
+QString Mapviz::GetDefaultConfigPath()
+{
+  QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+  QString default_path = QDir::homePath();
+  if (env.contains(ROS_WORKSPACE_VAR)) {
+    // If the ROS_WORKSPACE environment variable is defined, try to read our
+    // config file out of that.  If we can't read it, fall back to trying to
+    // read one from the user's home directory.
+    QString ws_path = env.value(ROS_WORKSPACE_VAR, default_path);
+    if (QFileInfo(ws_path + MAPVIZ_CONFIG_FILE).isReadable()) {
+      default_path = ws_path;
+    }
+    else {
+      RCLCPP_WARN(
+          node_->get_logger(),
+          "Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
+          ws_path.toStdString().c_str());
+    }
+  }
+  default_path += MAPVIZ_CONFIG_FILE;
+
+  return default_path;
 }
 
 void Mapviz::SpinOnce()
@@ -526,7 +539,8 @@ void Mapviz::Open(const std::string& filename)
   if (last_slash != std::string::npos && last_slash != filename.size() - 1) {
     title = filename.substr(last_slash + 1) + " (" +
             filename.substr(0, last_slash + 1) + ")";
-  } else {
+  }
+  else {
     title = filename;
   }
 
@@ -534,9 +548,7 @@ void Mapviz::Open(const std::string& filename)
   setWindowTitle(QString::fromStdString(title));
 
   YAML::Node doc = YAML::LoadFile(filename);
-  // if (!YAML::LoadFile(filename, doc))
   if (!doc) {
-    // ROS_ERROR("Failed to load file: %s", filename.c_str());
     RCLCPP_ERROR(node_->get_logger(), "Failed to load file: %s", filename.c_str());
     return;
   }
@@ -551,112 +563,81 @@ void Mapviz::Open(const std::string& filename)
     ClearDisplays();
 
     if (doc["capture_directory"]) {
-      // doc["capture_directory"] >> capture_directory_;
       capture_directory_ = doc["capture_directory"].as<std::string>();
     }
 
     if (doc["fixed_frame"]) {
-      std::string fixed_frame;
-      // doc["fixed_frame"] >> fixed_frame;
-      fixed_frame = doc["fixed_frame"].as<std::string>();
+      std::string fixed_frame = doc["fixed_frame"].as<std::string>();
       ui_.fixedframe->setEditText(fixed_frame.c_str());
     }
 
     if (doc["target_frame"]) {
-      std::string target_frame;
-      // doc["target_frame"] >> target_frame;
-      target_frame = doc["target_frame"].as<std::string>();
+      std::string target_frame = doc["target_frame"].as<std::string>();
       ui_.targetframe->setEditText(target_frame.c_str());
     }
 
     if (doc["fix_orientation"]) {
-      bool fix_orientation = false;
-      // doc["fix_orientation"] >> fix_orientation;
-      fix_orientation = doc["fix_orientation"].as<bool>();
+      bool fix_orientation = doc["fix_orientation"].as<bool>();
       ui_.actionFix_Orientation->setChecked(fix_orientation);
     }
 
     if (doc["rotate_90"]) {
-      bool rotate_90 = false;
-      // doc["rotate_90"] >> rotate_90;
-      rotate_90 = doc["rotate_90"].as<bool>();
+      bool rotate_90 = doc["rotate_90"].as<bool>();
       ui_.actionRotate_90->setChecked(rotate_90);
     }
 
     if (doc["enable_antialiasing"]) {
-      bool enable_antialiasing = true;
-      // doc["enable_antialiasing"] >> enable_antialiasing;
-      enable_antialiasing = doc["enable_antialiasing"].as<bool>();
+      bool enable_antialiasing = doc["enable_antialiasing"].as<bool>();
       ui_.actionEnable_Antialiasing->setChecked(enable_antialiasing);
     }
 
     if (doc["show_displays"]) {
-      bool show_displays = false;
-      // doc["show_displays"] >> show_displays;
-      show_displays = doc["show_displays"].as<bool>();
+      bool show_displays = doc["show_displays"].as<bool>();
       ui_.actionConfig_Dock->setChecked(show_displays);
     }
 
     if (doc["show_capture_tools"]) {
-      bool show_capture_tools = false;
-      // doc["show_capture_tools"] >> show_capture_tools;
-      show_capture_tools = doc["show_capture_tools"].as<bool>();
+      bool show_capture_tools = doc["show_capture_tools"].as<bool>();
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
     if (doc["show_status_bar"]) {
-      bool show_status_bar = false;
-      // doc["show_status_bar"] >> show_status_bar;
-      show_status_bar = doc["show_status_bar"].as<bool>();
+      bool show_status_bar = doc["show_status_bar"].as<bool>();
       ui_.actionShow_Status_Bar->setChecked(show_status_bar);
     }
 
     if (doc["show_capture_tools"]) {
-      bool show_capture_tools = false;
-      // doc["show_capture_tools"] >> show_capture_tools;
-      show_capture_tools = doc["show_capture_tools"].as<bool>();
+      bool show_capture_tools = doc["show_capture_tools"].as<bool>();
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
     if (doc["window_width"]) {
-      int window_width = 0;
-      // doc["window_width"] >> window_width;
-      window_width = doc["window_width"].as<int>();
+      int window_width = doc["window_width"].as<int>();
       resize(window_width, height());
     }
 
     if (doc["window_height"]) {
-      int window_height = 0;
-      // doc["window_height"] >> window_height;
-      window_height = doc["window_height"].as<int>();
+      int window_height = doc["window_height"].as<int>();
       resize(width(), window_height);
     }
 
     if (doc["view_scale"]) {
-      float scale = 0;
-      // doc["view_scale"] >> scale;
-      scale = doc["view_scale"].as<float>();
+      float scale = doc["view_scale"].as<float>();
       canvas_->SetViewScale(scale);
     }
 
     if (doc["offset_x"]) {
-      float x = 0;
-      // doc["offset_x"] >> x;
-      x = doc["offset_x"].as<float>();
+      float x = doc["offset_x"].as<float>();
       canvas_->SetOffsetX(x);
     }
 
     if (doc["offset_y"]) {
-      float y = 0;
-      // doc["offset_y"] >> y;
-      y = doc["offset_y"].as<float>();
+      float y = doc["offset_y"].as<float>();
       canvas_->SetOffsetY(y);
     }
 
     if (doc["force_720p"]) {
-      bool force_720p;
-      // doc["force_720p"] >> force_720p;
-      force_720p = doc["force_720p"].as<bool>();
+      bool force_720p = doc["force_720p"].as<bool>();
 
       if (force_720p) {
         ui_.actionForce_720p->setChecked(true);
@@ -664,9 +645,7 @@ void Mapviz::Open(const std::string& filename)
     }
 
     if (doc["force_480p"]) {
-      bool force_480p;
-      // doc["force_480p"] >> force_480p;
-      force_480p = doc["force_480p"].as<bool>();
+      bool force_480p = doc["force_480p"].as<bool>();
 
       if (force_480p) {
         ui_.actionForce_480p->setChecked(true);
@@ -674,25 +653,20 @@ void Mapviz::Open(const std::string& filename)
     }
 
     if (doc[IMAGE_TRANSPORT_PARAM]) {
-      std::string image_transport;
-      // doc[IMAGE_TRANSPORT_PARAM] >> image_transport;
-      image_transport = doc[IMAGE_TRANSPORT_PARAM].as<std::string>();
+      std::string image_transport = doc[IMAGE_TRANSPORT_PARAM].as<std::string>();
 
       node_->set_parameter({IMAGE_TRANSPORT_PARAM, image_transport});
     }
 
     bool use_latest_transforms = true;
     if (doc["use_latest_transforms"]) {
-      // doc["use_latest_transforms"] >> use_latest_transforms;
       use_latest_transforms = doc["use_latest_transforms"].as<bool>();
     }
     ui_.uselatesttransforms->setChecked(use_latest_transforms);
     canvas_->ToggleUseLatestTransforms(use_latest_transforms);
 
     if (doc["background"]) {
-      std::string color;
-      // doc["background"] >> color;
-      color = doc["background"].as<std::string>();
+      std::string color = doc["background"].as<std::string>();
       background_ = QColor(color.c_str());
       ui_.bg_color->setColor(background_);
       canvas_->SetBackground(background_);
@@ -701,21 +675,14 @@ void Mapviz::Open(const std::string& filename)
     if (doc["displays"]) {
       const YAML::Node& displays = doc["displays"];
       for (const auto& display : displays) {
-        std::string type, name;
-        // displays[i]["type"] >> type;
-        // displays[i]["name"] >> name;
-        type = display["type"].as<std::string>();
-        name = display["name"].as<std::string>();
+        std::string type = display["type"].as<std::string>();
+        std::string name = display["name"].as<std::string>();
 
         const YAML::Node& config = display["config"];
 
-        bool visible = false;
-        // config["visible"] >> visible;
-        visible = config["visible"].as<bool>();
+        bool visible = config["visible"].as<bool>();
 
-        bool collapsed = false;
-        // config["collapsed"] >> collapsed;
-        collapsed = config["collapsed"].as<bool>();
+        bool collapsed = config["collapsed"].as<bool>();
 
         try
         {
@@ -727,7 +694,6 @@ void Mapviz::Open(const std::string& filename)
         catch (const pluginlib::LibraryLoadException& e)
         {
           failed_plugins.push_back(type);
-          // ROS_ERROR("%s", e.what());
           RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
         }
       }
@@ -735,13 +701,11 @@ void Mapviz::Open(const std::string& filename)
   }
   catch (const YAML::ParserException& e)
   {
-    // ROS_ERROR("%s", e.what());
     RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
     return;
   }
   catch (const YAML::Exception& e)
   {
-    // ROS_ERROR("%s", e.what());
     RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
     return;
   }
@@ -800,8 +764,7 @@ void Mapviz::Save(const std::string& filename)
       << ui_.uselatesttransforms->isChecked();
   out << YAML::Key << "background" << YAML::Value << background_.name().toStdString();
   std::string image_transport;
-  // if (node_->getParam(IMAGE_TRANSPORT_PARAM, image_transport))
-  if (node_->get_parameter(image_transport).as_bool()) {
+  if (node_->get_parameter(IMAGE_TRANSPORT_PARAM, image_transport)) {
     out << YAML::Key << IMAGE_TRANSPORT_PARAM << YAML::Value << image_transport;
   }
 
