@@ -45,11 +45,16 @@
 #include <QWidget>
 
 // ROS libraries
-#include <geometry_msgs/Pose.h>
-#include <nav_msgs/Odometry.h>
-#include <ros/ros.h>
-#include <sensor_msgs/Imu.h>
-#include <tf/transform_datatypes.h>
+// #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/msg/pose.hpp>
+// #include <nav_msgs/Odometry.h>
+#include <nav_msgs/msg/odometry.hpp>
+// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
+// #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/msg/imu.hpp>
+// #include <tf/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
 #include <topic_tools/shape_shifter.h>
 
 #include <mapviz/map_canvas.h>

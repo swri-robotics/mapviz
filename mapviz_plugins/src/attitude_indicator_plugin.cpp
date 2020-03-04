@@ -41,7 +41,8 @@
 #include <QGLWidget>
 
 // ROS libraries
-#include <ros/master.h>
+// #include <ros/master.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <mapviz/select_topic_dialog.h>
 #include <mapviz/select_frame_dialog.h>
