@@ -79,7 +79,6 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/make_shared.hpp>
 
 // OpenCV libraries
 #include <opencv2/core/core.hpp>
@@ -204,7 +203,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
   // Use a separate thread for writing video files so that it won't cause
   // lag on the main thread.
-  // It's ok for the video writer to be a pointer that we intantiate here and
+  // It's ok for the video writer to be a pointer that we instantiate here and
   // then forget about; the worker thread will delete it when the thread exits.
   vid_writer_ = new VideoWriter();
   vid_writer_->moveToThread(&video_thread_);
@@ -253,18 +252,13 @@ void Mapviz::Initialize()
       connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
     }
 
-    // node_ = new ros::NodeHandle("~");
-
     // Create a sub-menu that lists all available Image Transports
     image_transport::ImageTransport it(node_);
     std::vector<std::string> transports = it.getLoadableTransports();
     QActionGroup* group = new QActionGroup(image_transport_menu_);
-    for (
-      std::vector<std::string>::iterator iter = transports.begin();
-      iter != transports.end();
-      iter++)
+    for (const auto& iter : transports)
     {
-      QString transport = QString::fromStdString(*iter).replace(
+      QString transport = QString::fromStdString(iter).replace(
           QString::fromStdString(IMAGE_TRANSPORT_PARAM) + "/", "");
       QAction* action = image_transport_menu_->addAction(transport);
       action->setCheckable(true);
@@ -276,7 +270,6 @@ void Mapviz::Initialize()
     tf_buf_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_ = std::make_shared<tf2_ros::TransformListener>(*tf_buf_);
     tf_manager_ = std::make_shared<swri_transform_util::TransformManager>(node_);
-    // tf_manager_->Initialize(tf_);
     try
     {
       tf_manager_->Initialize();
@@ -290,8 +283,8 @@ void Mapviz::Initialize()
         "mapviz", "mapviz::MapvizPlugin");
 
     std::vector<std::string> plugins = loader_->getDeclaredClasses();
-    for (unsigned int i = 0; i < plugins.size(); i++) {
-      RCLCPP_INFO(node_->get_logger(), "Found mapviz plugin: %s", plugins[i].c_str());
+    for (const auto& plugin : plugins) {
+      RCLCPP_INFO(node_->get_logger(), "Found mapviz plugin: %s", plugin.c_str());
     }
 
     canvas_->InitializeTf(tf_);
@@ -400,11 +393,11 @@ void Mapviz::UpdateFrames()
   std::string current_fixed = ui_.fixedframe->currentText().toStdString();
 
   ui_.fixedframe->clear();
-  for (size_t i = 0; i < frames.size(); i++) {
-    ui_.fixedframe->addItem(frames[i].c_str());
+  for (const auto& frame : frames) {
+    ui_.fixedframe->addItem(frame.c_str());
   }
 
-  if (current_fixed != "") {
+  if (!current_fixed.empty()) {
     int index = ui_.fixedframe->findText(current_fixed.c_str());
     if (index < 0) {
       ui_.fixedframe->addItem(current_fixed.c_str());
@@ -418,11 +411,11 @@ void Mapviz::UpdateFrames()
 
   ui_.targetframe->clear();
   ui_.targetframe->addItem("<none>");
-  for (size_t i = 0; i < frames.size(); i++) {
-    ui_.targetframe->addItem(frames[i].c_str());
+  for (const auto& frame : frames) {
+    ui_.targetframe->addItem(frame.c_str());
   }
 
-  if (current_target != "") {
+  if (!current_target.empty()) {
     int index = ui_.targetframe->findText(current_target.c_str());
     if (index < 0) {
       ui_.targetframe->addItem(current_target.c_str());
@@ -707,14 +700,14 @@ void Mapviz::Open(const std::string& filename)
 
     if (doc["displays"]) {
       const YAML::Node& displays = doc["displays"];
-      for (uint32_t i = 0; i < displays.size(); i++) {
+      for (const auto& display : displays) {
         std::string type, name;
         // displays[i]["type"] >> type;
         // displays[i]["name"] >> name;
-        type = displays[i]["type"].as<std::string>();
-        name = displays[i]["name"].as<std::string>();
+        type = display["type"].as<std::string>();
+        name = display["name"].as<std::string>();
 
-        const YAML::Node& config = displays[i]["config"];
+        const YAML::Node& config = display["config"];
 
         bool visible = false;
         // config["visible"] >> visible;
@@ -768,7 +761,7 @@ void Mapviz::Save(const std::string& filename)
   std::ofstream fout(filename.c_str());
   if (fout.fail()) {
     // ROS_ERROR("Failed to open file: %s", filename.c_str());
-    RCLCPP_ERROR(node_->get_logger(), "Failed to ppen file: %s", filename.c_str());
+    RCLCPP_ERROR(node_->get_logger(), "Failed to open file: %s", filename.c_str());
     return;
   }
 
@@ -877,8 +870,6 @@ void Mapviz::AutoSave()
       // writable if the file doesn't exist.
       default_path = ws_path;
     } else {
-      // ROS_WARN("Could not write config file to %s.  Trying home directory.",
-      //          (ws_path + MAPVIZ_CONFIG_FILE).toStdString().c_str());
       RCLCPP_WARN(node_->get_logger(),
                   "Could not write config file to %s. Trying home directory.",
                   (ws_path + MAPVIZ_CONFIG_FILE).toStdString().c_str());
@@ -955,11 +946,11 @@ void Mapviz::SelectNewDisplay()
 
   std::vector<std::string> plugins = loader_->getDeclaredClasses();
   std::map<std::string, std::string> plugin_types;
-  for (size_t i = 0; i < plugins.size(); i++) {
-    QString type(plugins[i].c_str());
+  for (const auto& plugin : plugins) {
+    QString type(plugin.c_str());
     type = type.split('/').last();
     ui.displaylist->addItem(type);
-    plugin_types[type.toStdString()] = plugins[i];
+    plugin_types[type.toStdString()] = plugin;
   }
   ui.displaylist->setCurrentRow(0);
 
@@ -979,7 +970,6 @@ void Mapviz::SelectNewDisplay()
       message << "Unable to load " << type << "." << std::endl
               << "Check the ROS log for more details.";
       QMessageBox::warning(this, "Plugin failed to load", QString::fromStdString(message.str()));
-      // ROS_ERROR("%s", e.what());
       RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
     }
   }
@@ -1048,7 +1038,6 @@ void Mapviz::AddDisplay(
   }
   catch (const pluginlib::LibraryLoadException& e)
   {
-    // ROS_ERROR("%s", e.what());
     RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
     resp->success = false;
     resp->message = "Failed to load display plug-in.";
@@ -1141,7 +1130,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
     bool collapsed,
     int draw_order)
 {
-  ConfigItem* config_item = new ConfigItem();
+  auto* config_item = new ConfigItem();
 
   config_item->SetName(name.c_str());
 
@@ -1155,7 +1144,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   // ROS_INFO("creating: %s", real_type.c_str());
   RCLCPP_INFO(node_->get_logger(), "creating: %s", real_type.c_str());
-  MapvizPluginPtr plugin = loader_->createSharedInstance(real_type.c_str());
+  MapvizPluginPtr plugin = loader_->createSharedInstance(real_type);
 
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
@@ -1168,9 +1157,11 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   if (draw_order == 0) {
     plugin->SetDrawOrder(ui_.configs->count());
-  } else if (draw_order > 0) {
+  }
+  else if (draw_order > 0) {
     plugin->SetDrawOrder(std::min(ui_.configs->count(), draw_order - 1));
-  } else if (draw_order < 0) {
+  }
+  else if (draw_order < 0) {
     plugin->SetDrawOrder(std::max(0, ui_.configs->count() + draw_order + 1));
   }
 
@@ -1205,7 +1196,8 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   if (draw_order == 0) {
     ui_.configs->addItem(item);
-  } else {
+  }
+  else {
     ui_.configs->insertItem(plugin->DrawOrder(), item);
   }
 
@@ -1248,8 +1240,8 @@ void Mapviz::FixedFrameSelected(const QString& text)
       node_->get_logger(),
       "fixed frame selected: %s",
       text.toStdString().c_str());
-    if (canvas_ != NULL) {
-      canvas_->SetFixedFrame(text.toStdString().c_str());
+    if (canvas_ != nullptr) {
+      canvas_->SetFixedFrame(text.toStdString());
     }
   }
 }
@@ -1263,8 +1255,8 @@ void Mapviz::TargetFrameSelected(const QString& text)
       "Target frame selected: %s",
       text.toStdString().c_str());
 
-    if (canvas_ != NULL) {
-      canvas_->SetTargetFrame(text.toStdString().c_str());
+    if (canvas_ != nullptr) {
+      canvas_->SetTargetFrame(text.toStdString());
     }
   }
 }
@@ -1356,7 +1348,8 @@ void Mapviz::ToggleRecord(bool on)
     }
 
     record_timer_.start(1000.0 / 30.0);
-  } else {
+  }
+  else {
     rec_button_->setIcon(QIcon(":/images/media-record.png"));
     rec_button_->setToolTip("Continue recording video of display canvas");
     record_timer_.stop();
@@ -1366,7 +1359,6 @@ void Mapviz::ToggleRecord(bool on)
 void Mapviz::SetImageTransport(QAction* transport_action)
 {
   std::string transport = transport_action->text().toStdString();
-  // ROS_INFO("Setting %s to %s", IMAGE_TRANSPORT_PARAM.c_str(), transport.c_str());
   RCLCPP_INFO(
     node_->get_logger(),
     "Setting %s to %s",
@@ -1382,9 +1374,8 @@ void Mapviz::UpdateImageTransportMenu()
   QList<QAction*> actions = image_transport_menu_->actions();
 
   std::string current_transport;
-  // node_->param<std::string>(IMAGE_TRANSPORT_PARAM, current_transport, "raw");
   node_->get_parameter_or(IMAGE_TRANSPORT_PARAM, current_transport, std::string("raw"));
-  Q_FOREACH(QAction* action, actions)
+  for(const auto action : actions)
   {
     if (action->text() == QString::fromStdString(current_transport)) {
       action->setChecked(true);
@@ -1474,7 +1465,7 @@ void Mapviz::UpdateSizeHints()
 {
   for (int i = 0; i < ui_.configs->count(); i++) {
     QListWidgetItem* item = ui_.configs->item(i);
-    ConfigItem* widget = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
+    auto* widget = dynamic_cast<ConfigItem*>(ui_.configs->itemWidget(item));
     if (widget) {
       // Make sure the ConfigItem in the QListWidgetItem we're getting really
       // exists; if this method is called before it's been initialized, it would

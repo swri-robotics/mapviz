@@ -31,6 +31,7 @@
 #define MAPVIZ_POINT_DRAW_H_
 
 // C++ standard libraries
+#include <deque>
 #include <string>
 #include <list>
 
@@ -43,8 +44,8 @@
 #include <QWidget>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
 
 namespace mapviz_plugins
 {
@@ -57,18 +58,18 @@ namespace mapviz_plugins
     {
       StampedPoint(): transformed(false) {}
 
-      tf::Point point;
-      tf::Quaternion orientation;
-      tf::Point transformed_point;
-      tf::Point transformed_arrow_point;
-      tf::Point transformed_arrow_left;
-      tf::Point transformed_arrow_right;
+      tf2::Vector3 point;
+      tf2::Quaternion orientation;
+      tf2::Vector3 transformed_point;
+      tf2::Vector3 transformed_arrow_point;
+      tf2::Vector3 transformed_arrow_left;
+      tf2::Vector3 transformed_arrow_right;
       std::string source_frame;
       bool transformed;
-      ros::Time stamp;
+      rclcpp::Time stamp;
 
-      std::vector<tf::Point> cov_points;
-      std::vector<tf::Point> transformed_cov_points;
+      std::vector<tf2::Vector3> cov_points;
+      std::vector<tf2::Vector3> transformed_cov_points;
     };
 
     enum DrawStyle
@@ -79,13 +80,10 @@ namespace mapviz_plugins
     };
 
     PointDrawingPlugin();
-    virtual ~PointDrawingPlugin()
-    {
-    }
+    ~PointDrawingPlugin() override = default;
+    void ClearHistory() override;
 
-    void ClearHistory();
-
-    virtual void Transform();
+    void Transform() override;
     virtual bool DrawPoints(double scale);
     virtual bool DrawArrows();
     virtual bool DrawArrow(const StampedPoint& point);
@@ -99,7 +97,7 @@ namespace mapviz_plugins
 
    protected Q_SLOTS:
     virtual void BufferSizeChanged(int value);
-    virtual void DrawIcon();
+    void DrawIcon() override;
     virtual void SetColor(const QColor& color);
     virtual void SetDrawStyle(QString style);
     virtual void SetDrawStyle(DrawStyle style);
@@ -137,7 +135,7 @@ namespace mapviz_plugins
    private:
     std::vector<std::deque<StampedPoint> > laps_;
     bool got_begin_;
-    tf::Point begin_;
+    tf2::Vector3 begin_;
   };
 }
 

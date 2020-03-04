@@ -66,7 +66,7 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::ClearHistory()
   {
-    ROS_INFO("PointDrawingPlugin::ClearHistory()");
+    RCLCPP_INFO(node_->get_logger(), "PointDrawingPlugin::ClearHistory()");
     points_.clear();
   }
 
@@ -291,12 +291,12 @@ namespace mapviz_plugins
       buffer_size_ = INT_MAX;
       got_begin_ = true;
     }
-    tf::Point check = begin_ - cur_point_.point;
+    tf2::Vector3 check = begin_ - cur_point_.point;
     if (((std::fabs(check.x()) <= 3) && (std::fabs(check.y()) <= 3)) &&
         !new_lap_)
     {
       new_lap_ = true;
-      if (points_.size() > 0)
+      if (!points_.empty())
       {
         laps_.push_back(points_);
         laps_[0].pop_back();
@@ -316,7 +316,7 @@ namespace mapviz_plugins
   {
     bool success = cur_point_.transformed;
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
-    if (draw_style_ == LINES && points_.size()>0)
+    if (draw_style_ == LINES && !points_.empty())
     {
       glLineWidth(3);
       glBegin(GL_LINE_STRIP);
@@ -412,7 +412,7 @@ namespace mapviz_plugins
 
       if (draw_style_ == ARROWS)
       {
-        tf::Transform orientation(tf::Transform(transform.GetOrientation()) *
+        tf2::Transform orientation(tf2::Transform(transform.GetOrientation()) *
                                   point.orientation);
 
         double size = static_cast<double>(arrow_size_);
@@ -428,11 +428,11 @@ namespace mapviz_plugins
         double head_length = size * 0.75;
 
         point.transformed_arrow_point =
-            point.transformed_point + orientation * tf::Point(size, 0.0, 0.0);
+            point.transformed_point + orientation * tf2::Vector3(size, 0.0, 0.0);
         point.transformed_arrow_left =
-            point.transformed_point + orientation * tf::Point(head_length, -arrow_width, 0.0);
+            point.transformed_point + orientation * tf2::Vector3(head_length, -arrow_width, 0.0);
         point.transformed_arrow_right =
-            point.transformed_point + orientation * tf::Point(head_length, arrow_width, 0.0);
+            point.transformed_point + orientation * tf2::Vector3(head_length, arrow_width, 0.0);
       }
 
       if (covariance_checked_)
@@ -459,7 +459,7 @@ namespace mapviz_plugins
     }
 
     transformed = transformed | TransformPoint(cur_point_);
-    if (laps_.size() > 0)
+    if (!laps_.empty())
     {
       for (auto &lap : laps_)
       {
@@ -478,7 +478,7 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawLaps()
   {
-    bool transformed = points_.size() != 0;
+    bool transformed = !points_.empty();
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(3);
     QColor base_color = color_;
@@ -521,7 +521,7 @@ namespace mapviz_plugins
 
     glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(), 0.5);
 
-    if (points_.size() > 0)
+    if (!points_.empty())
     {
       for (const auto &pt : points_)
       {
@@ -599,7 +599,7 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawLapsArrows()
   {
-    bool success = laps_.size() != 0 && points_.size() != 0;
+    bool success = !laps_.empty() && !points_.empty();
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(2);
     QColor base_color = color_;
@@ -625,7 +625,7 @@ namespace mapviz_plugins
                 0.5);
     }
 
-    if (points_.size() > 0)
+    if (!points_.empty())
     {
       for (const auto& pt : points_)
       {
