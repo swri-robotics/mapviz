@@ -41,7 +41,8 @@
 #endif
 
 // ROS Libraries
-#include <ros/ros.h>
+// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
 #include <mapviz/select_frame_dialog.h>
@@ -49,7 +50,7 @@
 //
 #include <swri_transform_util/transform.h>
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::CoordinatePickerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -124,7 +125,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 #else
   QPointF point = event->posF();
 #endif
-  ROS_DEBUG("Map point: %f %f", point.x(), point.y());
+  RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;
   std::string frame = ui_.frame->text().toStdString();
@@ -140,12 +141,17 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   // Then we translate from that frame into *our* target frame, `frame`.
   if (tf_manager_->GetTransform(frame, target_frame_, transform))
   {
-    ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
+    RCLCPP_DEBUG(node_->get_logger(),
+              "Transforming from fixed frame '%s' to (plugin) target frame '%s'",
               target_frame_.c_str(),
               frame.c_str());
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-    ROS_DEBUG("Point in fixed frame: %f %f", transformed.x(), transformed.y());
-    tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+    RCLCPP_DEBUG(node_->get_logger(),
+      "Point in fixed frame: %f %f",
+      transformed.x(),
+      transformed.y());
+    // tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+    tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
     position = transform * position;
     point.setX(position.x());
     point.setY(position.y());
@@ -155,13 +161,21 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   else
   {
     QString warning;
-    QTextStream(&warning) << "No available transform from '" << QString::fromStdString(target_frame_) << "' to '" << QString::fromStdString(frame) << "'";
+    QTextStream(&warning) << "No available transform from '"
+      << QString::fromStdString(target_frame_)
+      << "' to '"
+      << QString::fromStdString(frame)
+      << "'";
     PrintWarning(warning.toStdString());
     return false;
   }
 
 
-  ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
+  RCLCPP_DEBUG(node_->get_logger(),
+    "Transformed point in frame '%s': %f %f",
+    frame.c_str(),
+    point.x(),
+    point.y());
   QString new_point;
   QTextStream stream(&new_point);
   stream.setRealNumberPrecision(4);
@@ -209,12 +223,14 @@ void CoordinatePickerPlugin::SelectFrame()
 
 void CoordinatePickerPlugin::FrameEdited()
 {
-  ROS_INFO("Setting target frame to %s", ui_.frame->text().toStdString().c_str());
+  RCLCPP_INFO(node_->get_logger(),
+    "Setting target frame to %s",
+    ui_.frame->text().toStdString().c_str());
 }
 
 void CoordinatePickerPlugin::ToggleCopyOnClick(int state)
 {
-  switch(state)
+  switch (state)
   {
     case Qt::Checked:
       copy_on_click_ = true;
@@ -241,14 +257,16 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
   if (node["frame"])
   {
     std::string frame;
-    node["frame"] >> frame;
+    // node["frame"] >> frame;
+    frame = node["frame"].as<std::string>();
     ui_.frame->setText(QString::fromStdString(frame));
   }
 
   if (node["copy"])
   {
     bool copy;
-    node["copy"] >> copy;
+    // node["copy"] >> copy;
+    copy = node["copy"].as<bool>();
     if (copy)
     {
       ui_.copyCheckBox->setCheckState(Qt::Checked);
@@ -284,4 +302,4 @@ void CoordinatePickerPlugin::PrintWarning(const std::string& message)
   PrintWarningHelper(ui_.status, message, 1.0);
 }
 
-} // namespace mapviz_plugins
+}   // namespace mapviz_plugins

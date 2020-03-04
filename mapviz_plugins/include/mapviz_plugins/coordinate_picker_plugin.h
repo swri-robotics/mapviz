@@ -33,7 +33,8 @@
 #include <mapviz/mapviz_plugin.h>
 
 // ROS Libraries
-#include <ros/ros.h>
+// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 // Mapviz libraries
 #include <mapviz/map_canvas.h>
