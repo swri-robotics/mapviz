@@ -37,7 +37,7 @@
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::NavSatPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
