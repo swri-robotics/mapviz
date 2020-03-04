@@ -51,6 +51,9 @@
 #include <swri_transform_util/transform.h>
 
 #include <pluginlib/class_list_macros.hpp>
+
+#include <string>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::CoordinatePickerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -157,9 +160,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
     point.setY(position.y());
 
     PrintInfo("OK");
-  }
-  else
-  {
+  } else {
     QString warning;
     QTextStream(&warning) << "No available transform from '"
       << QString::fromStdString(target_frame_)
@@ -270,9 +271,7 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
     if (copy)
     {
       ui_.copyCheckBox->setCheckState(Qt::Checked);
-    }
-    else
-    {
+    } else {
       ui_.copyCheckBox->setCheckState(Qt::Unchecked);
     }
   }
