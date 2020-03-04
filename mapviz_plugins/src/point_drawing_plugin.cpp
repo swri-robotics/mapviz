@@ -29,9 +29,6 @@
 
 #include <mapviz_plugins/point_drawing_plugin.h>
 
-#include <vector>
-#include <list>
-
 #include <QDialog>
 #include <QGLWidget>
 #include <QPalette>
@@ -41,6 +38,11 @@
 
 #include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
+
+#include <deque>
+#include <list>
+#include <string>
+#include <vector>
 
 namespace mapviz_plugins
 {
@@ -88,16 +90,12 @@ namespace mapviz_plugins
         pen.setCapStyle(Qt::RoundCap);
         painter.setPen(pen);
         painter.drawPoint(8, 8);
-      }
-      else if (draw_style_ == LINES)
-      {
+      } else if (draw_style_ == LINES) {
         pen.setWidth(3);
         pen.setCapStyle(Qt::FlatCap);
         painter.setPen(pen);
         painter.drawLine(1, 14, 14, 1);
-      }
-      else if (draw_style_ == ARROWS)
-      {
+      } else if (draw_style_ == ARROWS) {
         pen.setWidth(2);
         pen.setCapStyle(Qt::SquareCap);
         painter.setPen(pen);
@@ -121,13 +119,9 @@ namespace mapviz_plugins
     if (style == "lines")
     {
       draw_style_ = LINES;
-    }
-    else if (style == "points")
-    {
+    } else if (style == "points") {
       draw_style_ = POINTS;
-    }
-    else if (style == "arrows")
-    {
+    } else if (style == "arrows") {
       draw_style_ = ARROWS;
     }
     ResetTransformedPoints();
@@ -168,14 +162,14 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::ResetTransformedPoints()
   {
-    for (std::deque<StampedPoint>& lap: laps_)
+    for (std::deque<StampedPoint>& lap : laps_)
     {
-      for (StampedPoint& point: lap)
+      for (StampedPoint& point : lap)
       {
         point.transformed = false;
       }
     }
-    for (StampedPoint& point: points_)
+    for (StampedPoint& point : points_)
     {
       point.transformed = false;
     }
@@ -212,9 +206,7 @@ namespace mapviz_plugins
     if (!lap_checked_)
     {
       return buffer_size_;
-    }
-    else
-    {
+    } else {
       return buffer_holder_;
     }
   }
@@ -257,14 +249,10 @@ namespace mapviz_plugins
       if (draw_style_ == ARROWS)
       {
         transformed &= DrawLapsArrows();
-      }
-      else
-      {
+      } else {
         transformed &= DrawLaps();
       }
-    }
-    else if (buffer_size_ == INT_MAX)
-    {
+    } else if (buffer_size_ == INT_MAX) {
       buffer_size_ = buffer_holder_;
       laps_.clear();
       got_begin_ = false;
@@ -272,9 +260,7 @@ namespace mapviz_plugins
     if (draw_style_ == ARROWS)
     {
       transformed &= DrawArrows();
-    }
-    else
-    {
+    } else {
       transformed &= DrawLines();
     }
 
@@ -320,9 +306,7 @@ namespace mapviz_plugins
     {
       glLineWidth(3);
       glBegin(GL_LINE_STRIP);
-    }
-    else
-    {
+    } else {
       glPointSize(6);
       glBegin(GL_POINTS);
     }
@@ -419,9 +403,7 @@ namespace mapviz_plugins
         if (static_arrow_sizes_)
         {
           size *= scale_;
-        }
-        else
-        {
+        } else {
           size /= 10.0;
         }
         double arrow_width = size / 5.0;
@@ -490,9 +472,7 @@ namespace mapviz_plugins
       {
         glLineWidth(3);
         glBegin(GL_LINE_STRIP);
-      }
-      else
-      {
+      } else {
         glPointSize(6);
         glBegin(GL_POINTS);
       }
@@ -512,9 +492,7 @@ namespace mapviz_plugins
     {
       glLineWidth(3);
       glBegin(GL_LINE_STRIP);
-    }
-    else
-    {
+    } else {
       glPointSize(6);
       glBegin(GL_POINTS);
     }
@@ -579,9 +557,7 @@ namespace mapviz_plugins
 
         glEnd();
       }
-    }
-    else if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty())
-    {
+    } else if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty()) {
       glBegin(GL_LINE_STRIP);
 
       for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
@@ -637,4 +613,4 @@ namespace mapviz_plugins
 
     return success;
   }
-}
+}   // namespace mapviz_plugins
