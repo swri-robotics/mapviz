@@ -61,10 +61,12 @@ namespace mapviz_plugins
     width_(320),
     height_(240),
     transport_("default"),
+    force_resubscribe_(false),
     has_image_(false),
     last_width_(0),
     last_height_(0),
-    original_aspect_ratio_(1.0)
+    original_aspect_ratio_(1.0),
+    has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -93,10 +95,6 @@ namespace mapviz_plugins
 
     ui_.width->setKeyboardTracking(false);
     ui_.height->setKeyboardTracking(false);
-  }
-
-  ImagePlugin::~ImagePlugin()
-  {
   }
 
   void ImagePlugin::SetOffsetX(int offset)
@@ -270,12 +268,10 @@ namespace mapviz_plugins
               std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1));
         } else {
           RCLCPP_DEBUG(node_->get_logger(), "Setting transport to %s on %s.",
-                   transport_.c_str(), local_node_->get_fully_qualified_name());
+                   transport_.c_str(), node_->get_fully_qualified_name());
 
-          // local_node_->set_parameter()
-          // local_node_.setParam("image_transport", transport_);
-          image_transport::ImageTransport it(local_node_);
-          image_sub_ = image_transport::create_subscription(local_node_.get(),
+          image_transport::ImageTransport it(node_);
+          image_sub_ = image_transport::create_subscription(node_.get(),
               topic_,
               std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1),
               transport_,
@@ -294,8 +290,6 @@ namespace mapviz_plugins
       initialized_ = true;
       has_message_ = true;
     }
-
-    image_ = *image;
 
     try
     {
@@ -367,7 +361,7 @@ namespace mapviz_plugins
   {
     // TODO(malban) glTexture2D may be more efficient than glDrawPixels
 
-    if (image == NULL || image->cols == 0 || image->rows == 0)
+    if (image == nullptr || image->cols == 0 || image->rows == 0)
     {
       return;
     }
@@ -625,8 +619,6 @@ namespace mapviz_plugins
       QString qtransport = QString::fromStdString(transport).replace("image_transport/", "");
       ui_.transport_combo_box->addItem(qtransport);
     }
-
-    CreateLocalNode();
   }
 }   // namespace mapviz_plugins
 
