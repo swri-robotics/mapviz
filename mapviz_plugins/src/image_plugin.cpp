@@ -29,10 +29,6 @@
 
 #include <mapviz_plugins/image_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -46,6 +42,12 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::ImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -84,7 +86,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
     QObject::connect(ui_.width, SIGNAL(valueChanged(double)), this, SLOT(SetWidth(double)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(double)), this, SLOT(SetHeight(double)));
-    QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
+    QObject::connect(this, SIGNAL(VisibleChanged(bool)), this, SLOT(SetSubscription(bool)));
     QObject::connect(ui_.keep_ratio, SIGNAL(toggled(bool)), this, SLOT(KeepRatioChanged(bool)));
     QObject::connect(ui_.transport_combo_box, SIGNAL(activated(const QString&)),
                      this, SLOT(SetTransport(const QString&)));
@@ -122,37 +124,21 @@ namespace mapviz_plugins
     if (anchor == "top left")
     {
       anchor_ = TOP_LEFT;
-    }
-    else if (anchor == "top center")
-    {
+    } else if (anchor == "top center") {
       anchor_ = TOP_CENTER;
-    }
-    else if (anchor == "top right")
-    {
+    } else if (anchor == "top right") {
       anchor_ = TOP_RIGHT;
-    }
-    else if (anchor == "center left")
-    {
+    } else if (anchor == "center left") {
       anchor_ = CENTER_LEFT;
-    }
-    else if (anchor == "center")
-    {
+    } else if (anchor == "center") {
       anchor_ = CENTER;
-    }
-    else if (anchor == "center right")
-    {
+    } else if (anchor == "center right") {
       anchor_ = CENTER_RIGHT;
-    }
-    else if (anchor == "bottom left")
-    {
+    } else if (anchor == "bottom left") {
       anchor_ = BOTTOM_LEFT;
-    }
-    else if (anchor == "bottom center")
-    {
+    } else if (anchor == "bottom center") {
       anchor_ = BOTTOM_CENTER;
-    }
-    else if (anchor == "bottom right")
-    {
+    } else if (anchor == "bottom right") {
       anchor_ = BOTTOM_RIGHT;
     }
   }
@@ -168,18 +154,16 @@ namespace mapviz_plugins
       ui_.width->setDecimals(0);
       ui_.height->setDecimals(0);
       units_ = PIXELS;
-      width_  = width_ * double(canvas_->width()) / 100.0;
-      height_ = height_ * double(canvas_->height()) / 100.0;
+      width_  = width_ * static_cast<double>(canvas_->width()) / 100.0;
+      height_ = height_ * static_cast<double>(canvas_->height()) / 100.0;
       ui_.width->setSuffix(" px");
       ui_.height->setSuffix(" px");
-    }
-    else if (units == "percent")
-    {
+    } else if (units == "percent") {
       ui_.width->setDecimals(1);
       ui_.height->setDecimals(1);
       units_ = PERCENT;
-      width_ = width_ * 100.0 / double(canvas_->width());
-      height_ =  height_ * 100.0 / double(canvas_->height());
+      width_ = width_ * 100.0 / static_cast<double>(canvas_->width());
+      height_ =  height_ * 100.0 / static_cast<double>(canvas_->height());
       ui_.width->setSuffix(" %");
       ui_.height->setSuffix(" %");
     }
@@ -191,21 +175,16 @@ namespace mapviz_plugins
       ui_.width->setMaximum(100);
       ui_.height->setMaximum(100);
     }
-
   }
   void ImagePlugin::SetSubscription(bool visible)
   {
     if(topic_.empty())
     {
       return;
-    }
-    else if(!visible)
-    {
+    } else if (!visible) {
       image_sub_.shutdown();
       RCLCPP_INFO(node_->get_logger(), "Dropped subscription to %s", topic_.c_str());
-    }
-    else
-    {
+    } else {
       Resubscribe();
     }
   }
@@ -244,7 +223,6 @@ namespace mapviz_plugins
     {
       topic.clear();
       TopicEdited();
-
     }
     if (!topic.empty())
     {
@@ -256,7 +234,7 @@ namespace mapviz_plugins
   void ImagePlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if(!this->Visible())
+    if (!this->Visible())
     {
       PrintWarning("Topic is Hidden");
       initialized_ = false;
@@ -290,9 +268,7 @@ namespace mapviz_plugins
           image_transport::ImageTransport it(node_);
           image_sub_ = it.subscribe(topic_, 1,
               std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1));
-        }
-        else
-        {
+        } else {
           RCLCPP_DEBUG(node_->get_logger(), "Setting transport to %s on %s.",
                    transport_.c_str(), local_node_->get_fully_qualified_name());
 
@@ -333,14 +309,14 @@ namespace mapviz_plugins
 
     last_width_ = 0;
     last_height_ = 0;
-    original_aspect_ratio_ = (double)image->height / (double)image->width;
+    original_aspect_ratio_ = static_cast<double>(image->height) / static_cast<double>(image->width);
 
     if( ui_.keep_ratio->isChecked() )
     {
       double height =  width_ * original_aspect_ratio_;
       if (units_ == PERCENT)
       {
-        height *= (double)canvas_->width() / (double)canvas_->height();
+        height *= static_cast<double>(canvas_->width()) / static_cast<double>(canvas_->height());
       }
       ui_.height->setValue(height);
     }
@@ -455,44 +431,28 @@ namespace mapviz_plugins
     {
       x_pos = x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == TOP_CENTER)
-    {
+    } else if (anchor_ == TOP_CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == TOP_RIGHT)
-    {
+    } else if (anchor_ == TOP_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == CENTER_LEFT)
-    {
+    } else if (anchor_ == CENTER_LEFT) {
       x_pos = x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == CENTER)
-    {
+    } else if (anchor_ == CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == CENTER_RIGHT)
-    {
+    } else if (anchor_ == CENTER_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == BOTTOM_LEFT)
-    {
+    } else if (anchor_ == BOTTOM_LEFT) {
       x_pos = x_offset;
       y_pos = canvas_->height() - height - y_offset;
-    }
-    else if (anchor_ == BOTTOM_CENTER)
-    {
+    } else if (anchor_ == BOTTOM_CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = canvas_->height() - height - y_offset;
-    }
-    else if (anchor_ == BOTTOM_RIGHT)
-    {
+    } else if (anchor_ == BOTTOM_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = canvas_->height() - height - y_offset;
     }
@@ -524,9 +484,7 @@ namespace mapviz_plugins
       if (index != -1)
       {
         ui_.transport_combo_box->setCurrentIndex(index);
-      }
-      else
-      {
+      } else {
         RCLCPP_WARN(node_->get_logger(), "Saved image transport %s is unavailable.",
                  transport_.c_str());
       }
@@ -608,37 +566,21 @@ namespace mapviz_plugins
     if (anchor == TOP_LEFT)
     {
       anchor_string = "top left";
-    }
-    else if (anchor == TOP_CENTER)
-    {
+    } else if (anchor == TOP_CENTER) {
       anchor_string = "top center";
-    }
-    else if (anchor == TOP_RIGHT)
-    {
+    } else if (anchor == TOP_RIGHT) {
       anchor_string = "top right";
-    }
-    else if (anchor == CENTER_LEFT)
-    {
+    } else if (anchor == CENTER_LEFT) {
       anchor_string = "center left";
-    }
-    else if (anchor == CENTER)
-    {
+    } else if (anchor == CENTER) {
       anchor_string = "center";
-    }
-    else if (anchor == CENTER_RIGHT)
-    {
+    } else if (anchor == CENTER_RIGHT) {
       anchor_string = "center right";
-    }
-    else if (anchor == BOTTOM_LEFT)
-    {
+    } else if (anchor == BOTTOM_LEFT) {
       anchor_string = "bottom left";
-    }
-    else if (anchor == BOTTOM_CENTER)
-    {
+    } else if (anchor == BOTTOM_CENTER) {
       anchor_string = "bottom center";
-    }
-    else if (anchor == BOTTOM_RIGHT)
-    {
+    } else if (anchor == BOTTOM_RIGHT) {
       anchor_string = "bottom right";
     }
 
@@ -652,9 +594,7 @@ namespace mapviz_plugins
     if (units == PIXELS)
     {
       units_string = "pixels";
-    }
-    else if (units == PERCENT)
-    {
+    } else if (units == PERCENT) {
       units_string = "percent";
     }
 
@@ -667,9 +607,9 @@ namespace mapviz_plugins
     // See http://docs.ros.org/api/roscpp/html/this__node_8cpp_source.html
     // Giving each image plugin a unique node means that we can control
     // its image transport individually.
-    //char buf[200];
-    //snprintf(buf, sizeof(buf), "image_%llu", (unsigned long long)ros::WallTime::now().toNSec());
-    local_node_ = node_; //ros::NodeHandle(node_, buf);
+    //  char buf[200];
+    //  snprintf(buf, sizeof(buf), "image_%llu", (unsigned long long)ros::WallTime::now().toNSec());
+    local_node_ = node_;   // ros::NodeHandle(node_, buf);
   }
 
   void ImagePlugin::SetNode(rclcpp::Node& node)
@@ -688,5 +628,5 @@ namespace mapviz_plugins
 
     CreateLocalNode();
   }
-}
+}   // namespace mapviz_plugins
 
