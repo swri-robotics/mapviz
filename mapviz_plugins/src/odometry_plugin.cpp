@@ -29,10 +29,6 @@
 
 #include <mapviz_plugins/odometry_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -51,6 +47,13 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OdometryPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -191,16 +194,13 @@ namespace mapviz_plugins
               cov_matrix_2d, stamped_point.point, 3, 32);
 
           stamped_point.transformed_cov_points = stamped_point.cov_points;
-        }
-        else
-        {
+        } else {
           RCLCPP_ERROR(node_->get_logger(), "Failed to project x, y, z covariance to xy-plane.");
         }
       }
     }
 
     pushPoint(std::move(stamped_point));
-
   }
 
   void OdometryPlugin::PrintError(const std::string& message)
@@ -244,11 +244,10 @@ namespace mapviz_plugins
       PrintInfo("OK");
     }
   }
-  
 
   void OdometryPlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
-    //dont render any timestamps if the show_timestamps is set to 0
+    // dont render any timestamps if the show_timestamps is set to 0
     int interval = ui_.show_timestamps->value();
     if (interval == 0)
     {
@@ -261,14 +260,15 @@ namespace mapviz_plugins
     painter->save();
     painter->resetTransform();
 
-    //set the draw color for the text to be the same as the rest
+    // set the draw color for the text to be the same as the rest
     QPen pen(QBrush(ui_.color->color()), 1);
     painter->setPen(pen);
 
-    int counter = 0;//used to alternate between rendering text on some points
-    for (const StampedPoint& point: points())
+    int counter = 0;  // used to alternate between rendering text on some points
+    for (const StampedPoint& point : points())
     {
-      if (point.transformed && counter % interval == 0)//this renders a timestamp every 'interval' points
+      // this renders a timestamp every 'interval' points
+      if (point.transformed && counter % interval == 0)
       {
         QPointF qpoint = tf.map(QPointF(point.transformed_point.getX(),
                                         point.transformed_point.getY()));
@@ -314,14 +314,10 @@ namespace mapviz_plugins
       {
         ui_.drawstyle->setCurrentIndex(0);
         SetDrawStyle( LINES );
-      }
-      else if (draw_style == "points")
-      {
+      } else if (draw_style == "points") {
         ui_.drawstyle->setCurrentIndex(1);
         SetDrawStyle( POINTS );
-      }
-      else if (draw_style == "arrows")
-      {
+      } else if (draw_style == "arrows") {
         ui_.drawstyle->setCurrentIndex(2);
         SetDrawStyle( ARROWS );
       }
@@ -420,12 +416,15 @@ namespace mapviz_plugins
     bool show_all_covariances = ui_.show_all_covariances->isChecked();
     emitter << YAML::Key << "show_all_covariances" << YAML::Value << show_all_covariances;
 
-    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
+    emitter << YAML::Key
+      << "static_arrow_sizes"
+      << YAML::Value
+      << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
 
     emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
   }
-}
+}   // namespace mapviz_plugins
 
 
