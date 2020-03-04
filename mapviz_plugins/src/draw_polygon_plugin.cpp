@@ -43,14 +43,13 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <geometry_msgs/Point32.h>
-#include <geometry_msgs/PolygonStamped.h>
-#include <ros/master.h>
+#include <geometry_msgs/msg/point32.hpp>
+#include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <mapviz/select_frame_dialog.h>
 #include <swri_transform_util/frames.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DrawPolygonPlugin, mapviz::MapvizPlugin)
 
 namespace stu = swri_transform_util;
@@ -59,7 +58,7 @@ namespace mapviz_plugins
 {
   DrawPolygonPlugin::DrawPolygonPlugin() :
     config_widget_(new QWidget()),
-    map_canvas_(NULL),
+    map_canvas_(nullptr),
     selected_point_(-1),
     is_mouse_down_(false),
     max_ms_(Q_INT64_C(500)),
@@ -110,7 +109,7 @@ namespace mapviz_plugins
     source_frame_ = ui_.frame->text().toStdString();
     PrintWarning("Waiting for transform.");
 
-    ROS_INFO("Setting target frame to to %s", source_frame_.c_str());
+    RCLCPP_INFO(node_->get_logger(), "Setting target frame to to %s", source_frame_.c_str());
 
     initialized_ = true;
   }
@@ -120,24 +119,26 @@ namespace mapviz_plugins
     if (polygon_topic_ != ui_.topic->text().toStdString())
     {
       polygon_topic_ = ui_.topic->text().toStdString();
-      polygon_pub_.shutdown();
-      polygon_pub_ = node_.advertise<geometry_msgs::PolygonStamped>(polygon_topic_, 1, true);
+      polygon_pub_ = node_->create_publisher<geometry_msgs::msg::PolygonStamped>(
+          polygon_topic_, rclcpp::QoS(1));
+      // TODO pjr make this latched
     }
 
-    geometry_msgs::PolygonStamped polygon;
-    polygon.header.stamp = ros::Time::now();
-    polygon.header.frame_id = ui_.frame->text().toStdString();
+    geometry_msgs::msg::PolygonStamped::UniquePtr polygon =
+        std::make_unique<geometry_msgs::msg::PolygonStamped>();
+    polygon->header.stamp = node_->get_clock()->now();
+    polygon->header.frame_id = ui_.frame->text().toStdString();
 
     for (const auto& vertex: vertices_)
     {
-      geometry_msgs::Point32 point;
+      geometry_msgs::msg::Point32 point;
       point.x = vertex.x();
       point.y = vertex.y();
       point.z = 0;
-      polygon.polygon.points.push_back(point);
+      polygon->polygon.points.push_back(point);
     }
 
-    polygon_pub_.publish(polygon);
+    polygon_pub_->publish(*polygon);
   }
 
   void DrawPolygonPlugin::Clear()
@@ -170,7 +171,7 @@ namespace mapviz_plugins
 
   bool DrawPolygonPlugin::Initialize(QGLWidget* canvas)
   {
-    map_canvas_ = static_cast<mapviz::MapCanvas*>(canvas);
+    map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
 
     initialized_ = true;
@@ -182,11 +183,11 @@ namespace mapviz_plugins
     switch (event->type())
     {
       case QEvent::MouseButtonPress:
-        return handleMousePress(static_cast<QMouseEvent*>(event));
+        return handleMousePress(dynamic_cast<QMouseEvent*>(event));
       case QEvent::MouseButtonRelease:
-        return handleMouseRelease(static_cast<QMouseEvent*>(event));
+        return handleMouseRelease(dynamic_cast<QMouseEvent*>(event));
       case QEvent::MouseMove:
-        return handleMouseMove(static_cast<QMouseEvent*>(event));
+        return handleMouseMove(dynamic_cast<QMouseEvent*>(event));
       default:
         return false;
     }
@@ -209,7 +210,7 @@ namespace mapviz_plugins
     {
       for (size_t i = 0; i < vertices_.size(); i++)
       {
-        tf::Vector3 vertex = vertices_[i];
+        tf2::Vector3 vertex = vertices_[i];
         vertex = transform * vertex;
 
         QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
@@ -270,7 +271,7 @@ namespace mapviz_plugins
       if (tf_manager_->GetTransform(frame, target_frame_, transform))
       {
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+        tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
         position = transform * position;
         vertices_[selected_point_].setX(position.x());
         vertices_[selected_point_].setY(position.y());
@@ -301,17 +302,17 @@ namespace mapviz_plugins
 #endif
 
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        ROS_INFO("mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
+        RCLCPP_INFO(node_->get_logger(), "mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
 
         stu::Transform transform;
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+        tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
 
         if (tf_manager_->GetTransform(frame, target_frame_, transform))
         {
           position = transform * position;
           vertices_.push_back(position);
           transformed_vertices_.resize(vertices_.size());
-          ROS_INFO("Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
+          RCLCPP_INFO(node_->get_logger(), "Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
         }
       }
     }
@@ -334,7 +335,7 @@ namespace mapviz_plugins
       if (tf_manager_->GetTransform(frame, target_frame_, transform))
       {
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+        tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
         position = transform * position;
         vertices_[selected_point_].setY(position.y());
         vertices_[selected_point_].setX(position.x());
@@ -403,20 +404,18 @@ namespace mapviz_plugins
   {
     if (node["frame"])
     {
-      node["frame"] >> source_frame_;
+      source_frame_ = node["frame"].as<std::string>();
       ui_.frame->setText(source_frame_.c_str());
     }
 
     if (node["polygon_topic"])
     {
-      std::string polygon_topic;
-      node["polygon_topic"] >> polygon_topic;
+      std::string polygon_topic = node["polygon_topic"].as<std::string>();
       ui_.topic->setText(polygon_topic.c_str());
     }
     if (node["color"])
     {
-      std::string color;
-      node["color"] >> color;
+      std::string color = node["color"].as<std::string>();
       ui_.color->setColor(QColor(color.c_str()));
     }
   }
