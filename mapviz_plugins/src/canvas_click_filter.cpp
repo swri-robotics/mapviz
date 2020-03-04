@@ -62,9 +62,7 @@ namespace mapviz_plugins
       mouse_down_pos_ = me->posF();
 #endif
       mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
-    }
-    else if (event->type() == QEvent::MouseButtonRelease)
-    {
+    } else if (event->type() == QEvent::MouseButtonRelease) {
       if (is_mouse_down_)
       {
         QMouseEvent* me = static_cast<QMouseEvent*>(event);
@@ -93,4 +91,4 @@ namespace mapviz_plugins
     }
     return false;
   }
-}
+}   // namespace mapviz_plugins
