@@ -595,17 +595,6 @@ namespace mapviz_plugins
     return units_string;
   }
 
-  void ImagePlugin::CreateLocalNode()
-  {
-    // This is the same way ROS generates anonymous node names.
-    // See http://docs.ros.org/api/roscpp/html/this__node_8cpp_source.html
-    // Giving each image plugin a unique node means that we can control
-    // its image transport individually.
-    //  char buf[200];
-    //  snprintf(buf, sizeof(buf), "image_%llu", (unsigned long long)ros::WallTime::now().toNSec());
-    local_node_ = node_;   // ros::NodeHandle(node_, buf);
-  }
-
   void ImagePlugin::SetNode(rclcpp::Node& node)
   {
     node_ = node.shared_from_this();
