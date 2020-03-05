@@ -29,10 +29,6 @@
 
 #include <mapviz_plugins/draw_polygon_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDateTime>
 #include <QDialog>
@@ -50,6 +46,14 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <limits>
+#include <memory>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DrawPolygonPlugin, mapviz::MapvizPlugin)
 
 namespace stu = swri_transform_util;
@@ -121,7 +125,7 @@ namespace mapviz_plugins
       polygon_topic_ = ui_.topic->text().toStdString();
       polygon_pub_ = node_->create_publisher<geometry_msgs::msg::PolygonStamped>(
           polygon_topic_, rclcpp::QoS(1));
-      // TODO pjr make this latched
+      // TODO(P.J. Reed) pjr make this latched
     }
 
     geometry_msgs::msg::PolygonStamped::UniquePtr polygon =
@@ -129,7 +133,7 @@ namespace mapviz_plugins
     polygon->header.stamp = node_->get_clock()->now();
     polygon->header.frame_id = ui_.frame->text().toStdString();
 
-    for (const auto& vertex: vertices_)
+    for (const auto& vertex : vertices_)
     {
       geometry_msgs::msg::Point32 point;
       point.x = vertex.x();
@@ -231,9 +235,7 @@ namespace mapviz_plugins
       {
         selected_point_ = closest_point;
         return true;
-      }
-      else
-      {
+      } else {
         is_mouse_down_ = true;
 #if QT_VERSION >= 0x050000
         mouse_down_pos_ = event->localPos();
@@ -243,9 +245,7 @@ namespace mapviz_plugins
         mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
         return false;
       }
-    }
-    else if (event->button() == Qt::RightButton)
-    {
+    } else if (event->button() == Qt::RightButton) {
       if (closest_distance < 15)
       {
         vertices_.erase(vertices_.begin() + closest_point);
@@ -279,9 +279,7 @@ namespace mapviz_plugins
 
       selected_point_ = -1;
       return true;
-    }
-    else if (is_mouse_down_)
-    {
+    } else if (is_mouse_down_) {
 #if QT_VERSION >= 0x050000
       qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
 #else
@@ -302,7 +300,13 @@ namespace mapviz_plugins
 #endif
 
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-        RCLCPP_INFO(node_->get_logger(), "mouse point at %f, %f -> %f, %f", point.x(), point.y(), transformed.x(), transformed.y());
+        RCLCPP_INFO(
+          node_->get_logger(),
+          "mouse point at %f, %f -> %f, %f",
+          point.x(),
+          point.y(),
+          transformed.x(),
+          transformed.y());
 
         stu::Transform transform;
         tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
@@ -312,7 +316,12 @@ namespace mapviz_plugins
           position = transform * position;
           vertices_.push_back(position);
           transformed_vertices_.resize(vertices_.size());
-          RCLCPP_INFO(node_->get_logger(), "Adding vertex at %lf, %lf %s", position.x(), position.y(), frame.c_str());
+          RCLCPP_INFO(
+            node_->get_logger(),
+            "Adding vertex at %lf, %lf %s",
+            position.x(),
+            position.y(),
+            frame.c_str());
         }
       }
     }
@@ -366,7 +375,7 @@ namespace mapviz_plugins
     glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
     glBegin(GL_LINE_STRIP);
 
-    for (const auto& vertex: transformed_vertices_)
+    for (const auto& vertex : transformed_vertices_)
     {
       glVertex2d(vertex.x(), vertex.y());
     }
@@ -389,7 +398,7 @@ namespace mapviz_plugins
     glPointSize(9);
     glBegin(GL_POINTS);
 
-    for (const auto& vertex: transformed_vertices_)
+    for (const auto& vertex : transformed_vertices_)
     {
       glVertex2d(vertex.x(), vertex.y());
     }
@@ -431,4 +440,4 @@ namespace mapviz_plugins
     std::string color = ui_.color->color().name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;
   }
-}
+}   // namespace mapviz_plugins
