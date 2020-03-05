@@ -354,8 +354,7 @@ QString Mapviz::GetDefaultConfigPath()
     QString ws_path = env.value(ROS_WORKSPACE_VAR, default_path);
     if (QFileInfo(ws_path + MAPVIZ_CONFIG_FILE).isReadable()) {
       default_path = ws_path;
-    }
-    else {
+    } else {
       RCLCPP_WARN(
           node_->get_logger(),
           "Could not load config file from ROS_WORKSPACE at %s; trying home directory...",
@@ -539,8 +538,7 @@ void Mapviz::Open(const std::string& filename)
   if (last_slash != std::string::npos && last_slash != filename.size() - 1) {
     title = filename.substr(last_slash + 1) + " (" +
             filename.substr(0, last_slash + 1) + ")";
-  }
-  else {
+  } else {
     title = filename;
   }
 
@@ -1120,11 +1118,9 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   if (draw_order == 0) {
     plugin->SetDrawOrder(ui_.configs->count());
-  }
-  else if (draw_order > 0) {
+  } else if (draw_order > 0) {
     plugin->SetDrawOrder(std::min(ui_.configs->count(), draw_order - 1));
-  }
-  else if (draw_order < 0) {
+  } else if (draw_order < 0) {
     plugin->SetDrawOrder(std::max(0, ui_.configs->count() + draw_order + 1));
   }
 
@@ -1159,8 +1155,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   if (draw_order == 0) {
     ui_.configs->addItem(item);
-  }
-  else {
+  } else {
     ui_.configs->insertItem(plugin->DrawOrder(), item);
   }
 
@@ -1311,8 +1306,7 @@ void Mapviz::ToggleRecord(bool on)
     }
 
     record_timer_.start(1000.0 / 30.0);
-  }
-  else {
+  } else {
     rec_button_->setIcon(QIcon(":/images/media-record.png"));
     rec_button_->setToolTip("Continue recording video of display canvas");
     record_timer_.stop();
