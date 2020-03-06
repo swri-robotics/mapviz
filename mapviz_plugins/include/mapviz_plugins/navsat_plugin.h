@@ -54,7 +54,7 @@ class NavSatPlugin : public mapviz_plugins::PointDrawingPlugin
   ~NavSatPlugin() override = default;
 
   bool Initialize(QGLWidget* canvas) override;
-  void Shutdown()
+  void Shutdown() override
   {
   }
 

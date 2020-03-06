@@ -13,6 +13,7 @@ project(mapviz)
 ### ROS Packages ###
 find_package(ament_cmake REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
 find_package(marti_common_msgs REQUIRED)
@@ -23,8 +24,16 @@ find_package(std_srvs REQUIRED)
 find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+
+# tf2_geometry_msgs 0.12.1 broke API compatibility, so check which version
+# we need to use
+find_package(tf2_geometry_msgs REQUIRED)
+if("${tf2_geometry_msgs_VERSION}" VERSION_GREATER "0.12.0")
+  set(USE_NEW_TF2_TOMSG 1)
+else()
+  set(USE_NEW_TF2_TOMSG 0)
+endif()
 
 ### PkgConfig ###
 find_package(PkgConfig REQUIRED)
@@ -113,6 +122,10 @@ add_library(rqt_${PROJECT_NAME}
   ${SRC_FILES}
   ${RCC_SRCS}
 )
+target_compile_definitions(rqt_${PROJECT_NAME}
+  PRIVATE
+    USE_NEW_TF2_TOMSG=${USE_NEW_TF2_TOMSG}
+)
 target_link_libraries(rqt_${PROJECT_NAME}
   OpenGL::GL
   ${GLUT_LIBRARY}
@@ -128,6 +141,7 @@ target_link_libraries(rqt_${PROJECT_NAME}
 ament_target_dependencies(rqt_${PROJECT_NAME}
   ament_cmake
   cv_bridge
+  geometry_msgs
   image_transport
   mapviz_interfaces
   marti_common_msgs
