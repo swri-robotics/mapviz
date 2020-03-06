@@ -42,7 +42,7 @@
 #include <mapviz/select_frame_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GridPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -217,8 +217,8 @@ namespace mapviz_plugins
       glColor4d(color.redF(), color.greenF(), color.blueF(), alpha_);
       glBegin(GL_LINES);
 
-        std::list<tf::Point>::iterator transformed_left_it = transformed_left_points_.begin();
-        std::list<tf::Point>::iterator transformed_right_it = transformed_right_points_.begin();
+        std::list<tf2::Vector3>::iterator transformed_left_it = transformed_left_points_.begin();
+        std::list<tf2::Vector3>::iterator transformed_right_it = transformed_right_points_.begin();
         for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it)
         {
           glVertex2d(transformed_left_it->getX(), transformed_left_it->getY());
@@ -227,8 +227,8 @@ namespace mapviz_plugins
           ++transformed_right_it;
         }
 
-        std::list<tf::Point>::iterator transformed_top_it = transformed_top_points_.begin();
-        std::list<tf::Point>::iterator transformed_bottom_it = transformed_bottom_points_.begin();
+        std::list<tf2::Vector3>::iterator transformed_top_it = transformed_top_points_.begin();
+        std::list<tf2::Vector3>::iterator transformed_bottom_it = transformed_bottom_points_.begin();
         for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it)
         {
           glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
@@ -260,11 +260,11 @@ namespace mapviz_plugins
     // Set top and bottom
     for (int c = 0; c <= columns_; c++)
     {
-      tf::Point top_point(top_left_.getX() + c * size_, top_left_.getY(), 0);
+      tf2::Vector3 top_point(top_left_.getX() + c * size_, top_left_.getY(), 0);
       top_points_.push_back(top_point);
       transformed_top_points_.push_back(transform_ * top_point);
 
-      tf::Point bottom_point(top_left_.getX() + c * size_, top_left_.getY() + size_ * rows_, 0);
+      tf2::Vector3 bottom_point(top_left_.getX() + c * size_, top_left_.getY() + size_ * rows_, 0);
       bottom_points_.push_back(bottom_point);
       transformed_bottom_points_.push_back(transform_ * bottom_point);
     }
@@ -272,11 +272,11 @@ namespace mapviz_plugins
     // Set left and right
     for (int r = 0; r <= rows_; r++)
     {
-      tf::Point left_point(top_left_.getX(), top_left_.getY() + r * size_, 0);
+      tf2::Vector3 left_point(top_left_.getX(), top_left_.getY() + r * size_, 0);
       left_points_.push_back(left_point);
       transformed_left_points_.push_back(transform_ * left_point);
 
-      tf::Point right_point(top_left_.getX() + size_ * columns_, top_left_.getY() + r * size_, 0);
+      tf2::Vector3 right_point(top_left_.getX() + size_ * columns_, top_left_.getY() + r * size_, 0);
       right_points_.push_back(right_point);
       transformed_right_points_.push_back(transform_ * right_point);
     }
@@ -286,7 +286,8 @@ namespace mapviz_plugins
   {
     transformed_ = false;
 
-    if (GetTransform(ros::Time(), transform_))
+    // if (GetTransform(ros::Time(), transform_))
+    if (GetTransform(rclcpp::Time(), transform_))
     {
       Transform(left_points_, transformed_left_points_);
       Transform(right_points_, transformed_right_points_);
@@ -297,10 +298,10 @@ namespace mapviz_plugins
     }
   }
 
-  void GridPlugin::Transform(std::list<tf::Point>& src, std::list<tf::Point>& dst)
+  void GridPlugin::Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst)
   {
-    std::list<tf::Point>::iterator points_it = src.begin();
-    std::list<tf::Point>::iterator transformed_it = dst.begin();
+    std::list<tf2::Vector3>::iterator points_it = src.begin();
+    std::list<tf2::Vector3>::iterator transformed_it = dst.begin();
     for (; points_it != src.end() && transformed_it != dst.end(); ++points_it)
     {
       (*transformed_it) = transform_ * (*points_it);
@@ -313,53 +314,61 @@ namespace mapviz_plugins
   {
     if (node["color"])
     {            
-      std::string color;
-      node["color"] >> color;
+      // std::string color;
+      // node["color"] >> color;
+      std::string color = node["color"].as<std::string>();
       ui_.color->setColor(QColor(color.c_str()));
     }
 
     if (node["frame"])
     {
-      std::string frame;
-      node["frame"] >> frame;
+      // std::string frame;
+      // node["frame"] >> frame;
+      std::string frame = node["frame"].as<std::string>();
       ui_.frame->setText(QString::fromStdString(frame));
     }
 
     if (node["x"])
     {
-      float x = 0;
-      node["x"] >> x;
+      // float x = 0;
+      // node["x"] >> x;
+      float x = node["x"].as<float>();
       ui_.x->setValue(x);
     }
 
     if (node["y"])
     {
-      float y = 0;
-      node["y"] >> y;
+      // float y = 0;
+      // node["y"] >> y;
+      float y = node["y"].as<float>();
       ui_.y->setValue(y);
     }
 
     if (node["alpha"])
     {
-      node["alpha"] >> alpha_;
+      // node["alpha"] >> alpha_;
+      alpha_ = node["alpha"].as<double>();
       ui_.alpha->setValue(alpha_);
     }
 
     if (node["size"])
     {
-      node["size"] >> size_;
+      // node["size"] >> size_;
+      size_ = node["size"].as<double>();
       ui_.size->setValue(size_);
     }
 
     if (node["rows"])
     {
-      node["rows"] >> rows_;
+      // node["rows"] >> rows_;
+      rows_ = node["rows"].as<int>();
       ui_.rows->setValue(rows_);
     }
 
     if (node["columns"])
     {
-      node["columns"] >> columns_;
+      // node["columns"] >> columns_;
+      columns_ = node["columns"].as<int>();
       ui_.columns->setValue(columns_);
     }
 

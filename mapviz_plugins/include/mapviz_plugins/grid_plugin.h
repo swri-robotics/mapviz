@@ -43,8 +43,10 @@
 #include <QTimer>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
+// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
+// #include <tf/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
 
 #include <mapviz/map_canvas.h>
 
@@ -95,7 +97,8 @@ namespace mapviz_plugins
 
     double alpha_;
 
-    tf::Point top_left_;
+    // tf::Point top_left_;
+    tf2::Vector3 top_left_;
 
     double size_;
     int rows_;
@@ -103,20 +106,20 @@ namespace mapviz_plugins
 
     bool transformed_;
 
-    std::list<tf::Point> top_points_;
-    std::list<tf::Point> bottom_points_;
-    std::list<tf::Point> left_points_;
-    std::list<tf::Point> right_points_;
+    std::list<tf2::Vector3> top_points_;
+    std::list<tf2::Vector3> bottom_points_;
+    std::list<tf2::Vector3> left_points_;
+    std::list<tf2::Vector3> right_points_;
 
-    std::list<tf::Point> transformed_top_points_;
-    std::list<tf::Point> transformed_bottom_points_;
-    std::list<tf::Point> transformed_left_points_;
-    std::list<tf::Point> transformed_right_points_;
+    std::list<tf2::Vector3> transformed_top_points_;
+    std::list<tf2::Vector3> transformed_bottom_points_;
+    std::list<tf2::Vector3> transformed_left_points_;
+    std::list<tf2::Vector3> transformed_right_points_;
 
     swri_transform_util::Transform transform_;
 
     void RecalculateGrid();
-    void Transform(std::list<tf::Point>& src, std::list<tf::Point>& dst);
+    void Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst);
   };
 }
 
