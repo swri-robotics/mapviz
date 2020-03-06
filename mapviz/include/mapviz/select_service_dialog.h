@@ -104,7 +104,7 @@ public:
    * @param[in] parent The dialog's parent widget.
    * @return The name of the selected service, or an empty string if there was none.
    */
-  static std::string selectService(const std::string& datatype, QWidget* parent = 0);
+  static std::string selectService(rclcpp::Node::SharedPtr node, const std::string& datatype, QWidget* parent = 0);
 
   /**
    * Constructs a new SelectServiceDialog and automatically starts a timer that
@@ -113,8 +113,10 @@ public:
    *                     the user a list of all services.
    * @param[in] parent The dialog's parent widget.
    */
-  explicit SelectServiceDialog(const std::string& datatype = "", QWidget* parent = 0);
-  virtual ~SelectServiceDialog();
+  explicit SelectServiceDialog(const rclcpp::Node::SharedPtr& node,
+      const std::string& datatype = "",
+      QWidget* parent = 0);
+  ~SelectServiceDialog() override;
 
   /**
    * Set a datatype filter to limit displayed topics based on their
@@ -150,7 +152,7 @@ private Q_SLOTS:
    * Displays a message box indicating that there was an error and stops our
    * update timer.
    */
-  void displayUpdateError(const QString);
+  void displayUpdateError(const QString&);
 
 private:
   std::vector<std::string> filterServices();

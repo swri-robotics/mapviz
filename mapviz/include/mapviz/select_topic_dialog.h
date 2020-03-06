@@ -72,6 +72,7 @@ class SelectTopicDialog : public QDialog
    */
   //  static ros::master::TopicInfo selectTopic(
   static std::string selectTopic(
+    const rclcpp::Node::SharedPtr& node,
     const std::string &datatype,
     QWidget *parent = 0);
 
@@ -85,6 +86,7 @@ class SelectTopicDialog : public QDialog
    */
   //  static ros::master::TopicInfo selectTopic(
   static std::string selectTopic(
+    const rclcpp::Node::SharedPtr& node,
     const std::string &datatype1,
     const std::string &datatype2,
     QWidget *parent = 0);
@@ -98,6 +100,7 @@ class SelectTopicDialog : public QDialog
    */
   // static ros::master::TopicInfo selectTopic(
   static std::string selectTopic(
+    const rclcpp::Node::SharedPtr& node,
     const std::vector<std::string> &datatypes,
     QWidget *parent = 0);
 
@@ -111,6 +114,7 @@ class SelectTopicDialog : public QDialog
    */
   // static std::vector<ros::master::TopicInfo> selectTopics(
   static std::vector<std::string> selectTopics(
+    const rclcpp::Node::SharedPtr& node,
     const std::string &datatype,
     QWidget *parent = 0);
 
@@ -124,6 +128,7 @@ class SelectTopicDialog : public QDialog
    */
   // static std::vector<ros::master::TopicInfo> selectTopics(
   static std::vector<std::string> selectTopics(
+    const rclcpp::Node::SharedPtr& node,
     const std::string &datatype1,
     const std::string &datatype2,
     QWidget *parent = 0);
@@ -136,13 +141,14 @@ class SelectTopicDialog : public QDialog
    */
   // static std::vector<ros::master::TopicInfo> selectTopics(
   static std::vector<std::string> selectTopics(
+    const rclcpp::Node::SharedPtr& node,
     const std::vector<std::string> &datatypes,
     QWidget *parent = 0);
 
   /**
    * Constructor for the SelectTopicDialog.
    */
-  explicit SelectTopicDialog(QWidget *parent = 0);
+  explicit SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidget *parent = 0);
 
   /**
    * Choose whether the user can select one (allow=false) or multiple

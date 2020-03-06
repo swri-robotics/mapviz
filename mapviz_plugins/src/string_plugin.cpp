@@ -30,15 +30,13 @@
 
 #include <mapviz_plugins/string_plugin.h>
 
-#include <pluginlib/class_list_macros.hpp>
 #include <mapviz/select_topic_dialog.h>
 
 #include <QFontDialog>
 
-// #include <pluginlib/class_list_macros.h>
-
 #include <string>
 
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::StringPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -86,10 +84,6 @@ namespace mapviz_plugins
     ui_.font_button->setText(font_.family());
 
     ui_.color->setColor(color_);
-  }
-
-  StringPlugin::~StringPlugin()
-  {
   }
 
   bool StringPlugin::Initialize(QGLWidget* canvas)
@@ -300,17 +294,10 @@ namespace mapviz_plugins
 
   void StringPlugin::SelectTopic()
   {
-    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-    //      "std_msgs/String");
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
-      "std_msgs/msg/String"
+      node_, "std_msgs/msg/String"
     );
 
-    // if (!topic.name.empty())
-    // {
-    //   ui_.topic->setText(QString::fromStdString(topic.name));
-    //   TopicEdited();
-    // }
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));
@@ -327,17 +314,14 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      // string_sub_.shutdown();
       string_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
-        // string_sub_ = node_.subscribe(topic_, 1, &StringPlugin::stringCallback, this);
         string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_, rclcpp::QoS(1),
           std::bind(&StringPlugin::stringCallback, this, std::placeholders::_1));
 
-        // ROS_INFO("Subscribing to %s", topic_.c_str());
         RCLCPP_INFO(node_->get_logger(), "Subscripbing to %s", topic_.c_str());
       }
     }

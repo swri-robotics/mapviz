@@ -78,31 +78,31 @@ public:
   };
 
   StringPlugin();
-  virtual ~StringPlugin();
+  ~StringPlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas);
-  void Shutdown() {}
+  bool Initialize(QGLWidget* canvas) override;
+  void Shutdown() override {}
 
-  void Draw(double x, double y, double scale);
-  void Paint(QPainter* painter, double x, double y, double scale);
+  void Draw(double x, double y, double scale) override;
+  void Paint(QPainter* painter, double x, double y, double scale) override;
 
-  void Transform() {}
+  void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path);
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent);
+  QWidget* GetConfigWidget(QWidget* parent) override;
 
-  bool SupportsPainting()
+  bool SupportsPainting() override
   {
     return true;
   }
 
 protected:
   void PaintText(QPainter* painter);
-  void PrintError(const std::string& message);
-  void PrintInfo(const std::string& message);
-  void PrintWarning(const std::string& message);
+  void PrintError(const std::string& message) override;
+  void PrintInfo(const std::string& message) override;
+  void PrintWarning(const std::string& message) override;
 
 protected Q_SLOTS:
   void SelectColor();
