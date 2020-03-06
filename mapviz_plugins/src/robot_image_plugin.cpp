@@ -29,11 +29,6 @@
 
 #include <mapviz_plugins/robot_image_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <algorithm>
-#include <vector>
-
 // QT libraries
 #include <QGLWidget>
 #include <QPalette>
@@ -49,6 +44,13 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RobotImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -83,13 +85,22 @@ namespace mapviz_plugins
     QObject::connect(ui_.image, SIGNAL(editingFinished()), this, SLOT(ImageEdited()));
     QObject::connect(ui_.width, SIGNAL(valueChanged(double)), this, SLOT(WidthChanged(double)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(double)), this, SLOT(HeightChanged(double)));
-    QObject::connect(ui_.offset_x, SIGNAL(valueChanged(double)), this, SLOT(OffsetXChanged(double)));
-    QObject::connect(ui_.offset_y, SIGNAL(valueChanged(double)), this, SLOT(OffsetYChanged(double)));
-    ui_.offset_x->setMinimum(-99.99); //default is 0.0 but negative offset must be supported
+    QObject::connect(ui_.offset_x,
+      SIGNAL(valueChanged(double)),
+      this,
+      SLOT(OffsetXChanged(double)));
+    QObject::connect(ui_.offset_y,
+      SIGNAL(valueChanged(double)),
+      this,
+      SLOT(OffsetYChanged(double)));
+    ui_.offset_x->setMinimum(-99.99);   // default is 0.0 but negative offset must be supported
     ui_.offset_y->setMinimum(-99.99);
     QObject::connect(ui_.ratio_equal, SIGNAL(toggled(bool)), this, SLOT(RatioEqualToggled(bool)));
     QObject::connect(ui_.ratio_custom, SIGNAL(toggled(bool)), this, SLOT(RatioCustomToggled(bool)));
-    QObject::connect(ui_.ratio_original, SIGNAL(toggled(bool)), this, SLOT(RatioOriginalToggled(bool)));
+    QObject::connect(ui_.ratio_original,
+      SIGNAL(toggled(bool)),
+      this,
+      SLOT(RatioOriginalToggled(bool)));
   }
 
   void RobotImagePlugin::SelectFile()
@@ -141,8 +152,7 @@ namespace mapviz_plugins
     width_ = value;
     if( ui_.ratio_equal->isChecked()){
       ui_.height->setValue( width_ );
-    }
-    else if( ui_.ratio_original->isChecked()){
+    } else if( ui_.ratio_original->isChecked()) {
       ui_.height->setValue( width_ * image_ratio_ );
     }
     UpdateShape();
@@ -197,8 +207,8 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::UpdateShape()
   {
-    double hw = 0.5*width_; //half width
-    double hh = 0.5*height_; //half height
+    double hw = 0.5*width_;   // half width
+    double hh = 0.5*height_;  // half height
     top_left_ = tf2::Vector3(offset_x_ - hw, offset_y_ + hh, 0);
     top_right_ = tf2::Vector3(offset_x_ + hw, offset_y_ + hh, 0);
     bottom_left_ = tf2::Vector3(offset_x_ - hw, offset_y_ - hh, 0);
@@ -269,9 +279,7 @@ namespace mapviz_plugins
       bottom_left_transformed_ = transform * bottom_left_;
       bottom_right_transformed_ = transform * bottom_right_;
       transformed_ = true;
-    }
-    else
-    {
+    } else {
       PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
   }
@@ -303,10 +311,9 @@ namespace mapviz_plugins
 
         std::string package_path = ament_index_cpp::get_package_share_directory(package);
         real_filename = QDir(QString::fromStdString(package_path))
-            .filePath(QString::fromStdString(filename_.substr(filename_.find(')')+1))).toStdString();
-      }
-      else
-      {
+            .filePath(QString::fromStdString(filename_.substr(filename_.find(')')+1)))
+            .toStdString();
+      } else {
         real_filename = filename_;
       }
 
@@ -315,14 +322,17 @@ namespace mapviz_plugins
       {
         int width = image_.width();
         int height = image_.height();
-        image_ratio_ = (double)height / (double)width;
+        image_ratio_ = static_cast<double>(height) / static_cast<double>(width);
 
         float max_dim = std::max(width, height);
         dimension_ = static_cast<int>(std::pow(2, std::ceil(std::log(max_dim) / std::log(2.0f))));
 
         if (width != dimension_ || height != dimension_)
         {
-          image_ = image_.scaled(dimension_, dimension_, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+          image_ = image_.scaled(dimension_,
+            dimension_,
+            Qt::IgnoreAspectRatio,
+            Qt::FastTransformation);
         }
 
         image_ = QGLWidget::convertToGLFormat(image_);
@@ -332,7 +342,15 @@ namespace mapviz_plugins
         texture_id_ = ids[0];
 
         glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture_id_));
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dimension_, dimension_, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_.bits());
+        glTexImage2D(GL_TEXTURE_2D,
+          0,
+          GL_RGBA,
+          dimension_,
+          dimension_,
+          0,
+          GL_RGBA,
+          GL_UNSIGNED_BYTE,
+          image_.bits());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -341,13 +359,11 @@ namespace mapviz_plugins
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         texture_loaded_ = true;
-        if( ui_.ratio_original->isChecked() )
+        if ( ui_.ratio_original->isChecked() )
         {
           RatioOriginalToggled(true);
         }
-      }
-      else
-      {
+      } else {
         PrintError("Failed to load image.");
       }
     }
@@ -400,13 +416,9 @@ namespace mapviz_plugins
       if(value == "equal")
       {
         ui_.ratio_equal->setChecked(true);
-      }
-      else if(value == "custom")
-      {
+      } else if(value == "custom") {
         ui_.ratio_custom->setChecked(true);
-      }
-      else if(value == "original")
-      {
+      } else if(value == "original") {
         ui_.ratio_original->setChecked(true);
       }
     }
@@ -427,15 +439,11 @@ namespace mapviz_plugins
     if( ui_.ratio_custom->isChecked())
     {
       emitter << YAML::Key << "ratio" << YAML::Value << "custom";
-    }
-    else if( ui_.ratio_equal->isChecked())
-    {
+    } else if( ui_.ratio_equal->isChecked()) {
       emitter << YAML::Key << "ratio" << YAML::Value << "equal";
-    }
-    else if( ui_.ratio_original->isChecked())
-    {
+    } else if( ui_.ratio_original->isChecked()) {
       emitter << YAML::Key << "ratio" << YAML::Value << "original";
     }
   }
-}
+}   // namespace mapviz_plugins
 
