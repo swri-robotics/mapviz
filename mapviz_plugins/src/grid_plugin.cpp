@@ -29,10 +29,6 @@
 
 #include <mapviz_plugins/grid_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 #include <boost/lexical_cast.hpp>
 
 // QT libraries
@@ -43,6 +39,13 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <list>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GridPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -59,7 +62,7 @@ namespace mapviz_plugins
     ui_.setupUi(config_widget_);
 
     ui_.color->setColor(Qt::red);
-    
+
     // Set background white
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
@@ -96,12 +99,12 @@ namespace mapviz_plugins
     {
       QPixmap icon(16, 16);
       icon.fill(Qt::transparent);
-      
+
       QPainter painter(&icon);
       painter.setRenderHint(QPainter::Antialiasing, true);
-      
+
       QPen pen(QColor(ui_.color->color()));
-      
+
       pen.setWidth(2);
       pen.setCapStyle(Qt::SquareCap);
       painter.setPen(pen);
@@ -112,7 +115,7 @@ namespace mapviz_plugins
       painter.drawLine(2, 14, 14, 14);
       painter.drawLine(8, 2, 8, 14);
       painter.drawLine(2, 8, 14, 8);
-      
+
       icon_->SetPixmap(icon);
     }
   }
@@ -212,7 +215,7 @@ namespace mapviz_plugins
     if (transformed_)
     {
       QColor color = ui_.color->color();
-      
+
       glLineWidth(3);
       glColor4d(color.redF(), color.greenF(), color.blueF(), alpha_);
       glBegin(GL_LINES);
@@ -228,7 +231,8 @@ namespace mapviz_plugins
         }
 
         std::list<tf2::Vector3>::iterator transformed_top_it = transformed_top_points_.begin();
-        std::list<tf2::Vector3>::iterator transformed_bottom_it = transformed_bottom_points_.begin();
+        std::list<tf2::Vector3>::iterator transformed_bottom_it =
+          transformed_bottom_points_.begin();
         for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it)
         {
           glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
@@ -276,7 +280,10 @@ namespace mapviz_plugins
       left_points_.push_back(left_point);
       transformed_left_points_.push_back(transform_ * left_point);
 
-      tf2::Vector3 right_point(top_left_.getX() + size_ * columns_, top_left_.getY() + r * size_, 0);
+      tf2::Vector3 right_point(
+        top_left_.getX() + size_ * columns_,
+        top_left_.getY() + r * size_,
+        0);
       right_points_.push_back(right_point);
       transformed_right_points_.push_back(transform_ * right_point);
     }
@@ -313,7 +320,7 @@ namespace mapviz_plugins
   void GridPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     if (node["color"])
-    {            
+    {
       // std::string color;
       // node["color"] >> color;
       std::string color = node["color"].as<std::string>();
@@ -390,5 +397,5 @@ namespace mapviz_plugins
     emitter << YAML::Key << "rows" << YAML::Value << rows_;
     emitter << YAML::Key << "columns" << YAML::Value << columns_;
   }
-}
+}   // namespace mapviz_plugins
 
