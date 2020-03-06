@@ -175,6 +175,7 @@ std::vector<std::string> SelectFrameDialog::selectedFrames() const
 void SelectFrameDialog::fetchFrames()
 {
   if (!tf_) { return; }
+  if (tf_buf_ == NULL) {return;}
 
   known_frames_.clear();
   tf_buf_->_getFrameStrings(known_frames_);
