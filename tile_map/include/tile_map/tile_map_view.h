@@ -39,6 +39,8 @@
 
 #include <swri_transform_util/transform.h>
 
+#include <rclcpp/logger.hpp>
+
 namespace tile_map
 {
   class TileSource;
@@ -54,18 +56,20 @@ namespace tile_map
 
     TexturePtr texture;
 
-    std::vector<tf::Vector3> points;
-    std::vector<tf::Vector3> points_t;
+    std::vector<tf2::Vector3> points;
+    std::vector<tf2::Vector3> points_t;
   };
 
   class TileMapView
   {
   public:
-    TileMapView();
+    explicit TileMapView(rclcpp::Logger logger = rclcpp::get_logger("tile_map::TileMapView"));
 
     bool IsReady();
 
     void ResetCache();
+
+    void SetLogger(rclcpp::Logger logger);
 
     void SetTileSource(const std::shared_ptr<TileSource>& tile_source);
 
@@ -101,6 +105,8 @@ namespace tile_map
     std::vector<Tile> precache_;
 
     TextureCachePtr tile_cache_;
+
+    rclcpp::Logger logger_;
 
     void ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude);
 

@@ -32,6 +32,8 @@
 
 #include <QCache>
 
+#include <rclcpp/logger.hpp>
+
 #include <tile_map/image_cache.h>
 
 namespace tile_map
@@ -52,10 +54,14 @@ namespace tile_map
   class TextureCache
   {
   public:
-    explicit TextureCache(ImageCachePtr image_cache, size_t size = 512);
+    explicit TextureCache(ImageCachePtr image_cache,
+        size_t size = 512,
+        rclcpp::Logger logger = rclcpp::get_logger("tile_map::TextureCache"));
 
     TexturePtr GetTexture(size_t url_hash, const QString& url, bool& failed, int priority);
     void AddTexture(const TexturePtr& texture);
+
+    void SetLogger(rclcpp::Logger logger);
 
     void Clear();
 
@@ -63,6 +69,8 @@ namespace tile_map
     QCache<size_t, TexturePtr> cache_;
 
     ImageCachePtr image_cache_;
+
+    rclcpp::Logger logger_;
   };
   typedef std::shared_ptr<TextureCache> TextureCachePtr;
 }

@@ -37,7 +37,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include <ros/ros.h>
+#include <rclcpp/logging.hpp>
 
 #include <swri_math_util/constants.h>
 #include <swri_math_util/trig_util.h>
@@ -47,13 +47,14 @@
 
 namespace tile_map
 {
-  TileMapView::TileMapView() :
+  TileMapView::TileMapView(rclcpp::Logger logger) :
     level_(-1),
     width_(100),
-    height_(100)
+    height_(100),
+    logger_(logger)
   {
-    ImageCachePtr image_cache = std::make_shared<ImageCache>("/tmp/tile_map");
-    tile_cache_ = std::make_shared<TextureCache>(image_cache);
+    ImageCachePtr image_cache = std::make_shared<ImageCache>("/tmp/tile_map", 4096, logger);
+    tile_cache_ = std::make_shared<TextureCache>(image_cache, 512, logger);
   }
 
   bool TileMapView::IsReady()
@@ -64,6 +65,12 @@ namespace tile_map
   void TileMapView::ResetCache()
   {
     tile_cache_->Clear();
+  }
+
+  void TileMapView::SetLogger(rclcpp::Logger logger)
+  {
+    logger_ = logger;
+    tile_cache_->SetLogger(logger_);
   }
 
   void TileMapView::SetTileSource(const std::shared_ptr<TileSource>& tile_source)
@@ -143,7 +150,7 @@ namespace tile_map
 
     if (size > 50)
     {
-      ROS_ERROR("Invalid map size: %ld", size);
+      RCLCPP_ERROR(logger_, "Invalid map size: %ld", size);
       return;
     }
 
@@ -237,10 +244,10 @@ namespace tile_map
             double u_1 = (col + 1.0) * tiles[i].subwidth;
             double v_1 = 1.0 - (row + 1.0) * tiles[i].subwidth;
 
-            const tf::Vector3& tl = tiles[i].points_t[row * (tiles[i].subdiv_count + 1) + col];
-            const tf::Vector3& tr = tiles[i].points_t[row * (tiles[i].subdiv_count + 1) + col + 1];
-            const tf::Vector3& br = tiles[i].points_t[(row + 1) * (tiles[i].subdiv_count + 1) + col + 1];
-            const tf::Vector3& bl = tiles[i].points_t[(row + 1) * (tiles[i].subdiv_count + 1) + col];
+            const tf2::Vector3& tl = tiles[i].points_t[row * (tiles[i].subdiv_count + 1) + col];
+            const tf2::Vector3& tr = tiles[i].points_t[row * (tiles[i].subdiv_count + 1) + col + 1];
+            const tf2::Vector3& br = tiles[i].points_t[(row + 1) * (tiles[i].subdiv_count + 1) + col + 1];
+            const tf2::Vector3& bl = tiles[i].points_t[(row + 1) * (tiles[i].subdiv_count + 1) + col];
 
             // Triangle 1
             glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
@@ -305,7 +312,7 @@ namespace tile_map
       {
         double t_lat, t_lon;
         ToLatLon(level, x + col * tile.subwidth, y + row * tile.subwidth, t_lat, t_lon);
-        tile.points.push_back(tf::Vector3(t_lon, t_lat, 0));
+        tile.points.push_back(tf2::Vector3(t_lon, t_lat, 0));
       }
     }
 

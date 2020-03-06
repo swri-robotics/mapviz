@@ -61,9 +61,9 @@ namespace mapviz
 {
 class MapvizPlugin : public QObject
 {
-  Q_OBJECT;
+  Q_OBJECT
 public:
-  virtual ~MapvizPlugin() {}
+  ~MapvizPlugin() override = default;
 
   virtual bool Initialize(
       std::shared_ptr<tf2_ros::Buffer> tf_buffer,
@@ -151,7 +151,7 @@ public:
     }
   }
 
-  void SetTargetFrame(std::string frame_id)
+  void SetTargetFrame(const std::string& frame_id)
   {
     if (frame_id != target_frame_) {
       target_frame_ = frame_id;
@@ -353,14 +353,15 @@ protected:
   MapvizPlugin() :
     initialized_(false),
     visible_(true),
-    canvas_(NULL),
-    icon_(NULL),
+    canvas_(nullptr),
+    icon_(nullptr),
+    node_(nullptr),
     tf_(),
     target_frame_(""),
     source_frame_(""),
     use_latest_transforms_(false),
-    draw_order_(0),
-    node_(NULL) {}
+    draw_order_(0)
+  {}
 
   private:
   // Collect basic profiling info to know how much time each plugin
