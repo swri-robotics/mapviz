@@ -12,6 +12,7 @@ project(mapviz_plugins)
 
 # Ros Packages
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(gps_msgs REQUIRED)
 find_package(image_transport REQUIRED)
@@ -111,7 +112,7 @@ set(SRC_FILES
     # src/pointcloud2_plugin.cpp
     src/point_drawing_plugin.cpp
     # src/pose_plugin.cpp
-    # src/robot_image_plugin.cpp
+    src/robot_image_plugin.cpp
     # src/route_plugin.cpp
     src/string_plugin.cpp
     # src/textured_marker_plugin.cpp
@@ -141,7 +142,7 @@ set(HEADER_FILES
     # include/${PROJECT_NAME}/pointcloud2_plugin.h
     include/${PROJECT_NAME}/point_drawing_plugin.h
     # include/${PROJECT_NAME}/pose_plugin.h
-    # include/${PROJECT_NAME}/robot_image_plugin.h
+    include/${PROJECT_NAME}/robot_image_plugin.h
     # include/${PROJECT_NAME}/route_plugin.h
     include/${PROJECT_NAME}/string_plugin.h
     # include/${PROJECT_NAME}/textured_marker_plugin.h
@@ -159,6 +160,7 @@ add_library(${PROJECT_NAME} SHARED
 target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 ament_target_dependencies(${PROJECT_NAME}
     ament_cmake
+    ament_index_cpp
     cv_bridge
     gps_msgs
     image_transport

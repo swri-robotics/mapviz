@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2014-2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,8 @@
 #include <QWidget>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
 
 #include <mapviz/map_canvas.h>
 
@@ -58,24 +58,24 @@ namespace mapviz_plugins
 
   public:
     RobotImagePlugin();
-    virtual ~RobotImagePlugin();
+    ~RobotImagePlugin() override = default;
 
-    bool Initialize(QGLWidget* canvas);
-    void Shutdown() {}
+    bool Initialize(QGLWidget* canvas) override;
+    void Shutdown() override {}
 
-    void Draw(double x, double y, double scale);
+    void Draw(double x, double y, double scale) override;
 
-    void Transform();
+    void Transform() override;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path);
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-    QWidget* GetConfigWidget(QWidget* parent);
+    QWidget* GetConfigWidget(QWidget* parent) override;
 
   protected:
-    void PrintError(const std::string& message);
-    void PrintInfo(const std::string& message);
-    void PrintWarning(const std::string& message);
+    void PrintError(const std::string& message) override;
+    void PrintInfo(const std::string& message) override;
+    void PrintWarning(const std::string& message) override;
 
   protected Q_SLOTS:
     void SelectFile();
@@ -108,15 +108,15 @@ namespace mapviz_plugins
 
     bool transformed_;
 
-    tf::Point top_left_;
-    tf::Point top_right_;
-    tf::Point bottom_left_;
-    tf::Point bottom_right_;
+    tf2::Vector3 top_left_;
+    tf2::Vector3 top_right_;
+    tf2::Vector3 bottom_left_;
+    tf2::Vector3 bottom_right_;
 
-    tf::Point top_left_transformed_;
-    tf::Point top_right_transformed_;
-    tf::Point bottom_left_transformed_;
-    tf::Point bottom_right_transformed_;
+    tf2::Vector3 top_left_transformed_;
+    tf2::Vector3 top_right_transformed_;
+    tf2::Vector3 bottom_left_transformed_;
+    tf2::Vector3 bottom_right_transformed_;
 
     void UpdateShape();
     void LoadImage();

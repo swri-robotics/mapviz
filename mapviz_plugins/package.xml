@@ -17,6 +17,7 @@
   <depend>libqt5-core</depend>
   <build_depend>libqt5-opengl-dev</build_depend>
 
+  <depend>ament_index_cpp</depend>
   <depend>cv_bridge</depend>
   <depend>gps_msgs</depend>
   <depend>image_transport</depend>

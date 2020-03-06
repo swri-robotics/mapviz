@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2014-2010, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -39,15 +39,16 @@
 #include <QPalette>
 #include <QImage>
 #include <QFileDialog>
+#include <QDir>
 
 // ROS libraries
-#include <ros/master.h>
-#include <ros/package.h>
+#include <rclcpp/rclcpp.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include <mapviz/select_frame_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RobotImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -91,10 +92,6 @@ namespace mapviz_plugins
     QObject::connect(ui_.ratio_original, SIGNAL(toggled(bool)), this, SLOT(RatioOriginalToggled(bool)));
   }
 
-  RobotImagePlugin::~RobotImagePlugin()
-  {
-  }
-
   void RobotImagePlugin::SelectFile()
   {
     QFileDialog dialog(config_widget_, "Select PNG Image");
@@ -132,7 +129,7 @@ namespace mapviz_plugins
     source_frame_ = ui_.frame->text().toStdString();
     PrintWarning("Waiting for transform.");
 
-    ROS_INFO("Setting target frame to to %s", source_frame_.c_str());
+    RCLCPP_INFO(node_->get_logger(), "Setting target frame to to %s", source_frame_.c_str());
 
     initialized_ = true;
 
@@ -202,10 +199,10 @@ namespace mapviz_plugins
   {
     double hw = 0.5*width_; //half width
     double hh = 0.5*height_; //half height
-    top_left_ = tf::Point(offset_x_ - hw, offset_y_ + hh, 0);
-    top_right_ = tf::Point(offset_x_ + hw, offset_y_ + hh, 0);
-    bottom_left_ = tf::Point(offset_x_ - hw, offset_y_ - hh, 0);
-    bottom_right_ = tf::Point(offset_x_ + hw, offset_y_ - hh, 0);
+    top_left_ = tf2::Vector3(offset_x_ - hw, offset_y_ + hh, 0);
+    top_right_ = tf2::Vector3(offset_x_ + hw, offset_y_ + hh, 0);
+    bottom_left_ = tf2::Vector3(offset_x_ - hw, offset_y_ - hh, 0);
+    bottom_right_ = tf2::Vector3(offset_x_ + hw, offset_y_ - hh, 0);
   }
 
   void RobotImagePlugin::PrintError(const std::string& message)
@@ -265,7 +262,7 @@ namespace mapviz_plugins
     transformed_ = false;
 
     swri_transform_util::Transform transform;
-    if (GetTransform(ros::Time(), transform))
+    if (GetTransform(node_->get_clock()->now(), transform))
     {
       top_left_transformed_ = transform * top_left_;
       top_right_transformed_ = transform * top_right_;
@@ -281,7 +278,7 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::LoadImage()
   {
-    ROS_INFO("Loading image");
+    RCLCPP_INFO(node_->get_logger(), "Loading image");
     try
     {
       QImage nullImage;
@@ -302,9 +299,11 @@ namespace mapviz_plugins
       if (spos != -1 && spos + prefix.length() < filename_.size() && has_close)
       {
         std::string package = filename_.substr(spos + prefix.length());
-        package = package.substr(0, package.find(")"));
+        package = package.substr(0, package.find(')'));
 
-        real_filename = ros::package::getPath(package) + filename_.substr(filename_.find(')')+1);
+        std::string package_path = ament_index_cpp::get_package_share_directory(package);
+        real_filename = QDir(QString::fromStdString(package_path))
+            .filePath(QString::fromStdString(filename_.substr(filename_.find(')')+1))).toStdString();
       }
       else
       {
@@ -362,43 +361,42 @@ namespace mapviz_plugins
   {
     if (node["frame"])
     {
-      node["frame"] >> source_frame_;
+      source_frame_ = node["frame"].as<std::string>();
       ui_.frame->setText(source_frame_.c_str());
     }
     if (node["offset_x"])
     {
-      node["offset_x"] >> offset_x_;
+      offset_x_ = node["offset_x"].as<double>();
       ui_.offset_x->setValue(offset_x_);
     }
 
     if (node["offset_y"])
     {
-      node["offset_y"] >> offset_y_;
+      offset_y_ = node["offset_y"].as<double>();
       ui_.offset_y->setValue(offset_y_);
     }
 
     if (node["image"])
     {
-      node["image"] >> filename_;
+      filename_ = node["image"].as<std::string>();
       ui_.image->setText(filename_.c_str());
     }
 
     if (node["width"])
     {
-      node["width"] >> width_;
+      width_ = node["width"].as<double>();
       ui_.width->setValue(width_);
     }
 
     if (node["height"])
     {
-      node["height"] >> height_;
+      height_ = node["height"].as<double>();
       ui_.height->setValue(height_);
     }
 
     if (node["ratio"])
     {
-      std::string value;
-      node["ratio"] >> value;
+      std::string value = node["ratio"].as<std::string>();
       if(value == "equal")
       {
         ui_.ratio_equal->setChecked(true);
