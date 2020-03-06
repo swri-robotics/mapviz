@@ -135,7 +135,6 @@ set(HEADER_FILES
     # include/${PROJECT_NAME}/occupancy_grid_plugin.h
     include/${PROJECT_NAME}/odometry_plugin.h
     # include/${PROJECT_NAME}/path_plugin.h
-    # include/${PROJECT_NAME}/path_plugin.h
     # include/${PROJECT_NAME}/placeable_window_proxy.h
     # include/${PROJECT_NAME}/plan_route_plugin.h
     # include/${PROJECT_NAME}/point_click_publisher_plugin.h
