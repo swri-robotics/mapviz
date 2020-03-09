@@ -44,6 +44,7 @@ int main(int argc, char **argv)
 
   // Start mapviz
   mapviz::Mapviz mapviz(true, argc, argv);
+  app.setLogger(mapviz.GetNode()->get_logger());
   mapviz.show();
 
   return app.exec();

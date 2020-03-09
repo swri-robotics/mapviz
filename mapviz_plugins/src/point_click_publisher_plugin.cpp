@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2014-2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,22 +27,22 @@
 //
 // *****************************************************************************
 
-#include "mapviz_plugins/point_click_publisher_plugin.h"
-#include <geometry_msgs/PointStamped.h>
+#include <mapviz_plugins/point_click_publisher_plugin.h>
 #include <swri_transform_util/frames.h>
-#include <swri_yaml_util/yaml_util.h>
+#include <tf2/transform_datatypes.h>
 
 #include <boost/shared_ptr.hpp>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointClickPublisherPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
   PointClickPublisherPlugin::PointClickPublisherPlugin() :
+    MapvizPlugin(),
     config_widget_(new QWidget()),
-    canvas_(NULL)
+    canvas_(nullptr)
   {
     ui_.setupUi(config_widget_);
 
@@ -65,7 +65,7 @@ namespace mapviz_plugins
 
   bool PointClickPublisherPlugin::Initialize(QGLWidget* canvas)
   {
-    canvas_ = static_cast<mapviz::MapCanvas*>(canvas);
+    canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     canvas_->installEventFilter(&click_filter_);
 
     PrintInfo("Ready.");
@@ -80,16 +80,16 @@ namespace mapviz_plugins
   void PointClickPublisherPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     std::string tmp;
-    if (swri_yaml_util::FindValue(node, "topic"))
+    if (node["topic"])
     {
-      node["topic"] >> tmp;
+      tmp = node["topic"].as<std::string>();
       ui_.topic->setText(QString(tmp.c_str()));
       topicChanged(ui_.topic->text());
     }
 
-    if (swri_yaml_util::FindValue(node, "output_frame"))
+    if (node["output_frame"])
     {
-      node["output_frame"] >> tmp;
+      tmp = node["output_frame"].as<std::string>();
       ui_.outputframe->addItem(QString(tmp.c_str()));
     }
   }
@@ -117,7 +117,7 @@ namespace mapviz_plugins
     if (target_frame_ != output_frame)
     {
       swri_transform_util::Transform tf;
-      tf::Point tfPoint(transformed.x(), transformed.y(), 0.0);
+      tf2::Vector3 tfPoint(transformed.x(), transformed.y(), 0.0);
       if (tf_manager_->GetTransform(output_frame, target_frame_, tf))
       {
         tfPoint = tf * tfPoint;
@@ -137,17 +137,17 @@ namespace mapviz_plugins
     ss << "Point in " << output_frame.c_str() << ": " << transformed.x() << "," << transformed.y();
     PrintInfo(ss.str());
 
-    std::shared_ptr<geometry_msgs::PointStamped> stamped = std::make_shared<geometry_msgs::PointStamped>();
+    std::unique_ptr<geometry_msgs::msg::PointStamped> stamped = std::make_unique<geometry_msgs::msg::PointStamped>();
     stamped->header.frame_id = output_frame;
-    stamped->header.stamp = ros::Time::now();
+    stamped->header.stamp = node_->get_clock()->now();
     stamped->point.x = transformed.x();
     stamped->point.y = transformed.y();
     stamped->point.z = 0.0;
 
-    point_publisher_.publish(stamped);
+    point_publisher_->publish(*stamped);
   }
 
-  void PointClickPublisherPlugin::SetNode(const ros::NodeHandle& node)
+  void PointClickPublisherPlugin::SetNode(rclcpp::Node& node)
   {
     mapviz::MapvizPlugin::SetNode(node);
 
@@ -180,14 +180,15 @@ namespace mapviz_plugins
 
     if (!topic.isEmpty())
     {
-      point_publisher_ = node_.advertise<geometry_msgs::PointStamped>(topic.toStdString(), 1000);
+      point_publisher_ = node_->create_publisher<geometry_msgs::msg::PointStamped>(
+          topic.toStdString(), rclcpp::QoS(1000));
     }
   }
 
   void PointClickPublisherPlugin::updateFrames()
   {
     std::vector<std::string> frames;
-    tf_->getFrameStrings(frames);
+    tf_buf_->_getFrameStrings(frames);
 
     bool supports_wgs84 = tf_manager_->SupportsTransform(
         swri_transform_util::_local_xy_frame,
@@ -217,12 +218,12 @@ namespace mapviz_plugins
     std::string current_output = ui_.outputframe->currentText().toStdString();
 
     ui_.outputframe->clear();
-    for (size_t i = 0; i < frames.size(); i++)
+    for (auto & frame : frames)
     {
-      ui_.outputframe->addItem(frames[i].c_str());
+      ui_.outputframe->addItem(frame.c_str());
     }
 
-    if (current_output != "")
+    if (!current_output.empty())
     {
       int index = ui_.outputframe->findText(current_output.c_str());
       if (index < 0)

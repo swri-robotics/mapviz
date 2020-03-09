@@ -90,6 +90,8 @@ public:
     Qt::WindowFlags flags = 0);
   ~Mapviz();
 
+  rclcpp::Node::SharedPtr GetNode();
+
   void Initialize();
 
 public Q_SLOTS:

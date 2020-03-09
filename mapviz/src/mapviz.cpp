@@ -233,6 +233,11 @@ Mapviz::~Mapviz()
   // delete node_;
 }
 
+rclcpp::Node::SharedPtr Mapviz::GetNode()
+{
+  return node_;
+}
+
 void Mapviz::showEvent(QShowEvent* event)
 {
   Initialize();

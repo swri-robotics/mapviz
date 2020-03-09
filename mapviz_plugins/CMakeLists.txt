@@ -90,7 +90,7 @@ set(UI_FILES
 )
 
 set(SRC_FILES
-    # src/attitude_indicator_plugin.cpp 
+    # src/attitude_indicator_plugin.cpp
     src/canvas_click_filter.cpp
     src/coordinate_picker_plugin.cpp
     src/disparity_plugin.cpp
@@ -108,7 +108,7 @@ set(SRC_FILES
     # src/path_plugin.cpp
     # src/placeable_window_proxy.cpp
     # src/plan_route_plugin.cpp
-    # src/point_click_publisher_plugin.cpp
+    src/point_click_publisher_plugin.cpp
     # src/pointcloud2_plugin.cpp
     src/point_drawing_plugin.cpp
     # src/pose_plugin.cpp
@@ -138,7 +138,7 @@ set(HEADER_FILES
     # include/${PROJECT_NAME}/path_plugin.h
     # include/${PROJECT_NAME}/placeable_window_proxy.h
     # include/${PROJECT_NAME}/plan_route_plugin.h
-    # include/${PROJECT_NAME}/point_click_publisher_plugin.h
+    include/${PROJECT_NAME}/point_click_publisher_plugin.h
     # include/${PROJECT_NAME}/pointcloud2_plugin.h
     include/${PROJECT_NAME}/point_drawing_plugin.h
     # include/${PROJECT_NAME}/pose_plugin.h
