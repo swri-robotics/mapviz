@@ -33,7 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // ROS Libraries
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 // Mapviz libraries
 #include <mapviz/map_canvas.h>
@@ -93,10 +93,10 @@ namespace mapviz_plugins
       QWidget* config_widget_;
 
       mapviz::MapCanvas* map_canvas_;
-      tf::Vector3 last_position_;
+      tf2::Vector3 last_position_;
 
-      std::vector<tf::Vector3> vertices_;
-      std::vector<tf::Vector3> transformed_vertices_;
+      std::vector<tf2::Vector3> vertices_;
+      std::vector<tf2::Vector3> transformed_vertices_;
 
       int selected_point_;
       bool is_mouse_down_;

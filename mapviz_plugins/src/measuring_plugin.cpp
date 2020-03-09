@@ -43,12 +43,12 @@
 #endif
 
 // ROS Libraries
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
 #include <mapviz/select_frame_dialog.h>
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MeasuringPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -144,10 +144,10 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
 #else
   QPointF point = event->posF();
 #endif
-  ROS_DEBUG("Map point: %f %f", point.x(), point.y());
+  RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
   for (size_t i = 0; i < vertices_.size(); i++)
   {
-    tf::Vector3 vertex = vertices_[i];
+    tf2::Vector3 vertex = vertices_[i];
     QPointF transformed = map_canvas_->FixedFrameToMapGlCoord(QPointF(vertex.x(), vertex.y()));
 
     double distance = QLineF(transformed, point).length();
@@ -201,7 +201,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
     QPointF point = event->posF();
 #endif
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-    tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+    tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
     vertices_[selected_point_].setX(position.x());
     vertices_[selected_point_].setY(position.y());
 
@@ -233,7 +233,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 #endif
 
       QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-      tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+      tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
       vertices_.push_back(position);
       DistanceCalculation(); //call to calculate distance
     }
@@ -247,13 +247,13 @@ void MeasuringPlugin::DistanceCalculation()
 {
   double distance_instant = -1; //measurement between last two points
   double distance_sum = 0; //sum of distance from all points
-  tf::Vector3 last_position_(0,0,0);
+  tf2::Vector3 last_position_(0,0,0);
   std::string frame = target_frame_;
   measurements_.clear();
   for (size_t i = 0; i < vertices_.size(); i++)
   {
-      tf::Vector3 vertex = vertices_[i];
-      if (last_position_ != tf::Vector3(0,0,0))
+      tf2::Vector3 vertex = vertices_[i];
+      if (last_position_ != tf2::Vector3(0,0,0))
       {
           distance_instant = last_position_.distance(vertex);
           distance_sum = distance_sum + distance_instant;
@@ -297,7 +297,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 #endif
     std::string frame = target_frame_;
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-    tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+    tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
     vertices_[selected_point_].setY(position.y());
     vertices_[selected_point_].setX(position.x());
     return true;
@@ -366,8 +366,8 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   //(midpoint positioned) measurements
   for (int i=0; i<vertices_.size()-1; i++)
   {
-    tf::Vector3 v1 = vertices_[i];
-    tf::Vector3 v2 = vertices_[i+1];
+    tf2::Vector3 v1 = vertices_[i];
+    tf2::Vector3 v2 = vertices_[i+1];
 
     mb.string.setNum(measurements_[i], 'g', 5);
     mb.string.prepend(" ");
@@ -424,46 +424,40 @@ void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path
 {
   if (node["main_color"])
   {            
-    std::string color;
-    node["main_color"] >> color;
+    std::string color = node["main_color"].as<std::string>();
     ui_.main_color->setColor(QColor(color.c_str()));
   }
 
   if (node["bkgnd_color"])
   {            
-    std::string color;
-    node["bkgnd_color"] >> color;
+    std::string color = node["bkgnd_color"].as<std::string>();
     ui_.bkgnd_color->setColor(QColor(color.c_str()));
   }
 
   if (node["show_bkgnd_color"])
   {
-    bool show_bkgnd_color = false;
-    node["show_bkgnd_color"] >> show_bkgnd_color;
+    bool show_bkgnd_color = node["show_bkgnd_color"].as<bool>();
     ui_.show_bkgnd_color->setChecked(show_bkgnd_color);
     BkgndColorToggled(show_bkgnd_color);
   }
 
   if (node["show_measurements"])
   {
-    bool show_measurements = false;
-    node["show_measurements"] >> show_measurements;
+    bool show_measurements = node["show_measurements"].as<bool>();
     ui_.show_measurements->setChecked(show_measurements);
     MeasurementsToggled(show_measurements);
   }
 
   if (node["font_size"])
   {
-    int font_size;
-    node["font_size"] >> font_size;
+    int font_size = node["font_size"].as<int>();
     ui_.font_size->setValue(font_size);
     FontSizeChanged(font_size);
   }
 
   if (node["alpha"])
   {
-    double alpha;
-    node["alpha"] >> alpha;
+    double alpha = node["alpha"].as<double>();
     ui_.alpha->setValue(alpha);
     AlphaChanged(alpha);
   }
