@@ -32,10 +32,6 @@
 #include <mapviz_plugins/occupancy_grid_plugin.h>
 #include <GL/glut.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QGLWidget>
 #include <QPalette>
@@ -44,6 +40,13 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OccupancyGridPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -60,32 +63,32 @@ namespace mapviz_plugins
     for( int i = 0; i <= 100; i++ )
     {
       uchar v = 255 - (255 * i) / 100;
-      *palette_ptr++ = v; // red
-      *palette_ptr++ = v; // green
-      *palette_ptr++ = v; // blue
-      *palette_ptr++ = 255; // alpha
+      *palette_ptr++ = v;   // red
+      *palette_ptr++ = v;   // green
+      *palette_ptr++ = v;   // blue
+      *palette_ptr++ = 255;   // alpha
     }
     // illegal positive values in green
     for( int i = 101; i <= 127; i++ )
     {
-      *palette_ptr++ = 0; // red
-      *palette_ptr++ = 255; // green
-      *palette_ptr++ = 0; // blue
-      *palette_ptr++ = 255; // alpha
+      *palette_ptr++ = 0;   // red
+      *palette_ptr++ = 255;   // green
+      *palette_ptr++ = 0;   // blue
+      *palette_ptr++ = 255;   // alpha
     }
     // illegal negative (char) values in shades of red/yellow
     for( int i = 128; i <= 254; i++ )
     {
-      *palette_ptr++ = 255; // red
-      *palette_ptr++ = (255*(i-128))/(254-128); // green
-      *palette_ptr++ = 0; // blue
-      *palette_ptr++ = 255; // alpha
+      *palette_ptr++ = 255;   // red
+      *palette_ptr++ = (255*(i-128))/(254-128);   // green
+      *palette_ptr++ = 0;   // blue
+      *palette_ptr++ = 255;   // alpha
     }
     // legal -1 value is tasteful blueish greenish grayish color
-    *palette_ptr++ = 0x70; // red
-    *palette_ptr++ = 0x89; // green
-    *palette_ptr++ = 0x86; // blue
-    *palette_ptr++ = 160; // alpha
+    *palette_ptr++ = 0x70;  // red
+    *palette_ptr++ = 0x89;  // green
+    *palette_ptr++ = 0x86;  // blue
+    *palette_ptr++ = 160;   // alpha
 
     return palette;
   }
@@ -96,51 +99,51 @@ namespace mapviz_plugins
     uchar* palette_ptr = palette.data();
 
     // zero values have alpha=0
-    *palette_ptr++ = 0; // red
-    *palette_ptr++ = 0; // green
-    *palette_ptr++ = 0; // blue
-    *palette_ptr++ = 0; // alpha
+    *palette_ptr++ = 0;   // red
+    *palette_ptr++ = 0;   // green
+    *palette_ptr++ = 0;   // blue
+    *palette_ptr++ = 0;   // alpha
 
     // Blue to red spectrum for most normal cost values
     for( int i = 1; i <= 98; i++ )
     {
       uchar v = (255 * i) / 100;
-      *palette_ptr++ = v; // red
-      *palette_ptr++ = 0; // green
-      *palette_ptr++ = 255 - v; // blue
-      *palette_ptr++ = 255; // alpha
+      *palette_ptr++ = v;   // red
+      *palette_ptr++ = 0;   // green
+      *palette_ptr++ = 255 - v;   // blue
+      *palette_ptr++ = 255;   // alpha
     }
     // inscribed obstacle values (99) in cyan
-    *palette_ptr++ = 0; // red
-    *palette_ptr++ = 255; // green
-    *palette_ptr++ = 255; // blue
-    *palette_ptr++ = 255; // alpha
+    *palette_ptr++ = 0;   // red
+    *palette_ptr++ = 255;   // green
+    *palette_ptr++ = 255;   // blue
+    *palette_ptr++ = 255;   // alpha
     // lethal obstacle values (100) in purple
-    *palette_ptr++ = 255; // red
-    *palette_ptr++ = 0; // green
-    *palette_ptr++ = 255; // blue
-    *palette_ptr++ = 255; // alpha
+    *palette_ptr++ = 255;   // red
+    *palette_ptr++ = 0;   // green
+    *palette_ptr++ = 255;   // blue
+    *palette_ptr++ = 255;   // alpha
     // illegal positive values in green
     for( int i = 101; i <= 127; i++ )
     {
-      *palette_ptr++ = 0; // red
-      *palette_ptr++ = 255; // green
-      *palette_ptr++ = 0; // blue
-      *palette_ptr++ = 255; // alpha
+      *palette_ptr++ = 0;   // red
+      *palette_ptr++ = 255;   // green
+      *palette_ptr++ = 0;   // blue
+      *palette_ptr++ = 255;   // alpha
     }
     // illegal negative (char) values in shades of red/yellow
     for( int i = 128; i <= 254; i++ )
     {
-      *palette_ptr++ = 255; // red
-      *palette_ptr++ = (255*(i-128))/(254-128); // green
-      *palette_ptr++ = 0; // blue
-      *palette_ptr++ = 255; // alpha
+      *palette_ptr++ = 255;   // red
+      *palette_ptr++ = (255*(i-128))/(254-128);   // green
+      *palette_ptr++ = 0;   // blue
+      *palette_ptr++ = 255;   // alpha
     }
     // legal -1 value is tasteful blueish greenish grayish color
-    *palette_ptr++ = 0x70; // red
-    *palette_ptr++ = 0x89; // green
-    *palette_ptr++ = 0x86; // blue
-    *palette_ptr++ = 160; // alpha
+    *palette_ptr++ = 0x70;  // red
+    *palette_ptr++ = 0x89;  // green
+    *palette_ptr++ = 0x86;  // blue
+    *palette_ptr++ = 160;   // alpha
 
     return palette;
   }
@@ -168,13 +171,29 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.select_grid, SIGNAL(clicked()), this, SLOT(SelectTopicGrid()));
 
-    QObject::connect(ui_.topic_grid, SIGNAL(textEdited(const QString&)), this, SLOT(TopicGridEdited()));
+    QObject::connect(
+      ui_.topic_grid,
+      SIGNAL(textEdited(const QString&)),
+      this,
+      SLOT(TopicGridEdited()));
 
-    QObject::connect(this, SIGNAL(TargetFrameChanged(std::string)), this, SLOT(FrameChanged(std::string)));
+    QObject::connect(
+      this,
+      SIGNAL(TargetFrameChanged(std::string)),
+      this,
+      SLOT(FrameChanged(std::string)));
 
-    QObject::connect(ui_.checkbox_update, SIGNAL(toggled(bool)), this, SLOT(upgradeCheckBoxToggled(bool)));
+    QObject::connect(
+      ui_.checkbox_update,
+      SIGNAL(toggled(bool)),
+      this,
+      SLOT(upgradeCheckBoxToggled(bool)));
 
-    QObject::connect(ui_.color_scheme, SIGNAL(currentTextChanged(const QString &)), this, SLOT(colorSchemeUpdated(const QString &)));
+    QObject::connect(
+      ui_.color_scheme,
+      SIGNAL(currentTextChanged(const QString &)),
+      this,
+      SLOT(colorSchemeUpdated(const QString &)));
 
     PrintWarning("waiting for first message");
   }
@@ -194,12 +213,12 @@ namespace mapviz_plugins
     {
       QPixmap icon(16, 16);
       icon.fill(Qt::transparent);
-      
+
       QPainter painter(&icon);
       painter.setRenderHint(QPainter::Antialiasing, true);
-      
+
       QPen pen(Qt::black);
-      
+
       pen.setWidth(2);
       pen.setCapStyle(Qt::SquareCap);
       painter.setPen(pen);
@@ -210,7 +229,7 @@ namespace mapviz_plugins
       painter.drawLine(2, 14, 14, 14);
       painter.drawLine(8, 2, 8, 14);
       painter.drawLine(2, 8, 14, 8);
-      
+
       icon_->SetPixmap(icon);
     }
   }
@@ -222,7 +241,6 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::SelectTopicGrid()
   {
-    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic("nav_msgs/OccupancyGrid");
     std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/OccupancyGrid");
     if (!topic.empty())
     {
@@ -268,7 +286,6 @@ namespace mapviz_plugins
 
     if (ui_.checkbox_update)
     {
-      // update_sub_ = node_.subscribe(topic+ "_updates", 10, &OccupancyGridPlugin::CallbackUpdate, this);
       update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
         topic,
         rclcpp::QoS(10),
@@ -278,12 +295,12 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::colorSchemeUpdated(const QString &)
   {
-
-    if( grid_ && raw_buffer_.size()>0)
+    if( grid_ && raw_buffer_.size() > 0)
     {
       const size_t width  = grid_->info.width;
       const size_t height = grid_->info.height;
-      const Palette& palette = (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
+      const Palette& palette =
+        (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
 
       for (size_t row = 0; row < height;  row++)
       {
@@ -362,7 +379,6 @@ namespace mapviz_plugins
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
   }
 
 
@@ -386,7 +402,8 @@ namespace mapviz_plugins
       texture_size_ = texture_size_ << 1;
     }
 
-    const Palette& palette = (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
+    const Palette& palette =
+      (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
 
     raw_buffer_.resize(texture_size_*texture_size_, 0);
     color_buffer_.resize(texture_size_*texture_size_*CHANNELS, 0);
@@ -416,7 +433,8 @@ namespace mapviz_plugins
 
     if( initialized_ )
     {
-      const Palette& palette = (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
+      const Palette& palette =
+        (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
 
       for (size_t row = 0; row < msg->height; row++)
       {
@@ -548,7 +566,10 @@ namespace mapviz_plugins
     emitter << YAML::Key << "alpha"  << YAML::Value << ui_.alpha->value();
     emitter << YAML::Key << "topic"  << YAML::Value << ui_.topic_grid->text().toStdString();
     emitter << YAML::Key << "update" << YAML::Value << ui_.checkbox_update->isChecked();
-    emitter << YAML::Key << "scheme" << YAML::Value << ui_.color_scheme->currentText().toStdString();
+    emitter << YAML::Key
+      << "scheme"
+      << YAML::Value
+      << ui_.color_scheme->currentText().toStdString();
   }
-}
+}   // namespace mapviz_plugins
 
