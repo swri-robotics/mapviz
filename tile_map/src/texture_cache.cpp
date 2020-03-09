@@ -37,7 +37,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include <ros/ros.h>
+#include <rclcpp/logging.hpp>
 
 #include <QGLWidget>
 #include <QImage>
@@ -63,9 +63,12 @@ namespace tile_map
     glDeleteTextures(1, &ids[0]);
   }
 
-  TextureCache::TextureCache(ImageCachePtr image_cache, size_t size) :
+  TextureCache::TextureCache(ImageCachePtr image_cache,
+      size_t size,
+      rclcpp::Logger logger) :
     cache_(size),
-    image_cache_(image_cache)
+    image_cache_(image_cache),
+    logger_(logger)
   {
 
   }
@@ -106,11 +109,11 @@ namespace tile_map
 
           if (check == ids[0])
           {
-            ROS_ERROR("FAILED TO CREATE TEXTURE");
+            RCLCPP_ERROR(logger_, "FAILED TO CREATE TEXTURE");
 
             GLenum err = glGetError();
             const GLubyte *errString = gluErrorString(err);
-            ROS_ERROR("GL ERROR(%u): %s", err, errString);
+            RCLCPP_ERROR(logger_, "GL ERROR(%u): %s", err, errString);
             return texture;
           }
 
@@ -159,6 +162,12 @@ namespace tile_map
       TexturePtr* texture_ptr = new TexturePtr(texture);
       cache_.insert(texture->url_hash, texture_ptr);
     }
+  }
+
+  void TextureCache::SetLogger(rclcpp::Logger logger)
+  {
+    logger_ = logger;
+    image_cache_->SetLogger(logger_);
   }
 
   void TextureCache::Clear()

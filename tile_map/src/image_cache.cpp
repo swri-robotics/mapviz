@@ -38,7 +38,7 @@
 #include <QNetworkDiskCache>
 #include <QUrl>
 
-#include <ros/ros.h>
+#include <rclcpp/logging.hpp>
 
 namespace tile_map
 {
@@ -81,14 +81,17 @@ namespace tile_map
 
   const int ImageCache::MAXIMUM_NETWORK_REQUESTS = 6;
 
-  ImageCache::ImageCache(const QString& cache_dir, size_t size) :
+  ImageCache::ImageCache(const QString& cache_dir,
+      size_t size,
+      rclcpp::Logger logger) :
     network_manager_(this),
     cache_dir_(cache_dir),
     cache_(size),
     exit_(false),
     tick_(0),
     cache_thread_(new CacheThread(this)),
-    network_request_semaphore_(MAXIMUM_NETWORK_REQUESTS)
+    network_request_semaphore_(MAXIMUM_NETWORK_REQUESTS),
+    logger_(logger)
   {
     QNetworkDiskCache* disk_cache = new QNetworkDiskCache(this);
     disk_cache->setCacheDirectory(cache_dir_);
@@ -139,7 +142,7 @@ namespace tile_map
       image = *image_ptr;
       if (!cache_.insert(uri_hash, image_ptr))
       {
-        ROS_ERROR("FAILED TO CREATE HANDLE: %s", uri.toStdString().c_str());
+        RCLCPP_ERROR(logger_, "FAILED TO CREATE HANDLE: %s", uri.toStdString().c_str());
         image_ptr = 0;
       }
     }
@@ -187,6 +190,11 @@ namespace tile_map
     unprocessed_mutex_.unlock();
 
     return image;
+  }
+
+  void  ImageCache::SetLogger(rclcpp::Logger logger)
+  {
+    logger_ = logger;
   }
 
   void ImageCache::ProcessRequest(QString uri)
@@ -248,7 +256,7 @@ namespace tile_map
 
   void ImageCache::NetworkError(QNetworkReply::NetworkError error)
   {
-    ROS_ERROR("NETWORK ERROR: %d", error);
+    RCLCPP_ERROR(logger_, "NETWORK ERROR: %d", error);
     // TODO add failure
   }
 

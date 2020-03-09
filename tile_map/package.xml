@@ -4,12 +4,12 @@
   <description>
 
      Tile map provides a slippy map style interface for visualizing 
-     OpenStreetMap and GooleMap tiles.  A mapviz visualization plug-in is also
+     OpenStreetMap and GoogleMap tiles.  A mapviz visualization plug-in is also
      implemented
 
   </description>
   <author>Marc Alban</author>
-  <maintainer email="malban@swri.org">Marc Alban</maintainer>
+  <maintainer email="preed@swri.org">P. J. Reed</maintainer>
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
@@ -27,6 +27,7 @@
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
   <depend>tf2</depend>
+  <depend>yaml-cpp</depend>
 
   <exec_depend>libjsoncpp</exec_depend>
   <exec_depend>libqt5-opengl</exec_depend>

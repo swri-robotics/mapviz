@@ -26,12 +26,9 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-// #pragma once
 #ifndef MAPVIZ__STOPWATCH_H_
 #define MAPVIZ__STOPWATCH_H_
 
-// #include <ros/time.h>
-// #include <ros/console.h>
 #include <rclcpp/rclcpp.hpp>
 
 #include <algorithm>
@@ -51,10 +48,10 @@ class Stopwatch
   Stopwatch()
     :
     count_(0),
+    clock(),
     total_time_(0, 0),
     max_time_(0, 0),
-    start_(0, 0),
-    clock()
+    start_(0, 0)
   {
   }
 
@@ -118,12 +115,9 @@ class Stopwatch
  private:
   int count_;
   rclcpp::Clock clock;
-  // ros::WallDuration total_time_;
-  // ros::WallDuration max_time_;
   rclcpp::Duration total_time_;
   rclcpp::Duration max_time_;
 
-  // ros::WallTime start_;
   rclcpp::Time start_;
 };  // class PluginInstrumentation
 }  // namespace mapviz

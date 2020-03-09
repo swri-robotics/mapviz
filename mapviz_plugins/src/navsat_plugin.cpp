@@ -80,7 +80,7 @@ namespace mapviz_plugins
   void NavSatPlugin::SelectTopic()
   {
     std::string topic =
-        mapviz::SelectTopicDialog::selectTopic("sensor_msgs/NavSatFix");
+        mapviz::SelectTopicDialog::selectTopic(node_, "sensor_msgs/msg/NavSatFix");
 
     if (!topic.empty())
     {

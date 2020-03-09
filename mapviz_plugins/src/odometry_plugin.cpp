@@ -105,11 +105,8 @@ namespace mapviz_plugins
 
   void OdometryPlugin::SelectTopic()
   {
-    // ros::master::TopicInfo topic =
-    //     mapviz::SelectTopicDialog::selectTopic("nav_msgs/Odometry");
-    std::string topic = mapviz::SelectTopicDialog::selectTopic("nav_msgs/Odometry");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Odometry");
 
-    // if (!topic.name.empty())
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));
@@ -127,14 +124,11 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      // odometry_sub_.shutdown();
       odometry_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
-        // odometry_sub_ = node_.subscribe(
-        //             topic_, 1, &OdometryPlugin::odometryCallback, this);
         odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(topic_, rclcpp::QoS(1),
           std::bind(&OdometryPlugin::odometryCallback, this, std::placeholders::_1));
 

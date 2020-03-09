@@ -34,15 +34,14 @@
 #include <swri_transform_util/transform_util.h>
 #include <mapviz/select_topic_dialog.h>
 
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <utility>
 #include <vector>
 
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GpsPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -85,20 +84,12 @@ namespace mapviz_plugins
                      SLOT(ClearPoints()));
   }
 
-  GpsPlugin::~GpsPlugin()
-  {
-  }
-
   void GpsPlugin::SelectTopic()
   {
-    // ros::master::TopicInfo topic =
-    //     mapviz::SelectTopicDialog::selectTopic("gps_common/GPSFix");
-    std::string topic = mapviz::SelectTopicDialog::selectTopic("gps_common/GPSFix");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "gps_msgs/msg/GPSFix");
 
-    // if (!topic.name.empty())
     if (!topic.empty())
     {
-      // ui_.topic->setText(QString::fromStdString(topic.name));
       ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
@@ -120,7 +111,6 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        // gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::GPSFixCallback, this);
         gps_sub_ = node_->create_subscription<gps_msgs::msg::GPSFix>(topic_, rclcpp::QoS(1),
           std::bind(&GpsPlugin::GPSFixCallback, this, std::placeholders::_1));
 

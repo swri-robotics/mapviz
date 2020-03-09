@@ -193,11 +193,6 @@ target_link_libraries(${PROJECT_NAME}
     ${OpenCV_LIBS}
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
-)
-
-
 ### Install the plugins ###
 
 install(DIRECTORY include/${PROJECT_NAME}/
@@ -206,7 +201,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 install(TARGETS ${PROJECT_NAME}
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )

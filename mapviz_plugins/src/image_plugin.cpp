@@ -215,7 +215,7 @@ namespace mapviz_plugins
   void ImagePlugin::SelectTopic()
   {
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
-      "sensor_msgs/Image");
+      node_, "sensor_msgs/msg/Image");
 
     if(topic.empty())
     {
