@@ -47,14 +47,13 @@
 #include "ui_topic_select.h"
 
 // ROS libraries
-#include <ros/master.h>
+#include <rclcpp/rclcpp.hpp>
 #include <swri_transform_util/transform.h>
-#include <swri_yaml_util/yaml_util.h>
 
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::LaserScanPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -161,7 +160,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::ClearHistory()
   {
-    ROS_DEBUG("LaserScan::ClearHistory()");
+    RCLCPP_DEBUG(node_->get_logger(), "LaserScan::ClearHistory()");
     scans_.clear();
   }
 
@@ -273,12 +272,12 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "sensor_msgs/LaserScan");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+      "sensor_msgs/msg/laser_scan");
 
-    if (!topic.name.empty())
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
   }
@@ -293,17 +292,18 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      laserscan_sub_.shutdown();
+      laserscan_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
-        laserscan_sub_ = node_.subscribe(topic_,
-                                         100,
-                                         &LaserScanPlugin::laserScanCallback,
-                                         this);
+        laserscan_sub_ = node_->create_subscription<sensor_msgs::msg::LaserScan>(
+          topic_,
+          rclcpp::QoS(100),
+          std::bind(&LaserScanPlugin::laserScanCallback, this, std::placeholders::_1)
+        );
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
@@ -338,7 +338,7 @@ namespace mapviz_plugins
     point_size_ = static_cast<size_t>(value);
   }
 
-  void LaserScanPlugin::updatePreComputedTriginometic(const sensor_msgs::LaserScanConstPtr& msg)
+  void LaserScanPlugin::updatePreComputedTriginometic(const sensor_msgs::msg::LaserScan::SharedPtr msg)
   {
       if( msg->ranges.size() != prev_ranges_size_ ||
           msg->angle_min !=  prev_angle_min_  ||
@@ -377,7 +377,7 @@ namespace mapviz_plugins
       return has_tranform;
   }
 
-  void LaserScanPlugin::laserScanCallback(const sensor_msgs::LaserScanConstPtr& msg)
+  void LaserScanPlugin::laserScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
   {
     if (!has_message_)
     {
@@ -413,7 +413,7 @@ namespace mapviz_plugins
       StampedPoint point;
       x = precomputed_cos_[i] * msg->ranges[i];
       y = precomputed_sin_[i] * msg->ranges[i];
-      point.point = tf::Point(x, y, 0.0f);
+      point.point = tf2::Vector3(x, y, 0.0f);
       point.range = msg->ranges[i];
       if (i < msg->intensities.size())
         point.intensity = msg->intensities[i];
@@ -556,28 +556,26 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(boost::trim_copy(topic).c_str());
       TopicEdited();
     }
 
     if (node["size"])
     {
-      node["size"] >> point_size_;
+      point_size_ = node["size"].as<size_t>();
       ui_.pointSize->setValue(static_cast<int>(point_size_));
     }
 
     if (node["buffer_size"])
     {
-      node["buffer_size"] >> buffer_size_;
+      buffer_size_ = node["buffer_size"].as<size_t>();
       ui_.bufferSize->setValue(static_cast<int>(buffer_size_));
     }
 
     if (node["color_transformer"])
     {
-      std::string color_transformer;
-      node["color_transformer"] >> color_transformer;
+      std::string color_transformer = node["color_transformer"].as<std::string>();
       if (color_transformer == "Intensity")
         ui_.color_transformer->setCurrentIndex(COLOR_INTENSITY);
       else if (color_transformer == "Range")
@@ -594,40 +592,37 @@ namespace mapviz_plugins
 
     if (node["min_color"])
     {
-      std::string min_color_str;
-      node["min_color"] >> min_color_str;
+      std::string min_color_str = node["min_color"].as<std::string>();
       ui_.min_color->setColor(QColor(min_color_str.c_str()));
     }
 
     if (node["max_color"])
     {
-      std::string max_color_str;
-      node["max_color"] >> max_color_str;
+      std::string max_color_str = node["max_color"].as<std::string>();
       ui_.max_color->setColor(QColor(max_color_str.c_str()));
     }
 
     if (node["value_min"])
     {
-      node["value_min"] >> min_value_;
+      min_value_ = node["value_min"].as<double>();
       ui_.minValue->setValue(min_value_);
     }
 
     if (node["max_value"])
     {
-      node["value_max"] >> max_value_;
+      max_value_ = node["value_max"].as<double>();
       ui_.maxValue->setValue(max_value_);
     }
 
     if (node["alpha"])
     {
-      node["alpha"] >> alpha_;
+      alpha_ = node["alpha"].as<double>();
       ui_.alpha->setValue(alpha_);
     }
 
     if (node["use_rainbow"])
     {
-      bool use_rainbow;
-      node["use_rainbow"] >> use_rainbow;
+      bool use_rainbow = node["use_rainbow"].as<bool>();
       ui_.use_rainbow->setChecked(use_rainbow);
     }
 
@@ -639,7 +634,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::ColorTransformerChanged(int index)
   {
-    ROS_DEBUG("Color transformer changed to %d", index);
+    RCLCPP_DEBUG(node_->get_logger(), "Color transformer changed to %d", index);
     switch (index)
     {
       case COLOR_FLAT:
