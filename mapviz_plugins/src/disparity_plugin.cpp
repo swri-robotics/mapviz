@@ -188,7 +188,7 @@ namespace mapviz_plugins
   void DisparityPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if(!this->Visible())
+    if (!this->Visible())
     {
       PrintWarning("Topic is Hidden");
       initialized_ = false;
