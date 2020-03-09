@@ -93,7 +93,7 @@ set(SRC_FILES
     # src/attitude_indicator_plugin.cpp 
     src/canvas_click_filter.cpp
     src/coordinate_picker_plugin.cpp
-    # src/disparity_plugin.cpp
+    src/disparity_plugin.cpp
     src/draw_polygon_plugin.cpp
     src/gps_plugin.cpp
     src/grid_plugin.cpp
@@ -123,7 +123,7 @@ set(HEADER_FILES
     # include/${PROJECT_NAME}/attitude_indicator_plugin.h
     include/${PROJECT_NAME}/canvas_click_filter.h
     include/${PROJECT_NAME}/coordinate_picker_plugin.h
-    # include/${PROJECT_NAME}/disparity_plugin.h
+    include/${PROJECT_NAME}/disparity_plugin.h
     include/${PROJECT_NAME}/draw_polygon_plugin.h
     include/${PROJECT_NAME}/gps_plugin.h
     include/${PROJECT_NAME}/grid_plugin.h

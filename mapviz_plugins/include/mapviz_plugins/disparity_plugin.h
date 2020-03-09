@@ -46,9 +46,9 @@
 // ROS libraries
 #include <cv_bridge/cv_bridge.h>
 #include <opencv/highgui.h>
-#include <ros/ros.h>
-#include <stereo_msgs/DisparityImage.h>
-#include <tf/transform_datatypes.h>
+#include <rclcpp/rclcpp.hpp>
+#include <stereo_msgs/msg/disparity_image.hpp>
+#include <tf2/transform_datatypes.h>
 
 #include <mapviz/map_canvas.h>
 
@@ -123,15 +123,16 @@ namespace mapviz_plugins
     double last_width_;
     double last_height_;
 
-    ros::Subscriber disparity_sub_;
+    rclcpp::Subscription<stereo_msgs::msg::DisparityImage>::SharedPtr disparity_sub_;
     bool has_message_;
 
-    stereo_msgs::DisparityImage disparity_;
+    // stereo_msgs::DisparityImage disparity_;
+    stereo_msgs::msg::DisparityImage disparity_;
 
     cv::Mat_<cv::Vec3b> disparity_color_;
     cv::Mat scaled_image_;
 
-    void disparityCallback(const stereo_msgs::DisparityImageConstPtr& image);
+    void disparityCallback(const stereo_msgs::msg::DisparityImage::SharedPtr image);
 
     void ScaleImage(double width, double height);
     void DrawIplImage(cv::Mat *image);

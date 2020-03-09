@@ -39,8 +39,8 @@
 #include <QGLWidget>
 
 // ROS libraries
-#include <ros/master.h>
-#include <sensor_msgs/image_encodings.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <cv_bridge/cv_bridge.h>
@@ -48,7 +48,7 @@
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DisparityPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -171,28 +171,36 @@ namespace mapviz_plugins
     }
     else if(!visible)
     {
-      disparity_sub_.shutdown();
-      ROS_INFO("Dropped subscription to %s", topic_.c_str());
+      disparity_sub_.reset();
+      RCLCPP_INFO(node_->get_logger(), "Dropped subscription to %s", topic_.c_str());
     }
     else
     {
-      disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
+      disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
+        topic_,
+        rclcpp::QoS(1),
+        std::bind(&DisparityPlugin::disparityCallback, this, std::placeholders::_1)
+      );
 
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
     }
   }
   void DisparityPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "stereo_msgs/DisparityImage");
+    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+    //   "stereo_msgs/DisparityImage");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+      node_,
+      "stereo_msgs/msg/DisparityImage"
+    );
 
-    if(topic.name.empty())
+    if(topic.empty())
     {
-      topic.name.clear();
+      topic.clear();
     }
-    if (!topic.name.empty())
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
     }
     TopicEdited();
   }
@@ -209,7 +217,7 @@ namespace mapviz_plugins
       {
         topic_ = topic;
       }
-      disparity_sub_.shutdown();
+      disparity_sub_.reset();
       return;
     }
     if (topic != topic_)
@@ -220,18 +228,24 @@ namespace mapviz_plugins
       topic_ = topic;
       PrintWarning("No messages received.");
 
-      disparity_sub_.shutdown();
+      disparity_sub_.reset();
 
       if (!topic.empty())
       {
-        disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
+        // disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
+        disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
+          topic_,
+          rclcpp::QoS(1),
+          std::bind(&DisparityPlugin::disparityCallback, this, std::placeholders::_1)
+        );
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void DisparityPlugin::disparityCallback(const stereo_msgs::DisparityImageConstPtr& disparity)
+  void DisparityPlugin::disparityCallback(
+    const stereo_msgs::msg::DisparityImage::SharedPtr disparity)
   {
     if (!has_message_)
     {
@@ -448,49 +462,46 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
       TopicEdited();
     }
 
     if (node["anchor"])
     {             
-      std::string anchor;
-      node["anchor"] >> anchor;
+      std::string anchor = node["anchor"].as<std::string>();
       ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
       SetAnchor(anchor.c_str());
     }
 
     if (node["units"])
     {
-      std::string units;
-      node["units"] >> units;
+      std::string units = node["units"].as<std::string>();
       ui_.units->setCurrentIndex(ui_.units->findText(units.c_str()));
       SetUnits(units.c_str());
     }
 
     if (node["offset_x"])
     {
-      node["offset_x"] >> offset_x_;
+      offset_x_ = node["offset_x"].as<double>();
       ui_.offsetx->setValue(static_cast<int>(offset_x_));
     }
 
     if (node["offset_y"])
     {
-      node["offset_y"] >> offset_y_;
+      offset_y_ = node["offset_y"].as<double>();
       ui_.offsety->setValue(static_cast<int>(offset_y_));
     }
 
     if (node["width"])
     {
-      node["width"] >> width_;
+      width_ = node["width"].as<double>();
       ui_.width->setValue(static_cast<int>(width_));
     }
 
     if (node["height"])
     {             
-      node["height"] >> height_;
+      height_ = node["height"].as<double>();
       ui_.height->setValue(static_cast<int>(height_));
     }
   }
