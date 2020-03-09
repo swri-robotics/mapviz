@@ -265,6 +265,7 @@ namespace mapviz_plugins
   void LaserScanPlugin::SelectTopic()
   {
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
+      node_,
       "sensor_msgs/msg/laser_scan");
 
     if (!topic.empty())
