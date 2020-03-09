@@ -29,11 +29,6 @@
 
 #include <mapviz_plugins/tf_frame_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <algorithm>
-#include <vector>
-
 // QT libraries
 #include <QGLWidget>
 #include <QPalette>
@@ -44,6 +39,14 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TfFramePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -188,14 +191,10 @@ namespace mapviz_plugins
       {
         ui_.drawstyle->setCurrentIndex(0);
         SetDrawStyle( LINES );
-      }
-      else if (draw_style == "points")
-      {
+      } else if (draw_style == "points") {
         ui_.drawstyle->setCurrentIndex(1);
         SetDrawStyle( POINTS );
-      }
-      else if (draw_style == "arrows")
-      {
+      } else if (draw_style == "arrows") {
         ui_.drawstyle->setCurrentIndex(2);
         SetDrawStyle( ARROWS );
       }
@@ -248,8 +247,11 @@ namespace mapviz_plugins
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
 
-    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
+    emitter << YAML::Key
+      << "static_arrow_sizes"
+      << YAML::Value
+      << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
   }
-}
+}   // namespace mapviz_plugins
