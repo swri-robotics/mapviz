@@ -103,7 +103,7 @@ set(SRC_FILES
     src/measuring_plugin.cpp 
     # src/move_base_plugin.cpp
     src/navsat_plugin.cpp
-    # src/occupancy_grid_plugin.cpp
+    src/occupancy_grid_plugin.cpp
     src/odometry_plugin.cpp 
     # src/path_plugin.cpp
     # src/placeable_window_proxy.cpp
@@ -133,7 +133,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/measuring_plugin.h
     # include/${PROJECT_NAME}/move_base_plugin.h
     include/${PROJECT_NAME}/navsat_plugin.h
-    # include/${PROJECT_NAME}/occupancy_grid_plugin.h
+    include/${PROJECT_NAME}/occupancy_grid_plugin.h
     include/${PROJECT_NAME}/odometry_plugin.h
     # include/${PROJECT_NAME}/path_plugin.h
     # include/${PROJECT_NAME}/placeable_window_proxy.h

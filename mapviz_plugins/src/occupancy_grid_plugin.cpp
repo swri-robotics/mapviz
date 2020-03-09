@@ -43,7 +43,7 @@
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OccupancyGridPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -222,10 +222,11 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::SelectTopicGrid()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic("nav_msgs/OccupancyGrid");
-    if (!topic.name.empty())
+    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic("nav_msgs/OccupancyGrid");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/OccupancyGrid");
+    if (!topic.empty())
     {
-      QString str = QString::fromStdString(topic.name);
+      QString str = QString::fromStdString(topic);
       ui_.topic_grid->setText( str);
       TopicGridEdited();
     }
@@ -240,28 +241,38 @@ namespace mapviz_plugins
     grid_.reset();
     raw_buffer_.clear();
 
-    grid_sub_.shutdown();
-    update_sub_.shutdown();
+    grid_sub_.reset();
+    update_sub_.reset();
 
     if (!topic.empty())
     {
-      grid_sub_   = node_.subscribe(topic, 10, &OccupancyGridPlugin::Callback, this);
+      grid_sub_ = node_->create_subscription<nav_msgs::msg::OccupancyGrid>(
+        topic,
+        rclcpp::QoS(10),
+        std::bind(&OccupancyGridPlugin::Callback, this, std::placeholders::_1));
       if( ui_.checkbox_update)
       {
-        update_sub_ = node_.subscribe(topic+ "_updates", 10, &OccupancyGridPlugin::CallbackUpdate, this);
+        update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
+          topic,
+          rclcpp::QoS(10),
+          std::bind(&OccupancyGridPlugin::CallbackUpdate, this, std::placeholders::_1));
       }
-      ROS_INFO("Subscribing to %s", topic.c_str());
+      RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic.c_str());
     }
   }
 
   void OccupancyGridPlugin::upgradeCheckBoxToggled(bool)
   {
     const std::string topic = ui_.topic_grid->text().trimmed().toStdString();
-    update_sub_.shutdown();
+    update_sub_.reset();
 
-    if( ui_.checkbox_update)
+    if (ui_.checkbox_update)
     {
-      update_sub_ = node_.subscribe(topic+ "_updates", 10, &OccupancyGridPlugin::CallbackUpdate, this);
+      // update_sub_ = node_.subscribe(topic+ "_updates", 10, &OccupancyGridPlugin::CallbackUpdate, this);
+      update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
+        topic,
+        rclcpp::QoS(10),
+        std::bind(&OccupancyGridPlugin::CallbackUpdate, this, std::placeholders::_1));
     }
   }
 
@@ -355,7 +366,7 @@ namespace mapviz_plugins
   }
 
 
-  void OccupancyGridPlugin::Callback(const nav_msgs::OccupancyGridConstPtr& msg)
+  void OccupancyGridPlugin::Callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
   {
     grid_ = msg;
     const int width  = grid_->info.width;
@@ -399,7 +410,7 @@ namespace mapviz_plugins
     PrintInfo("Map received");
   }
 
-  void OccupancyGridPlugin::CallbackUpdate(const map_msgs::OccupancyGridUpdateConstPtr &msg)
+  void OccupancyGridPlugin::CallbackUpdate(const map_msgs::msg::OccupancyGridUpdate::SharedPtr msg)
   {
     PrintInfo("Update Received");
 
@@ -435,8 +446,8 @@ namespace mapviz_plugins
 
       const double RAD_TO_DEG = 180.0 / M_PI;
 
-      tfScalar yaw, pitch, roll;
-      tf::Matrix3x3 mat( transform_.GetOrientation() );
+      tf2Scalar yaw, pitch, roll;
+      tf2::Matrix3x3 mat( transform_.GetOrientation() );
       mat.getEulerYPR(yaw, pitch, roll);
 
       glRotatef(pitch * RAD_TO_DEG, 0, 1, 0);
@@ -486,7 +497,7 @@ namespace mapviz_plugins
     swri_transform_util::Transform transform;
     if ( grid_ )
     {
-      if( GetTransform( source_frame_, ros::Time(0), transform) )
+      if( GetTransform( source_frame_, rclcpp::Time(0), transform) )
       {
         transformed_ = true;
         transform_ = transform;
@@ -502,29 +513,25 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic_grid->setText(QString::fromStdString(topic));
     }
 
     if (node["update"])
     {
-      bool checked;
-      node["update"] >> checked;
+      bool checked = node["update"].as<bool>();
       ui_.checkbox_update->setChecked( checked );
     }
 
     if (node["alpha"])
     {
-      double alpha;
-      node["alpha"] >> alpha;
+      double alpha = node["alpha"].as<double>();
       ui_.alpha->setValue(alpha);
     }
 
     if (node["scheme"])
     {
-      std::string scheme;
-      node["scheme"] >> scheme;
+      std::string scheme = node["scheme"].as<std::string>();
       int index = ui_.color_scheme->findText(QString::fromStdString(scheme), Qt::MatchExactly);
       if (index >= 0)
       {
