@@ -29,11 +29,6 @@
 
 #include <mapviz_plugins/disparity_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <algorithm>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -49,6 +44,13 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DisparityPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -85,7 +87,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
-    QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
+    QObject::connect(this, SIGNAL(VisibleChanged(bool)), this, SLOT(SetSubscription(bool)));
   }
 
   DisparityPlugin::~DisparityPlugin()
@@ -117,37 +119,21 @@ namespace mapviz_plugins
     if (anchor == "top left")
     {
       anchor_ = TOP_LEFT;
-    }
-    else if (anchor == "top center")
-    {
+    } else if (anchor == "top center") {
       anchor_ = TOP_CENTER;
-    }
-    else if (anchor == "top right")
-    {
+    } else if (anchor == "top right") {
       anchor_ = TOP_RIGHT;
-    }
-    else if (anchor == "center left")
-    {
+    } else if (anchor == "center left") {
       anchor_ = CENTER_LEFT;
-    }
-    else if (anchor == "center")
-    {
+    } else if (anchor == "center") {
       anchor_ = CENTER;
-    }
-    else if (anchor == "center right")
-    {
+    } else if (anchor == "center right") {
       anchor_ = CENTER_RIGHT;
-    }
-    else if (anchor == "bottom left")
-    {
+    } else if (anchor == "bottom left") {
       anchor_ = BOTTOM_LEFT;
-    }
-    else if (anchor == "bottom center")
-    {
+    } else if (anchor == "bottom center") {
       anchor_ = BOTTOM_CENTER;
-    }
-    else if (anchor == "bottom right")
-    {
+    } else if (anchor == "bottom right") {
       anchor_ = BOTTOM_RIGHT;
     }
   }
@@ -157,9 +143,7 @@ namespace mapviz_plugins
     if (units == "pixels")
     {
       units_ = PIXELS;
-    }
-    else if (units == "percent")
-    {
+    } else if (units == "percent") {
       units_ = PERCENT;
     }
   }
@@ -168,14 +152,10 @@ namespace mapviz_plugins
     if(topic_.empty())
     {
       return;
-    }
-    else if(!visible)
-    {
+    } else if(!visible) {
       disparity_sub_.reset();
       RCLCPP_INFO(node_->get_logger(), "Dropped subscription to %s", topic_.c_str());
-    }
-    else
-    {
+    } else {
       disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
         topic_,
         rclcpp::QoS(1),
@@ -274,7 +254,7 @@ namespace mapviz_plugins
     float max_disparity = disparity->max_disparity;
     float multiplier = 255.0f / (max_disparity - min_disparity);
 
-    cv_bridge::CvImageConstPtr cv_disparity = 
+    cv_bridge::CvImageConstPtr cv_disparity =
       cv_bridge::toCvShare(disparity->image, disparity);
 
     disparity_color_.create(disparity->image.height, disparity->image.width);
@@ -401,44 +381,28 @@ namespace mapviz_plugins
     {
       x_pos = x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == TOP_CENTER)
-    {
+    } else if (anchor_ == TOP_CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == TOP_RIGHT)
-    {
+    } else if (anchor_ == TOP_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == CENTER_LEFT)
-    {
+    } else if (anchor_ == CENTER_LEFT) {
       x_pos = x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == CENTER)
-    {
+    } else if (anchor_ == CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == CENTER_RIGHT)
-    {
+    } else if (anchor_ == CENTER_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == BOTTOM_LEFT)
-    {
+    } else if (anchor_ == BOTTOM_LEFT) {
       x_pos = x_offset;
       y_pos = canvas_->height() - height - y_offset;
-    }
-    else if (anchor_ == BOTTOM_CENTER)
-    {
+    } else if (anchor_ == BOTTOM_CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = canvas_->height() - height - y_offset;
-    }
-    else if (anchor_ == BOTTOM_RIGHT)
-    {
+    } else if (anchor_ == BOTTOM_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = canvas_->height() - height - y_offset;
     }
@@ -468,7 +432,7 @@ namespace mapviz_plugins
     }
 
     if (node["anchor"])
-    {             
+    {
       std::string anchor = node["anchor"].as<std::string>();
       ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
       SetAnchor(anchor.c_str());
@@ -500,7 +464,7 @@ namespace mapviz_plugins
     }
 
     if (node["height"])
-    {             
+    {
       height_ = node["height"].as<double>();
       ui_.height->setValue(static_cast<int>(height_));
     }
@@ -524,37 +488,21 @@ namespace mapviz_plugins
     if (anchor == TOP_LEFT)
     {
       anchor_string = "top left";
-    }
-    else if (anchor == TOP_CENTER)
-    {
+    } else if (anchor == TOP_CENTER) {
       anchor_string = "top center";
-    }
-    else if (anchor == TOP_RIGHT)
-    {
+    } else if (anchor == TOP_RIGHT) {
       anchor_string = "top right";
-    }
-    else if (anchor == CENTER_LEFT)
-    {
+    } else if (anchor == CENTER_LEFT) {
       anchor_string = "center left";
-    }
-    else if (anchor == CENTER)
-    {
+    } else if (anchor == CENTER) {
       anchor_string = "center";
-    }
-    else if (anchor == CENTER_RIGHT)
-    {
+    } else if (anchor == CENTER_RIGHT) {
       anchor_string = "center right";
-    }
-    else if (anchor == BOTTOM_LEFT)
-    {
+    } else if (anchor == BOTTOM_LEFT) {
       anchor_string = "bottom left";
-    }
-    else if (anchor == BOTTOM_CENTER)
-    {
+    } else if (anchor == BOTTOM_CENTER) {
       anchor_string = "bottom center";
-    }
-    else if (anchor == BOTTOM_RIGHT)
-    {
+    } else if (anchor == BOTTOM_RIGHT) {
       anchor_string = "bottom right";
     }
 
@@ -568,9 +516,7 @@ namespace mapviz_plugins
     if (units == PIXELS)
     {
       units_string = "pixels";
-    }
-    else if (units == PERCENT)
-    {
+    } else if (units == PERCENT) {
       units_string = "percent";
     }
 
@@ -835,5 +781,5 @@ namespace mapviz_plugins
       255,  6, 0,
       255,  0, 0,
     };
-}
+}   // namespace mapviz_plugins
 
