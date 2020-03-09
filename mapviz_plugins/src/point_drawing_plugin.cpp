@@ -176,15 +176,15 @@ namespace mapviz_plugins
     Transform();
   }
 
-  void PointDrawingPlugin::pushPoint(PointDrawingPlugin::StampedPoint stamped_point)
+  void PointDrawingPlugin::pushPoint(const StampedPoint& point)
   {
-    cur_point_ = stamped_point;
+    cur_point_ = point;
 
     if (points_.empty() ||
-        (stamped_point.point.distance(points_.back().point)) >=
-            (position_tolerance_))
+        (point.point.distance(points_.back().point)) >=
+        (position_tolerance_))
     {
-      points_.push_back(stamped_point);
+      points_.push_back(point);
     }
 
     if (buffer_size_ > 0)
@@ -236,18 +236,16 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawPoints(double scale)
   {
-    if( scale_ != scale && draw_style_ == ARROWS && static_arrow_sizes_)
-    {
+    bool transformed = true;
+
+    if (scale_ != scale && draw_style_ == ARROWS && static_arrow_sizes_) {
       ResetTransformedPoints();
     }
     scale_ = scale;
-    bool transformed = true;
-    if (lap_checked_)
-    {
+    if (lap_checked_) {
       CollectLaps();
 
-      if (draw_style_ == ARROWS)
-      {
+      if (draw_style_ == ARROWS) {
         transformed &= DrawLapsArrows();
       } else {
         transformed &= DrawLaps();
@@ -257,8 +255,7 @@ namespace mapviz_plugins
       laps_.clear();
       got_begin_ = false;
     }
-    if (draw_style_ == ARROWS)
-    {
+    if (draw_style_ == ARROWS) {
       transformed &= DrawArrows();
     } else {
       transformed &= DrawLines();

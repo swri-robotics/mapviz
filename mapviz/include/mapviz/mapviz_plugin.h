@@ -184,19 +184,16 @@ public:
       return false;
     }
 
-    // ros::Time time = stamp;
     rclcpp::Time time = stamp;
+    rclcpp::Time now = node_->now();
 
     if (use_latest_transforms_ && use_latest_transforms) {
-      // time = ros::Time();
-      time = rclcpp::Time();
+      time = now;
     }
 
-    // ros::Duration elapsed = ros::Time::now() - time;
     rclcpp::Duration elapsed = node_->now() - time;
 
-    // if (time != ros::Time() && elapsed > tf_->getCacheLength())
-    if (time != rclcpp::Time() && elapsed > tf_buf_->getCacheLength()) {
+    if (time != now && elapsed > tf_buf_->getCacheLength()) {
       return false;
     }
     if (tf_manager_->GetTransform(
@@ -209,11 +206,10 @@ public:
     } else if (elapsed.seconds() < 0.1) {
       // If the stamped transform failed because it is too recent, find the
       // most recent transform in the cache instead.
-      // if (tf_manager_->GetTransform(target_frame_, source_frame_,  ros::Time(), transform))
       if (tf_manager_->GetTransform(
         target_frame_,
         source_frame_,
-        tf2::timeFromSec(rclcpp::Time().seconds()),
+        tf2::timeFromSec(0),
         transform))
       {
         return true;
@@ -224,7 +220,6 @@ public:
   }
 
   bool GetTransform(const std::string& source,
-    // const ros::Time& stamp,
     const rclcpp::Time& stamp,
     swri_transform_util::Transform& transform)
   {
@@ -232,19 +227,16 @@ public:
       return false;
     }
 
-    // ros::Time time = stamp;
     rclcpp::Time time = stamp;
+    rclcpp::Time now = node_->now();
 
     if (use_latest_transforms_) {
-      // time = ros::Time();
-      time = rclcpp::Time();
+      time = now;
     }
 
-    // ros::Duration elapsed = ros::Time::now() - time;
     rclcpp::Duration elapsed = node_->now() - time;
 
-    // if (time != ros::Time() && elapsed > tf_->getCacheLength())
-    if (time != rclcpp::Time() && elapsed > tf_buf_->getCacheLength()) {
+    if (time != now && elapsed > tf_buf_->getCacheLength()) {
       return false;
     }
 
@@ -258,11 +250,10 @@ public:
     } else if (elapsed.seconds() < 0.1) {
       // If the stamped transform failed because it is too recent, find the
       // most recent transform in the cache instead.
-      // if (tf_manager_->GetTransform(target_frame_, source,  ros::Time(), transform))
       if (tf_manager_->GetTransform(
         target_frame_,
         source,
-        tf2::timeFromSec(rclcpp::Time().seconds()),
+        tf2::timeFromSec(0),
         transform))
       {
         return true;

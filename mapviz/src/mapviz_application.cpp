@@ -35,8 +35,9 @@
 
 namespace mapviz
 {
-  MapvizApplication::MapvizApplication(int& argc, char** argv) :
-    QApplication(argc, argv)
+  MapvizApplication::MapvizApplication(int& argc, char** argv, rclcpp::Logger logger) :
+    QApplication(argc, argv),
+    logger_(logger)
   {
   }
 
@@ -47,14 +48,19 @@ namespace mapviz
     }
     // catch (const ros::Exception& e) {
     catch (const rclcpp::exceptions::RCLError& e) {
-      RCLCPP_ERROR(rclcpp::get_logger("mapviz::MapvizApplication"),
+      RCLCPP_ERROR(logger_,
         "Unhandled RCLError in Qt event loop: %s", e.what());
     }
     catch (const std::exception& e) {
-      RCLCPP_ERROR(rclcpp::get_logger("mapviz::MapvizApplication"),
+      RCLCPP_ERROR(logger_,
         "Unhandled std::exception in Qt event loop: %s", e.what());
     }
 
     return false;
+  }
+
+  void MapvizApplication::setLogger(const rclcpp::Logger &logger)
+  {
+    logger_ = logger;
   }
 }   // namespace mapviz

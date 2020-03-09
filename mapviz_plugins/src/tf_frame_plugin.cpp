@@ -121,7 +121,7 @@ namespace mapviz_plugins
       stamped_point.stamp = tf2_ros::toMsg(transform.GetStamp());
       stamped_point.transformed = false;
 
-      pushPoint( std::move(stamped_point) );
+      pushPoint( stamped_point );
     }
   }
 
