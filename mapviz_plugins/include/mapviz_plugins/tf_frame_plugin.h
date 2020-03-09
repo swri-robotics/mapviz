@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2014-2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -43,8 +43,8 @@
 #include <QWidget>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
 
 #include <mapviz/map_canvas.h>
 
@@ -60,36 +60,36 @@ namespace mapviz_plugins
 
    public:
     TfFramePlugin();
-    virtual ~TfFramePlugin();
+    ~TfFramePlugin() override = default;
 
-    bool Initialize(QGLWidget* canvas);
-    void Shutdown()
+    bool Initialize(QGLWidget* canvas) override;
+    void Shutdown() override
     {
     }
 
-    void Draw(double x, double y, double scale);
+    void Draw(double x, double y, double scale) override;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path);
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-    QWidget* GetConfigWidget(QWidget* parent);
+    QWidget* GetConfigWidget(QWidget* parent) override;
 
    protected:
-    void PrintError(const std::string& message);
-    void PrintInfo(const std::string& message);
-    void PrintWarning(const std::string& message);
+    void PrintError(const std::string& message) override;
+    void PrintInfo(const std::string& message) override;
+    void PrintWarning(const std::string& message) override;
 
    protected Q_SLOTS:
     void SelectFrame();
     void FrameEdited();
 
    private:
-    Ui::tf_frame_config ui_;
+    Ui::tf_frame_config ui_{};
     QWidget* config_widget_;
 
-    ros::Timer timer_;
+    rclcpp::TimerBase::SharedPtr timer_;
 
-    void TimerCallback(const ros::TimerEvent& event);
+    void TimerCallback();
   };
 }
 

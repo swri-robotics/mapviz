@@ -103,10 +103,10 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     resizable_(true),
     background_(Qt::gray),
     capture_directory_("~"),
-    vid_writer_(NULL),
+    vid_writer_(nullptr),
     updating_frames_(false),
-    node_(NULL),
-    canvas_(NULL)
+    node_(nullptr),
+    canvas_(nullptr)
 {
   /// TODO PJR Pass in node options and make name anonymous if necessary
   node_ = std::make_shared<rclcpp::Node>("mapviz");
@@ -783,7 +783,7 @@ void Mapviz::Save(const std::string& filename)
       out << YAML::Key
           << "name"
           << YAML::Value
-          << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))
+          << (dynamic_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))
                 ->Name().toStdString();
       out << YAML::Key << "config" << YAML::Value;
       out << YAML::BeginMap;
@@ -792,7 +792,7 @@ void Mapviz::Save(const std::string& filename)
       out << YAML::Key
           << "collapsed"
           << YAML::Value
-          << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Collapsed();
+          << (dynamic_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Collapsed();
 
       plugins_[ui_.configs->item(i)]->SaveConfig(out, config_path);
 
@@ -1103,17 +1103,16 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
     real_type = "mapviz_plugins/multires_image";
   }
 
-  // ROS_INFO("creating: %s", real_type.c_str());
   RCLCPP_INFO(node_->get_logger(), "creating: %s", real_type.c_str());
   MapvizPluginPtr plugin = loader_->createSharedInstance(real_type);
 
   // Setup configure widget
   config_item->SetWidget(plugin->GetConfigWidget(this));
   plugin->SetIcon(config_item->ui_.icon);
-  plugin->Initialize(tf_buf_, tf_, tf_manager_, canvas_);
-  plugin->SetType(real_type.c_str());
+  plugin->SetType(real_type);
   plugin->SetName(name);
   plugin->SetNode(*node_);
+  plugin->Initialize(tf_buf_, tf_, tf_manager_, canvas_);
   plugin->SetVisible(visible);
 
   if (draw_order == 0) {
