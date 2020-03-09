@@ -152,7 +152,7 @@ namespace mapviz_plugins
     if(topic_.empty())
     {
       return;
-    } else if(!visible) {
+    } else if (!visible) {
       disparity_sub_.reset();
       RCLCPP_INFO(node_->get_logger(), "Dropped subscription to %s", topic_.c_str());
     } else {
@@ -174,7 +174,7 @@ namespace mapviz_plugins
       "stereo_msgs/msg/DisparityImage"
     );
 
-    if(topic.empty())
+    if (topic.empty())
     {
       topic.clear();
     }
