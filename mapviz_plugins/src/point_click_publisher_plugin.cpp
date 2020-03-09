@@ -35,6 +35,12 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ Standard Libraries
+#include <memory>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointClickPublisherPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -97,7 +103,10 @@ namespace mapviz_plugins
   void PointClickPublisherPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
-    emitter << YAML::Key << "output_frame" << YAML::Value << ui_.outputframe->currentText().toStdString();
+    emitter << YAML::Key
+      << "output_frame"
+      << YAML::Value
+      << ui_.outputframe->currentText().toStdString();
   }
 
   QWidget* PointClickPublisherPlugin::GetConfigWidget(QWidget* parent)
@@ -121,9 +130,7 @@ namespace mapviz_plugins
       if (tf_manager_->GetTransform(output_frame, target_frame_, tf))
       {
         tfPoint = tf * tfPoint;
-      }
-      else
-      {
+      } else {
         std::stringstream error;
         error << "Unable to find transform from " << target_frame_ << " to " << output_frame << ".";
         PrintError(error.str());
@@ -137,7 +144,8 @@ namespace mapviz_plugins
     ss << "Point in " << output_frame.c_str() << ": " << transformed.x() << "," << transformed.y();
     PrintInfo(ss.str());
 
-    std::unique_ptr<geometry_msgs::msg::PointStamped> stamped = std::make_unique<geometry_msgs::msg::PointStamped>();
+    std::unique_ptr<geometry_msgs::msg::PointStamped> stamped =
+      std::make_unique<geometry_msgs::msg::PointStamped>();
     stamped->header.frame_id = output_frame;
     stamped->header.stamp = node_->get_clock()->now();
     stamped->point.x = transformed.x();
@@ -235,4 +243,4 @@ namespace mapviz_plugins
       ui_.outputframe->setCurrentIndex(index);
     }
   }
-}
+}   // namespace mapviz_plugins
