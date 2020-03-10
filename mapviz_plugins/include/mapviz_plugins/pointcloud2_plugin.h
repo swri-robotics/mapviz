@@ -70,28 +70,28 @@ public:
   };
 
   PointCloud2Plugin();
-  virtual ~PointCloud2Plugin();
+  ~PointCloud2Plugin() override = default;
 
-  bool Initialize(QGLWidget* canvas);
-  void Shutdown()
+  bool Initialize(QGLWidget* canvas) override;
+  void Shutdown() override
   {
   }
 
-  void ClearHistory();
+  void ClearHistory() override;
 
-  void Draw(double x, double y, double scale);
+  void Draw(double x, double y, double scale) override;
 
-  void Transform();
+  void Transform() override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path);
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent);
+  QWidget* GetConfigWidget(QWidget* parent) override;
 
 protected:
-  void PrintError(const std::string& message);
-  void PrintInfo(const std::string& message);
-  void PrintWarning(const std::string& message);
+  void PrintError(const std::string& message) override;
+  void PrintInfo(const std::string& message) override;
+  void PrintWarning(const std::string& message) override;
 
 protected Q_SLOTS:
   void SelectTopic();
@@ -105,7 +105,7 @@ protected Q_SLOTS:
   void UseRainbowChanged(int check_state);
   void UseAutomaxminChanged(int check_state);
   void UpdateColors();
-  void DrawIcon();
+  void DrawIcon() override;
   void ResetTransformedPointClouds();
   void ClearPointClouds();
   void SetSubscription(bool subscribe);
@@ -119,113 +119,17 @@ private:
 
   struct Scan
   {
-  Q_OBJECT
+    rclcpp::Time stamp;
+    QColor color;
+    std::vector<StampedPoint> points;
+    std::string source_frame;
+    bool transformed;
+    std::map<std::string, FieldInfo> new_features;
 
-  public:
-    struct FieldInfo
-    {
-      uint8_t datatype;
-      uint32_t offset;
-    };
-
-    enum
-    {
-      COLOR_FLAT = 0,
-      COLOR_Z = 3
-    };
-
-    PointCloud2Plugin();
-    ~PointCloud2Plugin() override = default;
-
-    bool Initialize(QGLWidget* canvas) override;
-    void Shutdown() override
-    {
-    }
-
-    void ClearHistory() override;
-
-    void Draw(double x, double y, double scale) override;
-
-    void Transform() override;
-
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
-    QWidget* GetConfigWidget(QWidget* parent) override;
-
-  protected:
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
-
-  protected Q_SLOTS:
-    void SelectTopic();
-    void TopicEdited();
-    void AlphaEdited(double new_value);
-    void ColorTransformerChanged(int index);
-    void MinValueChanged(double value);
-    void MaxValueChanged(double value);
-    void PointSizeChanged(int value);
-    void BufferSizeChanged(int value);
-    void UseRainbowChanged(int check_state);
-    void UseAutomaxminChanged(int check_state);
-    void UpdateColors();
-    void DrawIcon() override;
-    void ResetTransformedPointClouds();
-    void ClearPointClouds();
-    void SetSubscription(bool subscribe);
-
-  private:
-    struct StampedPoint
-    {
-      tf2::Vector3 point;
-      std::vector<float> features;
-    };
-
-    struct Scan
-    {
-      rclcpp::Time stamp;
-      QColor color;
-      std::vector<StampedPoint> points;
-      std::string source_frame;
-      bool transformed;
-      std::map<std::string, FieldInfo> new_features;
-
-      std::vector<float> gl_point;
-      std::vector<uint8_t> gl_color;
-      GLuint point_vbo;
-      GLuint color_vbo;
-    };
-
-    float PointFeature(const uint8_t*, const FieldInfo&);
-    void PointCloud2Callback(const sensor_msgs::msg::PointCloud2::SharedPtr scan);
-    QColor CalculateColor(const StampedPoint& point);
-    void UpdateMinMaxWidgets();
-
-    Ui::PointCloud2_config ui_{};
-    QWidget* config_widget_;
-
-    std::string topic_;
-    double alpha_;
-    double max_value_;
-    double min_value_;
-    size_t point_size_;
-    size_t buffer_size_;
-    bool new_topic_;
-    bool has_message_;
-    size_t num_of_feats_;
-    bool need_new_list_;
-    std::string saved_color_transformer_;
-    bool need_minmax_;
-    std::vector<double> max_;
-    std::vector<double> min_;
-    // Use a list instead of a deque for scans to facilitate removing
-    // timed-out scans in the middle of the list in case I ever re-implement
-    // decay time (evenator)
-    std::deque<Scan> scans_;
-    rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pc2_sub_;
-
-    QMutex scan_mutex_;
+    std::vector<float> gl_point;
+    std::vector<uint8_t> gl_color;
+    GLuint point_vbo;
+    GLuint color_vbo;
   };
 
   float PointFeature(const uint8_t*, const FieldInfo&);
@@ -233,7 +137,7 @@ private:
   QColor CalculateColor(const StampedPoint& point);
   void UpdateMinMaxWidgets();
 
-  Ui::PointCloud2_config ui_;
+  Ui::PointCloud2_config ui_{};
   QWidget* config_widget_;
 
   std::string topic_;
