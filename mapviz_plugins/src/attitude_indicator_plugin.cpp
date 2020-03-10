@@ -41,22 +41,18 @@
 #include <QGLWidget>
 
 // ROS libraries
-// #include <ros/master.h>
 #include <rclcpp/rclcpp.hpp>
 
 #include <mapviz/select_topic_dialog.h>
 #include <mapviz/select_frame_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-#define IS_INSTANCE(msg, type) \
-  (msg->getDataType() == ros::message_traits::datatype<type>())
-
   AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
       config_widget_(new QWidget())
   {
@@ -67,9 +63,9 @@ namespace mapviz_plugins
     p.setColor(QPalette::Background, Qt::white);
     config_widget_->setPalette(p);
     roll_ = pitch_ = yaw_ = 0;
-    topics_.push_back("nav_msgs/Odometry");
-    topics_.push_back("geometry_msgs/Pose");
-    topics_.push_back("sensor_msgs/Imu");
+    topics_.emplace_back("nav_msgs/msg/Odometry");
+    topics_.emplace_back("geometry_msgs/msg/Pose");
+    topics_.emplace_back("sensor_msgs/msg/Imu");
     // Set status text red
     QPalette p3(ui_.status->palette());
     p3.setColor(QPalette::Text, Qt::red);
@@ -83,20 +79,17 @@ namespace mapviz_plugins
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
   }
 
-  AttitudeIndicatorPlugin::~AttitudeIndicatorPlugin()
-  {
-  }
-
   void AttitudeIndicatorPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+        node_,
         topics_);
-    if (topic.name.empty())
+    if (topic.empty())
     {
       return;
     }
 
-    ui_.topic->setText(QString::fromStdString(topic.name));
+    ui_.topic->setText(QString::fromStdString(topic));
     TopicEdited();
   }
 
@@ -108,62 +101,55 @@ namespace mapviz_plugins
       initialized_ = true;
       PrintWarning("No messages received.");
 
-      odometry_sub_.shutdown();
+      odom_sub_.reset();
+      imu_sub_.reset();
+      pose_sub_.reset();
+
       topic_ = topic;
       if (!topic_.empty())
       {
-        odometry_sub_ = node_.subscribe<topic_tools::ShapeShifter>(
-            topic_, 100, &AttitudeIndicatorPlugin::handleMessage, this);
+        odom_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
+            topic_,
+            rclcpp::QoS(1),
+            std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackOdom, this, std::placeholders::_1));
+        imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
+            topic_,
+            rclcpp::QoS(1),
+            std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackImu, this, std::placeholders::_1));
+        pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
+            topic_,
+            rclcpp::QoS(1),
+            std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackPose, this, std::placeholders::_1));
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void AttitudeIndicatorPlugin::handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg)
-  {
-    if (IS_INSTANCE(msg, nav_msgs::Odometry))
-    {
-      AttitudeCallbackOdom(msg->instantiate<nav_msgs::Odometry>());
-    }
-    else if (IS_INSTANCE(msg, sensor_msgs::Imu))
-    {
-      AttitudeCallbackImu(msg->instantiate<sensor_msgs::Imu>());
-    }
-    else if (IS_INSTANCE(msg, geometry_msgs::Pose))
-    {
-      AttitudeCallbackPose(msg->instantiate<geometry_msgs::Pose>());
-    }
-    else
-    {
-      PrintError("Unknown message type: " + msg->getDataType());
-    }
-  }
-
-  void AttitudeIndicatorPlugin::AttitudeCallbackOdom(const nav_msgs::OdometryConstPtr& odometry)
+  void AttitudeIndicatorPlugin::AttitudeCallbackOdom(nav_msgs::msg::Odometry::ConstSharedPtr odometry)
   {
     applyAttitudeOrientation(odometry->pose.pose.orientation);
   }
 
-  void AttitudeIndicatorPlugin::AttitudeCallbackImu(const sensor_msgs::ImuConstPtr& imu)
+  void AttitudeIndicatorPlugin::AttitudeCallbackImu(sensor_msgs::msg::Imu::ConstSharedPtr imu)
   {
     applyAttitudeOrientation(imu->orientation);
   }
 
-  void AttitudeIndicatorPlugin::AttitudeCallbackPose(const geometry_msgs::PoseConstPtr& pose)
+  void AttitudeIndicatorPlugin::AttitudeCallbackPose(geometry_msgs::msg::Pose::ConstSharedPtr pose)
   {
     applyAttitudeOrientation(pose->orientation);
   }
 
-  void AttitudeIndicatorPlugin::applyAttitudeOrientation(const geometry_msgs::Quaternion &orientation)
+  void AttitudeIndicatorPlugin::applyAttitudeOrientation(const geometry_msgs::msg::Quaternion &orientation)
   {
-    tf::Quaternion attitude_orientation(
+    tf2::Quaternion attitude_orientation(
       orientation.x,
       orientation.y,
       orientation.z,
       orientation.w);
 
-    tf::Matrix3x3 m(attitude_orientation);
+    tf2::Matrix3x3 m(attitude_orientation);
     m.getRPY(roll_, pitch_, yaw_);
     roll_ = roll_ * (180.0 / M_PI);
     pitch_ = pitch_ * (180.0 / M_PI);
@@ -204,7 +190,7 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::Shutdown()
   {
-    placer_.setContainer(NULL);
+    placer_.setContainer(nullptr);
   }
 
   void AttitudeIndicatorPlugin::timerEvent(QTimerEvent*)
@@ -352,8 +338,7 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
     }
 
@@ -363,24 +348,24 @@ namespace mapviz_plugins
     int width = current.width();
     int height = current.height();
 
-    if (swri_yaml_util::FindValue(node, "x"))
+    if (node["x"])
     {
-      node["x"] >> x;
+      x = node["x"].as<int>();
     }
 
-    if (swri_yaml_util::FindValue(node, "y"))
+    if (node["y"])
     {
-      node["y"] >> y;
+      y = node["y"].as<int>();
     }
 
-    if (swri_yaml_util::FindValue(node, "width"))
+    if (node["width"])
     {
-      node["width"] >> width;
+      width = node["width"].as<int>();
     }
 
-    if (swri_yaml_util::FindValue(node, "height"))
+    if (node["height"])
     {
-      node["height"] >> height;
+      height = node["height"].as<int>();
     }
 
     QRect position(x, y, width, height);

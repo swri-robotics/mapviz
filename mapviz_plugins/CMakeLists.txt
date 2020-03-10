@@ -91,7 +91,7 @@ set(UI_FILES
 )
 
 set(SRC_FILES
-    # src/attitude_indicator_plugin.cpp
+    src/attitude_indicator_plugin.cpp
     src/canvas_click_filter.cpp
     src/coordinate_picker_plugin.cpp
     src/disparity_plugin.cpp
@@ -121,7 +121,7 @@ set(SRC_FILES
 )
 
 set(HEADER_FILES
-    # include/${PROJECT_NAME}/attitude_indicator_plugin.h
+    include/${PROJECT_NAME}/attitude_indicator_plugin.h
     include/${PROJECT_NAME}/canvas_click_filter.h
     include/${PROJECT_NAME}/coordinate_picker_plugin.h
     include/${PROJECT_NAME}/disparity_plugin.h
