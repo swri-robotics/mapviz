@@ -169,10 +169,6 @@ namespace mapviz_plugins
     PrintInfo("Constructed PointCloud2Plugin");
   }
 
-  PointCloud2Plugin::~PointCloud2Plugin()
-  {
-  }
-
   void PointCloud2Plugin::ClearHistory()
   {
     RCLCPP_DEBUG(node_->get_logger(), "PointCloud2Plugin::ClearHistory()");
@@ -237,7 +233,6 @@ namespace mapviz_plugins
 
     if (subscribe && !topic_.empty())
     {
-      // pc2_sub_ = node_.subscribe(topic_, 10, &PointCloud2Plugin::PointCloud2Callback, this);
       pc2_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
         topic_,
         rclcpp::QoS(10),
@@ -351,8 +346,6 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::SelectTopic()
   {
-    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-    //     "sensor_msgs/PointCloud2");
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
       node_,
       "sensor_msgs/msg/PointCloud2");
@@ -475,13 +468,13 @@ namespace mapviz_plugins
 
     if (new_topic_)
     {
-      for (size_t i = 0; i < msg->fields.size(); ++i)
+      for (auto & field : msg->fields)
       {
         FieldInfo input;
-        std::string name = msg->fields[i].name;
+        std::string name = field.name;
 
-        uint32_t offset_value = msg->fields[i].offset;
-        uint8_t datatype_value = msg->fields[i].datatype;
+        uint32_t offset_value = field.offset;
+        uint8_t datatype_value = field.datatype;
         input.offset = offset_value;
         input.datatype = datatype_value;
         scan.new_features.insert(std::pair<std::string, FieldInfo>(name, input));
@@ -539,9 +532,9 @@ namespace mapviz_plugins
 
       std::vector<FieldInfo> field_infos;
       field_infos.reserve(num_features);
-      for (auto it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
+      for (auto & new_feature : scan.new_features)
       {
-        field_infos.push_back(it->second);
+        field_infos.push_back(new_feature.second);
       }
 
       scan.gl_point.clear();
