@@ -29,10 +29,6 @@
 
 #include <mapviz_plugins/path_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -45,6 +41,13 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PathPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -68,7 +71,6 @@ namespace mapviz_plugins
     connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     connect(ui_.path_color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
-
   }
 
   PathPlugin::~PathPlugin()
@@ -210,4 +212,4 @@ namespace mapviz_plugins
     std::string color = ui_.path_color->color().name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;
   }
-}
+}   // namespace mapviz_plugins
