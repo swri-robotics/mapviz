@@ -140,7 +140,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/placeable_window_proxy.h
     include/${PROJECT_NAME}/plan_route_plugin.h
     include/${PROJECT_NAME}/point_click_publisher_plugin.h
-    # include/${PROJECT_NAME}/pointcloud2_plugin.h
+    include/${PROJECT_NAME}/pointcloud2_plugin.h
     include/${PROJECT_NAME}/point_drawing_plugin.h
     # include/${PROJECT_NAME}/pose_plugin.h
     include/${PROJECT_NAME}/robot_image_plugin.h

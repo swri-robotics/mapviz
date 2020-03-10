@@ -49,9 +49,8 @@
 #include "ui_topic_select.h"
 
 // ROS libraries
-#include <ros/master.h>
+#include <rclcpp/rclcpp.hpp>
 #include <swri_transform_util/transform.h>
-#include <swri_yaml_util/yaml_util.h>
 
 #include <mapviz/select_topic_dialog.h>
 
@@ -176,7 +175,7 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::ClearHistory()
   {
-    ROS_DEBUG("PointCloud2Plugin::ClearHistory()");
+    RCLCPP_DEBUG(node_->get_logger(), "PointCloud2Plugin::ClearHistory()");
     scans_.clear();
   }
 
@@ -233,11 +232,17 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::SetSubscription(bool subscribe)
   {
-    pc2_sub_.shutdown();
+    // pc2_sub_.shutdown();
+    pc2_sub_.reset();
 
     if (subscribe && !topic_.empty())
     {
-      pc2_sub_ = node_.subscribe(topic_, 10, &PointCloud2Plugin::PointCloud2Callback, this);
+      // pc2_sub_ = node_.subscribe(topic_, 10, &PointCloud2Plugin::PointCloud2Callback, this);
+      pc2_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
+        topic_,
+        rclcpp::QoS(10),
+        std::bind(&PointCloud2Plugin::PointCloud2Callback, this, std::placeholders::_1)
+      );
       new_topic_ = true;
       need_new_list_ = true;
       max_.clear();
@@ -308,7 +313,9 @@ namespace mapviz_plugins
     }
   }
 
-  inline int32_t findChannelIndex(const sensor_msgs::PointCloud2ConstPtr& cloud, const std::string& channel)
+  inline int32_t findChannelIndex(
+    const sensor_msgs::msg::PointCloud2::SharedPtr cloud,
+    const std::string& channel)
   {
     for (int32_t i = 0; static_cast<size_t>(i) < cloud->fields.size(); ++i)
     {
@@ -344,12 +351,15 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-        "sensor_msgs/PointCloud2");
+    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
+    //     "sensor_msgs/PointCloud2");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+      node_,
+      "sensor_msgs/msg/PointCloud2");
 
-    if (!topic.name.empty())
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
   }
@@ -408,7 +418,7 @@ namespace mapviz_plugins
     canvas_->update();
   }
 
-  void PointCloud2Plugin::PointCloud2Callback(const sensor_msgs::PointCloud2ConstPtr& msg)
+  void PointCloud2Plugin::PointCloud2Callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
   {
     if (!has_message_)
     {
@@ -546,7 +556,7 @@ namespace mapviz_plugins
         float z = *reinterpret_cast<const float*>(ptr + zoff);
 
         StampedPoint& point = scan.points[i];
-        point.point = tf::Point(x, y, z);
+        point.point = tf2::Vector3(x, y, z);
 
         point.features.resize(num_features);
 
@@ -556,7 +566,7 @@ namespace mapviz_plugins
         }
         if (scan.transformed)
         {
-          const tf::Point transformed_point = transform * point.point;
+          const tf2::Vector3 transformed_point = transform * point.point;
           scan.gl_point.push_back( transformed_point.getX() );
           scan.gl_point.push_back( transformed_point.getY() );
         }
@@ -597,7 +607,7 @@ namespace mapviz_plugins
       case 8:
         return *reinterpret_cast<const double*>(data + feature_info.offset);
       default:
-        ROS_WARN("Unknown data type in point: %d", feature_info.datatype);
+        RCLCPP_WARN(node_->get_logger(), "Unknown data type in point: %d", feature_info.datatype);
         return 0.0;
     }
   }
@@ -705,14 +715,14 @@ namespace mapviz_plugins
             scan.transformed = true;
             for (StampedPoint& point: scan.points)
             {
-              const tf::Point transformed_point = transform * point.point;
+              const tf2::Vector3 transformed_point = transform * point.point;
               scan.gl_point.push_back( transformed_point.getX() );
               scan.gl_point.push_back( transformed_point.getY() );
             }
           }
           else
           {
-            ROS_WARN("Unable to get transform.");
+            RCLCPP_WARN(node_->get_logger(), "Unable to get transform.");
             scan.transformed = false;
           }
         }
@@ -732,72 +742,68 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(boost::trim_copy(topic).c_str());
       TopicEdited();
     }
 
     if (node["size"])
     {
-      node["size"] >> point_size_;
+      point_size_ = node["size"].as<size_t>();
       ui_.pointSize->setValue(static_cast<int>(point_size_));
     }
 
     if (node["buffer_size"])
     {
-      node["buffer_size"] >> buffer_size_;
+      buffer_size_ = node["buffer_size"].as<size_t>();
       ui_.bufferSize->setValue(static_cast<int>(buffer_size_));
     }
 
     if (node["color_transformer"])
     {
-      node["color_transformer"] >> saved_color_transformer_;
+      saved_color_transformer_ = node["color_transformer"].as<std::string>();
     }
 
     if (node["min_color"])
     {
-      std::string min_color_str;
-      node["min_color"] >> min_color_str;
+      // std::string min_color_str;
+      std::string min_color_str = node["min_color"].as<std::string>();
       ui_.min_color->setColor(QColor(min_color_str.c_str()));
     }
 
     if (node["max_color"])
     {
-      std::string max_color_str;
-      node["max_color"] >> max_color_str;
+      std::string max_color_str = node["max_color"].as<std::string>();
       ui_.max_color->setColor(QColor(max_color_str.c_str()));
     }
 
     if (node["value_min"])
     {
-      node["value_min"] >> min_value_;
+      min_value_ = node["value_min"].as<double>();
       ui_.minValue->setValue(min_value_);
     }
 
     if (node["value_max"])
     {
-      node["value_max"] >> max_value_;
+      max_value_ = node["value_max"].as<double>();
       ui_.maxValue->setValue(max_value_);
     }
 
     if (node["alpha"])
     {
-      node["alpha"] >> alpha_;
+      alpha_ = node["alpha"].as<double>();
       ui_.alpha->setValue(alpha_);
     }
 
     if (node["use_rainbow"])
     {
-      bool use_rainbow;
-      node["use_rainbow"] >> use_rainbow;
+      bool use_rainbow = node["use_rainbow"].as<bool>();
       ui_.use_rainbow->setChecked(use_rainbow);
     }
 
     if (node["unpack_rgb"])
     {
-      bool unpack_rgb;
-      node["unpack_rgb"] >> unpack_rgb;
+      bool unpack_rgb = node["unpack_rgb"].as<bool>();
       ui_.unpack_rgb->setChecked(unpack_rgb);
     }
 
@@ -806,8 +812,7 @@ namespace mapviz_plugins
 
     if (node["use_automaxmin"])
     {
-      bool use_automaxmin;
-      node["use_automaxmin"] >> use_automaxmin;
+      bool use_automaxmin = node["use_automaxmin"].as<bool>();
       ui_.use_automaxmin->setChecked(use_automaxmin);
     }
     // UseRainbowChanged must be called *before* ColorTransformerChanged
@@ -818,7 +823,7 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::ColorTransformerChanged(int index)
   {
-    ROS_DEBUG("Color transformer changed to %d", index);
+    RCLCPP_DEBUG(node_->get_logger(), "Color transformer changed to %d", index);
     UpdateMinMaxWidgets();
     UpdateColors();
   }
