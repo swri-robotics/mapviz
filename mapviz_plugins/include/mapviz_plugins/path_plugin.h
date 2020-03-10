@@ -42,9 +42,9 @@
 #include <QWidget>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
-#include <nav_msgs/Path.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
+#include <nav_msgs/msg/path.hpp>
 
 #include <mapviz/map_canvas.h>
 #include <mapviz_plugins/point_drawing_plugin.h>
@@ -89,10 +89,10 @@ namespace mapviz_plugins
 
     std::string topic_;
 
-    ros::Subscriber path_sub_;
+    rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub_;
     bool has_message_;
 
-    void pathCallback(const nav_msgs::PathConstPtr& path);
+    void pathCallback(const nav_msgs::msg::Path::SharedPtr path);
   };
 }
 
