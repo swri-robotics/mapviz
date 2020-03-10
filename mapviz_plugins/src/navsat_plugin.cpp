@@ -107,7 +107,6 @@ namespace mapviz_plugins
             topic_,
             rclcpp::QoS(1),
             std::bind(&NavSatPlugin::NavSatFixCallback, this, std::placeholders::_1));
-            // node_.subscribe(topic_, 1, &NavSatPlugin::NavSatFixCallback, this);
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }

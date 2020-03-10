@@ -62,11 +62,11 @@ namespace mapviz_plugins
 
 MeasuringPlugin::MeasuringPlugin():
   config_widget_(new QWidget()),
+  map_canvas_(nullptr),
   selected_point_(-1),
   is_mouse_down_(false),
   max_ms_(Q_INT64_C(500)),
-  max_distance_(2.0),
-  map_canvas_(NULL)
+  max_distance_(2.0)
 {
   ui_.setupUi(config_widget_);
   ui_.main_color->setColor(Qt::black);

@@ -34,7 +34,6 @@
 #include <QGLWidget>
 
 // ROS libraries
-// #include <ros/master.h>
 #include <rclcpp/rclcpp.hpp>
 
 #include <mapviz/select_topic_dialog.h>
@@ -135,7 +134,7 @@ namespace mapviz_plugins
       stamped_point.point = tf2::Vector3(path->poses[i].pose.position.x,
                                       path->poses[i].pose.position.y, 0);
 
-      pushPoint( std::move(stamped_point) );
+      pushPoint( stamped_point );
     }
   }
 

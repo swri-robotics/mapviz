@@ -16,11 +16,12 @@ find_package(ament_index_cpp REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(gps_msgs REQUIRED)
 find_package(image_transport REQUIRED)
+find_package(map_msgs REQUIRED)
 find_package(mapviz REQUIRED)
 find_package(marti_common_msgs REQUIRED)
+find_package(marti_nav_msgs REQUIRED)
 find_package(move_base_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(map_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -30,8 +31,8 @@ find_package(swri_image_util REQUIRED)
 find_package(swri_math_util REQUIRED)
 find_package(swri_route_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
-find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
@@ -164,11 +165,12 @@ ament_target_dependencies(${PROJECT_NAME}
     cv_bridge
     gps_msgs
     image_transport
+    map_msgs
     mapviz
     marti_common_msgs
+    marti_nav_msgs
     move_base_msgs
     nav_msgs
-    map_msgs
     pluginlib
     rclcpp
     sensor_msgs

@@ -43,8 +43,6 @@
 #include <QPalette>
 #include <QStaticText>
 
-#include <opencv2/core/core.hpp>
-
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
@@ -67,10 +65,11 @@ namespace mapviz_plugins
 {
   PlanRoutePlugin::PlanRoutePlugin() :
     config_widget_(new QWidget()),
-    map_canvas_(NULL),
+    map_canvas_(nullptr),
     failed_service_(false),
     selected_point_(-1),
     is_mouse_down_(false),
+    mouse_down_time_(0),
     max_ms_(Q_INT64_C(500)),
     max_distance_(2.0)
   {
@@ -109,14 +108,12 @@ namespace mapviz_plugins
       {
         route_topic_ = ui_.topic->text().toStdString();
         route_pub_.reset();
-        // route_pub_ = node_.advertise<sru::Route>(route_topic_, 1, true);
         route_pub_ = node_->create_publisher<swri_route_util::Route>(
           route_topic_,
           rclcpp::QoS(1));
       }
 
-      // route_pub_.publish(route_preview_);
-      route_pub_->publish(route_preview_);
+      route_pub_->publish(*route_preview_);
     }
   }
 
@@ -130,32 +127,48 @@ namespace mapviz_plugins
     }
 
     std::string service = ui_.service->text().toStdString();
-    // ros::ServiceClient client = node_.serviceClient<mnm::PlanRoute>(service);
-    std::shared_ptr<rclcpp::Client<marti_nav_msgs::srv::PlanRoute>> client =
-      node_->create_client<marti_nav_msgs::srv::PlanRoute>(service);
+    auto client = node_->create_client<marti_nav_msgs::srv::PlanRoute>(service);
+    client->wait_for_service(1ms);
 
-    marti_nav_msgs::srv::PlanRoute plan_route;
-    plan_route.request.header.frame_id = swri_transform_util::_wgs84_frame;
-    plan_route.request.header.stamp = ros::Time::now();
-    plan_route.request.plan_from_vehicle = static_cast<unsigned char>(start_from_vehicle);
-    plan_route.request.waypoints = waypoints_;
-
-    if (client.call(plan_route))
+    if (!client->service_is_ready())
     {
-      if (plan_route.response.success)
+      PrintError("Service is unavailable.");
+      return;
+    }
+
+    auto plan_route = std::make_shared<marti_nav_msgs::srv::PlanRoute::Request>();
+
+    plan_route->header.frame_id = swri_transform_util::_wgs84_frame;
+    plan_route->header.stamp = node_->now();
+    plan_route->plan_from_vehicle = static_cast<unsigned char>(start_from_vehicle);
+    plan_route->waypoints = waypoints_;
+
+    PrintInfo("Sending route...");
+    auto result = client->async_send_request(plan_route,
+        std::bind(&PlanRoutePlugin::ClientCallback, this, std::placeholders::_1));
+  }
+
+  void PlanRoutePlugin::ClientCallback(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future)
+  {
+    RCLCPP_ERROR(node_->get_logger(), "Request callback happened");
+    const auto& result = future.get();
+    if (future.valid())
+    {
+      if (result->success)
       {
-        route_preview_ = std::make_shared<swri_route_util::Route>(plan_route.response.route);
+        PrintInfo("OK");
+        route_preview_ = std::make_shared<swri_route_util::Route>(result->route);
         failed_service_ = false;
       }
       else
       {
-        PrintError(plan_route.response.message);
+        PrintError(result->message);
         failed_service_ = true;
       }
     }
     else
     {
-      PrintError("Failed to plan route.");
+      PrintError("Error calling PlanRoute service");
       failed_service_ = true;
     }
   }
@@ -195,10 +208,10 @@ namespace mapviz_plugins
 
   bool PlanRoutePlugin::Initialize(QGLWidget* canvas)
   {
-    map_canvas_ = static_cast<mapviz::MapCanvas*>(canvas);
+    map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
 
-    retry_timer_ = node_->create_wall_timer(1000ms, [](){&PlanRoutePlugin::Retry;});
+    retry_timer_ = node_->create_wall_timer(1000ms, [this](){Retry();});
 
     initialized_ = true;
     return true;
@@ -209,11 +222,11 @@ namespace mapviz_plugins
     switch (event->type())
     {
       case QEvent::MouseButtonPress:
-        return handleMousePress(static_cast<QMouseEvent*>(event));
+        return handleMousePress(dynamic_cast<QMouseEvent*>(event));
       case QEvent::MouseButtonRelease:
-        return handleMouseRelease(static_cast<QMouseEvent*>(event));
+        return handleMouseRelease(dynamic_cast<QMouseEvent*>(event));
       case QEvent::MouseMove:
-        return handleMouseMove(static_cast<QMouseEvent*>(event));
+        return handleMouseMove(dynamic_cast<QMouseEvent*>(event));
       default:
         return false;
     }
@@ -383,15 +396,13 @@ namespace mapviz_plugins
           glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
           glBegin(GL_LINE_STRIP);
 
-          for (size_t i = 0; i < route.points.size(); i++)
+          for (auto & point : route.points)
           {
-            glVertex2d(route.points[i].position().x(), route.points[i].position().y());
+            glVertex2d(point.position().x(), point.position().y());
           }
 
           glEnd();
         }
-
-        PrintInfo("OK");
       }
 
       // Draw waypoints
@@ -400,9 +411,9 @@ namespace mapviz_plugins
       glColor4f(0.0, 1.0, 1.0, 1.0);
       glBegin(GL_POINTS);
 
-      for (size_t i = 0; i < waypoints_.size(); i++)
+      for (auto & waypoint : waypoints_)
       {
-        tf2::Vector3 point(waypoints_[i].position.x, waypoints_[i].position.y, 0);
+        tf2::Vector3 point(waypoint.position.x, waypoint.position.y, 0);
         point = transform * point;
         glVertex2d(point.x(), point.y());
       }
@@ -436,7 +447,7 @@ namespace mapviz_plugins
         painter->drawText(
           rect,
           Qt::AlignHCenter | Qt::AlignVCenter,
-          QString::fromStdString(boost::lexical_cast<std::string>(i + 1)));
+          QString::fromStdString(std::to_string(i + 1)));
       }
     }
 
