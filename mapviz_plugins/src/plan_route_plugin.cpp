@@ -29,11 +29,6 @@
 
 #include <mapviz_plugins/plan_route_plugin.h>
 
-// C++ standard libraries
-#include <chrono>
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDateTime>
 #include <QDialog>
@@ -53,6 +48,16 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <chrono>
+#include <cstdio>
+#include <limits>
+#include <memory>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PlanRoutePlugin, mapviz::MapvizPlugin)
 
 using namespace std::chrono_literals;
@@ -148,7 +153,8 @@ namespace mapviz_plugins
         std::bind(&PlanRoutePlugin::ClientCallback, this, std::placeholders::_1));
   }
 
-  void PlanRoutePlugin::ClientCallback(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future)
+  void PlanRoutePlugin::ClientCallback(
+    rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future)
   {
     RCLCPP_ERROR(node_->get_logger(), "Request callback happened");
     const auto& result = future.get();
@@ -159,15 +165,11 @@ namespace mapviz_plugins
         PrintInfo("OK");
         route_preview_ = std::make_shared<swri_route_util::Route>(result->route);
         failed_service_ = false;
-      }
-      else
-      {
+      } else {
         PrintError(result->message);
         failed_service_ = true;
       }
-    }
-    else
-    {
+    } else {
       PrintError("Error calling PlanRoute service");
       failed_service_ = true;
     }
@@ -273,9 +275,7 @@ namespace mapviz_plugins
       {
         selected_point_ = closest_point;
         return true;
-      }
-      else
-      {
+      } else {
         is_mouse_down_ = true;
 #if QT_VERSION >= 0x050000
         mouse_down_pos_ = event->localPos();
@@ -285,9 +285,7 @@ namespace mapviz_plugins
         mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
         return false;
       }
-    }
-    else if (event->button() == Qt::RightButton)
-    {
+    } else if (event->button() == Qt::RightButton) {
       if (closest_distance < 15)
       {
         waypoints_.erase(waypoints_.begin() + closest_point);
@@ -321,9 +319,7 @@ namespace mapviz_plugins
 
       selected_point_ = -1;
       return true;
-    }
-    else if (is_mouse_down_)
-    {
+    } else if (is_mouse_down_) {
       qreal distance = QLineF(mouse_down_pos_, point).length();
       qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
@@ -418,9 +414,7 @@ namespace mapviz_plugins
         glVertex2d(point.x(), point.y());
       }
       glEnd();
-    }
-    else
-    {
+    } else {
       PrintError("Failed to transform.");
     }
   }
@@ -494,4 +488,4 @@ namespace mapviz_plugins
     bool start_from_vehicle = ui_.start_from_vehicle->isChecked();
     emitter << YAML::Key << "start_from_vehicle" << YAML::Value << start_from_vehicle;
   }
-}
+}   // namespace mapviz_plugins
