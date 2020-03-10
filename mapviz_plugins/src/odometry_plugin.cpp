@@ -283,7 +283,6 @@ namespace mapviz_plugins
     if (node["topic"])
     {
       std::string topic;
-      // node["topic"] >> topic;
       topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
     }
@@ -291,7 +290,6 @@ namespace mapviz_plugins
     if (node["color"])
     {
       std::string color;
-      // node["color"] >> color;
       color = node["color"].as<std::string>();
       QColor qcolor(color.c_str());
       SetColor(qcolor);
@@ -301,7 +299,6 @@ namespace mapviz_plugins
     if (node["draw_style"])
     {
       std::string draw_style;
-      // node["draw_style"] >> draw_style;
       draw_style = node["draw_style"].as<std::string>();
 
       if (draw_style == "lines")
@@ -320,7 +317,6 @@ namespace mapviz_plugins
     if (node["position_tolerance"])
     {
       double position_tolerance;
-      // node["position_tolerance"] >> position_tolerance;
       position_tolerance = node["position_tolerance"].as<double>();
       ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
@@ -329,7 +325,6 @@ namespace mapviz_plugins
     if (node["buffer_size"])
     {
       double buffer_size;
-      // node["buffer_size"] >> buffer_size;
       buffer_size = node["buffer_size"].as<double>();
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
@@ -338,7 +333,6 @@ namespace mapviz_plugins
     if (node["show_covariance"])
     {
       bool show_covariance = false;
-      // node["show_covariance"] >> show_covariance;
       show_covariance = node["show_covariance"].as<bool>();
       ui_.show_covariance->setChecked(show_covariance);
       CovariancedToggled(show_covariance);
@@ -347,7 +341,6 @@ namespace mapviz_plugins
     if (node["show_all_covariances"])
     {
       bool show_all_covariances = false;
-      // node["show_all_covariances"] >> show_all_covariances;
       show_all_covariances = node["show_all_covariances"].as<bool>();
       ui_.show_all_covariances->setChecked(show_all_covariances);
       ShowAllCovariancesToggled(show_all_covariances);
@@ -356,7 +349,6 @@ namespace mapviz_plugins
     if (node["show_laps"])
     {
       bool show_laps = false;
-      // node["show_laps"] >> show_laps;
       show_laps = node["show_laps"].as<bool>();
       ui_.show_laps->setChecked(show_laps);
       LapToggled(show_laps);
