@@ -110,7 +110,7 @@ set(SRC_FILES
     src/placeable_window_proxy.cpp
     src/plan_route_plugin.cpp
     src/point_click_publisher_plugin.cpp
-    # src/pointcloud2_plugin.cpp
+    src/pointcloud2_plugin.cpp
     src/point_drawing_plugin.cpp
     # src/pose_plugin.cpp
     src/robot_image_plugin.cpp
