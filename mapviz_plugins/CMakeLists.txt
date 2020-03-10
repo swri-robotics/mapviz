@@ -107,7 +107,7 @@ set(SRC_FILES
     src/occupancy_grid_plugin.cpp
     src/odometry_plugin.cpp 
     src/path_plugin.cpp
-    # src/placeable_window_proxy.cpp
+    src/placeable_window_proxy.cpp
     src/plan_route_plugin.cpp
     src/point_click_publisher_plugin.cpp
     # src/pointcloud2_plugin.cpp
@@ -137,7 +137,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/occupancy_grid_plugin.h
     include/${PROJECT_NAME}/odometry_plugin.h
     include/${PROJECT_NAME}/path_plugin.h
-    # include/${PROJECT_NAME}/placeable_window_proxy.h
+    include/${PROJECT_NAME}/placeable_window_proxy.h
     include/${PROJECT_NAME}/plan_route_plugin.h
     include/${PROJECT_NAME}/point_click_publisher_plugin.h
     # include/${PROJECT_NAME}/pointcloud2_plugin.h
