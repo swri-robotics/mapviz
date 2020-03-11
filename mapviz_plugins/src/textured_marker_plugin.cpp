@@ -537,5 +537,5 @@ namespace mapviz_plugins
   {
     emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
   }
-}
+}   // namespace mapviz_plugins
 
