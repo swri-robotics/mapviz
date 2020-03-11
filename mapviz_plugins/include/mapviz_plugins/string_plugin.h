@@ -43,9 +43,8 @@
 #include <QFont>
 #include <QStaticText>
 
-// #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
-// #include <std_msgs/String.h>
+
 #include <std_msgs/msg/string.hpp>
 
 #include <string>
