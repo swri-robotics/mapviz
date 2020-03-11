@@ -29,11 +29,6 @@
 
 #include <mapviz_plugins/textured_marker_plugin.h>
 
-// C++ standard libraries
-#include <cmath>
-#include <cstdio>
-#include <vector>
-
 // Boost libraries
 #include <boost/algorithm/string.hpp>
 
@@ -51,6 +46,15 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <map>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TexturedMarkerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -58,7 +62,7 @@ namespace mapviz_plugins
   TexturedMarkerPlugin::TexturedMarkerPlugin() :
     config_widget_(new QWidget()),
     is_marker_array_(false),
-    alphaVal_(1.0f) // Initialize the alpha value to default
+    alphaVal_(1.0f)   // Initialize the alpha value to default
   {
     ui_.setupUi(config_widget_);
 
@@ -81,25 +85,31 @@ namespace mapviz_plugins
     // main thread in case a non-main thread handles the ROS callbacks.
     // qRegisterMetaType<marti_visualization_msgs::TexturedMarkerConstPtr>("TexturedMarkerConstPtr");
     // qRegisterMetaType<marti_visualization_msgs::TexturedMarkerArrayConstPtr>("TexturedMarkerArrayConstPtr");
-    qRegisterMetaType<marti_visualization_msgs::msg::TexturedMarker::SharedPtr>("TexturedMarkerConstPtr");
-    qRegisterMetaType<marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr>("TexturedMarkerArrayConstPtr");
+    qRegisterMetaType<
+      marti_visualization_msgs::msg::TexturedMarker::SharedPtr>("TexturedMarkerConstPtr");
+    qRegisterMetaType<
+      marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr>("TexturedMarkerArrayConstPtr");
 
-    // QObject::connect(this, 
-    //                  SIGNAL(MarkerReceived(const marti_visualization_msgs::TexturedMarkerConstPtr)),
-    //                  this,
-    //                  SLOT(ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr)));
-    // QObject::connect(this,
-    //                  SIGNAL(MarkersReceived(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)),
-    //                  this,
-    //                  SLOT(ProcessMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)));
-    QObject::connect(this,
-                      SIGNAL(MarkerReceived(const marti_visualization_msgs::msg::TexturedMarker::SharedPtr)),
-                      this,
-                      SLOT(PROCESSMARKER(const marti_visualization_msgs::msg::TexturedMarker::SharedPtr)));
-    QObject::connect(this,
-                      SIGNAL(MarkersReceived(const marti_visualization_msgs::TexturedMarkerArray::SharedPtr)),
-                      this,
-                      SLOT(ProcessMarkers(const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr)));
+    // QObject::connect(
+    //   this,
+    //   SIGNAL(MarkerReceived(const marti_visualization_msgs::TexturedMarkerConstPtr)),
+    //   this,
+    //   SLOT(ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr)));
+    // QObject::connect(
+    //   this,
+    //   SIGNAL(MarkersReceived(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)),
+    //   this,
+    //   SLOT(ProcessMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)));
+    QObject::connect(
+      this,
+      SIGNAL(MarkerReceived(const marti_visualization_msgs::msg::TexturedMarker::SharedPtr)),
+      this,
+      SLOT(PROCESSMARKER(const marti_visualization_msgs::msg::TexturedMarker::SharedPtr)));
+    QObject::connect(
+      this,
+      SIGNAL(MarkersReceived(const marti_visualization_msgs::TexturedMarkerArray::SharedPtr)),
+      this,
+      SLOT(ProcessMarkers(const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr)));
   }
 
   TexturedMarkerPlugin::~TexturedMarkerPlugin()
@@ -112,33 +122,30 @@ namespace mapviz_plugins
     markers_.clear();
   }
 
-  // TODO could instead use the value() function on alphaSlide when needed, assuming value is always good
+  // TODO(mattrich37) could instead use the value() function on alphaSlide when needed,
+  //   assuming value is always good
   // Modify min and max values by adjusting textured_marker_config.ui
   void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
   {
     int max = ui_.alphaSlide->maximum();
     int min = ui_.alphaSlide->minimum();
 
-    if(max < 1 
+    if(max < 1
     || min < 0
-    || alpha > max 
-    || alpha < min) // ignore negative min and max
+    || alpha > max
+    || alpha < min)   // ignore negative min and max
     {
       alphaVal_ = 1.0f;
       PrintWarning("Invalid alpha input.");
-    }
-    else
-    {
-      alphaVal_ = (static_cast<float>(alpha) / max); // Ex. convert int in range 0-100 to float in range 0-1
+    } else {
+      // Ex. convert int in range 0-100 to float in range 0-1
+      alphaVal_ = (static_cast<float>(alpha) / max);
       RCLCPP_INFO(node_->get_logger(), "Adjusting alpha value to: %f", alphaVal_);
     }
   }
 
   void TexturedMarkerPlugin::SelectTopic()
   {
-    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-    //   "marti_visualization_msgs/TexturedMarker",
-    //   "marti_visualization_msgs/TexturedMarkerArray");
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
       node_,
       "marti_visualization_msgs/msg/TexturedMarker",
@@ -177,14 +184,13 @@ namespace mapviz_plugins
       {
         if (is_marker_array_)
         {
-          marker_arr_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarkerArray>(
-            topic_,
-            rclcpp::QoS(1000),
-            std::bind(&TexturedMarkerPlugin::MarkerArrayCallback, this, std::placeholders::_1)
-          );
-        }
-        else
-        {
+          marker_arr_sub_ =
+            node_->create_subscription<marti_visualization_msgs::msg::TexturedMarkerArray>(
+              topic_,
+              rclcpp::QoS(1000),
+              std::bind(&TexturedMarkerPlugin::MarkerArrayCallback, this, std::placeholders::_1)
+            );
+        } else {
           marker_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarker>(
             topic_,
             rclcpp::QoS(1000),
@@ -197,12 +203,14 @@ namespace mapviz_plugins
     }
   }
 
-  // void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr marker)
+  // void TexturedMarkerPlugin::ProcessMarker(
+  //    const marti_visualization_msgs::TexturedMarkerConstPtr marker)
   // {
   //   ProcessMarker(*marker);
   // }
 
-  void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::TexturedMarker marker)
+  void TexturedMarkerPlugin::ProcessMarker(
+    const marti_visualization_msgs::msg::TexturedMarker marker)
   {
     if (!has_message_)
     {
@@ -236,9 +244,7 @@ namespace mapviz_plugins
       if (lifetime.seconds() == 0 && lifetime.nanoseconds() == 0)
       {
         markerData.expire_time = rclcpp::Time::max();
-      }
-      else
-      {
+      } else {
         // Temporarily add 5 seconds to fix some existing markers.
         markerData.expire_time = rclcpp::Time() + lifetime + rclcpp::Duration(5);
       }
@@ -248,7 +254,7 @@ namespace mapviz_plugins
           marker.pose.orientation.x,
           marker.pose.orientation.y,
           marker.pose.orientation.z,
-          marker.pose.orientation.w), 
+          marker.pose.orientation.w),
         tf2::Vector3(
           marker.pose.position.x,
           marker.pose.position.y,
@@ -263,38 +269,38 @@ namespace mapviz_plugins
       tf2::Vector3 top_right(right, top, 0);
       tf2::Vector3 bottom_left(left, bottom, 0);
       tf2::Vector3 bottom_right(right, bottom, 0);
-      
+
       top_left = offset * top_left;
       top_right = offset * top_right;
       bottom_left = offset * bottom_left;
       bottom_right = offset * bottom_right;
-      
+
       markerData.quad_.clear();
       markerData.quad_.push_back(top_left);
       markerData.quad_.push_back(top_right);
       markerData.quad_.push_back(bottom_right);
-      
+
       markerData.quad_.push_back(top_left);
       markerData.quad_.push_back(bottom_right);
       markerData.quad_.push_back(bottom_left);
-      
+
       markerData.transformed_quad_.clear();
       for (size_t i = 0; i < markerData.quad_.size(); i++)
       {
         markerData.transformed_quad_.push_back(transform * markerData.quad_[i]);
       }
-      
+
       int32_t max_dimension = std::max(marker.image.height, marker.image.width);
       int32_t new_size = 1;
       while (new_size < max_dimension)
         new_size = new_size << 1;
-      
+
       if (new_size != markerData.texture_size_ || markerData.encoding_ != marker.image.encoding)
       {
         markerData.texture_size_ = new_size;
-        
+
         markerData.encoding_ = marker.image.encoding;
-        
+
         GLuint ids[1];
 
         //  Free the current texture.
@@ -303,7 +309,7 @@ namespace mapviz_plugins
           ids[0] = static_cast<GLuint>(markerData.texture_id_);
           glDeleteTextures(1, &ids[0]);
         }
-        
+
         // Get a new texture id.
         glGenTextures(1, &ids[0]);
         markerData.texture_id_ = ids[0];
@@ -317,27 +323,31 @@ namespace mapviz_plugins
         if (markerData.encoding_ == sensor_msgs::image_encodings::BGRA8)
         {
           bpp = 4;
-          markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 4));
-        }
-        else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8)
-        {
+          markerData.texture_.resize(
+            static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 4));
+        } else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8) {
           bpp = 3;
-          markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 3));
-        }
-        else if (markerData.encoding_ == sensor_msgs::image_encodings::MONO8)
-        {
+          markerData.texture_.resize(
+            static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_ * 3));
+        } else if (markerData.encoding_ == sensor_msgs::image_encodings::MONO8) {
           bpp = 1;
-          markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_));
-        }
-        else
-        {
-          RCLCPP_WARN(node_->get_logger(), "Unsupported encoding: %s", markerData.encoding_.c_str());
+          markerData.texture_.resize(
+            static_cast<size_t>(markerData.texture_size_ * markerData.texture_size_));
+        } else {
+          RCLCPP_WARN(
+            node_->get_logger(),
+            "Unsupported encoding: %s",
+            markerData.encoding_.c_str());
         }
 
         size_t expected = marker.image.height*marker.image.width*bpp;
         if (markerData.texture_.size() > 0 && marker.image.data.size() < expected)
         {
-          RCLCPP_ERROR(node_->get_logger(), "TexturedMarker image had expected data size %i but only got %i. Dropping message.", expected, marker.image.data.size());
+          RCLCPP_ERROR(
+            node_->get_logger(),
+            "TexturedMarker image had expected data size %i but only got %i. Dropping message.",
+            expected,
+            marker.image.data.size());
           return;
         }
 
@@ -353,9 +363,9 @@ namespace mapviz_plugins
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
       }
-      
+
       glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(markerData.texture_id_));
-      
+
       if (markerData.encoding_ == sensor_msgs::image_encodings::BGRA8)
       {
         for (size_t row = 0; row < marker.image.height; row++)
@@ -364,102 +374,100 @@ namespace mapviz_plugins
           {
             size_t src_index = (row * marker.image.width + col) * 4;
             size_t dst_index = (row * markerData.texture_size_ + col) * 4;
-            
+
             markerData.texture_[dst_index + 0] = marker.image.data[src_index + 0];
             markerData.texture_[dst_index + 1] = marker.image.data[src_index + 1];
             markerData.texture_[dst_index + 2] = marker.image.data[src_index + 2];
             markerData.texture_[dst_index + 3] = marker.image.data[src_index + 3];
           }
         }
-      
+
         glTexImage2D(
-            GL_TEXTURE_2D, 
-            0, 
-            GL_RGBA, 
-            markerData.texture_size_, 
-            markerData.texture_size_, 
-            0, 
-            GL_BGRA, 
-            GL_UNSIGNED_BYTE, 
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            markerData.texture_size_,
+            markerData.texture_size_,
+            0,
+            GL_BGRA,
+            GL_UNSIGNED_BYTE,
             markerData.texture_.data());
-      }
-      else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8)
-      {
+      } else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8) {
         for (size_t row = 0; row < marker.image.height; row++)
         {
           for (size_t col = 0; col < marker.image.width; col++)
           {
             size_t src_index = (row * marker.image.width + col) * 3;
             size_t dst_index = (row * markerData.texture_size_ + col) * 3;
-            
+
             markerData.texture_[dst_index + 0] = marker.image.data[src_index + 0];
             markerData.texture_[dst_index + 1] = marker.image.data[src_index + 1];
             markerData.texture_[dst_index + 2] = marker.image.data[src_index + 2];
           }
         }
-      
+
         glTexImage2D(
-            GL_TEXTURE_2D, 
-            0, 
-            GL_RGB, 
-            markerData.texture_size_, 
-            markerData.texture_size_, 
-            0, 
-            GL_BGR, 
-            GL_UNSIGNED_BYTE, 
+            GL_TEXTURE_2D,
+            0,
+            GL_RGB,
+            markerData.texture_size_,
+            markerData.texture_size_,
+            0,
+            GL_BGR,
+            GL_UNSIGNED_BYTE,
             markerData.texture_.data());
-      }
-      else if (markerData.encoding_ == sensor_msgs::image_encodings::MONO8)
-      {
+      } else if (markerData.encoding_ == sensor_msgs::image_encodings::MONO8) {
         for (size_t row = 0; row < marker.image.height; row++)
         {
           for (size_t col = 0; col < marker.image.width; col++)
           {
             size_t src_index = row * marker.image.width + col;
             size_t dst_index = row * markerData.texture_size_ + col;
-            
+
             markerData.texture_[dst_index] = marker.image.data[src_index];
           }
         }
-      
+
         glTexImage2D(
-            GL_TEXTURE_2D, 
-            0, 
-            GL_LUMINANCE, 
-            markerData.texture_size_, 
-            markerData.texture_size_, 
-            0, 
-            GL_LUMINANCE, 
-            GL_UNSIGNED_BYTE, 
+            GL_TEXTURE_2D,
+            0,
+            GL_LUMINANCE,
+            markerData.texture_size_,
+            markerData.texture_size_,
+            0,
+            GL_LUMINANCE,
+            GL_UNSIGNED_BYTE,
             markerData.texture_.data());
       }
-      
+
       glBindTexture(GL_TEXTURE_2D, 0);
-      
-      markerData.texture_x_ = static_cast<float>(marker.image.width) / static_cast<float>(markerData.texture_size_);
-      markerData.texture_y_ = static_cast<float>(marker.image.height) / static_cast<float>(markerData.texture_size_);
-    }
-    else
-    {
+
+      markerData.texture_x_ =
+        static_cast<float>(marker.image.width) / static_cast<float>(markerData.texture_size_);
+      markerData.texture_y_ =
+        static_cast<float>(marker.image.height) / static_cast<float>(markerData.texture_size_);
+    } else {
       markers_[marker.ns].erase(marker.id);
     }
   }
-  
-  void TexturedMarkerPlugin::ProcessMarkers(const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr markers)
+
+  void TexturedMarkerPlugin::ProcessMarkers(
+    const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr markers)
   {
     for (unsigned int i = 0; i < markers->markers.size(); i++)
     {
       ProcessMarker(markers->markers[i]);
     }
   }
-  
 
-  void TexturedMarkerPlugin::MarkerCallback(const marti_visualization_msgs::msg::TexturedMarker::SharedPtr marker)
+  void TexturedMarkerPlugin::MarkerCallback(
+    const marti_visualization_msgs::msg::TexturedMarker::SharedPtr marker)
   {
     Q_EMIT MarkerReceived(marker);
   }
 
-  void TexturedMarkerPlugin::MarkerArrayCallback(const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr markers)
+  void TexturedMarkerPlugin::MarkerArrayCallback(
+    const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr markers)
   {
     Q_EMIT MarkersReceived(markers);
   }
@@ -497,7 +505,7 @@ namespace mapviz_plugins
   {
     rclcpp::Time now = rclcpp::Time();
 
-    float alphaVal = alphaVal_; // Set all markers to same alpha value
+    float alphaVal = alphaVal_;   // Set all markers to same alpha value
 
     std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
@@ -506,7 +514,7 @@ namespace mapviz_plugins
       for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
-        marker.alpha_ = alphaVal; // Update current marker's alpha value
+        marker.alpha_ = alphaVal;   // Update current marker's alpha value
 
         if (marker.expire_time > now)
         {
@@ -515,28 +523,34 @@ namespace mapviz_plugins
             glEnable(GL_TEXTURE_2D);
 
             glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(marker.texture_id_));
-          
+
             glBegin(GL_TRIANGLES);
-            
+
             glColor4f(1.0f, 1.0f, 1.0f, marker.alpha_);
 
             double marker_x = marker.texture_x_;
             double marker_y = marker.texture_y_;
 
-            glTexCoord2d(0, 0); glVertex2d(marker.transformed_quad_[0].x(), marker.transformed_quad_[0].y());
-            glTexCoord2d(marker_x, 0); glVertex2d(marker.transformed_quad_[1].x(), marker.transformed_quad_[1].y());
-            glTexCoord2d(marker_x, marker_y); glVertex2d(marker.transformed_quad_[2].x(), marker.transformed_quad_[2].y());
+            glTexCoord2d(0, 0); glVertex2d(
+              marker.transformed_quad_[0].x(), marker.transformed_quad_[0].y());
+            glTexCoord2d(marker_x, 0); glVertex2d(
+              marker.transformed_quad_[1].x(), marker.transformed_quad_[1].y());
+            glTexCoord2d(marker_x, marker_y); glVertex2d(
+              marker.transformed_quad_[2].x(), marker.transformed_quad_[2].y());
 
-            glTexCoord2d(0, 0); glVertex2d(marker.transformed_quad_[3].x(), marker.transformed_quad_[3].y());
-            glTexCoord2d(marker_x, marker_y); glVertex2d(marker.transformed_quad_[4].x(), marker.transformed_quad_[4].y());
-            glTexCoord2d(0, marker_y); glVertex2d(marker.transformed_quad_[5].x(), marker.transformed_quad_[5].y());
+            glTexCoord2d(0, 0); glVertex2d(
+              marker.transformed_quad_[3].x(), marker.transformed_quad_[3].y());
+            glTexCoord2d(marker_x, marker_y); glVertex2d(
+              marker.transformed_quad_[4].x(), marker.transformed_quad_[4].y());
+            glTexCoord2d(0, marker_y); glVertex2d(
+              marker.transformed_quad_[5].x(), marker.transformed_quad_[5].y());
 
             glEnd();
-            
+
             glBindTexture(GL_TEXTURE_2D, 0);
 
             glDisable(GL_TEXTURE_2D);
-            
+
             PrintInfo("OK");
           }
         }
@@ -545,7 +559,7 @@ namespace mapviz_plugins
   }
 
   void TexturedMarkerPlugin::Transform()
-  {  
+  {
     std::map<std::string, std::map<int, MarkerData> >::iterator nsIter;
     for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter)
     {
@@ -583,7 +597,10 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
+    emitter << YAML::Key
+      << "topic"
+      << YAML::Value
+      << boost::trim_copy(ui_.topic->text().toStdString());
     emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;
   }
 }
