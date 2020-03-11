@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2014-2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,11 @@
 #include <QListWidgetItem>
 
 // ROS libraries
-#include <tf/transform_datatypes.h>
-#include <topic_tools/shape_shifter.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <tf2/transform_datatypes.h>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+
+#include <boost/functional/hash.hpp>
 
 #include <mapviz/map_canvas.h>
 
@@ -77,36 +79,36 @@ namespace mapviz_plugins
 
   public:
     MarkerPlugin();
-    virtual ~MarkerPlugin();
+    ~MarkerPlugin() override = default;
 
-    bool Initialize(QGLWidget* canvas);
-    void Shutdown() {}
+    bool Initialize(QGLWidget* canvas) override;
+    void Shutdown() override {}
 
-    void Draw(double x, double y, double scale);
-    void Paint(QPainter* painter, double x, double y, double scale);
+    void Draw(double x, double y, double scale) override;
+    void Paint(QPainter* painter, double x, double y, double scale) override;
 
-    void Transform();
+    void Transform() override;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path);
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-    QWidget* GetConfigWidget(QWidget* parent);
+    QWidget* GetConfigWidget(QWidget* parent) override;
 
-    bool SupportsPainting()
+    bool SupportsPainting() override
     {
       return true;
     }
 
   protected:
-    void PrintError(const std::string& message);
-    void PrintInfo(const std::string& message);
-    void PrintWarning(const std::string& message);
-    void timerEvent(QTimerEvent *);
+    void PrintError(const std::string& message) override;
+    void PrintInfo(const std::string& message) override;
+    void PrintWarning(const std::string& message) override;
+    void timerEvent(QTimerEvent *) override;
 
   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
-    void ClearHistory();
+    void ClearHistory() override;
 
   private:
     struct Color
@@ -116,23 +118,23 @@ namespace mapviz_plugins
 
     struct StampedPoint
     {
-      tf::Point point;
-      tf::Quaternion orientation;
+      tf2::Vector3 point;
+      tf2::Quaternion orientation;
 
-      tf::Point transformed_point;
+      tf2::Vector3 transformed_point;
 
-      tf::Point arrow_point;
-      tf::Point transformed_arrow_point;
-      tf::Point transformed_arrow_left;
-      tf::Point transformed_arrow_right;
+      tf2::Vector3 arrow_point;
+      tf2::Vector3 transformed_arrow_point;
+      tf2::Vector3 transformed_arrow_left;
+      tf2::Vector3 transformed_arrow_right;
 
       Color color;
     };
 
     struct MarkerData
     {
-      ros::Time stamp;
-      ros::Time expire_time;
+      rclcpp::Time stamp;
+      rclcpp::Time expire_time;
 
       int display_type;
       Color color;
@@ -150,21 +152,23 @@ namespace mapviz_plugins
       bool transformed;
     };
 
-    Ui::marker_config ui_;
+    Ui::marker_config ui_{};
     QWidget* config_widget_;
 
     std::string topic_;
 
-    ros::Subscriber marker_sub_;
+    rclcpp::Subscription<visualization_msgs::msg::Marker>::SharedPtr marker_sub_;
+    rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_sub_;
     bool connected_;
-    bool has_message_;
+    bool has_message_{};
 
     std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;
     std::unordered_map<std::string, bool, MarkerNsHash> marker_visible_;
 
-    void handleMessage(const topic_tools::ShapeShifter::ConstPtr& msg);
-    void handleMarker(const visualization_msgs::Marker &marker);
-    void handleMarkerArray(const visualization_msgs::MarkerArray &markers);
+    void handleMarker(visualization_msgs::msg::Marker::ConstSharedPtr marker);
+    void handleMarkerArray(visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
+    void processMarker(const visualization_msgs::msg::Marker& marker);
+    void subscribe();
     void transformArrow(MarkerData& markerData,
                         const swri_transform_util::Transform& transform);
   };

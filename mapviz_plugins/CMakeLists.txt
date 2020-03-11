@@ -100,7 +100,7 @@ set(SRC_FILES
     src/grid_plugin.cpp
     src/image_plugin.cpp
     src/laserscan_plugin.cpp
-    # src/marker_plugin.cpp 
+    src/marker_plugin.cpp
     src/measuring_plugin.cpp 
     # src/move_base_plugin.cpp
     src/navsat_plugin.cpp
@@ -130,7 +130,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/grid_plugin.h
     include/${PROJECT_NAME}/image_plugin.h
     include/${PROJECT_NAME}/laserscan_plugin.h
-    # include/${PROJECT_NAME}/marker_plugin.h
+    include/${PROJECT_NAME}/marker_plugin.h
     include/${PROJECT_NAME}/measuring_plugin.h
     # include/${PROJECT_NAME}/move_base_plugin.h
     include/${PROJECT_NAME}/navsat_plugin.h
