@@ -45,8 +45,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 
-#include <swri_math_util/constants.h>
-
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
@@ -117,9 +115,6 @@ namespace mapviz_plugins
 
   void TexturedMarkerPlugin::SelectTopic()
   {
-    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-    //   "marti_visualization_msgs/TexturedMarker",
-    //   "marti_visualization_msgs/TexturedMarkerArray");
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
       node_,
       "marti_visualization_msgs/msg/TexturedMarker",
