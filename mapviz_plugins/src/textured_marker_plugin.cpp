@@ -603,5 +603,5 @@ namespace mapviz_plugins
       << boost::trim_copy(ui_.topic->text().toStdString());
     emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;
   }
-}
+}   // namespace mapviz_plugins
 
