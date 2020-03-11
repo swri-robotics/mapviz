@@ -381,14 +381,12 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
 void TexturedMarkerPlugin::MarkerCallback(
   marti_visualization_msgs::msg::TexturedMarker::ConstSharedPtr marker)
 {
-  RCLCPP_INFO(node_->get_logger(), "TexturedMarkerPlugin::MarkerCallback");
   Q_EMIT MarkerReceived(*marker);
 }
 
 void TexturedMarkerPlugin::MarkerArrayCallback(
   marti_visualization_msgs::msg::TexturedMarkerArray::ConstSharedPtr markers)
 {
-  RCLCPP_INFO(node_->get_logger(), "TexturedMarkerPlugin::MarkerArrayCallback");
   for (const auto & marker : markers->markers) {
     Q_EMIT MarkerReceived(marker);
   }
