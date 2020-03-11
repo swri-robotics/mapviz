@@ -34,14 +34,15 @@
 #include <swri_transform_util/transform_util.h>
 #include <mapviz/select_topic_dialog.h>
 
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
+
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <utility>
 #include <vector>
 
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GpsPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
