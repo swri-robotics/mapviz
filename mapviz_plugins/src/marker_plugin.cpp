@@ -214,7 +214,8 @@ namespace mapviz_plugins
       rclcpp::Duration lifetime = marker.lifetime;
       if (lifetime.nanoseconds() == 0)
       {
-        markerData.expire_time = rclcpp::Time::max();
+        markerData.expire_time = rclcpp::Time(rclcpp::Time::max().nanoseconds(),
+            node_->get_clock()->get_clock_type());
       }
       else
       {
