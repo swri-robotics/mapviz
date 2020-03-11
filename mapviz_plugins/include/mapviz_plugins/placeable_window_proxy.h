@@ -61,7 +61,7 @@ Q_OBJECT
 
 public:
   PlaceableWindowProxy();
-  ~PlaceableWindowProxy();
+  ~PlaceableWindowProxy() override;
 
   void setContainer(QWidget *);
 
@@ -75,14 +75,14 @@ public Q_SLOTS:
   void setVisible(bool visible);
 
 protected:
-  bool eventFilter(QObject *object, QEvent *event);
+  bool eventFilter(QObject *object, QEvent *event) override;
 
   bool handleMousePress(QMouseEvent *);
   bool handleMouseRelease(QMouseEvent *);
   bool handleMouseMove(QMouseEvent *);
   bool handleResize(QResizeEvent *);
 
-  void timerEvent(QTimerEvent *);
+  void timerEvent(QTimerEvent *) override;
 
   void rectResize(int dx, int dy);
   void winResize(const QSize &);
