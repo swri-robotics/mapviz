@@ -116,7 +116,7 @@ set(SRC_FILES
     src/robot_image_plugin.cpp
     # src/route_plugin.cpp
     src/string_plugin.cpp
-    # src/textured_marker_plugin.cpp
+    src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
 )
 
@@ -146,7 +146,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/robot_image_plugin.h
     # include/${PROJECT_NAME}/route_plugin.h
     include/${PROJECT_NAME}/string_plugin.h
-    # include/${PROJECT_NAME}/textured_marker_plugin.h
+    include/${PROJECT_NAME}/textured_marker_plugin.h
     include/${PROJECT_NAME}/tf_frame_plugin.h
 )
     
