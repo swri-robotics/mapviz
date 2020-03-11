@@ -61,84 +61,85 @@ Q_DECLARE_METATYPE(marti_visualization_msgs::msg::TexturedMarker)
 
 namespace mapviz_plugins
 {
-  class TexturedMarkerPlugin : public mapviz::MapvizPlugin
+class TexturedMarkerPlugin : public mapviz::MapvizPlugin
+{
+  Q_OBJECT
+
+public:
+  TexturedMarkerPlugin();
+  ~TexturedMarkerPlugin() override = default;
+
+  bool Initialize(QGLWidget * canvas) override;
+  void Shutdown() override {}
+
+  void Draw(double x, double y, double scale) override;
+
+  void Transform() override;
+
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
+
+  QWidget * GetConfigWidget(QWidget * parent) override;
+
+Q_SIGNALS:
+  void MarkerReceived(marti_visualization_msgs::msg::TexturedMarker marker);
+
+protected:
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
+
+protected Q_SLOTS:
+  void SetAlphaLevel(int alpha);
+  void SelectTopic();
+  void TopicEdited();
+  void ClearHistory() override;
+  void ProcessMarker(marti_visualization_msgs::msg::TexturedMarker marker);
+
+private:
+  float alphaVal_;
+
+  struct MarkerData
   {
-    Q_OBJECT
+    rclcpp::Time stamp;
+    rclcpp::Time expire_time;
 
-  public:
-    TexturedMarkerPlugin();
-    ~TexturedMarkerPlugin() override = default;
+    float alpha_;
 
-    bool Initialize(QGLWidget* canvas) override;
-    void Shutdown() override {}
+    std::vector<uint8_t> texture_;
+    int32_t texture_id_;
+    int32_t texture_size_;
+    float texture_x_;
+    float texture_y_;
 
-    void Draw(double x, double y, double scale) override;
+    std::string encoding_;
 
-    void Transform() override;
+    std::vector<tf2::Vector3> quad_;
+    std::vector<tf2::Vector3> transformed_quad_;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+    std::string source_frame_;
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
-
-  Q_SIGNALS:
-    void MarkerReceived(marti_visualization_msgs::msg::TexturedMarker marker);
-
-  protected:
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
-
-  protected Q_SLOTS:
-    void SetAlphaLevel(int alpha);
-    void SelectTopic();
-    void TopicEdited();
-    void ClearHistory() override;
-    void ProcessMarker(marti_visualization_msgs::msg::TexturedMarker marker);
-
-  private:
-    float alphaVal_;
-
-    struct MarkerData
-    {
-      rclcpp::Time stamp;
-      rclcpp::Time expire_time;
-
-      float alpha_;
-
-      std::vector<uint8_t> texture_;
-      int32_t texture_id_;
-      int32_t texture_size_;
-      float texture_x_;
-      float texture_y_;
-      
-      std::string encoding_;
-      
-      std::vector<tf2::Vector3> quad_;
-      std::vector<tf2::Vector3> transformed_quad_;
-
-      std::string source_frame_;
-      
-      bool transformed;
-    };
-
-    Ui::textured_marker_config ui_{};
-    QWidget* config_widget_;
-
-    std::string topic_;
-
-    rclcpp::Subscription<marti_visualization_msgs::msg::TexturedMarker>::SharedPtr marker_sub_;
-    rclcpp::Subscription<marti_visualization_msgs::msg::TexturedMarkerArray>::SharedPtr marker_arr_sub_;
-
-    bool has_message_;
-
-    std::map<std::string, std::map<int, MarkerData> > markers_;
-
-    void MarkerCallback(marti_visualization_msgs::msg::TexturedMarker::ConstSharedPtr marker);
-
-    void MarkerArrayCallback(
-      marti_visualization_msgs::msg::TexturedMarkerArray::ConstSharedPtr markers);
+    bool transformed;
   };
+
+  Ui::textured_marker_config ui_{};
+  QWidget * config_widget_;
+
+  std::string topic_;
+
+  rclcpp::Subscription<marti_visualization_msgs::msg::TexturedMarker>::SharedPtr marker_sub_;
+  rclcpp::Subscription<marti_visualization_msgs::msg::TexturedMarkerArray>::SharedPtr
+    marker_arr_sub_;
+
+  bool has_message_;
+
+  std::map<std::string, std::map<int, MarkerData>> markers_;
+
+  void MarkerCallback(marti_visualization_msgs::msg::TexturedMarker::ConstSharedPtr marker);
+
+  void MarkerArrayCallback(
+    marti_visualization_msgs::msg::TexturedMarkerArray::ConstSharedPtr markers);
+};
 }
 
 #endif  // MAPVIZ_PLUGINS_TEXTURED_MARKER_PLUGIN_H_
