@@ -34,9 +34,9 @@
 
 #include <QFontDialog>
 
-#include <string>
-
 #include <pluginlib/class_list_macros.hpp>
+
+#include <string>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::StringPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
