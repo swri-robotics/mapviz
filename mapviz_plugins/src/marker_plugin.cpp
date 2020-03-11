@@ -692,7 +692,8 @@ namespace mapviz_plugins
 
   void MarkerPlugin::timerEvent(QTimerEvent *event)
   {
-    bool new_connected = (marker_sub_->get_publisher_count() > 0);
+    bool new_connected = (marker_sub_ && marker_sub_->get_publisher_count() > 0) ||
+        (marker_array_sub_ && marker_array_sub_->get_publisher_count() > 0);
     if (connected_ && !new_connected)
     {
       subscribe();

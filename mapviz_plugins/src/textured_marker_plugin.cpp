@@ -56,9 +56,9 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TexturedMarkerPlugin, mapviz::MapvizPlugi
 namespace mapviz_plugins
 {
   TexturedMarkerPlugin::TexturedMarkerPlugin() :
+    alphaVal_(1.0f), // Initialize the alpha value to default
     config_widget_(new QWidget()),
-    is_marker_array_(false),
-    alphaVal_(1.0f) // Initialize the alpha value to default
+    has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -79,31 +79,12 @@ namespace mapviz_plugins
 
     // By using a signal/slot connection, we ensure that we only generate GL textures on the
     // main thread in case a non-main thread handles the ROS callbacks.
-    // qRegisterMetaType<marti_visualization_msgs::TexturedMarkerConstPtr>("TexturedMarkerConstPtr");
-    // qRegisterMetaType<marti_visualization_msgs::TexturedMarkerArrayConstPtr>("TexturedMarkerArrayConstPtr");
-    qRegisterMetaType<marti_visualization_msgs::msg::TexturedMarker::SharedPtr>("TexturedMarkerConstPtr");
-    qRegisterMetaType<marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr>("TexturedMarkerArrayConstPtr");
+    qRegisterMetaType<marti_visualization_msgs::msg::TexturedMarker>("TexturedMarker");
 
-    // QObject::connect(this, 
-    //                  SIGNAL(MarkerReceived(const marti_visualization_msgs::TexturedMarkerConstPtr)),
-    //                  this,
-    //                  SLOT(ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr)));
-    // QObject::connect(this,
-    //                  SIGNAL(MarkersReceived(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)),
-    //                  this,
-    //                  SLOT(ProcessMarkers(const marti_visualization_msgs::TexturedMarkerArrayConstPtr)));
     QObject::connect(this,
-                      SIGNAL(MarkerReceived(const marti_visualization_msgs::msg::TexturedMarker::SharedPtr)),
+                      SIGNAL(MarkerReceived(marti_visualization_msgs::msg::TexturedMarker)),
                       this,
-                      SLOT(PROCESSMARKER(const marti_visualization_msgs::msg::TexturedMarker::SharedPtr)));
-    QObject::connect(this,
-                      SIGNAL(MarkersReceived(const marti_visualization_msgs::TexturedMarkerArray::SharedPtr)),
-                      this,
-                      SLOT(ProcessMarkers(const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr)));
-  }
-
-  TexturedMarkerPlugin::~TexturedMarkerPlugin()
-  {
+                      SLOT(ProcessMarker(marti_visualization_msgs::msg::TexturedMarker)));
   }
 
   void TexturedMarkerPlugin::ClearHistory()
@@ -149,11 +130,6 @@ namespace mapviz_plugins
     {
       ui_.topic->setText(QString::fromStdString(topic));
 
-      if (topic == "marti_visualization_msgs/TexturedMarkerArray")
-      {
-        is_marker_array_ = true;
-      }
-
       TopicEdited();
     }
   }
@@ -168,39 +144,27 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      // marker_sub_.shutdown();
       marker_sub_.reset();
       marker_arr_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
-        if (is_marker_array_)
-        {
-          marker_arr_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarkerArray>(
-            topic_,
-            rclcpp::QoS(1000),
-            std::bind(&TexturedMarkerPlugin::MarkerArrayCallback, this, std::placeholders::_1)
-          );
-        }
-        else
-        {
-          marker_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarker>(
-            topic_,
-            rclcpp::QoS(1000),
-            std::bind(&TexturedMarkerPlugin::MarkerCallback, this, std::placeholders::_1)
-          );
-        }
+        marker_arr_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarkerArray>(
+          topic_,
+          rclcpp::QoS(1000),
+          std::bind(&TexturedMarkerPlugin::MarkerArrayCallback, this, std::placeholders::_1)
+        );
+        marker_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarker>(
+          topic_,
+          rclcpp::QoS(1000),
+          std::bind(&TexturedMarkerPlugin::MarkerCallback, this, std::placeholders::_1)
+        );
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
-
-  // void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::TexturedMarkerConstPtr marker)
-  // {
-  //   ProcessMarker(*marker);
-  // }
 
   void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::TexturedMarker marker)
   {
@@ -287,7 +251,9 @@ namespace mapviz_plugins
       int32_t max_dimension = std::max(marker.image.height, marker.image.width);
       int32_t new_size = 1;
       while (new_size < max_dimension)
+      {
         new_size = new_size << 1;
+      }
       
       if (new_size != markerData.texture_size_ || markerData.encoding_ != marker.image.encoding)
       {
@@ -444,24 +410,20 @@ namespace mapviz_plugins
       markers_[marker.ns].erase(marker.id);
     }
   }
-  
-  void TexturedMarkerPlugin::ProcessMarkers(const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr markers)
+
+  void TexturedMarkerPlugin::MarkerCallback(marti_visualization_msgs::msg::TexturedMarker::ConstSharedPtr marker)
   {
-    for (unsigned int i = 0; i < markers->markers.size(); i++)
+    RCLCPP_INFO(node_->get_logger(), "TexturedMarkerPlugin::MarkerCallback");
+    Q_EMIT MarkerReceived(*marker);
+  }
+
+  void TexturedMarkerPlugin::MarkerArrayCallback(marti_visualization_msgs::msg::TexturedMarkerArray::ConstSharedPtr markers)
+  {
+    RCLCPP_INFO(node_->get_logger(), "TexturedMarkerPlugin::MarkerArrayCallback");
+    for (const auto & marker : markers->markers)
     {
-      ProcessMarker(markers->markers[i]);
+      Q_EMIT MarkerReceived(marker);
     }
-  }
-  
-
-  void TexturedMarkerPlugin::MarkerCallback(const marti_visualization_msgs::msg::TexturedMarker::SharedPtr marker)
-  {
-    Q_EMIT MarkerReceived(marker);
-  }
-
-  void TexturedMarkerPlugin::MarkerArrayCallback(const marti_visualization_msgs::msg::TexturedMarkerArray::SharedPtr markers)
-  {
-    Q_EMIT MarkersReceived(markers);
   }
 
   void TexturedMarkerPlugin::PrintError(const std::string& message)
@@ -573,18 +535,12 @@ namespace mapviz_plugins
       ui_.topic->setText(boost::trim_copy(topic).c_str());
     }
 
-    if (node["is_marker_array"])
-    {
-      is_marker_array_ = node["is_marker_array"].as<bool>();
-    }
-
     TopicEdited();
   }
 
   void TexturedMarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
     emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
-    emitter << YAML::Key << "is_marker_array" << YAML::Value << is_marker_array_;
   }
 }
 

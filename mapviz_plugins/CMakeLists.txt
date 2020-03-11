@@ -20,6 +20,7 @@ find_package(map_msgs REQUIRED)
 find_package(mapviz REQUIRED)
 find_package(marti_common_msgs REQUIRED)
 find_package(marti_nav_msgs REQUIRED)
+find_package(marti_visualization_msgs REQUIRED)
 find_package(move_base_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -169,6 +170,7 @@ ament_target_dependencies(${PROJECT_NAME}
     mapviz
     marti_common_msgs
     marti_nav_msgs
+    marti_visualization_msgs
     move_base_msgs
     nav_msgs
     pluginlib
