@@ -37,6 +37,11 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ Standard Libraries
+#include <string>
+#include <utility>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MarkerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -131,7 +136,7 @@ namespace mapviz_plugins
   {
     processMarker(*marker);
   }
-  
+
   void MarkerPlugin::processMarker(const visualization_msgs::msg::Marker& marker)
   {
     connected_ = true;
@@ -156,8 +161,8 @@ namespace mapviz_plugins
     if (marker.action == visualization_msgs::msg::Marker::ADD)
     {
       MarkerData& markerData = markers_[std::make_pair(marker.ns, marker.id)];
-      markerData.points.clear(); // clear marker points
-      markerData.text.clear(); // clear marker text
+      markerData.points.clear();  // clear marker points
+      markerData.text.clear();  // clear marker text
       markerData.stamp = marker.header.stamp;
       markerData.display_type = marker.type;
       markerData.color = {marker.color.r, marker.color.g, marker.color.b, marker.color.a};
@@ -174,7 +179,7 @@ namespace mapviz_plugins
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Unchecked);
         item->setCheckState(Qt::Checked);
-        //item->setData(Qt::StatusTipRole, layer_string);
+        // item->setData(Qt::StatusTipRole, layer_string);
       }
 
 
@@ -216,9 +221,7 @@ namespace mapviz_plugins
       {
         markerData.expire_time = rclcpp::Time(rclcpp::Time::max().nanoseconds(),
             node_->get_clock()->get_clock_type());
-      }
-      else
-      {
+      } else {
         // Temporarily add 5 seconds to fix some existing markers.
         markerData.expire_time = node_->now() + lifetime + rclcpp::Duration(5, 0);
       }
@@ -235,13 +238,17 @@ namespace mapviz_plugins
           // the arrow and scale its size based on the scale_x value.
           point.point = markerData.local_transform * tf2::Vector3(0.0, 0.0, 0.0);
           point.arrow_point = markerData.local_transform * tf2::Vector3(1.0, 0.0, 0.0);
-        }
-        else
-        {
+        } else {
           // Otherwise the "points" array should have exactly two values, the
           // start and end of the arrow.
-          point.point = markerData.local_transform * tf2::Vector3(marker.points[0].x, marker.points[0].y, marker.points[0].z);
-          point.arrow_point = markerData.local_transform * tf2::Vector3(marker.points[1].x, marker.points[1].y, marker.points[1].z);
+          point.point = markerData.local_transform * tf2::Vector3(
+            marker.points[0].x,
+            marker.points[0].y,
+            marker.points[0].z);
+          point.arrow_point = markerData.local_transform * tf2::Vector3(
+            marker.points[1].x,
+            marker.points[1].y,
+            marker.points[1].z);
         }
 
         markerData.points.push_back(point);
@@ -255,20 +262,16 @@ namespace mapviz_plugins
         }
 
         transformArrow(markerData, transform);
-      }
-      else if (markerData.display_type == visualization_msgs::msg::Marker::CYLINDER ||
-        markerData.display_type == visualization_msgs::msg::Marker::SPHERE ||
-        markerData.display_type == visualization_msgs::msg::Marker::TEXT_VIEW_FACING)
-      {
+      } else if (markerData.display_type == visualization_msgs::msg::Marker::CYLINDER ||
+          markerData.display_type == visualization_msgs::msg::Marker::SPHERE ||
+          markerData.display_type == visualization_msgs::msg::Marker::TEXT_VIEW_FACING) {
         StampedPoint point;
         point.point = tf2::Vector3(0.0, 0.0, 0.0);
         point.transformed_point = transform * (markerData.local_transform * point.point);
         point.color = markerData.color;
         markerData.points.push_back(point);
         markerData.text = marker.text;
-      }
-      else if (markerData.display_type == visualization_msgs::msg::Marker::CUBE)
-      {
+      } else if (markerData.display_type == visualization_msgs::msg::Marker::CUBE) {
         StampedPoint point;
         point.color = markerData.color;
 
@@ -287,14 +290,12 @@ namespace mapviz_plugins
         point.point = tf2::Vector3(marker.scale.x / 2, -marker.scale.y / 2, 0.0);
         point.transformed_point = transform * (markerData.local_transform * point.point);
         markerData.points.push_back(point);
-      }
-      else if (markerData.display_type == visualization_msgs::msg::Marker::LINE_STRIP ||
-        markerData.display_type == visualization_msgs::msg::Marker::LINE_LIST ||
-        markerData.display_type == visualization_msgs::msg::Marker::CUBE_LIST ||
-        markerData.display_type == visualization_msgs::msg::Marker::SPHERE_LIST ||
-        markerData.display_type == visualization_msgs::msg::Marker::POINTS ||
-        markerData.display_type == visualization_msgs::msg::Marker::TRIANGLE_LIST)
-      {
+      } else if (markerData.display_type == visualization_msgs::msg::Marker::LINE_STRIP ||
+          markerData.display_type == visualization_msgs::msg::Marker::LINE_LIST ||
+          markerData.display_type == visualization_msgs::msg::Marker::CUBE_LIST ||
+          markerData.display_type == visualization_msgs::msg::Marker::SPHERE_LIST ||
+          markerData.display_type == visualization_msgs::msg::Marker::POINTS ||
+          markerData.display_type == visualization_msgs::msg::Marker::TRIANGLE_LIST) {
         markerData.points.reserve(marker.points.size());
         StampedPoint point;
         for (unsigned int i = 0; i < marker.points.size(); i++)
@@ -304,27 +305,26 @@ namespace mapviz_plugins
 
           if (i < marker.colors.size())
           {
-            point.color = {marker.colors[i].r, marker.colors[i].g, marker.colors[i].b, marker.colors[i].a};
-          }
-          else
-          {
+            point.color = {
+              marker.colors[i].r,
+              marker.colors[i].g,
+              marker.colors[i].b,
+              marker.colors[i].a};
+          } else {
             point.color = markerData.color;
           }
 
           markerData.points.push_back(point);
         }
+      } else {
+        RCLCPP_WARN_ONCE(
+          node_->get_logger(),
+          "Unsupported marker type: %d",
+          markerData.display_type);
       }
-      else
-      {
-        RCLCPP_WARN_ONCE(node_->get_logger(), "Unsupported marker type: %d", markerData.display_type);
-      }
-    }
-    else if (marker.action == visualization_msgs::msg::Marker::DELETE)
-    {
+    } else if (marker.action == visualization_msgs::msg::Marker::DELETE) {
       markers_.erase(std::make_pair(marker.ns, marker.id));
-    }
-    else if (marker.action == visualization_msgs::msg::Marker::DELETEALL)
-    {
+    } else if (marker.action == visualization_msgs::msg::Marker::DELETEALL) {
       markers_.clear();
     }
   }
@@ -355,9 +355,7 @@ namespace mapviz_plugins
       point.transformed_arrow_point = point.transformed_point +
           arrow_tf * point.arrow_point * markerData.scale_x;
       arrowOffset = tf2::Vector3(0.25, 0.0, 0.0);
-    }
-    else
-    {
+    } else {
       // If the markerData has two points, that means that the start and end points
       // of the arrow were explicitly specified in the original message, so the
       // length and angle are determined by them.
@@ -426,9 +424,7 @@ namespace mapviz_plugins
       if (ui_.nsList->item(i)->checkState() == Qt::Checked)
       {
         marker_visible_[ui_.nsList->item(i)->text().toStdString()] = true;
-      }
-      else
-      {
+      } else {
         marker_visible_[ui_.nsList->item(i)->text().toStdString()] = false;
       }
     }
@@ -463,8 +459,7 @@ namespace mapviz_plugins
         if (marker.points.size() == 1) {
           // If the marker only has one point, use scale_y as the arrow width.
           glLineWidth(marker.scale_y);
-        }
-        else {
+        } else {
           // If the marker has both start and end points explicitly specified, use
           // scale_x as the shaft diameter.
           glLineWidth(marker.scale_x);
@@ -495,8 +490,7 @@ namespace mapviz_plugins
         }
 
         glEnd();
-      }
-      else if (marker.display_type == visualization_msgs::msg::Marker::LINE_STRIP) {
+      } else if (marker.display_type == visualization_msgs::msg::Marker::LINE_STRIP) {
         glLineWidth(marker.scale_x);
         glBegin(GL_LINE_STRIP);
 
@@ -509,8 +503,7 @@ namespace mapviz_plugins
         }
 
         glEnd();
-      }
-      else if (marker.display_type == visualization_msgs::msg::Marker::LINE_LIST) {
+      } else if (marker.display_type == visualization_msgs::msg::Marker::LINE_LIST) {
         glLineWidth(marker.scale_x);
         glBegin(GL_LINES);
 
@@ -523,8 +516,7 @@ namespace mapviz_plugins
         }
 
         glEnd();
-      }
-      else if (marker.display_type == visualization_msgs::msg::Marker::POINTS) {
+      } else if (marker.display_type == visualization_msgs::msg::Marker::POINTS) {
         glPointSize(marker.scale_x);
         glBegin(GL_POINTS);
 
@@ -537,8 +529,7 @@ namespace mapviz_plugins
         }
 
         glEnd();
-      }
-      else if (marker.display_type == visualization_msgs::msg::Marker::TRIANGLE_LIST) {
+      } else if (marker.display_type == visualization_msgs::msg::Marker::TRIANGLE_LIST) {
         glBegin(GL_TRIANGLES);
 
         for (const auto &point : marker.points) {
@@ -550,10 +541,9 @@ namespace mapviz_plugins
         }
 
         glEnd();
-      }
-      else if (marker.display_type == visualization_msgs::msg::Marker::CYLINDER ||
-        marker.display_type == visualization_msgs::msg::Marker::SPHERE ||
-        marker.display_type == visualization_msgs::msg::Marker::SPHERE_LIST) {
+      } else if (marker.display_type == visualization_msgs::msg::Marker::CYLINDER ||
+          marker.display_type == visualization_msgs::msg::Marker::SPHERE ||
+          marker.display_type == visualization_msgs::msg::Marker::SPHERE_LIST) {
         for (const auto &point : marker.points) {
           glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
@@ -566,7 +556,8 @@ namespace mapviz_plugins
           glVertex2d(marker_x, marker_y);
 
           for (int32_t i = 0; i <= 360; i += 10) {
-            double radians = static_cast<double>(i) * static_cast<double>(swri_math_util::_deg_2_rad);
+            double radians =
+              static_cast<double>(i) * static_cast<double>(swri_math_util::_deg_2_rad);
             // Spheres may be specified w/ only one scale value
             if (marker.scale_y == 0.0) {
               marker.scale_y = marker.scale_x;
@@ -578,9 +569,8 @@ namespace mapviz_plugins
 
           glEnd();
         }
-      }
-      else if (marker.display_type == visualization_msgs::msg::Marker::CUBE ||
-        marker.display_type == visualization_msgs::msg::Marker::CUBE_LIST) {
+      } else if (marker.display_type == visualization_msgs::msg::Marker::CUBE ||
+          marker.display_type == visualization_msgs::msg::Marker::CUBE_LIST) {
         glBegin(GL_TRIANGLE_FAN);
         for (const auto &point : marker.points) {
           glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
@@ -633,7 +623,7 @@ namespace mapviz_plugins
 
       auto text = QString::fromStdString(marker.text);
       // Get bounding rectangle
-      QRectF rect(point, QSizeF(10,10));
+      QRectF rect(point, QSizeF(10, 10));
       rect = painter->boundingRect(rect, Qt::AlignLeft | Qt::AlignHCenter, text);
       painter->drawText(rect, text);
 
@@ -659,17 +649,13 @@ namespace mapviz_plugins
           // Points for the ARROW marker type are stored a bit differently
           // than other types, so they have their own special transform case.
           transformArrow(marker, transform);
-        }
-        else
-        {
+        } else {
           for (auto &point : marker.points)
           {
             point.transformed_point = transform * (marker.local_transform * point.point);
           }
         }
-      }
-      else
-      {
+      } else {
         marker.transformed = false;
       }
     }
@@ -688,7 +674,10 @@ namespace mapviz_plugins
 
   void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    emitter << YAML::Key << "topic" << YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
+    emitter << YAML::Key
+      << "topic"
+      << YAML::Value
+      << boost::trim_copy(ui_.topic->text().toStdString());
   }
 
   void MarkerPlugin::timerEvent(QTimerEvent *event)
@@ -701,5 +690,5 @@ namespace mapviz_plugins
     }
     connected_ = new_connected;
   }
-}
+}   // namespace mapviz_plugins
 
