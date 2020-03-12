@@ -30,10 +30,6 @@
 
 #include <mapviz_plugins/pose_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -50,6 +46,13 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PosePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -136,7 +139,7 @@ namespace mapviz_plugins
   }
 
   void PosePlugin::PoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr pose)
-  {  
+  {
     if (!has_message_)
     {
       initialized_ = true;
@@ -222,14 +225,10 @@ namespace mapviz_plugins
       {
         ui_.drawstyle->setCurrentIndex(0);
         SetDrawStyle( LINES );
-      }
-      else if (draw_style == "points")
-      {
+      } else if (draw_style == "points") {
         ui_.drawstyle->setCurrentIndex(1);
         SetDrawStyle( POINTS );
-      }
-      else if (draw_style == "arrows")
-      {
+      } else if (draw_style == "arrows") {
         ui_.drawstyle->setCurrentIndex(2);
         SetDrawStyle( ARROWS );
       }
@@ -292,8 +291,11 @@ namespace mapviz_plugins
     bool show_laps = ui_.show_laps->isChecked();
     emitter << YAML::Key << "show_laps" << YAML::Value << show_laps;
 
-    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
+    emitter << YAML::Key
+      << "static_arrow_sizes"
+      << YAML::Value
+      << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
   }
-}
+}   // namespace mapviz_plugins
