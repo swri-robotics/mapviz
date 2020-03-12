@@ -29,11 +29,6 @@
 
 #include <mapviz_plugins/textured_marker_plugin.h>
 
-// C++ standard libraries
-#include <cmath>
-#include <cstdio>
-#include <vector>
-
 // Boost libraries
 #include <boost/algorithm/string.hpp>
 
@@ -49,6 +44,15 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <map>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TexturedMarkerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -91,7 +95,8 @@ void TexturedMarkerPlugin::ClearHistory()
   markers_.clear();
 }
 
-// TODO could instead use the value() function on alphaSlide when needed, assuming value is always good
+// TODO(P. J. Reed) could instead use the value() function on alphaSlide when needed,
+//   assuming value is always good
 // Modify min and max values by adjusting textured_marker_config.ui
 void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
 {
@@ -106,7 +111,8 @@ void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
     alphaVal_ = 1.0f;
     PrintWarning("Invalid alpha input.");
   } else {
-    alphaVal_ = (static_cast<float>(alpha) / max);   // Ex. convert int in range 0-100 to float in range 0-1
+    // Ex. convert int in range 0-100 to float in range 0-1
+    alphaVal_ = (static_cast<float>(alpha) / max);
     RCLCPP_INFO(node_->get_logger(), "Adjusting alpha value to: %f", alphaVal_);
   }
 }
@@ -280,7 +286,9 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
       size_t expected = marker.image.height * marker.image.width * bpp;
       if (!markerData.texture_.empty() && marker.image.data.size() < expected) {
         RCLCPP_ERROR(
-          node_->get_logger(), "TexturedMarker image had expected data size %i but only got %i. Dropping message.", expected,
+          node_->get_logger(),
+          "TexturedMarker image had expected data size %i but only got %i. Dropping message.",
+          expected,
           marker.image.data.size());
         return;
       }
