@@ -30,11 +30,6 @@
 #include <mapviz_plugins/attitude_indicator_plugin.h>
 #include <GL/glut.h>
 
-// C++ standard libraries
-#include <algorithm>
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDebug>
 #include <QDialog>
@@ -48,6 +43,12 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <vector>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPlugin)
 
@@ -126,7 +127,8 @@ namespace mapviz_plugins
     }
   }
 
-  void AttitudeIndicatorPlugin::AttitudeCallbackOdom(nav_msgs::msg::Odometry::ConstSharedPtr odometry)
+  void AttitudeIndicatorPlugin::AttitudeCallbackOdom(
+    nav_msgs::msg::Odometry::ConstSharedPtr odometry)
   {
     applyAttitudeOrientation(odometry->pose.pose.orientation);
   }
@@ -141,7 +143,8 @@ namespace mapviz_plugins
     applyAttitudeOrientation(pose->orientation);
   }
 
-  void AttitudeIndicatorPlugin::applyAttitudeOrientation(const geometry_msgs::msg::Quaternion &orientation)
+  void AttitudeIndicatorPlugin::applyAttitudeOrientation(
+    const geometry_msgs::msg::Quaternion &orientation)
   {
     tf2::Quaternion attitude_orientation(
       orientation.x,
@@ -239,9 +242,9 @@ namespace mapviz_plugins
 
     glPushMatrix();
     glColor3f(0.62745098f, 0.321568627f, 0.176470588f);
-    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);//x
-    glRotated(roll_, 0.0, 1.0, 0.0);//y
-    glRotated(yaw_, 0.0, 0.0, 1.0);//z
+    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);  // x
+    glRotated(roll_, 0.0, 1.0, 0.0);  // y
+    glRotated(yaw_, 0.0, 0.0, 1.0);   // z
     glClipPlane(GL_CLIP_PLANE0, eqn);
     glEnable(GL_CLIP_PLANE0);
     glutSolidSphere(.8, 20, 16);
@@ -385,4 +388,4 @@ namespace mapviz_plugins
     emitter << YAML::Key << "width" << YAML::Value << position.width();
     emitter << YAML::Key << "height" << YAML::Value << position.height();
   }
-}
+}   // namespace mapviz_plugins
