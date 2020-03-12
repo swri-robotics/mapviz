@@ -113,7 +113,7 @@ set(SRC_FILES
     src/point_click_publisher_plugin.cpp
     src/pointcloud2_plugin.cpp
     src/point_drawing_plugin.cpp
-    # src/pose_plugin.cpp
+    src/pose_plugin.cpp
     src/robot_image_plugin.cpp
     # src/route_plugin.cpp
     src/string_plugin.cpp
@@ -143,7 +143,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/point_click_publisher_plugin.h
     include/${PROJECT_NAME}/pointcloud2_plugin.h
     include/${PROJECT_NAME}/point_drawing_plugin.h
-    # include/${PROJECT_NAME}/pose_plugin.h
+    include/${PROJECT_NAME}/pose_plugin.h
     include/${PROJECT_NAME}/robot_image_plugin.h
     # include/${PROJECT_NAME}/route_plugin.h
     include/${PROJECT_NAME}/string_plugin.h
