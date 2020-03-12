@@ -42,17 +42,17 @@
 #include <opencv2/core/core.hpp>
 
 // ROS libraries
-#include <ros/master.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <swri_image_util/geometry_util.h>
 #include <swri_route_util/util.h>
 #include <swri_transform_util/transform_util.h>
 #include <mapviz/select_topic_dialog.h>
 
-#include <marti_nav_msgs/Route.h>
+#include <marti_nav_msgs/msg/route.hpp>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RoutePlugin, mapviz::MapvizPlugin)
 
@@ -138,29 +138,29 @@ namespace mapviz_plugins
 
   void RoutePlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic =
-        mapviz::SelectTopicDialog::selectTopic("marti_nav_msgs/Route");
+    std::string topic =
+        mapviz::SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/Route");
 
-    if (topic.name.empty())
+    if (topic.empty())
     {
       return;
     }
 
-    ui_.topic->setText(QString::fromStdString(topic.name));
+    ui_.topic->setText(QString::fromStdString(topic));
     TopicEdited();
   }
 
   void RoutePlugin::SelectPositionTopic()
   {
-    ros::master::TopicInfo topic =
-        mapviz::SelectTopicDialog::selectTopic("marti_nav_msgs/RoutePosition");
+    std::string topic =
+        mapviz::SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/RoutePosition");
 
-    if (topic.name.empty())
+    if (topic.empty())
     {
       return;
     }
 
-    ui_.positiontopic->setText(QString::fromStdString(topic.name));
+    ui_.positiontopic->setText(QString::fromStdString(topic));
     PositionTopicEdited();
   }
 
@@ -171,15 +171,20 @@ namespace mapviz_plugins
     {
       src_route_ = sru::Route();
 
-      route_sub_.shutdown();
+      // route_sub_.shutdown();
+      route_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
         route_sub_ =
-            node_.subscribe(topic_, 1, &RoutePlugin::RouteCallback, this);
+            node_->create_subscription<marti_nav_msgs::msg::Route>(
+              topic_,
+              rclcpp::QoS(1),
+              std::bind(&RoutePlugin::RouteCallback, this, std::placeholders::_1)
+            );
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
@@ -190,26 +195,31 @@ namespace mapviz_plugins
     if (topic != position_topic_)
     {
       src_route_position_.reset();
-      position_sub_.shutdown();
+      position_sub_.reset();
 
       if (!topic.empty())
       {
         position_topic_ = topic;
-        position_sub_ = node_.subscribe(position_topic_, 1,
-                                        &RoutePlugin::PositionCallback, this);
+        // position_sub_ = node_.subscribe(position_topic_, 1,
+        //                                 &RoutePlugin::PositionCallback, this);
+        position_sub_ = node_->create_subscription<marti_nav_msgs::msg::RoutePosition>(
+          topic_,
+          rclcpp::QoS(1),
+          std::bind(&RoutePlugin::PositionCallback, this, std::placeholders::_1)
+        );
 
-        ROS_INFO("Subscribing to %s", position_topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", position_topic_.c_str());
       }
     }
   }
 
   void RoutePlugin::PositionCallback(
-      const marti_nav_msgs::RoutePositionConstPtr& msg)
+      const marti_nav_msgs::msg::RoutePosition::SharedPtr msg)
   {
     src_route_position_ = msg;
   }
 
-  void RoutePlugin::RouteCallback(const marti_nav_msgs::RouteConstPtr& msg)
+  void RoutePlugin::RouteCallback(const marti_nav_msgs::msg::Route::SharedPtr msg)
   {
     src_route_ = sru::Route(*msg);
   }
@@ -261,7 +271,7 @@ namespace mapviz_plugins
     }
 
     stu::Transform transform;
-    if (!GetTransform(route.header.frame_id, ros::Time(), transform))
+    if (!GetTransform(route.header.frame_id, rclcpp::Time(), transform))
     {
       PrintError("Failed to transform route");
       return;
@@ -343,11 +353,11 @@ namespace mapviz_plugins
   {
     const double arrow_size = ui_.iconsize->value();
 
-    tf::Vector3 v1(arrow_size, 0.0, 0.0);
-    tf::Vector3 v2(0.0, arrow_size / 2.0, 0.0);
-    tf::Vector3 v3(0.0, -arrow_size / 2.0, 0.0);
+    tf2::Vector3 v1(arrow_size, 0.0, 0.0);
+    tf2::Vector3 v2(0.0, arrow_size / 2.0, 0.0);
+    tf2::Vector3 v3(0.0, -arrow_size / 2.0, 0.0);
 
-    tf::Transform point_g(point.orientation(), point.position());
+    tf2::Transform point_g(point.orientation(), point.position());
 
     v1 = point_g * v1;
     v2 = point_g * v2;
@@ -367,33 +377,30 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string route_topic;
-      node["topic"] >> route_topic;
+      std::string route_topic = node["topic"].as<std::string>();
       ui_.topic->setText(route_topic.c_str());
     }
     if (node["color"])
     {
-      std::string color;
-      node["color"] >> color;
+      std::string color = node["color"].as<std::string>();
       ui_.color->setColor(QColor(color.c_str()));
     }
     if (node["postopic"])
     {
-      std::string pos_topic;
-      node["postopic"] >> pos_topic;
+      std::string pos_topic = node["postopic"].as<std::string>();
       ui_.positiontopic->setText(pos_topic.c_str());
     }
     if (node["poscolor"])
     {
-      std::string poscolor;
-      node["poscolor"] >> poscolor;
+      std::string poscolor = node["poscolor"].as<std::string>();
       ui_.positioncolor->setColor(QColor(poscolor.c_str()));
     }
 
     if (node["draw_style"])
     {
-      std::string draw_style;
-      node["draw_style"] >> draw_style;
+      // std::string draw_style;
+      // node["draw_style"] >> draw_style;
+      std::string draw_style = node["draw_style"].as<std::string>();
 
       if (draw_style == "lines")
       {

@@ -43,9 +43,9 @@
 #include <QWidget>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
-#include <marti_nav_msgs/RoutePosition.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
+#include <marti_nav_msgs/msg/route_position.hpp>
 #include <mapviz/map_canvas.h>
 #include <swri_route_util/route.h>
 
@@ -107,14 +107,15 @@ namespace mapviz_plugins
     std::string topic_;
     std::string position_topic_;
 
-    ros::Subscriber route_sub_;
-    ros::Subscriber position_sub_;
+    rclcpp::Subscription<marti_nav_msgs::msg::Route>::SharedPtr route_sub_;
+    rclcpp::Subscription<marti_nav_msgs::msg::RoutePosition>::SharedPtr position_sub_;
 
     swri_route_util::Route src_route_;
-    marti_nav_msgs::RoutePositionConstPtr src_route_position_;
+    // marti_nav_msgs::RoutePositionConstPtr src_route_position_;
+    marti_nav_msgs::msg::RoutePosition::SharedPtr src_route_position_;
     
-    void RouteCallback(const marti_nav_msgs::RouteConstPtr &msg);
-    void PositionCallback(const marti_nav_msgs::RoutePositionConstPtr &msg);
+    void RouteCallback(const marti_nav_msgs::msg::Route::SharedPtr msg);
+    void PositionCallback(const marti_nav_msgs::msg::RoutePosition::SharedPtr msg);
   };
 }
 
