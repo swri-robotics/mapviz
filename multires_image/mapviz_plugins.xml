@@ -1,4 +1,4 @@
-<library path="lib/libmultires_image_plugin">
+<library path="multires_image_plugin">
   <class name="mapviz_plugins/multires_image" type="mapviz_plugins::MultiresImagePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Multires image mapviz plugin.</description>
   </class>

@@ -118,11 +118,11 @@ namespace multires_image
 
   void TileCache::Precache(double x, double y)
   {
-    tf::Point point(x, y, 0);
+    tf2::Vector3 point(x, y, 0);
     Precache(point);
   }
 
-  void TileCache::Precache(const tf::Point& position)
+  void TileCache::Precache(const tf2::Vector3& position)
   {
     m_currentPosition = position;
 
@@ -146,7 +146,7 @@ namespace multires_image
     }
   }
 
-  void TileCache::PrecacheLayer(int layerNum, const tf::Point& position, int size)
+  void TileCache::PrecacheLayer(int layerNum, const tf2::Vector3& position, int size)
   {
     TileSetLayer* layer = m_tileSet->GetLayer(layerNum);
 

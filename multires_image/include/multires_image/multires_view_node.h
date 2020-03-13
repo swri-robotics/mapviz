@@ -43,7 +43,7 @@
 #include <QShowEvent>
 
 // ROS libraries
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <multires_image/QGLMap.h>
 #include <multires_image/tile_set.h>
@@ -70,7 +70,7 @@ namespace multires_image
     int argc_;
     char** argv_;
 
-    ros::NodeHandle* node_;
+    rclcpp::Node::SharedPtr node_;
     boost::thread*  thread_;
 
     bool initialized_;
