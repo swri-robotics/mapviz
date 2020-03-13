@@ -104,16 +104,16 @@ namespace multires_image
 
         double x, y;
         m_geo.GetCoordinate(left, top, x, y);
-        tf::Point top_left(x, y, 0);
+        tf2::Vector3 top_left(x, y, 0);
 
         m_geo.GetCoordinate(right, top, x, y);
-        tf::Point top_right(x, y, 0);
+        tf2::Vector3 top_right(x, y, 0);
 
         m_geo.GetCoordinate(left, bottom, x, y);
-        tf::Point bottom_left(x, y, 0);
+        tf2::Vector3 bottom_left(x, y, 0);
 
         m_geo.GetCoordinate(right, bottom, x, y);
-        tf::Point bottom_right(x, y, 0);
+        tf2::Vector3 bottom_right(x, y, 0);
 
         m_tiles[c].push_back(new Tile(
           m_path + "/tile" + rowString + "x" +  columnString + "." + extension,
@@ -137,11 +137,11 @@ namespace multires_image
 
   void TileSetLayer::GetTileIndex(double x, double y, int& row, int& column) const
   {
-    tf::Point position(x, y, 0);
+    tf2::Vector3 position(x, y, 0);
     GetTileIndex(position, row, column);
   }
 
-  void TileSetLayer::GetTileIndex(const tf::Point& position, int& row, int& column) const
+  void TileSetLayer::GetTileIndex(const tf2::Vector3& position, int& row, int& column) const
   {
     int x, y;
     m_geo.GetPixel(position.x(), position.y(), x, y);
@@ -151,8 +151,8 @@ namespace multires_image
   }
 
   void TileSetLayer::GetTileRange(
-      const tf::Point& top_left,
-      const tf::Point& bottom_right,
+      const tf2::Vector3& top_left,
+      const tf2::Vector3& bottom_right,
       int& startRow, int& startColumn,
       int& endRow, int& endColumn) const
   {

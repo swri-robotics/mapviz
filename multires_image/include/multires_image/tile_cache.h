@@ -42,7 +42,7 @@
 #include <QMutex>
 #include <QGLWidget>
 
-#include <tf/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
 
 #include <multires_image/tile_set.h>
 #include <multires_image/tile.h>

@@ -20,7 +20,7 @@ find_package(swri_transform_util  REQUIRED)
 find_package(swri_math_util REQUIRED)
 
 ### Boost ###
-find_package(Boost REQUIRED thread)
+find_package(Boost REQUIRED filesystem thread)
 
 ### OpenGL ###
 if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
@@ -59,7 +59,7 @@ add_library(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
-  ${GLU_LIBRARY}
+  OpenGL::GL
   Qt5::Core
   Qt5::Gui
   Qt5::OpenGL
@@ -92,13 +92,27 @@ add_library(multires_widget
 )
 target_link_libraries(multires_widget
   ${PROJECT_NAME}
+  OpenGL::GL
+  Qt5::Core
+  Qt5::Gui
+  Qt5::OpenGL
+  Qt5::Widgets
 )
 
 # Build nodes
 set(VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
 qt5_wrap_cpp(VIEW_NODE_SRC_FILES include/${PROJECT_NAME}/multires_view_node.h)
 add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
-target_link_libraries(multires_view_node multires_widget)
+target_link_libraries(multires_view_node
+  multires_widget
+  Boost::filesystem
+  Boost::thread
+)
+ament_target_dependencies(multires_view_node
+  ament_cmake
+  rclcpp
+  swri_transform_util
+)
 
 # Build mapviz plugin
 set(MAPVIZ_SRC_FILES 

@@ -210,5 +210,5 @@ ament_export_dependencies(${RUNTIME_DEPS}
   Qt5Widgets
 )
 ament_export_include_directories(include)
-ament_export_libraries(rqt_${PROJECT_NAME})
+ament_export_libraries(rqt_${PROJECT_NAME} ${YamlCpp_LIBRARIES})
 ament_package()

@@ -45,8 +45,8 @@ namespace multires_image
 {
   Tile::Tile(
          const std::string& path, int column, int row, int level,
-         const tf::Point& topLeft, const tf::Point& topRight,
-         const tf::Point& bottomLeft, const tf::Point& bottomRight) :
+         const tf2::Vector3& topLeft, const tf2::Vector3& topRight,
+         const tf2::Vector3& bottomLeft, const tf2::Vector3& bottomRight) :
     m_path(path),
     m_column(column),
     m_row(row),
@@ -65,10 +65,6 @@ namespace multires_image
     m_textureId(0),
     m_tileId(1000000 * level + 1000 * column + row),
     m_memorySize(0)
-  {
-  }
-
-  Tile::~Tile(void)
   {
   }
 

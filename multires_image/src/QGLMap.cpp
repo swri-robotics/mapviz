@@ -52,10 +52,6 @@ QGLMap::QGLMap(QWidget *parent) :
   ui.setupUi(this);
 }
 
-QGLMap::~QGLMap()
-{
-}
-
 void QGLMap::Exit()
 {
   if (m_tileView != NULL)
@@ -96,8 +92,8 @@ void QGLMap::SetTiles(TileSet* tiles)
   tiles->GeoReference().GetCoordinate(0, 0, left, top);
   tiles->GeoReference().GetCoordinate(tiles->GeoReference().Width(), tiles->GeoReference().Height(), right, bottom);
 
-  m_scene_top_left = tf::Point(left, top, 0);
-  m_scene_bottom_right = tf::Point(right, bottom, 0);
+  m_scene_top_left = tf2::Vector3(left, top, 0);
+  m_scene_bottom_right = tf2::Vector3(right, bottom, 0);
   m_scene_center = (m_scene_top_left + m_scene_bottom_right) / 2.0;
 
   m_view_center = m_scene_center;

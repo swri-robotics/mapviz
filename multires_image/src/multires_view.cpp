@@ -33,7 +33,6 @@
 #include <cmath>
 #include <iostream>
 
-#include <ros/ros.h>
 #include <swri_transform_util/transform_util.h>
 
 namespace mapviz_plugins
@@ -75,10 +74,6 @@ namespace mapviz_plugins
     min_scale_ = scale_x;
     if (scale_y > scale_x)
       min_scale_ = scale_y;
-  }
-
-  MultiresView::~MultiresView(void)
-  {
   }
 
   void MultiresView::SetView(double x, double y, double radius, double scale)
