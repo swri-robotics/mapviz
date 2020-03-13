@@ -29,10 +29,6 @@
 
 #include <mapviz_plugins/route_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -53,6 +49,12 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <vector>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RoutePlugin, mapviz::MapvizPlugin)
 
@@ -110,9 +112,7 @@ namespace mapviz_plugins
         pen.setCapStyle(Qt::RoundCap);
         painter.setPen(pen);
         painter.drawPoint(8, 8);
-      }
-      else if (draw_style_ == LINES)
-      {
+      } else if (draw_style_ == LINES) {
         pen.setWidth(3);
         pen.setCapStyle(Qt::FlatCap);
         painter.setPen(pen);
@@ -128,9 +128,7 @@ namespace mapviz_plugins
     if (style == "lines")
     {
       draw_style_ = LINES;
-    }
-    else if (style == "points")
-    {
+    } else if (style == "points") {
       draw_style_ = POINTS;
     }
     DrawIcon();
@@ -290,9 +288,7 @@ namespace mapviz_plugins
       if (sru::interpolateRoutePosition(point, route, *src_route_position_, true))
       {
         DrawRoutePoint(point);
-      }
-      else
-      {
+      } else {
         PrintError("Failed to find route position in route.");
         ok = false;
       }
@@ -334,9 +330,7 @@ namespace mapviz_plugins
     {
       glLineWidth(3);
       glBegin(GL_LINE_STRIP);
-    }
-    else
-    {
+    } else {
       glPointSize(2);
       glBegin(GL_POINTS);
     }
@@ -406,9 +400,7 @@ namespace mapviz_plugins
       {
         draw_style_ = LINES;
         ui_.drawstyle->setCurrentIndex(0);
-      }
-      else if (draw_style == "points")
-      {
+      } else if (draw_style == "points") {
         draw_style_ = POINTS;
         ui_.drawstyle->setCurrentIndex(1);
       }
@@ -435,4 +427,4 @@ namespace mapviz_plugins
     std::string draw_style = ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
   }
-}
+}   // namespace mapviz_plugins
