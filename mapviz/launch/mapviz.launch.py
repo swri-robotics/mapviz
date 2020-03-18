@@ -15,7 +15,7 @@ def generate_launch_description():
             node_executable="initialize_origin.py",
             node_name="initialize_origin",
             parameters=[
-                {"name": "local_xy_frame", "value": "/map"},
+                {"name": "local_xy_frame", "value": "map"},
                 {"name": "local_xy_origin", "value": "swri"},
                 {"name": "local_xy_origins", "value": [
                     {"name": "swri",

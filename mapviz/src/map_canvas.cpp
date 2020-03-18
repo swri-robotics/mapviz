@@ -106,9 +106,9 @@ MapCanvas::~MapCanvas()
   }
 }
 
-void MapCanvas::InitializeTf(std::shared_ptr<tf2_ros::TransformListener> tf)
+void MapCanvas::InitializeTf(std::shared_ptr<tf2_ros::Buffer> tf)
 {
-  tf_ = tf;
+  tf_buf_ = tf;
 }
 
 void MapCanvas::InitializePixelBuffers()
@@ -477,7 +477,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
   view_center_x_ = -offset_x_ - drag_x_;
   view_center_y_ = -offset_y_ - drag_y_;
 
-  if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>") {
+  if (!tf_buf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>") {
     qtransform_ = qtransform_.scale(1, -1);
     painter->setWorldTransform(qtransform_, false);
 

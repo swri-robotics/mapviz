@@ -66,7 +66,7 @@ public:
   explicit MapCanvas(QWidget *parent = 0);
   ~MapCanvas();
 
-  void InitializeTf(std::shared_ptr<tf2_ros::TransformListener> tf);
+  void InitializeTf(std::shared_ptr<tf2_ros::Buffer> tf);
 
   void AddPlugin(MapvizPluginPtr plugin, int order);
   void RemovePlugin(MapvizPluginPtr plugin);
@@ -247,8 +247,6 @@ protected:
   std::string target_frame_;
 
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
-  std::shared_ptr<tf2_ros::TransformListener> tf_;
-  // tf2::StampedTransform transform_;
   tf2::Stamped<tf2::Transform> transform_;
   QTransform qtransform_;
   std::list<MapvizPluginPtr> plugins_;

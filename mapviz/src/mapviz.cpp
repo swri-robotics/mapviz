@@ -283,7 +283,7 @@ void Mapviz::Initialize()
     tf_manager_ = std::make_shared<swri_transform_util::TransformManager>(node_);
     try
     {
-      tf_manager_->Initialize();
+      tf_manager_->Initialize(tf_buf_);
     }
     catch (...)
     {
@@ -298,7 +298,7 @@ void Mapviz::Initialize()
       RCLCPP_INFO(node_->get_logger(), "Found mapviz plugin: %s", plugin.c_str());
     }
 
-    canvas_->InitializeTf(tf_);
+    canvas_->InitializeTf(tf_buf_);
     canvas_->SetFixedFrame(ui_.fixedframe->currentText().toStdString());
     canvas_->SetTargetFrame(ui_.targetframe->currentText().toStdString());
 

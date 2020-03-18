@@ -265,7 +265,7 @@ namespace mapviz_plugins
     sru::Route route = src_route_;
     if (route.header.frame_id.empty())
     {
-      route.header.frame_id = "/wgs84";
+      route.header.frame_id = "wgs84";
     }
 
     stu::Transform transform;
