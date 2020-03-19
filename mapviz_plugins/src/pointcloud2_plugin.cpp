@@ -453,6 +453,7 @@ namespace mapviz_plugins
     {
       scan.transformed = false;
       PrintError("No transform between " + scan.source_frame + " and " + target_frame_);
+      return;
     }
 
     int32_t xi = findChannelIndex(msg, "x");
