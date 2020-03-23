@@ -36,6 +36,9 @@ int main(int argc, char **argv)
   // Initialize ROS; probably need a spinner somewhere?
   rclcpp::init(argc, argv);
 
+  // Initialize Qt resources
+  Q_INIT_RESOURCE(icons);
+
   // Initialize QT
   mapviz::MapvizApplication app(argc, argv);
 

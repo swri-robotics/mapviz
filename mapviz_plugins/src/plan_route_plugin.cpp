@@ -132,6 +132,11 @@ namespace mapviz_plugins
     }
 
     std::string service = ui_.service->text().toStdString();
+    if (service.empty())
+    {
+      PrintError("Service name may not be empty.");
+      return;
+    }
     auto client = node_->create_client<marti_nav_msgs::srv::PlanRoute>(service);
     client->wait_for_service(1ms);
 

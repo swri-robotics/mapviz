@@ -282,15 +282,13 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      topic = node["topic"].as<std::string>();
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
     }
 
     if (node["color"])
     {
-      std::string color;
-      color = node["color"].as<std::string>();
+      std::string color = node["color"].as<std::string>();
       QColor qcolor(color.c_str());
       SetColor(qcolor);
       ui_.color->setColor(qcolor);
@@ -316,40 +314,35 @@ namespace mapviz_plugins
 
     if (node["position_tolerance"])
     {
-      double position_tolerance;
-      position_tolerance = node["position_tolerance"].as<double>();
+      double position_tolerance = node["position_tolerance"].as<double>();
       ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
     }
 
     if (node["buffer_size"])
     {
-      double buffer_size;
-      buffer_size = node["buffer_size"].as<double>();
+      double buffer_size = node["buffer_size"].as<double>();
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
 
     if (node["show_covariance"])
     {
-      bool show_covariance = false;
-      show_covariance = node["show_covariance"].as<bool>();
+      bool show_covariance = node["show_covariance"].as<bool>();
       ui_.show_covariance->setChecked(show_covariance);
       CovariancedToggled(show_covariance);
     }
 
     if (node["show_all_covariances"])
     {
-      bool show_all_covariances = false;
-      show_all_covariances = node["show_all_covariances"].as<bool>();
+      bool show_all_covariances = node["show_all_covariances"].as<bool>();
       ui_.show_all_covariances->setChecked(show_all_covariances);
       ShowAllCovariancesToggled(show_all_covariances);
     }
 
     if (node["show_laps"])
     {
-      bool show_laps = false;
-      show_laps = node["show_laps"].as<bool>();
+      bool show_laps = node["show_laps"].as<bool>();
       ui_.show_laps->setChecked(show_laps);
       LapToggled(show_laps);
     }
@@ -370,7 +363,7 @@ namespace mapviz_plugins
 
     if (node["show_timestamps"])
     {
-      ui_.show_timestamps->setValue(node["show_timestamps"].as<int>());
+      ui_.show_timestamps->setValue(node["show_timestamps"].as<double>());
     }
 
     TopicEdited();

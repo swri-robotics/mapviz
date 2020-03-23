@@ -254,11 +254,6 @@ std::vector<std::string> SelectTopicDialog::filterTopics(
   std::vector<std::string> filtered;
 
   for (auto const& topic : topics) {
-  //   if (!allowed_datatypes_.empty() &&
-  //       allowed_datatypes_.count(topic.second) == 0) {
-  //         continue;
-  //   }
-
     if (!allowed_datatypes_.empty()) {
       // Skip any topic names that don't contain allowed types
       bool missing_allowed_type = true;   // Assume the worst
@@ -282,21 +277,6 @@ std::vector<std::string> SelectTopicDialog::filterTopics(
     filtered.push_back(topic.first);
   }
 
-  // for (size_t i = 0; i < topics.size(); i++) {
-  //   if (!allowed_datatypes_.empty() &&
-  //       allowed_datatypes_.count(topics[i].datatype) == 0) {
-  //     continue;
-  //   }
-
-  //   QString topic_name = QString::fromStdString(topics[i].name);
-  //   if (!topic_filter.isEmpty() &&
-  //       !topic_name.contains(topic_filter, Qt::CaseInsensitive)) {
-  //     continue;
-  //   }
-
-  //   filtered.push_back(topics[i]);
-  // }
-
   return filtered;
 }
 
@@ -311,13 +291,11 @@ void SelectTopicDialog::updateDisplayedTopics()
 
   std::set<std::string> prev_names;
   for (const auto & displayed_topic : displayed_topics_) {
-    // prev_names.insert(displayed_topics_[i].name);
     prev_names.insert(displayed_topic);
   }
 
   std::set<std::string> next_names;
   for (const auto & next_displayed_topic : next_displayed_topics) {
-    // next_names.insert(next_displayed_topics[i].name);
     next_names.insert(next_displayed_topic);
   }
 
@@ -337,7 +315,7 @@ void SelectTopicDialog::updateDisplayedTopics()
     if (removed_names.count(displayed_topics_[i]) == 0) {
       continue;
     }
-    RCLCPP_INFO(nh_->get_logger(), "Removing %s", displayed_topics_[i].c_str());
+    RCLCPP_DEBUG(nh_->get_logger(), "Removing %s", displayed_topics_[i].c_str());
 
     QListWidgetItem *item = list_widget_->takeItem(i - removed);
     delete item;
@@ -351,7 +329,7 @@ void SelectTopicDialog::updateDisplayedTopics()
     }
 
     list_widget_->insertItem(i, QString::fromStdString(next_displayed_topics[i]));
-    RCLCPP_INFO(nh_->get_logger(), "Inserting %s", next_displayed_topics[i].c_str());
+    RCLCPP_DEBUG(nh_->get_logger(), "Inserting %s", next_displayed_topics[i].c_str());
     if (list_widget_->count() == 1) {
       list_widget_->setCurrentRow(0);
     }

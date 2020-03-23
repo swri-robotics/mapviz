@@ -233,8 +233,6 @@ namespace mapviz_plugins
 
     if (node["position_tolerance"])
     {
-      // double position_tolerance;
-      // node["position_tolerance"] >> position_tolerance;
       double position_tolerance = node["position_tolerance"].as<double>();
       ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
@@ -242,8 +240,6 @@ namespace mapviz_plugins
 
     if (node["buffer_size"])
     {
-      // double buffer_size;
-      // node["buffer_size"] >> buffer_size;
       double buffer_size = node["buffer_size"].as<double>();
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
@@ -251,8 +247,6 @@ namespace mapviz_plugins
 
     if (node["show_laps"])
     {
-      // bool show_laps = false;
-      // node["show_laps"] >> show_laps;
       bool show_laps = node["show_laps"].as<bool>();
       ui_.show_laps->setChecked(show_laps);
       LapToggled(show_laps);

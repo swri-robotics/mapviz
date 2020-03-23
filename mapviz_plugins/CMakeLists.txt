@@ -21,7 +21,7 @@ find_package(mapviz REQUIRED)
 find_package(marti_common_msgs REQUIRED)
 find_package(marti_nav_msgs REQUIRED)
 find_package(marti_visualization_msgs REQUIRED)
-find_package(move_base_msgs REQUIRED)
+# find_package(move_base_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -74,7 +74,7 @@ set(UI_FILES
     ui/laserscan_config.ui
     ui/marker_config.ui
     ui/measuring_config.ui
-    ui/move_base_config.ui
+    # ui/move_base_config.ui
     ui/navsat_config.ui
     ui/occupancy_grid_config.ui
     ui/odometry_config.ui
@@ -171,7 +171,7 @@ ament_target_dependencies(${PROJECT_NAME}
     marti_common_msgs
     marti_nav_msgs
     marti_visualization_msgs
-    move_base_msgs
+    # move_base_msgs
     nav_msgs
     pluginlib
     rclcpp

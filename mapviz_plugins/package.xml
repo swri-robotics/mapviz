@@ -26,7 +26,7 @@
   <depend>marti_common_msgs</depend>
   <depend>marti_nav_msgs</depend>
   <depend>marti_visualization_msgs</depend>
-  <depend>move_base_msgs</depend>
+  <!-- depend>move_base_msgs</depend -->
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp_action</depend>
