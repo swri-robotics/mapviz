@@ -427,6 +427,16 @@ namespace mapviz_plugins
         double arrow_width = size / 5.0;
         double head_length = size * 0.75;
 
+        // If quaternion malformed, just draw point instead
+        const tf::Quaternion q(point.orientation);
+        if(std::fabs(q.x()*q.x() + q.y()*q.y() + q.z()*q.z() + q.w()*q.w() - 1) > 0.01)
+        {
+          orientation = tf::Transform(tf::Transform(transform.GetOrientation()));
+          arrow_width = 0.0;
+          head_length = 0.0;
+          size = 0;
+        }
+
         point.transformed_arrow_point =
             point.transformed_point + orientation * tf::Point(size, 0.0, 0.0);
         point.transformed_arrow_left =
