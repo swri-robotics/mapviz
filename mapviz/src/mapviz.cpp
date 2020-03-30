@@ -108,8 +108,15 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     node_(nullptr),
     canvas_(nullptr)
 {
-  /// TODO PJR Pass in node options and make name anonymous if necessary
-  node_ = std::make_shared<rclcpp::Node>("mapviz");
+  // Multiple users could be using mapviz, so its name needs to be anonymous,
+  // but ROS 2 Dashing doesn't have a way to set that through node options;
+  // we manually do it the same way that ros::init did in ROS 1
+  std::stringstream name;
+  name << "mapviz";
+  char buf[200];
+  std::snprintf(buf, sizeof(buf), "_%llu", (unsigned long long)rclcpp::Clock().now().nanoseconds());
+  name << buf;
+  node_ = std::make_shared<rclcpp::Node>(name.str());
 
   QString default_path = GetDefaultConfigPath();
   node_->declare_parameter("config", default_path.toStdString());
