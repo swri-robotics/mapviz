@@ -268,7 +268,7 @@ namespace mapviz_plugins
         topic,
         rclcpp::QoS(10),
         std::bind(&OccupancyGridPlugin::Callback, this, std::placeholders::_1));
-      if( ui_.checkbox_update)
+      if(ui_.checkbox_update->isChecked())
       {
         update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
           topic,

@@ -80,8 +80,8 @@ namespace mapviz_plugins
   {
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
       node_,
-      "visualization_msgs/Marker",
-      "visualization_msgs/MarkerArray");
+      "visualization_msgs/msg/Marker",
+      "visualization_msgs/msg/MarkerArray");
 
     if (topic.empty())
     {

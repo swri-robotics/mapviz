@@ -80,7 +80,7 @@ namespace mapviz_plugins
   {
     // ros::master::TopicInfo topic =
     //     mapviz::SelectTopicDialog::selectTopic("nav_msgs/Path");
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/path");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Path");
 
     if (!topic.empty())
     {
