@@ -34,7 +34,7 @@ namespace mapviz
 {
 
   RqtMapviz::RqtMapviz() :
-    widget_(NULL)
+    widget_(nullptr)
   {
     setObjectName("RqtMapviz");
   }
@@ -43,7 +43,7 @@ namespace mapviz
   {
     // The plugin class doesn't really do very much -- just start Mapviz
     // and add it to the context.
-    widget_ = new Mapviz(false, 0, NULL);
+    widget_ = new Mapviz(false, 0, nullptr);
     widget_->setWindowFlags(Qt::Widget);
     context.addWidget(widget_);
   }

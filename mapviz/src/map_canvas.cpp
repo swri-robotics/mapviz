@@ -137,7 +137,6 @@ void MapCanvas::initializeGL()
 {
   GLenum err = glewInit();
   if (GLEW_OK != err) {
-    // ROS_ERROR("Error: %s\n", glewGetErrorString(err));
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error: %s\n", glewGetErrorString(err));
   } else {
     // Check if pixel buffers are available for asynchronous capturing
@@ -379,13 +378,10 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
   double x = center_x + (e->x() - width() / 2.0) * view_scale_;
   double y = center_y + (height() / 2.0 - e->y()) * view_scale_;
 
-  // tf2::Point point(x, y, 0);
-  // geometry_msgs::msg::Point point(x, y, 0);
   geometry_msgs::msg::PointStamped point_in, point_out;
   point_in.point.x = x;
   point_in.point.y = y;
   point_in.point.z = 0;
-  // point = transform_ * point;
 #if USE_NEW_TF2_TOMSG == 1
   auto tfm_temp = tf2::toMsg(transform_);
 #else
@@ -505,7 +501,6 @@ void MapCanvas::TransformTarget(QPainter* painter)
       tf2::Quaternion yaw90;
       yaw90.setRPY(0, 0, -swri_math_util::_half_pi);
       // transform_.setRotation(
-      //     tf2::createQuaternionFromYaw(-swri_math_util::_half_pi) * transform_.getRotation());
       transform_.setRotation(yaw90 * transform_.getRotation());
     }
 
@@ -520,13 +515,11 @@ void MapCanvas::TransformTarget(QPainter* painter)
       -transform_.getOrigin().getX(),
       transform_.getOrigin().getY());
 
-    // geometry_msgs::msg::Point point(view_center_x_, view_center_y_, 0.0);
     geometry_msgs::msg::PointStamped point;
     point.point.x = view_center_x_;
     point.point.y = view_center_y_;
     point.point.z = 0;
 
-    // geometry_msgs::msg::Point center = transform_ * point;
     geometry_msgs::msg::PointStamped center;
 #if USE_NEW_TF2_TOMSG == 1
     auto tfm_temp =
@@ -537,9 +530,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
 #endif
     tf2::doTransform(point, center, tfm_temp);
 
-    // view_center_x_ = center.getX();
     view_center_x_ = center.point.x;
-    // view_center_y_ = center.getY();
     view_center_y_ = center.point.y;
 
     qtransform_ = qtransform_.scale(1, -1);
@@ -551,13 +542,11 @@ void MapCanvas::TransformTarget(QPainter* painter)
       double x = center_x + (mouse_hover_x_ - width() / 2.0) * view_scale_;
       double y = center_y + (height() / 2.0  - mouse_hover_y_) * view_scale_;
 
-      // geometry_msgs::msg::Point hover(x, y, 0.0);
       geometry_msgs::msg::PointStamped hover_in, hover_out;
       hover_in.point.x = x;
       hover_in.point.y = y;
       hover_in.point.z = 0;
 
-      // hover = transform_ * hover;
 #if USE_NEW_TF2_TOMSG == 1
       tfm_temp = tf2::toMsg(transform_);
 #else
@@ -573,22 +562,18 @@ void MapCanvas::TransformTarget(QPainter* painter)
   }
   catch (const tf2::LookupException& e)
   {
-    // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
   catch (const tf2::ConnectivityException& e)
   {
-    // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
   catch (const tf2::ExtrapolationException& e)
   {
-    // ROS_ERROR_THROTTLE(2.0, "%s", e.what());
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
   catch (...)
   {
-    // ROS_ERROR_THROTTLE(2.0, "Error looking up transform");
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error looking up transform");
   }
 

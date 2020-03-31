@@ -47,8 +47,8 @@ class PluginConfigList : public QListWidget
   Q_OBJECT
 
 public:
-  explicit PluginConfigList(QWidget *parent = 0) : QListWidget(parent) {}
-  PluginConfigList();
+  explicit PluginConfigList(QWidget *parent = nullptr) : QListWidget(parent) {}
+  PluginConfigList() = default;
 
   void UpdateIndices()
   {
@@ -61,7 +61,7 @@ Q_SIGNALS:
   void ItemsMoved();
 
 protected:
-  virtual void dropEvent(QDropEvent* event)
+  void dropEvent(QDropEvent* event) override
   {
     QListWidget::dropEvent(event);
 
@@ -74,9 +74,9 @@ protected:
 class PluginConfigListItem : public QListWidgetItem
 {
 public:
-  explicit PluginConfigListItem(QListWidget *parent = 0) : QListWidgetItem(parent) {}
+  explicit PluginConfigListItem(QListWidget *parent = nullptr) : QListWidgetItem(parent) {}
 
-  virtual bool operator< (const QListWidgetItem & other) const
+  bool operator< (const QListWidgetItem & other) const override
   {
     return data(Qt::UserRole).toFloat() < other.data(Qt::UserRole).toFloat();
   }
@@ -90,13 +90,13 @@ public:
   explicit SingleClickLabel(QWidget *parent = 0, Qt::WindowFlags flags = 0) :
     QLabel(parent, flags) {}
 
-  ~SingleClickLabel() {}
+  ~SingleClickLabel() override = default;
 
 Q_SIGNALS:
   void Clicked();
 
 protected:
-  virtual void mousePressEvent(QMouseEvent* event)
+  void mousePressEvent(QMouseEvent* event) override
   {
     Q_EMIT Clicked();
   }
@@ -110,21 +110,21 @@ public:
   explicit DoubleClickWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0) :
     QWidget(parent, flags) {}
 
-  ~DoubleClickWidget() {}
+  ~DoubleClickWidget() override = default;
 
 Q_SIGNALS:
   void DoubleClicked();
   void RightClicked();
 
 protected:
-  virtual void mouseDoubleClickEvent(QMouseEvent* event)
+  void mouseDoubleClickEvent(QMouseEvent* event) override
   {
     if (event->button() == Qt::LeftButton) {
       Q_EMIT DoubleClicked();
     }
   }
 
-  virtual void mouseReleaseEvent(QMouseEvent* event)
+  void mouseReleaseEvent(QMouseEvent* event) override
   {
     if (event->button() == Qt::RightButton) {
       Q_EMIT RightClicked();
@@ -137,14 +137,14 @@ class IconWidget : public QWidget
   Q_OBJECT
 
 public:
-  explicit IconWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0) :
+  explicit IconWidget(QWidget *parent = nullptr, Qt::WindowFlags flags = nullptr) :
     QWidget(parent, flags)
   {
     pixmap_ = QPixmap(16, 16);
     pixmap_.fill(Qt::transparent);
   }
 
-  ~IconWidget() {}
+  ~IconWidget() override = default;
 
   void SetPixmap(QPixmap pixmap)
   {
@@ -153,7 +153,7 @@ public:
   }
 
 protected:
-  virtual void paintEvent(QPaintEvent* e)
+  void paintEvent(QPaintEvent* e) override
   {
     QPainter painter(this);
     painter.fillRect(0, 0, width(), height(), palette().color(QPalette::Button));

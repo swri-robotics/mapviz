@@ -175,7 +175,7 @@ std::vector<std::string> SelectFrameDialog::selectedFrames() const
 void SelectFrameDialog::fetchFrames()
 {
   if (!tf_) { return; }
-  if (tf_buf_ == NULL) {return;}
+  if (tf_buf_ == nullptr) {return;}
 
   known_frames_.clear();
   tf_buf_->_getFrameStrings(known_frames_);
@@ -189,14 +189,14 @@ std::vector<std::string> SelectFrameDialog::filterFrames(
   QString frame_filter = name_filter_->text();
   std::vector<std::string> filtered;
 
-  for (size_t i = 0; i < frames.size(); i++) {
-    QString frame_name = QString::fromStdString(frames[i]);
+  for (const auto & frame : frames) {
+    QString frame_name = QString::fromStdString(frame);
     if (!frame_filter.isEmpty() &&
         !frame_name.contains(frame_filter, Qt::CaseInsensitive)) {
       continue;
     }
 
-    filtered.push_back(frames[i]);
+    filtered.push_back(frame);
   }
 
   return filtered;
@@ -234,7 +234,7 @@ void SelectFrameDialog::updateDisplayedFrames()
       continue;
     }
 
-    QListWidgetItem *item = list_widget_->takeItem(i - removed);
+    QListWidgetItem *item = list_widget_->takeItem(static_cast<int>(i - removed));
     delete item;
     removed++;
   }

@@ -55,7 +55,6 @@
 #include <mapviz/video_writer.h>
 
 // ROS libraries
-// #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <tf2_ros/buffer.h>
@@ -207,7 +206,6 @@ protected:
   bool updating_frames_;
 
   std::shared_ptr<rclcpp::Node> node_;
-  // rclcpp::ServiceServer add_display_srv_;
   rclcpp::Service<mapviz_interfaces::srv::AddMapvizDisplay>::SharedPtr add_display_srv_;
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_;
@@ -217,7 +215,6 @@ protected:
   MapCanvas* canvas_;
   std::map<QListWidgetItem*, MapvizPluginPtr> plugins_;
 
-  // Stopwatch meas_spin_;
   Stopwatch meas_spin_;
 };
 }   // namespace mapviz

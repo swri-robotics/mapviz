@@ -40,12 +40,10 @@
 #include <QTimer>
 
 // ROS libraries
-// #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/transform_datatypes.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-// #include <tf2/transform_listener.h>
 
 #include <mapviz/mapviz_plugin.h>
 
@@ -63,8 +61,8 @@ class MapCanvas : public QGLWidget
   Q_OBJECT
 
 public:
-  explicit MapCanvas(QWidget *parent = 0);
-  ~MapCanvas();
+  explicit MapCanvas(QWidget *parent = nullptr);
+  ~MapCanvas() override;
 
   void InitializeTf(std::shared_ptr<tf2_ros::Buffer> tf);
 
@@ -94,7 +92,7 @@ public:
     canvas_able_to_move_ = assigning;
   }
 
-  void leaveEvent(QEvent* e);
+  void leaveEvent(QEvent* e) override;
 
   void SetViewScale(float scale)
   {
@@ -171,17 +169,17 @@ public Q_SLOTS:
   void setFrameRate(const double fps);
 
 protected:
-  void initializeGL();
+  void initializeGL() override;
   void initGlBlending();
   void pushGlMatrices();
   void popGlMatrices();
-  void resizeGL(int w, int h);
-  void paintEvent(QPaintEvent* event);
-  void wheelEvent(QWheelEvent* e);
-  void mousePressEvent(QMouseEvent* e);
-  void mouseReleaseEvent(QMouseEvent* e);
-  void mouseMoveEvent(QMouseEvent* e);
-  void keyPressEvent(QKeyEvent* e);
+  void resizeGL(int w, int h) override;
+  void paintEvent(QPaintEvent* event) override;
+  void wheelEvent(QWheelEvent* e) override;
+  void mousePressEvent(QMouseEvent* e) override;
+  void mouseReleaseEvent(QMouseEvent* e) override;
+  void mouseMoveEvent(QMouseEvent* e) override;
+  void keyPressEvent(QKeyEvent* e) override;
 
   void Recenter();
   void TransformTarget(QPainter* painter);

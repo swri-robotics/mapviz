@@ -69,7 +69,7 @@ class SelectFrameDialog : public QDialog
    */
   static std::string selectFrame(
     std::shared_ptr<tf2_ros::TransformListener> tf_listener,
-    QWidget *parent = 0);
+    QWidget *parent = nullptr);
 
   /**
    * Present the user with a dialog to select a multiple TF frames.
@@ -79,13 +79,13 @@ class SelectFrameDialog : public QDialog
    */
   static std::vector<std::string> selectFrames(
     std::shared_ptr<tf2_ros::TransformListener> tf_listener,
-    QWidget *parent = 0);
+    QWidget *parent = nullptr);
 
   /**
    * Constructor for the SelectFrameDialog.
    */
-  SelectFrameDialog(std::shared_ptr<tf2_ros::TransformListener> tf_listener,
-                    QWidget *parent = 0);
+  explicit SelectFrameDialog(std::shared_ptr<tf2_ros::TransformListener> tf_listener,
+                             QWidget *parent = nullptr);
 
   /**
    * Choose whether the user can select one (allow=false) or multiple
@@ -107,8 +107,8 @@ class SelectFrameDialog : public QDialog
   std::vector<std::string> selectedFrames() const;
 
  private:
-  void timerEvent(QTimerEvent *);
-  void closeEvent(QCloseEvent *);
+  void timerEvent(QTimerEvent *) override;
+  void closeEvent(QCloseEvent *) override;
 
   std::vector<std::string> filterFrames(
     const std::vector<std::string> &) const;

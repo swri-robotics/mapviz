@@ -192,25 +192,20 @@ void SelectTopicDialog::setDatatypeFilter(
   updateDisplayedTopics();
 }
 
-// ros::master::TopicInfo SelectTopicDialog::selectedTopic() const
 std::string SelectTopicDialog::selectedTopic() const
 {
-  // std::vector<ros::master::TopicInfo> selection = selectedTopics();
   std::vector<std::string> selection = selectedTopics();
   if (selection.empty()) {
-    // return ros::master::TopicInfo();
     return std::string();
   } else {
     return selection.front();
   }
 }
 
-// std::vector<ros::master::TopicInfo> SelectTopicDialog::selectedTopics() const
 std::vector<std::string> SelectTopicDialog::selectedTopics() const
 {
   QModelIndexList qt_selection = list_widget_->selectionModel()->selectedIndexes();
 
-  // std::vector<ros::master::TopicInfo> selection;
   std::vector<std::string> selection;
   selection.resize(qt_selection.size());
   for (int i = 0; i < qt_selection.size(); i++) {

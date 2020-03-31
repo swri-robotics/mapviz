@@ -50,7 +50,7 @@ public:
 
   void setLogger(const rclcpp::Logger& logger);
 private:
-  bool notify(QObject* receiver, QEvent* event);
+  bool notify(QObject* receiver, QEvent* event) override;
 
   rclcpp::Logger logger_;
 };

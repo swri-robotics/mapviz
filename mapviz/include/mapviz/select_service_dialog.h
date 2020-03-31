@@ -44,8 +44,6 @@
 #include <string>
 #include <vector>
 
-// #include <ros/ros.h>
-
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 class QListWidget;
@@ -76,7 +74,7 @@ public:
     allowed_datatype_(allowed_datatype)
   {
   }
-  void run();
+  void run() override;
 
 Q_SIGNALS:
   void servicesFetched(ServiceStringVector services);
@@ -115,7 +113,7 @@ public:
    */
   explicit SelectServiceDialog(const rclcpp::Node::SharedPtr& node,
       const std::string& datatype = "",
-      QWidget* parent = 0);
+      QWidget* parent = nullptr);
   ~SelectServiceDialog() override;
 
   /**
@@ -156,8 +154,8 @@ private Q_SLOTS:
 
 private:
   std::vector<std::string> filterServices();
-  void timerEvent(QTimerEvent *);
-  void closeEvent(QCloseEvent *);
+  void timerEvent(QTimerEvent *) override;
+  void closeEvent(QCloseEvent *) override;
 
   std::shared_ptr<rclcpp::Node> nh_;
 

@@ -29,7 +29,6 @@
 
 #include <mapviz/video_writer.h>
 
-// #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
 
 #include <opencv2/imgproc/imgproc.hpp>
@@ -60,7 +59,6 @@ namespace mapviz
 
       if (!video_writer_->isOpened())
       {
-        // ROS_ERROR("Failed to open video file for writing.");
         RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to open video file for writing.");
         stop();
         return false;
@@ -79,15 +77,11 @@ namespace mapviz
   {
     try
     {
-      // ROS_DEBUG_THROTTLE(1.0, "VideoWriter::processFrame()");
-      // RCLCPP_DEBUG_THROTTLE(1.0, "VideoWriter::processFrame()");
       RCLCPP_DEBUG(rclcpp::get_logger("mapviz"), "VideoWriter::processFrame():");
       {
         QMutexLocker locker(&video_mutex_);
         if (!video_writer_)
         {
-          // ROS_WARN_THROTTLE(1.0, "Got frame, but video writer wasn't open.");
-          // RCLCPP_WARN_THROTTLE(1.0, "Got frame, but video writer wasn't open.");
           RCLCPP_WARN(rclcpp::get_logger("mapviz"), "Got frame, but video writer wasn't open.");
           return;
         }
@@ -106,8 +100,6 @@ namespace mapviz
           cv::flip(temp_image, image, 0);
           break;
         default:
-          // ROS_WARN_THROTTLE(1.0, "Unexpected image format: %d", frame.format());
-          // RCLCPP_WARN_THROTTLE(1.0, "Unexpected image format: %d", frame.format());
           RCLCPP_WARN(rclcpp::get_logger("mapviz"), "Unexpected image format: %d", frame.format());
           return;
       }
@@ -116,8 +108,6 @@ namespace mapviz
         QMutexLocker locker(&video_mutex_);
         if (video_writer_)
         {
-          // ROS_DEBUG_THROTTLE(1.0, "Writing frame.");
-          // RCLCPP_DEBUG_THROTTLE(1.0, "Writing frame.");
           RCLCPP_DEBUG(rclcpp::get_logger("mapviz"), "Writing frame.");
           video_writer_->write(image);
         }
@@ -125,15 +115,12 @@ namespace mapviz
     }
     catch (const std::exception& e)
     {
-      // ROS_ERROR_THROTTLE(1.0, "Error when processing video frame: %s", e.what());
-      // RCLCPP_ERROR_THROTTLE(1.0, "Error when processing video frame: %s", e.what());
       RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error when processing video frame: %s", e.what());
     }
   }
 
   void VideoWriter::stop()
   {
-    // ROS_INFO(rclcpp::get_logger("default"), "Stopping video recording.");
     RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Stopping video recording.");
     QMutexLocker locker(&video_mutex_);
     video_writer_.reset();

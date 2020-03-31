@@ -58,7 +58,6 @@ class Stopwatch
   /* Start measuring a new time interval. */
   void start()
   {
-    // start_ = ros::WallTime::now();
     start_ = clock.now();
   }
 
@@ -67,7 +66,6 @@ class Stopwatch
    */
   void stop()
   {
-    // ros::WallDuration dt = ros::WallTime::now() - start_;
     rclcpp::Duration dt = clock.now() - start_;
     count_ += 1;
     total_time_ = total_time_ + dt;
@@ -77,12 +75,8 @@ class Stopwatch
   /* Return the number of intervals measured. */
   int count() const { return count_; }
 
-  // ros::WallDuration maxTime() const { return max_time_; }
-
   /* Returns the longest observed duration. */
   rclcpp::Duration maxTime() const {return max_time_;}
-
-  // ros::WallDuration avgTime() const
 
   /* Returns the average duration spent in the interval. */
   rclcpp::Duration avgTime() const

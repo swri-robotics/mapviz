@@ -30,7 +30,6 @@
 
 #include "mapviz/mapviz_application.h"
 
-// #include <ros/ros.h>
 #include "rclcpp/rclcpp.hpp"
 
 namespace mapviz

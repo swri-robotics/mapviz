@@ -251,15 +251,15 @@ public:
     meas_draw_.printInfo(node_->get_logger(), header + " Draw()");
   }
 
-  static void PrintErrorHelper(
+  void PrintErrorHelper(
     QLabel *status_label,
     const std::string& message,
     double throttle = 0.0);
-  static void PrintInfoHelper(
+  void PrintInfoHelper(
     QLabel *status_label,
     const std::string& message,
     double throttle = 0.0);
-  static void PrintWarningHelper(
+  void PrintWarningHelper(
     QLabel *status_label,
     const std::string& message,
     double throttle = 0.0);
@@ -339,17 +339,11 @@ inline void MapvizPlugin::PrintErrorHelper(QLabel *status_label, const std::stri
       return;
     }
 
+    auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
     if (throttle > 0.0) {
-        // ROS_ERROR_THROTTLE(throttle, "Error: %s", message.c_str());
-        // RCLCPP_ERROR_THROTTLE(
-        //  rclcpp::get_logger("mapviz"),
-        //  throttle,
-        //  "Error: %s",
-        //  message.c_str());
-        RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error: %s", message.c_str());
+        RCLCPP_ERROR(logger, "Error: %s", message.c_str());
     } else {
-        // ROS_ERROR("Error: %s", message.c_str());
-        RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", message.c_str());
+        RCLCPP_ERROR(logger, "%s", message.c_str());
     }
     QPalette p(status_label->palette());
     p.setColor(QPalette::Text, Qt::red);
@@ -364,13 +358,11 @@ inline void MapvizPlugin::PrintInfoHelper(QLabel *status_label, const std::strin
       return;
     }
 
+    auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
     if (throttle > 0.0) {
-        // ROS_INFO_THROTTLE(throttle, "%s", message.c_str());
-        // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("mapviz"), "%s", message.c_str());
-        RCLCPP_INFO(rclcpp::get_logger("mapviz"), "%s", message.c_str());
+        RCLCPP_INFO(logger, "%s", message.c_str());
     } else {
-        // ROS_INFO("%s", message.c_str());
-        RCLCPP_INFO(rclcpp::get_logger("mapviz"), "%s", message.c_str());
+        RCLCPP_INFO(logger, "%s", message.c_str());
     }
     QPalette p(status_label->palette());
     p.setColor(QPalette::Text, Qt::darkGreen);
@@ -385,13 +377,11 @@ inline void MapvizPlugin::PrintWarningHelper(QLabel *status_label, const std::st
       return;
     }
 
+    auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
     if (throttle > 0.0) {
-        // ROS_WARN_THROTTLE(throttle, "%s", message.c_str());
-        // RCLCPP_WARN_THROTTLE(rclcpp::get_logger("mapviz"), "%s", message.c_str());
-        RCLCPP_WARN(rclcpp::get_logger("mapviz"), "%s", message.c_str());
+        RCLCPP_WARN(logger, "%s", message.c_str());
     } else {
-        // ROS_WARN("%s", message.c_str());
-        RCLCPP_WARN(rclcpp::get_logger("mapviz"), "%s", message.c_str());
+        RCLCPP_WARN(logger, "%s", message.c_str());
     }
     QPalette p(status_label->palette());
     p.setColor(QPalette::Text, Qt::darkYellow);

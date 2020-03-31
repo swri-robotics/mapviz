@@ -36,21 +36,17 @@ namespace mapviz
 {
   ConfigItem::ConfigItem(QWidget *parent, Qt::WindowFlags flags) :
     QWidget(parent, flags),
-    item_(0),
+    item_(nullptr),
     visible_(true)
   {
     ui_.setupUi(this);
 
-    edit_name_action_   = new  QAction("Edit Name", this);
-    remove_item_action_ = new  QAction("Remove", this);
+    edit_name_action_   = new QAction("Edit Name", this);
+    remove_item_action_ = new QAction("Remove", this);
     remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
 
     connect(edit_name_action_, SIGNAL(triggered()), this, SLOT(EditName()));
     connect(remove_item_action_, SIGNAL(triggered()), this, SLOT(Remove()));
-  }
-
-  ConfigItem::~ConfigItem()
-  {
   }
 
   void ConfigItem::ToggleDraw(bool toggled)
