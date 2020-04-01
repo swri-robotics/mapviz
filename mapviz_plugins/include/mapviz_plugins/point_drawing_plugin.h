@@ -112,7 +112,7 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin
   void ClearPoints();
 
   protected:
-  void pushPoint(const StampedPoint& point);
+  void pushPoint(StampedPoint point);
   double bufferSize() const;
   double positionTolerance() const;
   const std::deque<StampedPoint>& points() const;

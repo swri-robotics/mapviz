@@ -30,7 +30,6 @@
 #include <GL/glew.h>
 
 #include <mapviz_plugins/occupancy_grid_plugin.h>
-#include <GL/glut.h>
 
 // QT libraries
 #include <QGLWidget>
@@ -42,7 +41,6 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
-#include <algorithm>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -148,14 +146,17 @@ namespace mapviz_plugins
     return palette;
   }
 
-
-
-  OccupancyGridPlugin::OccupancyGridPlugin() :
-    config_widget_(new QWidget()),
-    transformed_(false),
-    texture_id_(0),
-    map_palette_( makeMapPalette() ),
-    costmap_palette_( makeCostmapPalette() )
+  OccupancyGridPlugin::OccupancyGridPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , transformed_(false)
+  , texture_id_(0)
+  , texture_x_(0.0)
+  , texture_y_(0.0)
+  , texture_size_(0)
+  , map_palette_( makeMapPalette() )
+  , costmap_palette_( makeCostmapPalette() )
   {
     ui_.setupUi(config_widget_);
 
@@ -194,17 +195,6 @@ namespace mapviz_plugins
       SIGNAL(currentTextChanged(const QString &)),
       this,
       SLOT(colorSchemeUpdated(const QString &)));
-
-    PrintWarning("waiting for first message");
-  }
-
-  OccupancyGridPlugin::~OccupancyGridPlugin()
-  {
-    Shutdown();
-  }
-
-  void OccupancyGridPlugin::Shutdown()
-  {
   }
 
   void OccupancyGridPlugin::DrawIcon()
@@ -295,7 +285,7 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::colorSchemeUpdated(const QString &)
   {
-    if( grid_ && raw_buffer_.size() > 0)
+    if( grid_ && !raw_buffer_.empty())
     {
       const size_t width  = grid_->info.width;
       const size_t height = grid_->info.height;

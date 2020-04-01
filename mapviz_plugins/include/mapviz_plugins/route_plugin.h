@@ -66,29 +66,27 @@ class RoutePlugin : public mapviz::MapvizPlugin
   };
 
   RoutePlugin();
-  virtual ~RoutePlugin();
+  ~RoutePlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas);
-  void Shutdown()
-  {
-  }
+  bool Initialize(QGLWidget* canvas) override;
+  void Shutdown() override {}
 
-  void Draw(double x, double y, double scale);
+  void Draw(double x, double y, double scale) override;
 
-  void Transform() {}
+  void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path);
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
   void DrawStopWaypoint(double x, double y);
   void DrawRoute(const swri_route_util::Route &route);
   void DrawRoutePoint(const swri_route_util::RoutePoint &point);
 
-  QWidget* GetConfigWidget(QWidget* parent);
+  QWidget* GetConfigWidget(QWidget* parent) override;
 
   protected:
-  void PrintError(const std::string& message);
-  void PrintInfo(const std::string& message);
-  void PrintWarning(const std::string& message);
+  void PrintError(const std::string& message) override;
+  void PrintInfo(const std::string& message) override;
+  void PrintWarning(const std::string& message) override;
 
   protected Q_SLOTS:
   void SelectTopic();
@@ -96,7 +94,7 @@ class RoutePlugin : public mapviz::MapvizPlugin
   void TopicEdited();
   void PositionTopicEdited();
   void SetDrawStyle(QString style);
-  void DrawIcon();
+  void DrawIcon() override;
 
   private:
   Ui::route_config ui_;

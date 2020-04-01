@@ -51,9 +51,10 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TfFramePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  TfFramePlugin::TfFramePlugin() :
-    PointDrawingPlugin(),
-    config_widget_(new QWidget())
+  TfFramePlugin::TfFramePlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 

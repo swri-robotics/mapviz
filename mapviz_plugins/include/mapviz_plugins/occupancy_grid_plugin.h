@@ -64,24 +64,24 @@ class OccupancyGridPlugin : public mapviz::MapvizPlugin
 
 public:
   OccupancyGridPlugin();
-  virtual ~OccupancyGridPlugin();
+  ~OccupancyGridPlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas);
-  void Shutdown();
+  bool Initialize(QGLWidget* canvas) override;
+  void Shutdown() override {}
 
-  void Draw(double x, double y, double scale);
+  void Draw(double x, double y, double scale) override;
 
-  void Transform();
+  void Transform() override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path);
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent);
+  QWidget* GetConfigWidget(QWidget* parent) override;
 
 protected:
-  void PrintError(const std::string& message);
-  void PrintInfo(const std::string& message);
-  void PrintWarning(const std::string& message);
+  void PrintError(const std::string& message) override;
+  void PrintInfo(const std::string& message) override;
+  void PrintWarning(const std::string& message) override;
 
 protected Q_SLOTS:
 
@@ -90,7 +90,7 @@ protected Q_SLOTS:
   void upgradeCheckBoxToggled(bool);
   void colorSchemeUpdated(const QString &);
 
-  void DrawIcon();
+  void DrawIcon() override;
 
   void FrameChanged(std::string);
 
@@ -112,7 +112,7 @@ private:
   float texture_x_, texture_y_;
   std::vector<uchar> raw_buffer_;
   std::vector<uchar> color_buffer_;
-  int32_t texture_size_;
+  uint32_t texture_size_;
 
   Palette map_palette_;
   Palette costmap_palette_;

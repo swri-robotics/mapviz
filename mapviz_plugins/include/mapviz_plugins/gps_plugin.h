@@ -32,11 +32,8 @@
 #include <QWidget>
 
 // ROS libraries
-// #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
-// #include <tf/transform_datatypes.h>
 #include <tf2/transform_datatypes.h>
-// #include <gps_common/GPSFix.h>
 #include <gps_msgs/msg/gps_fix.hpp>
 #include <swri_transform_util/local_xy_util.h>
 
@@ -59,9 +56,7 @@ class GpsPlugin : public mapviz_plugins::PointDrawingPlugin
   ~GpsPlugin() override = default;
 
   bool Initialize(QGLWidget* canvas) override;
-  void Shutdown() override
-  {
-  }
+  void Shutdown() override {}
 
   void Draw(double x, double y, double scale) override;
 

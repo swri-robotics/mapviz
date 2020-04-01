@@ -55,17 +55,18 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DisparityPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  DisparityPlugin::DisparityPlugin() :
-    config_widget_(new QWidget()),
-    anchor_(TOP_LEFT),
-    units_(PIXELS),
-    offset_x_(0),
-    offset_y_(0),
-    width_(320),
-    height_(240),
-    has_image_(false),
-    last_width_(0),
-    last_height_(0)
+  DisparityPlugin::DisparityPlugin()
+  : MapvizPlugin()
+  , config_widget_(new QWidget())
+  , anchor_(TOP_LEFT)
+  , units_(PIXELS)
+  , offset_x_(0)
+  , offset_y_(0)
+  , width_(320)
+  , height_(240)
+  , has_image_(false)
+  , last_width_(0)
+  , last_height_(0)
   {
     ui_.setupUi(config_widget_);
 
@@ -167,8 +168,6 @@ namespace mapviz_plugins
   }
   void DisparityPlugin::SelectTopic()
   {
-    // ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-    //   "stereo_msgs/DisparityImage");
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
       node_,
       "stereo_msgs/msg/DisparityImage"
@@ -212,7 +211,6 @@ namespace mapviz_plugins
 
       if (!topic.empty())
       {
-        // disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
         disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
           topic_,
           rclcpp::QoS(1),

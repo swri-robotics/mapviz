@@ -58,7 +58,7 @@ Q_SIGNALS:
   void pointClicked(const QPointF&);
 
 protected:
-  bool eventFilter(QObject *object, QEvent* event);
+  bool eventFilter(QObject *object, QEvent* event) override;
 
 private:
   bool is_mouse_down_;

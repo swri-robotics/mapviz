@@ -25,9 +25,9 @@
   <class name="mapviz_plugins/textured_marker" type="mapviz_plugins::TexturedMarkerPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Textured marker mapviz plugin.</description>
   </class>
-  <class name="mapviz_plugins/move_base" type="mapviz_plugins::MoveBasePlugin" base_class_type="mapviz::MapvizPlugin">
+  <!--class name="mapviz_plugins/move_base" type="mapviz_plugins::MoveBasePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Interface to the [move_base] action server.</description>
-  </class>
+  </class-->
   <class name="mapviz_plugins/grid" type="mapviz_plugins::GridPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Grid mapviz plugin.</description>
   </class>

@@ -51,7 +51,6 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
-#include <algorithm>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -63,7 +62,10 @@ namespace stu = swri_transform_util;
 
 namespace mapviz_plugins
 {
-  RoutePlugin::RoutePlugin() : config_widget_(new QWidget()), draw_style_(LINES)
+  RoutePlugin::RoutePlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget()), draw_style_(LINES)
   {
     ui_.setupUi(config_widget_);
 
@@ -88,10 +90,6 @@ namespace mapviz_plugins
                      SLOT(SetDrawStyle(QString)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
                      SLOT(DrawIcon()));
-  }
-
-  RoutePlugin::~RoutePlugin()
-  {
   }
 
   void RoutePlugin::DrawIcon()
@@ -169,7 +167,6 @@ namespace mapviz_plugins
     {
       src_route_ = sru::Route();
 
-      // route_sub_.shutdown();
       route_sub_.reset();
 
       topic_ = topic;
@@ -198,8 +195,6 @@ namespace mapviz_plugins
       if (!topic.empty())
       {
         position_topic_ = topic;
-        // position_sub_ = node_.subscribe(position_topic_, 1,
-        //                                 &RoutePlugin::PositionCallback, this);
         position_sub_ = node_->create_subscription<marti_nav_msgs::msg::RoutePosition>(
           topic_,
           rclcpp::QoS(1),
@@ -335,10 +330,10 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-    for (size_t i = 0; i < route.points.size(); i++)
+    for (const auto & point : route.points)
     {
-      glVertex2d(route.points[i].position().x(),
-                 route.points[i].position().y());
+      glVertex2d(point.position().x(),
+                 point.position().y());
     }
     glEnd();
   }
@@ -392,8 +387,6 @@ namespace mapviz_plugins
 
     if (node["draw_style"])
     {
-      // std::string draw_style;
-      // node["draw_style"] >> draw_style;
       std::string draw_style = node["draw_style"].as<std::string>();
 
       if (draw_style == "lines")

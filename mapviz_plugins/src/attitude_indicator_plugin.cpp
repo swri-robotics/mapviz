@@ -45,7 +45,6 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
-#include <algorithm>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -54,8 +53,10 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPl
 
 namespace mapviz_plugins
 {
-  AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
-      config_widget_(new QWidget())
+  AttitudeIndicatorPlugin::AttitudeIndicatorPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 

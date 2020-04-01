@@ -39,9 +39,7 @@
 #include <QTimer>
 
 // ROS libraries
-// #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
-// #include <tf/transform_datatypes.h>
 #include <tf2/transform_datatypes.h>
 
 #include <mapviz/map_canvas.h>
@@ -61,24 +59,24 @@ class GridPlugin : public mapviz::MapvizPlugin
 
 public:
   GridPlugin();
-  virtual ~GridPlugin();
+  ~GridPlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas);
-  void Shutdown();
+  bool Initialize(QGLWidget* canvas) override;
+  void Shutdown() override {}
 
-  void Draw(double x, double y, double scale);
+  void Draw(double x, double y, double scale) override;
 
-  void Transform();
+  void Transform() override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path);
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent);
+  QWidget* GetConfigWidget(QWidget* parent) override;
 
 protected:
-  void PrintError(const std::string& message);
-  void PrintInfo(const std::string& message);
-  void PrintWarning(const std::string& message);
+  void PrintError(const std::string& message) override;
+  void PrintInfo(const std::string& message) override;
+  void PrintWarning(const std::string& message) override;
 
 protected Q_SLOTS:
   void SelectFrame();
@@ -89,7 +87,7 @@ protected Q_SLOTS:
   void SetSize(double size);
   void SetRows(int rows);
   void SetColumns(int columns);
-  void DrawIcon();
+  void DrawIcon() override;
 
 private:
   Ui::grid_config ui_;
@@ -97,7 +95,6 @@ private:
 
   double alpha_;
 
-  // tf::Point top_left_;
   tf2::Vector3 top_left_;
 
   double size_;

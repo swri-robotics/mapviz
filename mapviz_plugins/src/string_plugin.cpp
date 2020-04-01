@@ -49,15 +49,17 @@ namespace mapviz_plugins
   const char* StringPlugin::OFFSET_X_KEY = "offset_x";
   const char* StringPlugin::OFFSET_Y_KEY = "offset_y";
 
-  StringPlugin::StringPlugin() :
-    config_widget_(new QWidget()),
-    anchor_(TOP_LEFT),
-    units_(PIXELS),
-    offset_x_(0),
-    offset_y_(0),
-    has_message_(false),
-    has_painted_(false),
-    color_(Qt::black)
+  StringPlugin::StringPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , anchor_(TOP_LEFT)
+  , units_(PIXELS)
+  , offset_x_(0)
+  , offset_y_(0)
+  , has_message_(false)
+  , has_painted_(false)
+  , color_(Qt::black)
   {
     ui_.setupUi(config_widget_);
     // Set background white
@@ -322,7 +324,7 @@ namespace mapviz_plugins
         string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_, rclcpp::QoS(1),
           std::bind(&StringPlugin::stringCallback, this, std::placeholders::_1));
 
-        RCLCPP_INFO(node_->get_logger(), "Subscripbing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }

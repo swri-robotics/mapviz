@@ -46,10 +46,12 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MarkerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  MarkerPlugin::MarkerPlugin() :
-    config_widget_(new QWidget()),
-    connected_(false),
-    has_message_(false)
+  MarkerPlugin::MarkerPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , connected_(false)
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -179,7 +181,6 @@ namespace mapviz_plugins
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Unchecked);
         item->setCheckState(Qt::Checked);
-        // item->setData(Qt::StatusTipRole, layer_string);
       }
 
 

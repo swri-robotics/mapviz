@@ -27,7 +27,6 @@
 #include <opencv2/core/core.hpp>
 
 // ROS libraries
-// #include <ros/master.h>
 #include <rclcpp/rclcpp.hpp>
 
 #include <swri_image_util/geometry_util.h>
@@ -47,7 +46,11 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GpsPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  GpsPlugin::GpsPlugin() : config_widget_(new QWidget())
+  GpsPlugin::GpsPlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -145,13 +148,11 @@ namespace mapviz_plugins
     // radians.
     // Furthermore, the track rotates in the opposite direction and is also
     // offset by 90 degrees, so all of that has to be compensated for.
-    // stamped_point.orientation =
-    //     tf2::createQuaternionFromYaw((-gps.track * (M_PI / 180.0)) + M_PI_2);
     auto temp_quat = tf2::Quaternion();
     temp_quat.setRPY(0, 0, (-gps->track * (M_PI / 180.0)) + M_PI_2);
     stamped_point.orientation = temp_quat;
 
-    pushPoint( std::move( stamped_point) );
+    pushPoint( std::move(stamped_point) );
   }
 
   void GpsPlugin::PrintError(const std::string& message)
@@ -196,16 +197,12 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      // std::string topic;
-      // node["topic"] >> topic;
       std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
     }
 
     if (node["color"])
     {
-      // std::string color;
-      // node["color"] >> color;
       std::string color = node["color"].as<std::string>();
       QColor qcolor(color.c_str());
       SetColor(qcolor);
@@ -214,8 +211,6 @@ namespace mapviz_plugins
 
     if (node["draw_style"])
     {
-      // std::string draw_style;
-      // node["draw_style"] >> draw_style;
       std::string draw_style = node["draw_style"].as<std::string>();
 
       if (draw_style == "lines")

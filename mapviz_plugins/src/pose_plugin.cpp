@@ -40,7 +40,6 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
-#include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
 #include <mapviz/select_topic_dialog.h>
 
@@ -57,7 +56,11 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PosePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PosePlugin::PosePlugin() : config_widget_(new QWidget())
+  PosePlugin::PosePlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -93,10 +96,6 @@ namespace mapviz_plugins
             SLOT(LapToggled(bool)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
-  }
-
-  PosePlugin::~PosePlugin()
-  {
   }
 
   void PosePlugin::SelectTopic()
@@ -160,7 +159,7 @@ namespace mapviz_plugins
         pose->pose.orientation.z,
         pose->pose.orientation.w);
 
-    pushPoint( std::move( stamped_point) );
+    pushPoint( std::move(stamped_point) );
   }
 
   void PosePlugin::PrintError(const std::string& message)
@@ -243,7 +242,7 @@ namespace mapviz_plugins
 
     if (node["buffer_size"])
     {
-      double buffer_size = node["buffer_size"].as<double>();
+      int buffer_size = node["buffer_size"].as<int>();
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }

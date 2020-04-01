@@ -73,9 +73,7 @@ public:
   ~PointCloud2Plugin() override = default;
 
   bool Initialize(QGLWidget* canvas) override;
-  void Shutdown() override
-  {
-  }
+  void Shutdown() override {}
 
   void ClearHistory() override;
 

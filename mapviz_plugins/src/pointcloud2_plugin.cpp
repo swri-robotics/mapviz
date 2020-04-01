@@ -34,7 +34,6 @@
 #include <boost/algorithm/string.hpp>
 
 // QT libraries
-#include <QColorDialog>
 #include <QDialog>
 #include <QGLWidget>
 
@@ -48,8 +47,6 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
-#include <algorithm>
-#include <cmath>
 #include <cstdio>
 #include <map>
 #include <string>
@@ -63,19 +60,21 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointCloud2Plugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PointCloud2Plugin::PointCloud2Plugin() :
-      config_widget_(new QWidget()),
-      topic_(""),
-      alpha_(1.0),
-      max_value_(100.0),
-      min_value_(0.0),
-      point_size_(3),
-      buffer_size_(1),
-      new_topic_(true),
-      has_message_(false),
-      num_of_feats_(0),
-      need_new_list_(true),
-      need_minmax_(false)
+  PointCloud2Plugin::PointCloud2Plugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , topic_("")
+  , alpha_(1.0)
+  , max_value_(100.0)
+  , min_value_(0.0)
+  , point_size_(3)
+  , buffer_size_(1)
+  , new_topic_(true)
+  , has_message_(false)
+  , num_of_feats_(0)
+  , need_new_list_(true)
+  , need_minmax_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -167,8 +166,6 @@ namespace mapviz_plugins
                      SIGNAL(VisibleChanged(bool)),
                      this,
                      SLOT(SetSubscription(bool)));
-
-    PrintInfo("Constructed PointCloud2Plugin");
   }
 
   void PointCloud2Plugin::ClearHistory()
@@ -596,7 +593,7 @@ namespace mapviz_plugins
       case 7:
         return *reinterpret_cast<const float*>(data + feature_info.offset);
       case 8:
-        return *reinterpret_cast<const double*>(data + feature_info.offset);
+        return static_cast<float>(*reinterpret_cast<const double*>(data + feature_info.offset));
       default:
         RCLCPP_WARN(node_->get_logger(), "Unknown data type in point: %d", feature_info.datatype);
         return 0.0;
@@ -654,7 +651,7 @@ namespace mapviz_plugins
             scan.gl_point.size() * sizeof(float),
             scan.gl_point.data(),
             GL_STATIC_DRAW);
-          glVertexPointer( 2, GL_FLOAT, 0, 0);
+          glVertexPointer( 2, GL_FLOAT, 0, nullptr);
 
           glBindBuffer(GL_ARRAY_BUFFER, scan.color_vbo);  // color
           glBufferData(
@@ -662,7 +659,7 @@ namespace mapviz_plugins
             scan.gl_color.size() * sizeof(uint8_t),
             scan.gl_color.data(),
             GL_STATIC_DRAW);
-          glColorPointer( 4, GL_UNSIGNED_BYTE, 0, 0);
+          glColorPointer( 4, GL_UNSIGNED_BYTE, 0, nullptr);
 
           glDrawArrays(GL_POINTS, 0, scan.gl_point.size() / 2 );
         }

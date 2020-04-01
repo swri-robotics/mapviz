@@ -27,7 +27,6 @@
 #include <opencv2/core/core.hpp>
 
 // ROS libraries
-#include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
 
 #include <mapviz/select_topic_dialog.h>
@@ -45,7 +44,11 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::NavSatPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  NavSatPlugin::NavSatPlugin() : config_widget_(new QWidget())
+  NavSatPlugin::NavSatPlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -137,7 +140,7 @@ namespace mapviz_plugins
     stamped_point.orientation.setRPY(0, 0, 0);
     stamped_point.source_frame = tf_manager_->LocalXyUtil()->Frame();
 
-    pushPoint( std::move(stamped_point ) );
+    pushPoint( std::move(stamped_point) );
   }
 
   void NavSatPlugin::PrintError(const std::string& message)

@@ -41,7 +41,6 @@
 #endif
 
 // ROS Libraries
-// #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
@@ -60,9 +59,10 @@ namespace mapviz_plugins
 {
 
 CoordinatePickerPlugin::CoordinatePickerPlugin()
-  : config_widget_(new QWidget()),
-  map_canvas_(NULL),
-  copy_on_click_(false)
+  : MapvizPlugin()
+  , config_widget_(new QWidget())
+  , map_canvas_(nullptr)
+  , copy_on_click_(false)
 {
   ui_.setupUi(config_widget_);
 
@@ -75,9 +75,7 @@ CoordinatePickerPlugin::CoordinatePickerPlugin()
   QObject::connect(ui_.clearListButton, SIGNAL(clicked()),
                    this, SLOT(ClearCoordList()));
 
-#if QT_VERSION >= 0x050000
   ui_.coordTextEdit->setPlaceholderText(tr("Click on the map; coordinates appear here"));
-#endif
 }
 
 CoordinatePickerPlugin::~CoordinatePickerPlugin()
@@ -123,11 +121,7 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
-#if QT_VERSION >= 0x050000
   QPointF point = event->localPos();
-#else
-  QPointF point = event->posF();
-#endif
   RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;
@@ -153,7 +147,6 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
       "Point in fixed frame: %f %f",
       transformed.x(),
       transformed.y());
-    // tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
     tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
     position = transform * position;
     point.setX(position.x());
@@ -184,11 +177,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 
   if (copy_on_click_)
   {
-#if QT_VERSION >= 0x050000
     QClipboard* clipboard = QGuiApplication::clipboard();
-#else
-    QClipboard* clipboard = QApplication::clipboard();
-#endif
     clipboard->setText(new_point);
   }
 
@@ -258,7 +247,6 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
   if (node["frame"])
   {
     std::string frame;
-    // node["frame"] >> frame;
     frame = node["frame"].as<std::string>();
     ui_.frame->setText(QString::fromStdString(frame));
   }
@@ -266,7 +254,6 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
   if (node["copy"])
   {
     bool copy;
-    // node["copy"] >> copy;
     copy = node["copy"].as<bool>();
     if (copy)
     {

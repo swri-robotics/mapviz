@@ -47,18 +47,19 @@
 namespace mapviz_plugins
 {
   PointDrawingPlugin::PointDrawingPlugin()
-      : arrow_size_(25),
-        draw_style_(LINES),
-        position_tolerance_(0.0),
-        buffer_size_(0),
-        covariance_checked_(false),
-        show_all_covariances_checked_(false),
-        new_lap_(true),
-        lap_checked_(false),
-        buffer_holder_(false),
-        scale_(1.0),
-        static_arrow_sizes_(false),
-        got_begin_(false)
+  : MapvizPlugin()
+  , arrow_size_(25)
+  , draw_style_(LINES)
+  , position_tolerance_(0.0)
+  , buffer_size_(0)
+  , covariance_checked_(false)
+  , show_all_covariances_checked_(false)
+  , new_lap_(true)
+  , lap_checked_(false)
+  , buffer_holder_(false)
+  , scale_(1.0)
+  , static_arrow_sizes_(false)
+  , got_begin_(false)
   {
     QObject::connect(this,
                      SIGNAL(TargetFrameChanged(const std::string&)),
@@ -176,7 +177,7 @@ namespace mapviz_plugins
     Transform();
   }
 
-  void PointDrawingPlugin::pushPoint(const StampedPoint& point)
+  void PointDrawingPlugin::pushPoint(StampedPoint point)
   {
     cur_point_ = point;
 
@@ -184,7 +185,7 @@ namespace mapviz_plugins
         (point.point.distance(points_.back().point)) >=
         (position_tolerance_))
     {
-      points_.push_back(point);
+      points_.push_back(std::move(point));
     }
 
     if (buffer_size_ > 0)
@@ -543,10 +544,10 @@ namespace mapviz_plugins
         }
         glBegin(GL_LINE_STRIP);
 
-        for (uint32_t i = 0; i < pt.transformed_cov_points.size(); i++)
+        for (const auto & transformed_cov_point : pt.transformed_cov_points)
         {
-          glVertex2d(pt.transformed_cov_points[i].getX(),
-                     pt.transformed_cov_points[i].getY());
+          glVertex2d(transformed_cov_point.getX(),
+                     transformed_cov_point.getY());
         }
 
         glVertex2d(pt.transformed_cov_points.front().getX(),
@@ -576,7 +577,7 @@ namespace mapviz_plugins
     glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
     glLineWidth(2);
     QColor base_color = color_;
-    if (laps_.size() != 0)
+    if (!laps_.empty())
     {
       for (size_t i = 0; i < laps_.size(); i++)
       {

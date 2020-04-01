@@ -51,7 +51,11 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PathPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PathPlugin::PathPlugin() : config_widget_(new QWidget())
+  PathPlugin::PathPlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
     ui_.path_color->setColor(Qt::green);
@@ -72,14 +76,8 @@ namespace mapviz_plugins
             SLOT(SetColor(const QColor&)));
   }
 
-  PathPlugin::~PathPlugin()
-  {
-  }
-
   void PathPlugin::SelectTopic()
   {
-    // ros::master::TopicInfo topic =
-    //     mapviz::SelectTopicDialog::selectTopic("nav_msgs/Path");
     std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Path");
 
     if (!topic.empty())
@@ -99,7 +97,6 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      // path_sub_.shutdown();
       path_sub_.reset();
 
       topic_ = topic;

@@ -50,7 +50,6 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
-#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <limits>
@@ -68,15 +67,17 @@ namespace stu = swri_transform_util;
 
 namespace mapviz_plugins
 {
-  PlanRoutePlugin::PlanRoutePlugin() :
-    config_widget_(new QWidget()),
-    map_canvas_(nullptr),
-    failed_service_(false),
-    selected_point_(-1),
-    is_mouse_down_(false),
-    mouse_down_time_(0),
-    max_ms_(Q_INT64_C(500)),
-    max_distance_(2.0)
+  PlanRoutePlugin::PlanRoutePlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , map_canvas_(nullptr)
+  , failed_service_(false)
+  , selected_point_(-1)
+  , is_mouse_down_(false)
+  , mouse_down_time_(0)
+  , max_ms_(Q_INT64_C(500))
+  , max_distance_(2.0)
   {
     ui_.setupUi(config_widget_);
 
@@ -245,11 +246,7 @@ namespace mapviz_plugins
     int closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();
 
-#if QT_VERSION >= 0x050000
     QPointF point = event->localPos();
-#else
-    QPointF point = event->posF();
-#endif
     stu::Transform transform;
     if (tf_manager_->GetTransform(target_frame_, stu::_wgs84_frame, transform))
     {
@@ -282,11 +279,7 @@ namespace mapviz_plugins
         return true;
       } else {
         is_mouse_down_ = true;
-#if QT_VERSION >= 0x050000
         mouse_down_pos_ = event->localPos();
-#else
-        mouse_down_pos_ = event->posF();
-#endif
         mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
         return false;
       }
@@ -304,11 +297,7 @@ namespace mapviz_plugins
 
   bool PlanRoutePlugin::handleMouseRelease(QMouseEvent* event)
   {
-#if QT_VERSION >= 0x050000
     QPointF point = event->localPos();
-#else
-    QPointF point = event->posF();
-#endif
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < waypoints_.size())
     {
       stu::Transform transform;
@@ -359,11 +348,7 @@ namespace mapviz_plugins
   {
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < waypoints_.size())
     {
-#if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
-#else
-      QPointF point = event->posF();
-#endif
       stu::Transform transform;
       if (tf_manager_->GetTransform(stu::_wgs84_frame, target_frame_, transform))
       {

@@ -38,11 +38,8 @@
 #include <QWidget>
 
 // ROS libraries
-// #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
-// #include <tf/transform_datatypes.h>
 #include <tf2/transform_datatypes.h>
-// #include <nav_msgs/Odometry.h>
 #include <nav_msgs/msg/odometry.hpp>
 
 #include <mapviz/map_canvas.h>
@@ -63,29 +60,27 @@ class OdometryPlugin : public mapviz_plugins::PointDrawingPlugin
 
   public:
   OdometryPlugin();
-  virtual ~OdometryPlugin();
+  ~OdometryPlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas);
-  void Shutdown()
-  {
-  }
+  bool Initialize(QGLWidget* canvas) override;
+  void Shutdown() override {}
 
-  void Paint(QPainter* painter, double x, double y, double scale);
-  void Draw(double x, double y, double scale);
-  void LoadConfig(const YAML::Node& node, const std::string& path);
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+  void Paint(QPainter* painter, double x, double y, double scale) override;
+  void Draw(double x, double y, double scale) override;
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent);
+  QWidget* GetConfigWidget(QWidget* parent) override;
 
-  bool SupportsPainting()
+  bool SupportsPainting() override
   {
     return true;
   }
 
   protected:
-  void PrintError(const std::string& message);
-  void PrintInfo(const std::string& message);
-  void PrintWarning(const std::string& message);
+  void PrintError(const std::string& message) override;
+  void PrintInfo(const std::string& message) override;
+  void PrintWarning(const std::string& message) override;
 
   protected Q_SLOTS:
   void SelectTopic();
@@ -95,10 +90,8 @@ class OdometryPlugin : public mapviz_plugins::PointDrawingPlugin
   Ui::odometry_config ui_;
   QWidget* config_widget_;
   std::string topic_;
-  // ros::Subscriber odometry_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
   bool has_message_;
-  // void odometryCallback(const nav_msgs::OdometryConstPtr odometry);
   void odometryCallback(const nav_msgs::msg::Odometry::SharedPtr odometry);
 };
 }   // namespace mapviz_plugins

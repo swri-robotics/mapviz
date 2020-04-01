@@ -65,9 +65,7 @@ class DrawPolygonPlugin : public mapviz::MapvizPlugin
   ~DrawPolygonPlugin() override;
 
   bool Initialize(QGLWidget* canvas) override;
-  void Shutdown() override
-  {
-  }
+  void Shutdown() override {}
 
   void Draw(double x, double y, double scale) override;
 

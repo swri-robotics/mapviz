@@ -38,7 +38,6 @@
 #include <opencv2/core/core.hpp>
 
 // ROS libraries
-// #include <ros/master.h>
 #include <rclcpp/rclcpp.hpp>
 
 #include <swri_image_util/geometry_util.h>
@@ -58,7 +57,11 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OdometryPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  OdometryPlugin::OdometryPlugin() : config_widget_(new QWidget())
+  OdometryPlugin::OdometryPlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
     ui_.color->setColor(Qt::green);
@@ -97,10 +100,6 @@ namespace mapviz_plugins
                      SLOT(ShowAllCovariancesToggled(bool)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
-  }
-
-  OdometryPlugin::~OdometryPlugin()
-  {
   }
 
   void OdometryPlugin::SelectTopic()
@@ -267,7 +266,6 @@ namespace mapviz_plugins
         QPointF qpoint = tf.map(QPointF(point.transformed_point.getX(),
                                         point.transformed_point.getY()));
         QString time;
-        // time.setNum(point.stamp.toSec(), 'g', 12);
         time.setNum(point.stamp.seconds(), 'g', 12);
         painter->drawText(qpoint, time);
       }
@@ -321,7 +319,7 @@ namespace mapviz_plugins
 
     if (node["buffer_size"])
     {
-      double buffer_size = node["buffer_size"].as<double>();
+      int buffer_size = node["buffer_size"].as<int>();
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
@@ -356,7 +354,7 @@ namespace mapviz_plugins
 
     if (node["arrow_size"])
     {
-      double arrow_size = node["arrow_size"].as<int>();
+      int arrow_size = node["arrow_size"].as<int>();
       ui_.arrow_size->setValue(arrow_size);
       SetArrowSize(arrow_size);
     }

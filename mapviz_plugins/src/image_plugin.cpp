@@ -34,7 +34,6 @@
 #include <QGLWidget>
 
 // ROS libraries
-// #include <ros/master.h>
 #include <sensor_msgs/image_encodings.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -52,21 +51,23 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::ImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  ImagePlugin::ImagePlugin() :
-    config_widget_(new QWidget()),
-    anchor_(TOP_LEFT),
-    units_(PIXELS),
-    offset_x_(0),
-    offset_y_(0),
-    width_(320),
-    height_(240),
-    transport_("default"),
-    force_resubscribe_(false),
-    has_image_(false),
-    last_width_(0),
-    last_height_(0),
-    original_aspect_ratio_(1.0),
-    has_message_(false)
+  ImagePlugin::ImagePlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , anchor_(TOP_LEFT)
+  , units_(PIXELS)
+  , offset_x_(0)
+  , offset_y_(0)
+  , width_(320)
+  , height_(240)
+  , transport_("default")
+  , force_resubscribe_(false)
+  , has_image_(false)
+  , last_width_(0)
+  , last_height_(0)
+  , original_aspect_ratio_(1.0)
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -237,6 +238,8 @@ namespace mapviz_plugins
       PrintWarning("Topic is Hidden");
       initialized_ = false;
       has_message_ = false;
+      // Force it to resubscribe next time it's made visible
+      force_resubscribe_ = true;
       if (!topic.empty())
       {
         topic_ = topic;

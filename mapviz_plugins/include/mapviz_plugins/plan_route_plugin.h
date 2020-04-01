@@ -68,9 +68,7 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin
   ~PlanRoutePlugin() override;
 
   bool Initialize(QGLWidget* canvas) override;
-  void Shutdown() override
-  {
-  }
+  void Shutdown() override {}
 
   void Draw(double x, double y, double scale) override;
   void Paint(QPainter* painter, double x, double y, double scale) override;

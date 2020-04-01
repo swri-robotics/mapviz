@@ -60,13 +60,16 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MeasuringPlugin, mapviz::MapvizPlugin)
 namespace mapviz_plugins
 {
 
-MeasuringPlugin::MeasuringPlugin():
-  config_widget_(new QWidget()),
-  map_canvas_(nullptr),
-  selected_point_(-1),
-  is_mouse_down_(false),
-  max_ms_(Q_INT64_C(500)),
-  max_distance_(2.0)
+MeasuringPlugin::MeasuringPlugin()
+: MapvizPlugin()
+, ui_()
+, config_widget_(new QWidget())
+, map_canvas_(nullptr)
+, selected_point_(-1)
+, is_mouse_down_(false)
+, mouse_down_time_(0)
+, max_ms_(Q_INT64_C(500))
+, max_distance_(2.0)
 {
   ui_.setupUi(config_widget_);
   ui_.main_color->setColor(Qt::black);
@@ -85,11 +88,9 @@ MeasuringPlugin::MeasuringPlugin():
   connect(ui_.main_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
   connect(ui_.bkgnd_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
 
-#if QT_VERSION >= 0x050000
   ui_.measurement->setText(tr("Click on the map. Distance between clicks will appear here"));
   ui_.totaldistance->setText(
     tr("Click on the map. Total distance between clicks will appear here"));
-#endif
 }
 
 MeasuringPlugin::~MeasuringPlugin()
@@ -118,7 +119,7 @@ QWidget* MeasuringPlugin::GetConfigWidget(QWidget* parent)
 
 bool MeasuringPlugin::Initialize(QGLWidget* canvas)
 {
-  map_canvas_ = static_cast< mapviz::MapCanvas* >(canvas);
+  map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
   map_canvas_->installEventFilter(this);
 
   initialized_ = true;
@@ -132,11 +133,11 @@ bool MeasuringPlugin::eventFilter(QObject* object, QEvent* event)
   switch (event->type())
   {
   case QEvent::MouseButtonPress:
-    return handleMousePress(static_cast< QMouseEvent* >(event));
+    return handleMousePress(dynamic_cast<QMouseEvent*>(event));
   case QEvent::MouseButtonRelease:
-    return handleMouseRelease(static_cast< QMouseEvent* >(event));
+    return handleMouseRelease(dynamic_cast<QMouseEvent*>(event));
   case QEvent::MouseMove:
-    return handleMouseMove(static_cast< QMouseEvent* >(event));
+    return handleMouseMove(dynamic_cast<QMouseEvent*>(event));
   default:
     return false;
   }
@@ -147,11 +148,7 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
   selected_point_ = -1;
   int closest_point = 0;
   double closest_distance = std::numeric_limits<double>::max();
-#if QT_VERSION >= 0x050000
   QPointF point = event->localPos();
-#else
-  QPointF point = event->posF();
-#endif
   RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
   for (size_t i = 0; i < vertices_.size(); i++)
   {
@@ -174,11 +171,7 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
       return true;
     } else {
       is_mouse_down_ = true;
-#if QT_VERSION >= 0x050000
       mouse_down_pos_ = event->localPos();
-#else
-      mouse_down_pos_ = event->posF();
-#endif
       mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
       return false;
     }
@@ -199,11 +192,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
   if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
   {
-#if QT_VERSION >= 0x050000
     QPointF point = event->localPos();
-#else
-    QPointF point = event->posF();
-#endif
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
     tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
     vertices_[selected_point_].setX(position.x());
@@ -215,11 +204,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 
     return true;
   } else if (is_mouse_down_) {
-#if QT_VERSION >= 0x050000
     qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
-#else
-    qreal distance = QLineF(mouse_down_pos_, event->posF()).length();
-#endif
     qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
     // Only fire the event if the mouse has moved less than the maximum distance
@@ -228,11 +213,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
     // or just holding the cursor in place.
     if (msecsDiff < max_ms_ && distance <= max_distance_)
     {
-#if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
-#else
-      QPointF point = event->posF();
-#endif
 
       QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
       tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
@@ -252,9 +233,8 @@ void MeasuringPlugin::DistanceCalculation()
   tf2::Vector3 last_position_(0, 0, 0);
   std::string frame = target_frame_;
   measurements_.clear();
-  for (size_t i = 0; i < vertices_.size(); i++)
+  for (auto vertex : vertices_)
   {
-      tf2::Vector3 vertex = vertices_[i];
       if (last_position_ != tf2::Vector3(0, 0, 0))
       {
           distance_instant = last_position_.distance(vertex);
@@ -292,11 +272,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 {
   if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
   {
-#if QT_VERSION >= 0x050000
     QPointF point = event->localPos();
-#else
-    QPointF point = event->posF();
-#endif
     std::string frame = target_frame_;
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
     tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);

@@ -34,15 +34,11 @@
 #include <QDialog>
 #include <QGLWidget>
 #include <QMouseEvent>
-#include <QPainter>
 #include <QPalette>
-
-#include <opencv2/core/core.hpp>
 
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <mapviz/select_frame_dialog.h>
-#include <swri_transform_util/frames.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -60,13 +56,16 @@ namespace stu = swri_transform_util;
 
 namespace mapviz_plugins
 {
-  DrawPolygonPlugin::DrawPolygonPlugin() :
-    config_widget_(new QWidget()),
-    map_canvas_(nullptr),
-    selected_point_(-1),
-    is_mouse_down_(false),
-    max_ms_(Q_INT64_C(500)),
-    max_distance_(2.0)
+  DrawPolygonPlugin::DrawPolygonPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , map_canvas_(nullptr)
+  , selected_point_(-1)
+  , is_mouse_down_(false)
+  , mouse_down_time_(0)
+  , max_ms_(Q_INT64_C(500))
+  , max_distance_(2.0)
   {
     ui_.setupUi(config_widget_);
 
@@ -123,9 +122,9 @@ namespace mapviz_plugins
     if (polygon_topic_ != ui_.topic->text().toStdString())
     {
       polygon_topic_ = ui_.topic->text().toStdString();
+      rclcpp::QoS qos = rclcpp::QoS(1).durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
       polygon_pub_ = node_->create_publisher<geometry_msgs::msg::PolygonStamped>(
-          polygon_topic_, rclcpp::QoS(1));
-      // TODO(P.J. Reed) pjr make this latched
+          polygon_topic_, qos);
     }
 
     geometry_msgs::msg::PolygonStamped::UniquePtr polygon =
@@ -203,11 +202,7 @@ namespace mapviz_plugins
     int closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();
 
-#if QT_VERSION >= 0x050000
     QPointF point = event->localPos();
-#else
-    QPointF point = event->posF();
-#endif
     stu::Transform transform;
     std::string frame = ui_.frame->text().toStdString();
     if (tf_manager_->GetTransform(target_frame_, frame, transform))
@@ -237,11 +232,7 @@ namespace mapviz_plugins
         return true;
       } else {
         is_mouse_down_ = true;
-#if QT_VERSION >= 0x050000
         mouse_down_pos_ = event->localPos();
-#else
-        mouse_down_pos_ = event->posF();
-#endif
         mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
         return false;
       }
@@ -262,11 +253,7 @@ namespace mapviz_plugins
     std::string frame = ui_.frame->text().toStdString();
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
-#if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
-#else
-      QPointF point = event->posF();
-#endif
       stu::Transform transform;
       if (tf_manager_->GetTransform(frame, target_frame_, transform))
       {
@@ -280,11 +267,7 @@ namespace mapviz_plugins
       selected_point_ = -1;
       return true;
     } else if (is_mouse_down_) {
-#if QT_VERSION >= 0x050000
       qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
-#else
-      qreal distance = QLineF(mouse_down_pos_, event->posF()).length();
-#endif
       qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
       // Only fire the event if the mouse has moved less than the maximum distance
@@ -293,11 +276,7 @@ namespace mapviz_plugins
       // or just holding the cursor in place.
       if (msecsDiff < max_ms_ && distance <= max_distance_)
       {
-#if QT_VERSION >= 0x050000
         QPointF point = event->localPos();
-#else
-        QPointF point = event->posF();
-#endif
 
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
         RCLCPP_INFO(
@@ -334,11 +313,7 @@ namespace mapviz_plugins
   {
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
-#if QT_VERSION >= 0x050000
       QPointF point = event->localPos();
-#else
-      QPointF point = event->posF();
-#endif
       stu::Transform transform;
       std::string frame = ui_.frame->text().toStdString();
       if (tf_manager_->GetTransform(frame, target_frame_, transform))

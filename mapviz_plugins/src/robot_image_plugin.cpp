@@ -46,7 +46,6 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
-#include <algorithm>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -55,15 +54,19 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RobotImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  RobotImagePlugin::RobotImagePlugin() :
-    config_widget_(new QWidget()),
-    width_(2.0),
-    height_(1.0),
-    offset_x_(0.0),
-    offset_y_(0.0),
-    image_ratio_(1.0),
-    texture_loaded_(false),
-    transformed_(false)
+  RobotImagePlugin::RobotImagePlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , width_(2.0)
+  , height_(1.0)
+  , offset_x_(0.0)
+  , offset_y_(0.0)
+  , image_ratio_(1.0)
+  , dimension_(0)
+  , texture_id_(0)
+  , texture_loaded_(false)
+  , transformed_(false)
   {
     ui_.setupUi(config_widget_);
 

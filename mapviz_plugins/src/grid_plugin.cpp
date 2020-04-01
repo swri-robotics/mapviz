@@ -50,14 +50,16 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GridPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  GridPlugin::GridPlugin() :
-    config_widget_(new QWidget()),
-    alpha_(1.0),
-    top_left_(0, 0, 0),
-    size_(1),
-    rows_(1),
-    columns_(1),
-    transformed_(false)
+  GridPlugin::GridPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , alpha_(1.0)
+  , top_left_(0, 0, 0)
+  , size_(1)
+  , rows_(1)
+  , columns_(1)
+  , transformed_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -82,15 +84,6 @@ namespace mapviz_plugins
     QObject::connect(ui_.rows, SIGNAL(valueChanged(int)), this, SLOT(SetRows(int)));
     QObject::connect(ui_.columns, SIGNAL(valueChanged(int)), this, SLOT(SetColumns(int)));
     connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
-  }
-
-  GridPlugin::~GridPlugin()
-  {
-    Shutdown();
-  }
-
-  void GridPlugin::Shutdown()
-  {
   }
 
   void GridPlugin::DrawIcon()
@@ -212,34 +205,30 @@ namespace mapviz_plugins
 
   void GridPlugin::Draw(double x, double y, double scale)
   {
-    if (transformed_)
-    {
+    if (transformed_) {
       QColor color = ui_.color->color();
 
       glLineWidth(3);
       glColor4d(color.redF(), color.greenF(), color.blueF(), alpha_);
       glBegin(GL_LINES);
 
-        std::list<tf2::Vector3>::iterator transformed_left_it = transformed_left_points_.begin();
-        std::list<tf2::Vector3>::iterator transformed_right_it = transformed_right_points_.begin();
-        for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it)
-        {
-          glVertex2d(transformed_left_it->getX(), transformed_left_it->getY());
-          glVertex2d(transformed_right_it->getX(), transformed_right_it->getY());
+      auto transformed_left_it = transformed_left_points_.begin();
+      auto transformed_right_it = transformed_right_points_.begin();
+      for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it) {
+        glVertex2d(transformed_left_it->getX(), transformed_left_it->getY());
+        glVertex2d(transformed_right_it->getX(), transformed_right_it->getY());
 
-          ++transformed_right_it;
-        }
+        ++transformed_right_it;
+      }
 
-        std::list<tf2::Vector3>::iterator transformed_top_it = transformed_top_points_.begin();
-        std::list<tf2::Vector3>::iterator transformed_bottom_it =
-          transformed_bottom_points_.begin();
-        for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it)
-        {
-          glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
-          glVertex2d(transformed_bottom_it->getX(), transformed_bottom_it->getY());
+      auto transformed_top_it = transformed_top_points_.begin();
+      auto transformed_bottom_it = transformed_bottom_points_.begin();
+      for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it) {
+        glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
+        glVertex2d(transformed_bottom_it->getX(), transformed_bottom_it->getY());
 
-          ++transformed_bottom_it;
-        }
+        ++transformed_bottom_it;
+      }
 
       glEnd();
 
@@ -307,8 +296,8 @@ namespace mapviz_plugins
 
   void GridPlugin::Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst)
   {
-    std::list<tf2::Vector3>::iterator points_it = src.begin();
-    std::list<tf2::Vector3>::iterator transformed_it = dst.begin();
+    auto points_it = src.begin();
+    auto transformed_it = dst.begin();
     for (; points_it != src.end() && transformed_it != dst.end(); ++points_it)
     {
       (*transformed_it) = transform_ * (*points_it);
@@ -321,60 +310,48 @@ namespace mapviz_plugins
   {
     if (node["color"])
     {
-      // std::string color;
-      // node["color"] >> color;
       std::string color = node["color"].as<std::string>();
       ui_.color->setColor(QColor(color.c_str()));
     }
 
     if (node["frame"])
     {
-      // std::string frame;
-      // node["frame"] >> frame;
       std::string frame = node["frame"].as<std::string>();
       ui_.frame->setText(QString::fromStdString(frame));
     }
 
     if (node["x"])
     {
-      // float x = 0;
-      // node["x"] >> x;
       float x = node["x"].as<float>();
       ui_.x->setValue(x);
     }
 
     if (node["y"])
     {
-      // float y = 0;
-      // node["y"] >> y;
       float y = node["y"].as<float>();
       ui_.y->setValue(y);
     }
 
     if (node["alpha"])
     {
-      // node["alpha"] >> alpha_;
       alpha_ = node["alpha"].as<double>();
       ui_.alpha->setValue(alpha_);
     }
 
     if (node["size"])
     {
-      // node["size"] >> size_;
       size_ = node["size"].as<double>();
       ui_.size->setValue(size_);
     }
 
     if (node["rows"])
     {
-      // node["rows"] >> rows_;
       rows_ = node["rows"].as<int>();
       ui_.rows->setValue(rows_);
     }
 
     if (node["columns"])
     {
-      // node["columns"] >> columns_;
       columns_ = node["columns"].as<int>();
       ui_.columns->setValue(columns_);
     }

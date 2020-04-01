@@ -63,9 +63,7 @@ class TfFramePlugin : public mapviz_plugins::PointDrawingPlugin
   ~TfFramePlugin() override = default;
 
   bool Initialize(QGLWidget* canvas) override;
-  void Shutdown() override
-  {
-  }
+  void Shutdown() override {}
 
   void Draw(double x, double y, double scale) override;
 

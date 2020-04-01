@@ -45,10 +45,11 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointClickPublisherPlugin, mapviz::Mapviz
 
 namespace mapviz_plugins
 {
-  PointClickPublisherPlugin::PointClickPublisherPlugin() :
-    MapvizPlugin(),
-    config_widget_(new QWidget()),
-    canvas_(nullptr)
+  PointClickPublisherPlugin::PointClickPublisherPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , canvas_(nullptr)
   {
     ui_.setupUi(config_widget_);
 

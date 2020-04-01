@@ -44,12 +44,12 @@
 namespace mapviz_plugins
 {
 PlaceableWindowProxy::PlaceableWindowProxy()
-  :
-  target_(nullptr),
-  visible_(true),
-  has_cursor_(false),
-  state_(INACTIVE),
-  win_resize_timer_(-1)
+  : QObject()
+  , target_(nullptr)
+  , visible_(true)
+  , has_cursor_(false)
+  , state_(INACTIVE)
+  , win_resize_timer_(-1)
 {
 }
 

@@ -58,9 +58,11 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TexturedMarkerPlugin, mapviz::MapvizPlugi
 namespace mapviz_plugins
 {
 TexturedMarkerPlugin::TexturedMarkerPlugin()
-: alphaVal_(1.0f),   // Initialize the alpha value to default
-  config_widget_(new QWidget()),
-  has_message_(false)
+: MapvizPlugin()
+, ui_()
+, alphaVal_(1.0f)
+, config_widget_(new QWidget())
+, has_message_(false)
 {
   ui_.setupUi(config_widget_);
 
