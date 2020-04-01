@@ -53,19 +53,15 @@ namespace multires_image
     float height = std::ceil(m_geo.Height() / std::pow(2.0f, layer));
 
     // Calculate the number for tile rows and columns for this layer
-    m_columns = std::ceil(width / tileSize);
-    m_rows = std::ceil(height / tileSize);
+    m_columns = std::ceil(width / static_cast<float>(tileSize));
+    m_rows = std::ceil(height / static_cast<float>(tileSize));
 
     m_tiles.reserve(m_columns);
     for (int c = 0; c < m_columns; c++)
     {
-      m_tiles.push_back(std::vector<Tile*>());
+      m_tiles.emplace_back(std::vector<Tile*>());
       m_tiles[c].reserve(m_rows);
     }
-  }
-
-  TileSetLayer::~TileSetLayer(void)
-  {
   }
 
   bool TileSetLayer::Load()
@@ -82,10 +78,14 @@ namespace multires_image
       for (int32_t r = 0; r < m_rows; r++)
       {
         std::string rowString = QString::number(r).toStdString();
-        while (rowString.length() < 5) rowString = '0' + rowString;
+        while (rowString.length() < 5) {
+          rowString = '0' + rowString;
+        }
 
         std::string columnString = QString::number(c).toStdString();
-        while (columnString.length() < 5) columnString = '0' + columnString;
+        while (columnString.length() < 5) {
+          columnString = '0' + columnString;
+        }
 
         // Get 4 corners of this tile
         int left   = c       * m_tileSize * m_scale;
@@ -115,9 +115,10 @@ namespace multires_image
         m_geo.GetCoordinate(right, bottom, x, y);
         tf2::Vector3 bottom_right(x, y, 0);
 
+        std::stringstream ss;
+        ss << m_path << "/tile" << rowString << "x" << columnString << "." << extension;
         m_tiles[c].push_back(new Tile(
-          m_path + "/tile" + rowString + "x" +  columnString + "." + extension,
-          c, r, m_layer, top_left, top_right, bottom_left, bottom_right));
+          ss.str(), c, r, m_layer, top_left, top_right, bottom_left, bottom_right));
 
         needsTiles |= !m_tiles[c][r]->Exists();
       }

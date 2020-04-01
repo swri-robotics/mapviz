@@ -57,7 +57,7 @@ namespace tile_map
   {
   public:
     Image(const QString& uri, size_t uri_hash, uint64_t priority = 0);
-    ~Image();
+    ~Image() = default;
 
     QString Uri() const { return uri_; }
     size_t UriHash() const { return uri_hash_; }

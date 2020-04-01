@@ -52,7 +52,7 @@ public:
 
   void UpdateIndices()
   {
-    for (size_t i = 0; i < count(); i++) {
+    for (int i = 0; i < count(); i++) {
       item(i)->setData(Qt::UserRole, QVariant((static_cast<float>(i))));
     }
   }
@@ -96,7 +96,7 @@ Q_SIGNALS:
   void Clicked();
 
 protected:
-  void mousePressEvent(QMouseEvent* event) override
+  void mousePressEvent(QMouseEvent*) override
   {
     Q_EMIT Clicked();
   }
@@ -153,13 +153,13 @@ public:
   }
 
 protected:
-  void paintEvent(QPaintEvent* e) override
+  void paintEvent(QPaintEvent*) override
   {
     QPainter painter(this);
     painter.fillRect(0, 0, width(), height(), palette().color(QPalette::Button));
 
-    int x_offset = (width() - pixmap_.width()) / 2.0;
-    int y_offset = (height() - pixmap_.height()) / 2.0;
+    int x_offset = (width() - pixmap_.width()) / 2;
+    int y_offset = (height() - pixmap_.height()) / 2;
 
     painter.drawPixmap(x_offset, y_offset, pixmap_);
   }

@@ -91,7 +91,8 @@ public:
    * Draws on the Mapviz canvas using a QPainter; this is called after Draw().
    * You only need to implement this if you're actually using a QPainter.
    */
-  virtual void Paint(QPainter* painter, double x, double y, double scale) {}
+  virtual void Paint(QPainter* /* painter */, double /* x */,
+                     double /* y */, double /* scale */) {}
 
   void SetUseLatestTransforms(bool value)
   {
@@ -235,7 +236,7 @@ public:
   virtual void LoadConfig(const YAML::Node& load, const std::string& path) = 0;
   virtual void SaveConfig(YAML::Emitter& emitter, const std::string& path) = 0;
 
-  virtual QWidget* GetConfigWidget(QWidget* parent) { return NULL; }
+  virtual QWidget* GetConfigWidget(QWidget* /* parent */) { return nullptr; }
 
   virtual void PrintError(const std::string& message) = 0;
   virtual void PrintInfo(const std::string& message) = 0;

@@ -68,14 +68,16 @@ namespace tile_map
   QString TileMapPlugin::STAMEN_TONER_NAME = "Stamen (toner)";
   QString TileMapPlugin::STAMEN_WATERCOLOR_NAME = "Stamen (watercolor)";
 
-  TileMapPlugin::TileMapPlugin() :
-    config_widget_(new QWidget()),
-    transformed_(false),
-    last_center_x_(0.0),
-    last_center_y_(0.0),
-    last_scale_(0.0),
-    last_height_(0),
-    last_width_(0)
+  TileMapPlugin::TileMapPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , transformed_(false)
+  , last_center_x_(0.0)
+  , last_center_y_(0.0)
+  , last_scale_(0.0)
+  , last_height_(0)
+  , last_width_(0)
   {
     ui_.setupUi(config_widget_);
 
@@ -189,7 +191,7 @@ namespace tile_map
     QString current_source = ui_.source_combo->currentText();
     QString default_name = "";
 
-    std::map<QString, std::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(current_source);
+    auto iter = tile_sources_.find(current_source);
     if (iter != tile_sources_.end())
     {
       if (iter->second->IsCustom())
@@ -200,7 +202,7 @@ namespace tile_map
       {
         // If the user has picked Bing as they're source, we're not actually
         // saving a custom map source, just updating the API key
-        BingSource* bing_source = static_cast<BingSource*>(iter->second.get());
+        BingSource* bing_source = dynamic_cast<BingSource*>(iter->second.get());
         bing_source->SetApiKey(ui_.base_url_text->text());
         return;
       }
@@ -337,7 +339,7 @@ namespace tile_map
     }
   }
 
-  void TileMapPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void TileMapPlugin::LoadConfig(const YAML::Node& node, const std::string&)
   {
     if (node[CUSTOM_SOURCES_KEY])
     {
@@ -345,7 +347,7 @@ namespace tile_map
       YAML::Node::const_iterator source_iter;
       for (auto source_yaml : sources)
       {
-        std::string type = "";
+        std::string type;
         if (source_yaml[TYPE_KEY])
         {
           // If the type isn't set, we'll assume it's WMTS
@@ -399,7 +401,7 @@ namespace tile_map
     }
   }
 
-  void TileMapPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void TileMapPlugin::SaveConfig(YAML::Emitter& emitter, const std::string&)
   {
     emitter << YAML::Key << CUSTOM_SOURCES_KEY << YAML::Value << YAML::BeginSeq;
 

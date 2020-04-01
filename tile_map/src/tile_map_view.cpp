@@ -89,19 +89,19 @@ namespace tile_map
 
     transform_ = transform;
 
-    for (size_t i = 0; i < tiles_.size(); i++)
+    for (auto & tile : tiles_)
     {
-      for (size_t j = 0; j < tiles_[i].points_t.size(); j++)
+      for (size_t j = 0; j < tile.points_t.size(); j++)
       {
-        tiles_[i].points_t[j] = transform_ * tiles_[i].points[j];
+        tile.points_t[j] = transform_ * tile.points[j];
       }
     }
 
-    for (size_t i = 0; i < precache_.size(); i++)
+    for (auto & i : precache_)
     {
-      for (size_t j = 0; j < precache_[i].points_t.size(); j++)
+      for (size_t j = 0; j < i.points_t.size(); j++)
       {
-        precache_[i].points_t[j] = transform_ * precache_[i].points[j];
+        i.points_t[j] = transform_ * i.points[j];
       }
     }
   }
@@ -167,9 +167,9 @@ namespace tile_map
       int64_t right = std::min(max_size, left + size_);
       int64_t bottom = std::min(max_size, top + size_);
 
-      for (size_t i = 0; i < tiles_.size(); i++)
+      for (auto & tile : tiles_)
       {
-        tile_cache_->AddTexture(tiles_[i].texture);
+        tile_cache_->AddTexture(tile.texture);
       }
       tiles_.clear();
 
@@ -183,9 +183,9 @@ namespace tile_map
         }
       }
 
-      for (size_t i = 0; i < precache_.size(); i++)
+      for (auto & i : precache_)
       {
-        tile_cache_->AddTexture(precache_[i].texture);
+        tile_cache_->AddTexture(i.texture);
       }
       precache_.clear();
 
@@ -217,14 +217,14 @@ namespace tile_map
 
   void TileMapView::DrawTiles(std::vector<Tile>& tiles, int priority)
   {
-    for (size_t i = 0; i < tiles.size(); i++)
+    for (auto & tile : tiles)
     {
-      TexturePtr& texture = tiles[i].texture;
+      TexturePtr& texture = tile.texture;
 
       if (!texture)
       {
         bool failed;
-        texture = tile_cache_->GetTexture(tiles[i].url_hash, tiles[i].url, failed, priority);
+        texture = tile_cache_->GetTexture(tile.url_hash, tile.url, failed, priority);
       }
 
       if (texture)
@@ -235,19 +235,19 @@ namespace tile_map
 
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-        for (int32_t row = 0; row < tiles[i].subdiv_count; row++)
+        for (int32_t row = 0; row < tile.subdiv_count; row++)
         {
-          for (int32_t col = 0; col < tiles[i].subdiv_count; col++)
+          for (int32_t col = 0; col < tile.subdiv_count; col++)
           {
-            double u_0 = col * tiles[i].subwidth;
-            double v_0 = 1.0 - row * tiles[i].subwidth;
-            double u_1 = (col + 1.0) * tiles[i].subwidth;
-            double v_1 = 1.0 - (row + 1.0) * tiles[i].subwidth;
+            double u_0 = col * tile.subwidth;
+            double v_0 = 1.0 - row * tile.subwidth;
+            double u_1 = (col + 1.0) * tile.subwidth;
+            double v_1 = 1.0 - (row + 1.0) * tile.subwidth;
 
-            const tf2::Vector3& tl = tiles[i].points_t[row * (tiles[i].subdiv_count + 1) + col];
-            const tf2::Vector3& tr = tiles[i].points_t[row * (tiles[i].subdiv_count + 1) + col + 1];
-            const tf2::Vector3& br = tiles[i].points_t[(row + 1) * (tiles[i].subdiv_count + 1) + col + 1];
-            const tf2::Vector3& bl = tiles[i].points_t[(row + 1) * (tiles[i].subdiv_count + 1) + col];
+            const tf2::Vector3& tl = tile.points_t[row * (tile.subdiv_count + 1) + col];
+            const tf2::Vector3& tr = tile.points_t[row * (tile.subdiv_count + 1) + col + 1];
+            const tf2::Vector3& br = tile.points_t[(row + 1) * (tile.subdiv_count + 1) + col + 1];
+            const tf2::Vector3& bl = tile.points_t[(row + 1) * (tile.subdiv_count + 1) + col];
 
             // Triangle 1
             glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
@@ -312,14 +312,14 @@ namespace tile_map
       {
         double t_lat, t_lon;
         ToLatLon(level, x + col * tile.subwidth, y + row * tile.subwidth, t_lat, t_lon);
-        tile.points.push_back(tf2::Vector3(t_lon, t_lat, 0));
+        tile.points.emplace_back(tf2::Vector3(t_lon, t_lat, 0));
       }
     }
 
     tile.points_t = tile.points;
-    for (size_t i = 0; i < tile.points_t.size(); i++)
+    for (auto & i : tile.points_t)
     {
-      tile.points_t[i] = transform_ * tile.points_t[i];
+      i = transform_ * i;
     }
   }
 }

@@ -48,13 +48,14 @@
 
 namespace multires_image
 {
-  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WindowFlags flags) :
-    QMainWindow(parent, flags),
-    argc_(argc),
-    argv_(argv),
-    node_(nullptr),
-    thread_(nullptr),
-    initialized_(false)
+  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WindowFlags flags)
+  : QMainWindow(parent, flags)
+  , argc_(argc)
+  , argv_(argv)
+  , node_(nullptr)
+  , thread_(nullptr)
+  , initialized_(false)
+  , tile_set_(nullptr)
   {
     setCentralWidget(new QGLMap());
     this->setMinimumSize(640, 480);
@@ -123,5 +124,5 @@ int main(int argc, char **argv)
   multires_image::MultiresViewNode node(argc, argv);
   node.show();
 
-  return app.exec();
+  return QApplication::exec();
 }

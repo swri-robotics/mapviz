@@ -55,7 +55,7 @@ namespace multires_image
 
   public:
     TileCache(TileSet* tileSet, QGLWidget* widget);
-    ~TileCache(void);
+    ~TileCache() override;
 
     void Load(Tile* tile);
     void Precache(const tf2::Vector3& position);

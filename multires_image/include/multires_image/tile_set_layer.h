@@ -50,7 +50,7 @@ namespace multires_image
       const std::string& path,
       int tileSize, int layer);
 
-    ~TileSetLayer(void);
+    ~TileSetLayer() = default;
 
     bool Load();
     bool Load(const std::string extension);

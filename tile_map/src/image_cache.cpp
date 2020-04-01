@@ -59,10 +59,6 @@ namespace tile_map
   {
   }
 
-  Image::~Image()
-  {
-  }
-
   void Image::InitializeImage()
   {
     image_ = std::make_shared<QImage>();
@@ -143,7 +139,7 @@ namespace tile_map
       if (!cache_.insert(uri_hash, image_ptr))
       {
         RCLCPP_ERROR(logger_, "FAILED TO CREATE HANDLE: %s", uri.toStdString().c_str());
-        image_ptr = 0;
+        image_ptr = nullptr;
       }
     }
     else

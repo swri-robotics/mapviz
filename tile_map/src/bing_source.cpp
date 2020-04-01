@@ -135,12 +135,12 @@ namespace tile_map
     int status = root[BING_STATUS_CODE_KEY].asInt();
     if (status != 200)
     {
-      Q_EMIT ErrorMessage("Bing authorization error: " + boost::lexical_cast<std::string>(status));
+      Q_EMIT ErrorMessage("Bing authorization error: " + std::to_string(status));
     }
     else
     {
       if (!root[BING_RESOURCE_SET_KEY].isArray() ||
-          root[BING_RESOURCE_SET_KEY].size() == 0)
+          root[BING_RESOURCE_SET_KEY].empty())
       {
         Q_EMIT ErrorMessage("No Bing resource sets found.");
         return;
@@ -148,7 +148,7 @@ namespace tile_map
       Json::Value firstResourceSet = root[BING_RESOURCE_SET_KEY][0];
 
       if (!firstResourceSet[BING_RESOURCE_KEY].isArray() ||
-          firstResourceSet[BING_RESOURCE_KEY].size() == 0)
+          firstResourceSet[BING_RESOURCE_KEY].empty())
       {
         Q_EMIT ErrorMessage("No Bing resources found.");
         return;
@@ -169,14 +169,13 @@ namespace tile_map
 
 
       if (!first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY].isArray() ||
-          first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY].size() == 0)
+          first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY].empty())
       {
         Q_EMIT ErrorMessage("No image URL subdomains; maybe that's ok sometimes?");
       }
 
-      for (int i = 0; i < first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY].size(); i++)
+      for (const auto& subdomain : first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY])
       {
-        Json::Value subdomain = first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY][i];
         subdomains_.push_back(QString::fromStdString(subdomain.asString()));
       }
 
