@@ -295,7 +295,7 @@ namespace mapviz_plugins
   void StringPlugin::SelectTopic()
   {
     ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-        "std_msgs/String");
+        "std_msgs/String", "marti_common_msgs/StringStamped");
 
     if (!topic.name.empty())
     {
@@ -318,7 +318,7 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        string_sub_ = node_.subscribe(topic_, 1, &StringPlugin::stringCallback, this);
+        string_sub_ = node_.subscribe<topic_tools::ShapeShifter>(topic_, 1, &StringPlugin::stringCallback, this);
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
@@ -387,9 +387,23 @@ namespace mapviz_plugins
     offset_y_ = offset;
   }
 
-  void StringPlugin::stringCallback(const std_msgs::StringConstPtr& str)
+  template <class T, class M>
+  bool is_instance(const M& msg)
   {
-    message_.setText(QString(str->data.c_str()));
+    return msg->getDataType() == ros::message_traits::datatype<T>();
+  }
+
+  void StringPlugin::stringCallback(const topic_tools::ShapeShifter::ConstPtr& msg)
+  {
+    if (is_instance<std_msgs::String>(msg))
+    {
+      message_.setText(QString(msg->instantiate<std_msgs::String>()->data.c_str()));
+    }
+    else if (is_instance<marti_common_msgs::StringStamped>(msg))
+    {
+      message_.setText(QString(msg->instantiate<marti_common_msgs::StringStamped>()->value.c_str()));
+    }
+
     message_.prepare(QTransform(), font_);
 
     has_message_ = true;
