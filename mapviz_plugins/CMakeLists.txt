@@ -9,6 +9,7 @@ set(DEPENDENCIES
   mapviz
   marti_common_msgs
   marti_nav_msgs
+  marti_sensor_msgs
   marti_visualization_msgs
   move_base_msgs
   nav_msgs
@@ -94,6 +95,7 @@ set(UI_FILES
     ui/coordinate_picker_config.ui
     ui/disparity_config.ui
     ui/draw_polygon_config.ui
+    ui/float_config.ui
     ui/gps_config.ui
     ui/grid_config.ui
     ui/image_config.ui
@@ -123,6 +125,7 @@ set(SRC_FILES
     src/coordinate_picker_plugin.cpp
     src/disparity_plugin.cpp
     src/draw_polygon_plugin.cpp
+    src/float_plugin.cpp
     src/gps_plugin.cpp
     src/grid_plugin.cpp
     src/image_plugin.cpp
@@ -153,6 +156,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/coordinate_picker_plugin.h
     include/${PROJECT_NAME}/disparity_plugin.h
     include/${PROJECT_NAME}/draw_polygon_plugin.h
+    include/${PROJECT_NAME}/float_plugin.h
     include/${PROJECT_NAME}/gps_plugin.h
     include/${PROJECT_NAME}/grid_plugin.h
     include/${PROJECT_NAME}/image_plugin.h

@@ -24,6 +24,7 @@
   <depend>mapviz</depend>
   <depend>marti_common_msgs</depend>
   <depend>marti_nav_msgs</depend>
+  <depend>marti_sensor_msgs</depend>
   <depend>marti_visualization_msgs</depend>
   <depend>move_base_msgs</depend>
   <depend>nav_msgs</depend>

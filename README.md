@@ -227,6 +227,20 @@ Displays the most recent string from a std_msgs::String message at a fixed locat
  * Offset Y: Vertical offset from the anchor
  * Units: (pixels | percent of window)
 
+### Float
+
+Displays the most recent value from a std_msgs::Float32/64, marti_common_msgs/Float32/64Stamped or a marti_sensor_msgs/Velocity message at a fixed location on the scene.
+
+**Parameters**
+ * Topic: The float topic
+ * Font: The font for rendering the float
+ * Color: The color for drawing the float
+ * Anchor: (top left | top center | top right | center left | center | center right | bottom left | bottom center | bottom right)
+ * Offset X: Horizontal offset from the anchor
+ * Offset Y: Vertical offset from the anchor
+ * Units: (pixels | percent of window)
+ * Postfix: Text to append to the displayed value (ex. to show units)
+
 ### Textured Marker
 
 Projects marti_visualization_msgs::TexturedMarker and marti_visualization_msgs::TexturedMarkerArray message data into the scene.
