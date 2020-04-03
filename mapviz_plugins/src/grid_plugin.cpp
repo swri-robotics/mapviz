@@ -155,7 +155,7 @@ namespace mapviz_plugins
 
   void GridPlugin::SelectFrame()
   {
-    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
+    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
     if (!frame.empty())
     {
       ui_.frame->setText(QString::fromStdString(frame));

@@ -53,7 +53,7 @@ QT_END_NAMESPACE
 // This is ugly, but necessary in order to be able to send a std::vector<std::string>
 // via a queued signal/slot connection.
 typedef std::vector<std::string> ServiceStringVector;
-Q_DECLARE_METATYPE(ServiceStringVector);
+Q_DECLARE_METATYPE(ServiceStringVector)
 
 namespace mapviz
 {

@@ -33,15 +33,12 @@
 #include <QGLWidget>
 #include <QPalette>
 
-#include <builtin_interfaces/msg/time.hpp>
-
 #include <mapviz/select_frame_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
-#include <algorithm>
 #include <cstdio>
 #include <string>
 #include <utility>
@@ -92,7 +89,7 @@ namespace mapviz_plugins
 
   void TfFramePlugin::SelectFrame()
   {
-    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
+    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
     if (!frame.empty())
     {
       ui_.frame->setText(QString::fromStdString(frame));

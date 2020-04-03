@@ -45,10 +45,6 @@ class QListWidget;
 class QPushButton;
 QT_END_NAMESPACE
 
-namespace tf2_ros {
-class TransformListener;
-}  // namespace tf2_ros
-
 namespace mapviz
 {
 /**
@@ -68,8 +64,8 @@ class SelectFrameDialog : public QDialog
    * selection, the returned string be empty.
    */
   static std::string selectFrame(
-    std::shared_ptr<tf2_ros::TransformListener> tf_listener,
-    QWidget *parent = nullptr);
+      std::shared_ptr<tf2_ros::Buffer> tf_buffer,
+      QWidget *parent = nullptr);
 
   /**
    * Present the user with a dialog to select a multiple TF frames.
@@ -78,13 +74,13 @@ class SelectFrameDialog : public QDialog
    * selection, the returned vector will be empty.
    */
   static std::vector<std::string> selectFrames(
-    std::shared_ptr<tf2_ros::TransformListener> tf_listener,
+      std::shared_ptr<tf2_ros::Buffer> tf_buffer,
     QWidget *parent = nullptr);
 
   /**
    * Constructor for the SelectFrameDialog.
    */
-  explicit SelectFrameDialog(std::shared_ptr<tf2_ros::TransformListener> tf_listener,
+  explicit SelectFrameDialog(std::shared_ptr<tf2_ros::Buffer> tf_buffer,
                              QWidget *parent = nullptr);
 
   /**
@@ -119,7 +115,6 @@ class SelectFrameDialog : public QDialog
 
  private:
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
-  std::shared_ptr<tf2_ros::TransformListener> tf_;
   std::vector<std::string> known_frames_;
   std::vector<std::string> displayed_frames_;
   int fetch_frames_timer_id_;

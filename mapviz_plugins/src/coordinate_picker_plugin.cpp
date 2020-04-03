@@ -95,7 +95,7 @@ QWidget* CoordinatePickerPlugin::GetConfigWidget(QWidget* parent)
 
 bool CoordinatePickerPlugin::Initialize(QGLWidget* canvas)
 {
-  map_canvas_ = static_cast< mapviz::MapCanvas* >(canvas);
+  map_canvas_ = dynamic_cast< mapviz::MapCanvas* >(canvas);
   map_canvas_->installEventFilter(this);
 
   initialized_ = true;
@@ -109,11 +109,11 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
   switch (event->type())
   {
     case QEvent::MouseButtonPress:
-      return handleMousePress(static_cast< QMouseEvent* >(event));
+      return handleMousePress(dynamic_cast< QMouseEvent* >(event));
     case QEvent::MouseButtonRelease:
-      return handleMouseRelease(static_cast< QMouseEvent* >(event));
+      return handleMouseRelease(dynamic_cast< QMouseEvent* >(event));
     case QEvent::MouseMove:
-      return handleMouseMove(static_cast< QMouseEvent* >(event));
+      return handleMouseMove(dynamic_cast< QMouseEvent* >(event));
     default:
       return false;
   }
@@ -203,7 +203,7 @@ bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent* event)
 
 void CoordinatePickerPlugin::SelectFrame()
 {
-  std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
+  std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
   if (!frame.empty())
   {
     ui_.frame->setText(QString::fromStdString(frame));

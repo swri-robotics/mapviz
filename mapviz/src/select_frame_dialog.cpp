@@ -48,10 +48,10 @@
 namespace mapviz
 {
 std::string SelectFrameDialog::selectFrame(
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener,
-  QWidget *parent)
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer,
+    QWidget *parent)
 {
-  SelectFrameDialog dialog(tf_listener, parent);
+  SelectFrameDialog dialog(tf_buffer, parent);
   dialog.allowMultipleFrames(false);
   if (dialog.exec() == QDialog::Accepted) {
     return dialog.selectedFrame();
@@ -61,10 +61,10 @@ std::string SelectFrameDialog::selectFrame(
 }
 
 std::vector<std::string> SelectFrameDialog::selectFrames(
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener,
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer,
   QWidget *parent)
 {
-  SelectFrameDialog dialog(tf_listener, parent);
+  SelectFrameDialog dialog(tf_buffer, parent);
   dialog.allowMultipleFrames(true);
   if (dialog.exec() == QDialog::Accepted) {
     return dialog.selectedFrames();
@@ -74,14 +74,14 @@ std::vector<std::string> SelectFrameDialog::selectFrames(
 }
 
 SelectFrameDialog::SelectFrameDialog(
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener,
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer,
   QWidget *parent)
-  :
-  tf_(tf_listener),
-  ok_button_(new QPushButton("&Ok")),
-  cancel_button_(new QPushButton("&Cancel")),
-  list_widget_(new QListWidget()),
-  name_filter_(new QLineEdit())
+  : QDialog(parent)
+  , tf_buf_(tf_buffer)
+  , ok_button_(new QPushButton("&Ok"))
+  , cancel_button_(new QPushButton("&Cancel"))
+  , list_widget_(new QListWidget())
+  , name_filter_(new QLineEdit())
 {
   QHBoxLayout *filter_box = new QHBoxLayout();
   filter_box->addWidget(new QLabel("Filter:"));
@@ -174,8 +174,9 @@ std::vector<std::string> SelectFrameDialog::selectedFrames() const
 
 void SelectFrameDialog::fetchFrames()
 {
-  if (!tf_) { return; }
-  if (tf_buf_ == nullptr) {return;}
+  if (tf_buf_ == nullptr) {
+    return;
+  }
 
   known_frames_.clear();
   tf_buf_->_getFrameStrings(known_frames_);
