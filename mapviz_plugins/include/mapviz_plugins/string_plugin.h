@@ -45,6 +45,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <marti_common_msgs/msg/string_stamped.hpp>
 #include <std_msgs/msg/string.hpp>
 
 #include <string>
@@ -123,17 +124,14 @@ private:
   int offset_x_;
   int offset_y_;
 
-  // ros::Subscriber string_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr string_sub_;
+  rclcpp::Subscription<marti_common_msgs::msg::StringStamped>::SharedPtr string_stamped_sub_;
   bool has_message_;
   bool has_painted_;
 
   QColor color_;
   QFont font_;
   QStaticText message_;
-
-  // void stringCallback(const std_msgs::StringConstPtr& str);
-  void stringCallback(const std_msgs::msg::String::SharedPtr str);
 
   std::string AnchorToString(Anchor anchor);
   std::string UnitsToString(Units units);

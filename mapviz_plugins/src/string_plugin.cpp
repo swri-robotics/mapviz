@@ -94,12 +94,12 @@ namespace mapviz_plugins
     return true;
   }
 
-  void StringPlugin::Draw(double x, double y, double scale)
+  void StringPlugin::Draw(double, double, double)
   {
     // This plugin doesn't do any  OpenGL drawing.
   }
 
-  void StringPlugin::Paint(QPainter* painter, double x, double y, double scale)
+  void StringPlugin::Paint(QPainter* painter, double, double, double)
   {
     if (has_message_)
     {
@@ -321,8 +321,26 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_, rclcpp::QoS(1),
-          std::bind(&StringPlugin::stringCallback, this, std::placeholders::_1));
+        string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
+            rclcpp::QoS(1),
+            [this](const std_msgs::msg::String::ConstSharedPtr str) {
+            message_.setText(QString(str->data.c_str()));
+            message_.prepare(QTransform(), font_);
+
+            has_message_ = true;
+            has_painted_ = false;
+            initialized_ = true;
+        });
+        string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
+            rclcpp::QoS(1),
+            [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
+              message_.setText(QString(str->value.c_str()));
+              message_.prepare(QTransform(), font_);
+
+              has_message_ = true;
+              has_painted_ = false;
+              initialized_ = true;
+        });
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
@@ -371,16 +389,6 @@ namespace mapviz_plugins
   void StringPlugin::SetOffsetY(int offset)
   {
     offset_y_ = offset;
-  }
-
-  void StringPlugin::stringCallback(const std_msgs::msg::String::SharedPtr str)
-  {
-    message_.setText(QString(str->data.c_str()));
-    message_.prepare(QTransform(), font_);
-
-    has_message_ = true;
-    has_painted_ = false;
-    initialized_ = true;
   }
 
   std::string StringPlugin::AnchorToString(StringPlugin::Anchor anchor)

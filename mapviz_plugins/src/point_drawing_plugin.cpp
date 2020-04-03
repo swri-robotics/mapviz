@@ -29,20 +29,17 @@
 
 #include <mapviz_plugins/point_drawing_plugin.h>
 
-#include <QDialog>
 #include <QGLWidget>
 #include <QPalette>
 #include <QPainter>
 
 #include <opencv2/core/core.hpp>
 
-#include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
 
 #include <deque>
 #include <list>
 #include <string>
-#include <vector>
 
 namespace mapviz_plugins
 {
@@ -408,10 +405,10 @@ namespace mapviz_plugins
         double head_length = size * 0.75;
 
         // If quaternion malformed, just draw point instead
-        const tf::Quaternion q(point.orientation);
+        const tf2::Quaternion q(point.orientation);
         if(std::fabs(q.x()*q.x() + q.y()*q.y() + q.z()*q.z() + q.w()*q.w() - 1) > 0.01)
         {
-          orientation = tf::Transform(tf::Transform(transform.GetOrientation()));
+          orientation = tf2::Transform(tf2::Transform(transform.GetOrientation()));
           arrow_width = 0.0;
           head_length = 0.0;
           size = 0;
@@ -568,10 +565,10 @@ namespace mapviz_plugins
     } else if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty()) {
       glBegin(GL_LINE_STRIP);
 
-      for (uint32_t i = 0; i < cur_point_.transformed_cov_points.size(); i++)
+      for (auto & transformed_cov_point : cur_point_.transformed_cov_points)
       {
-        glVertex2d(cur_point_.transformed_cov_points[i].getX(),
-                   cur_point_.transformed_cov_points[i].getY());
+        glVertex2d(transformed_cov_point.getX(),
+                   transformed_cov_point.getY());
       }
 
       glVertex2d(cur_point_.transformed_cov_points.front().getX(),
