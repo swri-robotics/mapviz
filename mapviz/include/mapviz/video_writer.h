@@ -41,7 +41,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #endif
 
-#include <boost/shared_ptr.hpp>
 namespace mapviz
 {
 class VideoWriter : public QObject

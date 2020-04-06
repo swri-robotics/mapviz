@@ -30,8 +30,6 @@
 #ifndef MAPVIZ__MAP_CANVAS_H_
 #define MAPVIZ__MAP_CANVAS_H_
 
-#include <boost/shared_ptr.hpp>
-
 // QT libraries
 #include <QGLWidget>
 #include <QMouseEvent>

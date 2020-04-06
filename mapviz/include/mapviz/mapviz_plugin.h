@@ -41,10 +41,6 @@
 #include <mapviz/widgets.h>
 #include <yaml-cpp/yaml.h>
 
-// Boost libraries
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-
 // QT libraries
 #include <QWidget>
 #include <QGLWidget>

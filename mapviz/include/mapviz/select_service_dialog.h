@@ -33,8 +33,6 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <boost/shared_ptr.hpp>
-
 #include <QDialog>
 #include <QMetaType>
 #include <QThread>

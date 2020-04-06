@@ -30,9 +30,6 @@
 #ifndef MAPVIZ__MAPVIZ_HPP_
 #define MAPVIZ__MAPVIZ_HPP_
 
-// Boost libraries
-#include <boost/shared_ptr.hpp>
-
 // QT libraries
 #include <QtGui/QtGui>
 #include <QDialog>

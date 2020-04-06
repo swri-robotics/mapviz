@@ -30,7 +30,6 @@
 #define MAPVIZ__SELECT_FRAME_DIALOG_H_
 
 #include <tf2_ros/buffer.h>
-#include <boost/shared_ptr.hpp>
 
 #include <QDialog>
 

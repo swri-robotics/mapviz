@@ -31,8 +31,6 @@
 #include <swri_transform_util/frames.h>
 #include <tf2/transform_datatypes.h>
 
-#include <boost/shared_ptr.hpp>
-
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
 

@@ -36,7 +36,6 @@
 
 // Boost libraries
 #include <boost/filesystem.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
 #include <mapviz/mapviz_plugin.h>

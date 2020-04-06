@@ -32,8 +32,6 @@
 
 #include <string>
 
-#include <boost/shared_ptr.hpp>
-
 #include <tile_map/tile_source.h>
 #include <tile_map/texture_cache.h>
 
