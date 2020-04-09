@@ -622,7 +622,6 @@ void MapCanvas::Recenter()
 void MapCanvas::setFrameRate(const double fps)
 {
   if (fps <= 0.0) {
-    // ROS_ERROR("Invalid frame rate: %f", fps);
     RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Invalid frame rate: %f", fps);
     return;
   }
