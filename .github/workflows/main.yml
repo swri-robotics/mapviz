@@ -9,7 +9,7 @@ jobs:
         env:
           - {ROS_DISTRO: dashing, ROS_REPO: testing}
           - {ROS_DISTRO: dashing, ROS_REPO: main}
-          - {ROS_DISTRO: eloquent, ROS_REPO: testing}
+#          - {ROS_DISTRO: eloquent, ROS_REPO: testing}
           - {ROS_DISTRO: eloquent, ROS_REPO: main}
     runs-on: ubuntu-latest
     steps:
