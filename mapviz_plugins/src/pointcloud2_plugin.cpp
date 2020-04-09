@@ -227,7 +227,6 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::SetSubscription(bool subscribe)
   {
-    // pc2_sub_.shutdown();
     pc2_sub_.reset();
 
     if (subscribe && !topic_.empty())
@@ -887,4 +886,3 @@ namespace mapviz_plugins
       YAML::Value << ui_.unpack_rgb->isChecked();
   }
 }   // namespace mapviz_plugins
-
