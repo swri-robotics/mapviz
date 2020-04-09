@@ -54,10 +54,44 @@ bool compare_plugins(MapvizPluginPtr a, MapvizPluginPtr b)
   return a->DrawOrder() < b->DrawOrder();
 }
 
+/**
+ * Convenience method for generating a geometry_msgs::msg::PointStamped in one line,
+ * since we do this a few times.
+ * @param x
+ * @param y
+ * @param z
+ * @return
+ */
+geometry_msgs::msg::PointStamped make_point_stamped(double x, double y, double z)
+{
+  geometry_msgs::msg::PointStamped point;
+  point.point.x = x;
+  point.point.y = y;
+  point.point.z = z;
+  return point;
+}
+
+/**
+ * Convenience method for converting a tf2::Stamped<tf2::Transform> object into
+ * the equivalent ROS message.  This has to be done differently between ROS Dashing
+ * and Eloquent, so this wraps it up conveniently.
+ * @param transform The source object
+ * @return That tf as a ROS message
+ */
+auto tf2_to_msg(const tf2::Stamped<tf2::Transform>& transform)
+{
+#if USE_NEW_TF2_TOMSG == 1
+  return tf2::toMsg(transform);
+#else
+  return tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform);
+#endif
+}
+
 MapCanvas::MapCanvas(QWidget* parent) :
   QGLWidget(QGLFormat(QGL::SampleBuffers), parent),
   has_pixel_buffers_(false),
   pixel_buffer_size_(0),
+  pixel_buffer_ids_(),
   pixel_buffer_index_(0),
   capture_frames_(false),
   initialized_(false),
@@ -377,16 +411,10 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
   double x = center_x + (e->x() - width() / 2.0) * view_scale_;
   double y = center_y + (height() / 2.0 - e->y()) * view_scale_;
 
-  geometry_msgs::msg::PointStamped point_in, point_out;
-  point_in.point.x = x;
-  point_in.point.y = y;
-  point_in.point.z = 0;
-#if USE_NEW_TF2_TOMSG == 1
-  auto tfm_temp = tf2::toMsg(transform_);
-#else
-  auto tfm_temp =
-      tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform_);
-#endif
+  geometry_msgs::msg::PointStamped point_in = make_point_stamped(x, y, 0.0);
+  geometry_msgs::msg::PointStamped point_out;
+
+  auto tfm_temp = tf2_to_msg(transform_);
   tf2::doTransform(point_in, point_out, tfm_temp);
 
   mouse_hovering_ = true;
@@ -449,7 +477,7 @@ void MapCanvas::ToggleUseLatestTransforms(bool on)
   }
 }
 
-void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int order)
+void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int)
 {
   plugins_.push_back(plugin);
 }
@@ -513,19 +541,10 @@ void MapCanvas::TransformTarget(QPainter* painter)
       -transform_.getOrigin().getX(),
       transform_.getOrigin().getY());
 
-    geometry_msgs::msg::PointStamped point;
-    point.point.x = view_center_x_;
-    point.point.y = view_center_y_;
-    point.point.z = 0;
-
+    geometry_msgs::msg::PointStamped point = make_point_stamped(view_center_x_, view_center_y_, 0.0);
     geometry_msgs::msg::PointStamped center;
-#if USE_NEW_TF2_TOMSG == 1
-    auto tfm_temp =
-        tf2::toMsg(transform_);
-#else
-    auto tfm_temp =
-        tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform_);
-#endif
+
+    auto tfm_temp = tf2_to_msg(transform_);
     tf2::doTransform(point, center, tfm_temp);
 
     view_center_x_ = center.point.x;
@@ -540,17 +559,10 @@ void MapCanvas::TransformTarget(QPainter* painter)
       double x = center_x + (mouse_hover_x_ - width() / 2.0) * view_scale_;
       double y = center_y + (height() / 2.0  - mouse_hover_y_) * view_scale_;
 
-      geometry_msgs::msg::PointStamped hover_in, hover_out;
-      hover_in.point.x = x;
-      hover_in.point.y = y;
-      hover_in.point.z = 0;
+      geometry_msgs::msg::PointStamped hover_in = make_point_stamped(x, y, 0.0);
+      geometry_msgs::msg::PointStamped hover_out;
 
-#if USE_NEW_TF2_TOMSG == 1
-      tfm_temp = tf2::toMsg(transform_);
-#else
-      tfm_temp =
-          tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform_);
-#endif
+      tfm_temp = tf2_to_msg(transform_);
       tf2::doTransform(hover_in, hover_out, tfm_temp);
 
       Q_EMIT Hover(hover_out.point.x, hover_out.point.y, view_scale_);

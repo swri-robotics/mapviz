@@ -252,8 +252,10 @@ namespace tile_map
 
   void ImageCache::NetworkError(QNetworkReply::NetworkError error)
   {
+    // See https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum for a
+    // list of possible error codes.
+    // TODO pjr Print friendly strings here instead of numbers.
     RCLCPP_ERROR(logger_, "NETWORK ERROR: %d", error);
-    // TODO add failure
   }
 
   const int CacheThread::MAXIMUM_SEQUENTIAL_REQUESTS = 12;

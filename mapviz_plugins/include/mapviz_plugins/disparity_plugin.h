@@ -76,7 +76,7 @@ public:
   enum Units {PIXELS, PERCENT};
 
   DisparityPlugin();
-  ~DisparityPlugin() override;
+  ~DisparityPlugin() override = default;
 
   bool Initialize(QGLWidget* canvas) override;
   void Shutdown() override {}

@@ -324,27 +324,27 @@ namespace mapviz_plugins
         string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
             rclcpp::QoS(1),
             [this](const std_msgs::msg::String::ConstSharedPtr str) {
-            message_.setText(QString(str->data.c_str()));
-            message_.prepare(QTransform(), font_);
-
-            has_message_ = true;
-            has_painted_ = false;
-            initialized_ = true;
+          SetText(QString(str->data.c_str()));
         });
         string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
             rclcpp::QoS(1),
             [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
-              message_.setText(QString(str->value.c_str()));
-              message_.prepare(QTransform(), font_);
-
-              has_message_ = true;
-              has_painted_ = false;
-              initialized_ = true;
+          SetText(QString(str->value.c_str()));
         });
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
+  }
+
+  void StringPlugin::SetText(const QString& text)
+  {
+    message_.setText(text);
+    message_.prepare(QTransform(), font_);
+
+    has_message_ = true;
+    has_painted_ = false;
+    initialized_ = true;
   }
 
   void StringPlugin::SetAnchor(QString anchor)

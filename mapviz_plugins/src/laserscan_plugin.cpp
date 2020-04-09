@@ -246,13 +246,11 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::UpdateColors()
   {
-    auto scan_it = scans_.begin();
-    for (; scan_it != scans_.end(); ++scan_it)
+    for (auto& scan : scans_)
     {
-      auto point_it = scan_it->points.begin();
-      for (; point_it != scan_it->points.end(); point_it++)
+      for (auto& point : scan.points)
       {
-        point_it->color = CalculateColor(*point_it, scan_it->has_intensity);
+        point.color = CalculateColor(point, scan.has_intensity);
       }
     }
   }

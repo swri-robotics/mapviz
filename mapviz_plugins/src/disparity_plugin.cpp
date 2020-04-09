@@ -57,6 +57,7 @@ namespace mapviz_plugins
 {
   DisparityPlugin::DisparityPlugin()
   : MapvizPlugin()
+  , ui_()
   , config_widget_(new QWidget())
   , anchor_(TOP_LEFT)
   , units_(PIXELS)
@@ -67,6 +68,7 @@ namespace mapviz_plugins
   , has_image_(false)
   , last_width_(0)
   , last_height_(0)
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -89,10 +91,6 @@ namespace mapviz_plugins
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
     QObject::connect(this, SIGNAL(VisibleChanged(bool)), this, SLOT(SetSubscription(bool)));
-  }
-
-  DisparityPlugin::~DisparityPlugin()
-  {
   }
 
   void DisparityPlugin::SetOffsetX(int offset)
@@ -173,15 +171,11 @@ namespace mapviz_plugins
       "stereo_msgs/msg/DisparityImage"
     );
 
-    if (topic.empty())
-    {
-      topic.clear();
-    }
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));
+      TopicEdited();
     }
-    TopicEdited();
   }
 
   void DisparityPlugin::TopicEdited()

@@ -98,6 +98,8 @@ public:
     return true;
   }
 
+  void SetText(const QString& text);
+
 protected:
   void PaintText(QPainter* painter);
   void PrintError(const std::string& message) override;

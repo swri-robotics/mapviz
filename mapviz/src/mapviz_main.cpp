@@ -33,7 +33,7 @@
 
 int main(int argc, char **argv)
 {
-  // Initialize ROS; probably need a spinner somewhere?
+  // Initialize ROS; spinning on the Node is handled in mapviz.cpp
   rclcpp::init(argc, argv);
 
   // Initialize Qt resources
@@ -50,5 +50,5 @@ int main(int argc, char **argv)
   app.setLogger(mapviz.GetNode()->get_logger());
   mapviz.show();
 
-  return app.exec();
+  return mapviz::MapvizApplication::exec();
 }

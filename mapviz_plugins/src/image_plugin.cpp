@@ -218,11 +218,6 @@ namespace mapviz_plugins
     std::string topic = mapviz::SelectTopicDialog::selectTopic(
       node_, "sensor_msgs/msg/Image");
 
-    if(topic.empty())
-    {
-      topic.clear();
-      TopicEdited();
-    }
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));
