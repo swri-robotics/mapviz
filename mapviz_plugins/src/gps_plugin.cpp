@@ -109,7 +109,6 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      // gps_sub_.shutdown();
       gps_sub_.reset();
 
       topic_ = topic;
