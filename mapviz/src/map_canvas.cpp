@@ -500,7 +500,6 @@ void MapCanvas::TransformTarget(QPainter* painter)
     if (rotate_90_) {
       tf2::Quaternion yaw90;
       yaw90.setRPY(0, 0, -swri_math_util::_half_pi);
-      // transform_.setRotation(
       transform_.setRotation(yaw90 * transform_.getRotation());
     }
 
