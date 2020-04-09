@@ -27,6 +27,7 @@
   <depend>marti_nav_msgs</depend>
   <depend>marti_sensor_msgs</depend>
   <depend>marti_visualization_msgs</depend>
+  <!-- move_base_msgs is commented out until MoveBasePlugin is ported to ROS 2 -->
   <!-- depend>move_base_msgs</depend -->
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>

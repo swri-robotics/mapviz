@@ -2,12 +2,10 @@
   <name>mapviz_interfaces</name>
   <version>1.2.0</version>
   <description>
-
-     mapviz interfaces
-
+     ROS interfaces used by Mapviz
   </description>
-  <author>Marc Alban</author>
-  <maintainer email="malban@swri.org">Marc Alban</maintainer>
+  <author>P. J. Reed</author>
+  <maintainer email="preed@swri.org">P. J. Reed</maintainer>
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 

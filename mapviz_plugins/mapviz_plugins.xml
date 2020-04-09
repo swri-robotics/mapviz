@@ -25,6 +25,7 @@
   <class name="mapviz_plugins/textured_marker" type="mapviz_plugins::TexturedMarkerPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Textured marker mapviz plugin.</description>
   </class>
+  <!-- MoveBasePlugin is commented out until the plugin is ported to ROS 2 -->
   <!--class name="mapviz_plugins/move_base" type="mapviz_plugins::MoveBasePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Interface to the [move_base] action server.</description>
   </class-->
