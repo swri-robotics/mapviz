@@ -126,7 +126,6 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        // pose_sub_ = node_.subscribe(topic_, 1, &PosePlugin::PoseCallback, this);
         pose_sub_ = node_->create_subscription<geometry_msgs::msg::PoseStamped>(
           topic_,
           rclcpp::QoS(1),
