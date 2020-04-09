@@ -126,7 +126,6 @@ private:
   rclcpp::Subscription<stereo_msgs::msg::DisparityImage>::SharedPtr disparity_sub_;
   bool has_message_;
 
-  // stereo_msgs::DisparityImage disparity_;
   stereo_msgs::msg::DisparityImage disparity_;
 
   cv::Mat_<cv::Vec3b> disparity_color_;
