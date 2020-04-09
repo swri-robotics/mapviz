@@ -760,7 +760,6 @@ namespace mapviz_plugins
 
     if (node["min_color"])
     {
-      // std::string min_color_str;
       std::string min_color_str = node["min_color"].as<std::string>();
       ui_.min_color->setColor(QColor(min_color_str.c_str()));
     }
@@ -888,5 +887,4 @@ namespace mapviz_plugins
       YAML::Value << ui_.unpack_rgb->isChecked();
   }
 }   // namespace mapviz_plugins
-
 
