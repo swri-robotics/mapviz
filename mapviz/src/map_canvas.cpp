@@ -91,7 +91,6 @@ MapCanvas::MapCanvas(QWidget* parent) :
   RCLCPP_INFO(rclcpp::get_logger("mapviz"), "View scale: %f meters/pixel", view_scale_);
   setMouseTracking(true);
 
-  // transform_.setIdentity();
 
   QObject::connect(&frame_rate_timer_, SIGNAL(timeout()), this, SLOT(update()));
   setFrameRate(50.0);
