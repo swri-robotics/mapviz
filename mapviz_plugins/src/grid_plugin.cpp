@@ -282,7 +282,6 @@ namespace mapviz_plugins
   {
     transformed_ = false;
 
-    // if (GetTransform(ros::Time(), transform_))
     if (GetTransform(rclcpp::Time(), transform_))
     {
       Transform(left_points_, transformed_left_points_);
@@ -375,4 +374,3 @@ namespace mapviz_plugins
     emitter << YAML::Key << "columns" << YAML::Value << columns_;
   }
 }   // namespace mapviz_plugins
-
