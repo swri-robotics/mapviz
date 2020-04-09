@@ -45,7 +45,6 @@ namespace mapviz
     try {
       return QApplication::notify(receiver, event);
     }
-    // catch (const ros::Exception& e) {
     catch (const rclcpp::exceptions::RCLError& e) {
       RCLCPP_ERROR(logger_,
         "Unhandled RCLError in Qt event loop: %s", e.what());
