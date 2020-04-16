@@ -112,7 +112,7 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        gps_sub_ = node_.subscribe(topic_, 1, &GpsPlugin::GPSFixCallback, this);
+        gps_sub_ = node_.subscribe(topic_, 10, &GpsPlugin::GPSFixCallback, this);
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
