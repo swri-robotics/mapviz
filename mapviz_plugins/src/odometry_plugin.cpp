@@ -127,7 +127,7 @@ namespace mapviz_plugins
       if (!topic.empty())
       {
         odometry_sub_ = node_.subscribe(
-                    topic_, 1, &OdometryPlugin::odometryCallback, this);
+                    topic_, 10, &OdometryPlugin::odometryCallback, this);
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }

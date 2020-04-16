@@ -123,7 +123,7 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        pose_sub_ = node_.subscribe(topic_, 1, &PosePlugin::PoseCallback, this);
+        pose_sub_ = node_.subscribe(topic_, 10, &PosePlugin::PoseCallback, this);
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }

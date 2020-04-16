@@ -106,7 +106,7 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        navsat_sub_ = node_.subscribe(topic_, 1, &NavSatPlugin::NavSatFixCallback, this);
+        navsat_sub_ = node_.subscribe(topic_, 10, &NavSatPlugin::NavSatFixCallback, this);
 
         ROS_INFO("Subscribing to %s", topic_.c_str());
       }
