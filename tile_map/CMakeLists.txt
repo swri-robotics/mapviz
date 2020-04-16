@@ -101,7 +101,7 @@ endif()
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}
   ${Qt_LIBRARIES}
-  ${GLU_LIBRARY}
+  ${OPENGL_glu_LIBRARY}
   ${JSONCPP_LIBRARIES}
   ${catkin_LIBRARIES}
 )
