@@ -49,7 +49,7 @@ namespace multires_image
     TileSet(const swri_transform_util::GeoReference& georeference,
             const std::string extension);
 
-    ~TileSet(void);
+    ~TileSet();
 
     bool Load();
 
@@ -62,14 +62,14 @@ namespace multires_image
 
   private:
     swri_transform_util::GeoReference  m_geo;
-    int                           m_tileSize;
-    int                           m_width;
-    int                           m_height;
+    int                           m_tileSize{};
+    int                           m_width{};
+    int                           m_height{};
 
     std::string                   m_cacheDir;
     std::string                   m_extension;
 
-    int                           m_layerCount;
+    int                           m_layerCount{};
 
     std::vector<TileSetLayer*>    m_layers;
   };

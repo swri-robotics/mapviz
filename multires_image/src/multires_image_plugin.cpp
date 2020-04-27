@@ -38,25 +38,27 @@
 #include <QPalette>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MultiresImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  MultiresImagePlugin::MultiresImagePlugin() :
-    loaded_(false),
-    center_x_(0.0),
-    center_y_(0.0),
-    offset_x_(0.0),
-    offset_y_(0.0),
-    tile_set_(NULL),
-    tile_view_(NULL),
-    config_widget_(new QWidget()),
-    transformed_(false)
+  MultiresImagePlugin::MultiresImagePlugin()
+  : MapvizPlugin()
+  , ui_()
+  , loaded_(false)
+  , center_x_(0.0)
+  , center_y_(0.0)
+  , offset_x_(0.0)
+  , offset_y_(0.0)
+  , tile_set_(nullptr)
+  , tile_view_(nullptr)
+  , config_widget_(new QWidget())
+  , transformed_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -84,10 +86,11 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::PrintError(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
+    if (message == ui_.status->text().toStdString()) {
       return;
+    }
 
-    ROS_ERROR("Error: %s", message.c_str());
+    RCLCPP_ERROR(node_->get_logger(), "Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p);
@@ -96,10 +99,11 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::PrintInfo(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
+    if (message == ui_.status->text().toStdString()) {
       return;
+    }
 
-    ROS_INFO("%s", message.c_str());
+    RCLCPP_INFO(node_->get_logger(), "%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p);
@@ -108,10 +112,11 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::PrintWarning(const std::string& message)
   {
-    if (message == ui_.status->text().toStdString())
+    if (message == ui_.status->text().toStdString()) {
       return;
+    }
 
-    ROS_WARN("%s", message.c_str());
+    RCLCPP_WARN(node_->get_logger(), "%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::darkYellow);
     ui_.status->setPalette(p);
@@ -120,7 +125,7 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::AcceptConfiguration()
   {
-    ROS_INFO("Accept multires image configuration.");
+    RCLCPP_INFO(node_->get_logger(), "Accept multires image configuration.");
     if (tile_set_ != NULL && tile_set_->GeoReference().GeoPath() == ui_.path->text().toStdString())
     {
       // Nothing to do.
@@ -204,8 +209,8 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::GetCenterPoint(double x, double y)
   {
-      tf::Point point(x, y, 0);
-      tf::Point center = inverse_transform_ * point;
+      tf2::Vector3 point(x, y, 0);
+      tf2::Vector3 center = inverse_transform_ * point;
       center_x_ = center.getX();
       center_y_ = center.getY();
   }
@@ -244,9 +249,9 @@ namespace mapviz_plugins
 
     // Add in user-specified offset to map
     swri_transform_util::Transform offset(
-                tf::Transform(
-                    tf::createIdentityQuaternion(),
-                    tf::Vector3(offset_x_, offset_y_, 0.0)));
+                tf2::Transform(
+                    tf2::Quaternion(0, 0, 0, 1),
+                    tf2::Vector3(offset_x_, offset_y_, 0.0)));
 
     // Set relative positions of tile points based on tf transform
     for (int i = 0; i < tile_set_->LayerCount(); i++)
@@ -284,7 +289,7 @@ namespace mapviz_plugins
     {
       if (base.has_root_path())
       {
-        ROS_WARN("Cannot uncomplete a path relative path from a rooted base.");
+        RCLCPP_WARN(node_->get_logger(), "Cannot uncomplete a path relative path from a rooted base.");
         return path;
       }
       else
@@ -317,11 +322,10 @@ namespace mapviz_plugins
   {
     if (node["path"])
     {
-      std::string path_string;
-      node["path"] >> path_string;
+      std::string path_string = node["path"].as<std::string>();
 
       boost::filesystem::path image_path(path_string);
-      if (image_path.is_complete() == false)
+      if (!image_path.is_complete())
       {
         boost::filesystem::path base_path(path);
         path_string =
@@ -335,12 +339,12 @@ namespace mapviz_plugins
 
     if (node["offset_x"])
     {
-        node["offset_x"] >> offset_x_;
+        offset_x_ = node["offset_x"].as<double>();
         ui_.x_offset_spin_box->setValue(offset_x_);
     }
     if (node["offset_y"])
     {
-        node["offset_y"] >> offset_y_;
+        offset_y_ = node["offset_y"].as<double>();
         ui_.y_offset_spin_box->setValue(offset_y_);
     }
   }

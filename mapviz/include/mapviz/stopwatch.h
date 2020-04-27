@@ -26,10 +26,14 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#pragma once
+#ifndef MAPVIZ__STOPWATCH_H_
+#define MAPVIZ__STOPWATCH_H_
 
-#include <ros/time.h>
-#include <ros/console.h>
+#include <rclcpp/rclcpp.hpp>
+
+#include <algorithm>
+#include <string>
+
 
 namespace mapviz
 {
@@ -43,14 +47,18 @@ class Stopwatch
  public:
   Stopwatch()
     :
-    count_(0)
+    count_(0),
+    clock(),
+    total_time_(0, 0),
+    max_time_(0, 0),
+    start_(0, 0)
   {
   }
 
   /* Start measuring a new time interval. */
   void start()
   {
-    start_ = ros::WallTime::now();
+    start_ = clock.now();
   }
 
   /* End the current time interval and update the measurements.
@@ -58,9 +66,9 @@ class Stopwatch
    */
   void stop()
   {
-    ros::WallDuration dt = ros::WallTime::now() - start_;
+    rclcpp::Duration dt = clock.now() - start_;
     count_ += 1;
-    total_time_ += dt;
+    total_time_ = total_time_ + dt;
     max_time_ = std::max(max_time_, dt);
   }
 
@@ -68,45 +76,44 @@ class Stopwatch
   int count() const { return count_; }
 
   /* Returns the longest observed duration. */
-  ros::WallDuration maxTime() const { return max_time_; }
+  rclcpp::Duration maxTime() const {return max_time_;}
 
   /* Returns the average duration spent in the interval. */
-  ros::WallDuration avgTime() const
+  rclcpp::Duration avgTime() const
   {
-    if (count_)
-    {
+    if (count_) {
       return total_time_*(1.0/count_);
-    }
-    else
-    {
-      return ros::WallDuration();
+    } else {
+      return rclcpp::Duration(0, 0);
     }
   }
 
   /* Print measurement info to the ROS console. */
-  void printInfo(const std::string &name) const
+  void printInfo(rclcpp::Logger logger, const std::string &name) const
   {
-    if (count_)
-    {
-      ROS_INFO("%s -- calls: %d, avg time: %.2fms, max time: %.2fms",
-               name.c_str(),
-               count_,
-               avgTime().toSec()*1000.0,
-               maxTime().toSec()*1000.0);
-    }
-    else
-    {
-      ROS_INFO("%s -- calls: %d, avg time: --ms, max time: --ms",
-               name.c_str(),
-               count_);
+    if (count_) {
+      RCLCPP_INFO(logger,
+                "%s -- calls: %d, avg time: %.2fms, max time: %.2fms",
+                name.c_str(),
+                count_,
+                avgTime().seconds()*1000.0,
+                maxTime().seconds()*1000.0);
+    } else {
+      RCLCPP_INFO(logger,
+                "%s -- calls: %d, avg time: --ms, max time: --ms",
+                name.c_str(),
+                count_);
     }
   }
 
  private:
   int count_;
-  ros::WallDuration total_time_;
-  ros::WallDuration max_time_;
+  rclcpp::Clock clock;
+  rclcpp::Duration total_time_;
+  rclcpp::Duration max_time_;
 
-  ros::WallTime start_;
+  rclcpp::Time start_;
 };  // class PluginInstrumentation
 }  // namespace mapviz
+
+#endif  // MAPVIZ__STOPWATCH_H_

@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2014-2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,27 +29,29 @@
 
 #include <mapviz_plugins/tf_frame_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <algorithm>
-#include <vector>
-
 // QT libraries
 #include <QGLWidget>
 #include <QPalette>
 
-// ROS libraries
-#include <ros/master.h>
-
 #include <mapviz/select_frame_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TfFramePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  TfFramePlugin::TfFramePlugin() : config_widget_(new QWidget())
+  TfFramePlugin::TfFramePlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 
@@ -85,13 +87,9 @@ namespace mapviz_plugins
                      SLOT(ClearPoints()));
   }
 
-  TfFramePlugin::~TfFramePlugin()
-  {
-  }
-
   void TfFramePlugin::SelectFrame()
   {
-    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
+    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
     if (!frame.empty())
     {
       ui_.frame->setText(QString::fromStdString(frame));
@@ -104,24 +102,24 @@ namespace mapviz_plugins
     source_frame_ = ui_.frame->text().toStdString();
     PrintWarning("Waiting for transform.");
 
-    ROS_INFO("Setting target frame to to %s", source_frame_.c_str());
+    RCLCPP_INFO(node_->get_logger(), "Setting target frame to to %s", source_frame_.c_str());
 
     initialized_ = true;
   }
 
-  void TfFramePlugin::TimerCallback(const ros::TimerEvent& event)
+  void TfFramePlugin::TimerCallback()
   {
     swri_transform_util::Transform transform;
-    if (GetTransform(ros::Time(), transform))
+    if (GetTransform(node_->get_clock()->now(), transform))
     {
       StampedPoint stamped_point;
       stamped_point.point = transform.GetOrigin();
       stamped_point.orientation = transform.GetOrientation();
       stamped_point.source_frame = target_frame_;
-      stamped_point.stamp = transform.GetStamp();
+      stamped_point.stamp = tf2_ros::toMsg(transform.GetStamp());
       stamped_point.transformed = false;
 
-      pushPoint( std::move(stamped_point) );
+      pushPoint( stamped_point );
     }
   }
 
@@ -151,8 +149,8 @@ namespace mapviz_plugins
   {
     canvas_ = canvas;
 
-    timer_ = node_.createTimer(ros::Duration(0.1),
-                               &TfFramePlugin::TimerCallback, this);
+    timer_ = node_->create_wall_timer(std::chrono::milliseconds(100),
+        std::bind(&TfFramePlugin::TimerCallback, this));
 
     SetColor(ui_.color->color());
 
@@ -171,14 +169,13 @@ namespace mapviz_plugins
   {
     if (node["frame"])
     {
-      node["frame"] >> source_frame_;
+      source_frame_ = node["frame"].as<std::string>();
       ui_.frame->setText(source_frame_.c_str());
     }
 
     if (node["color"])
     {
-      std::string color;
-      node["color"] >> color;
+      std::string color = node["color"].as<std::string>();
       QColor qcolor(color.c_str());
       SetColor(qcolor);
       ui_.color->setColor(qcolor);
@@ -186,21 +183,16 @@ namespace mapviz_plugins
 
     if (node["draw_style"])
     {
-      std::string draw_style;
-      node["draw_style"] >> draw_style;
+      std::string draw_style = node["draw_style"].as<std::string>();
 
       if (draw_style == "lines")
       {
         ui_.drawstyle->setCurrentIndex(0);
         SetDrawStyle( LINES );
-      }
-      else if (draw_style == "points")
-      {
+      } else if (draw_style == "points") {
         ui_.drawstyle->setCurrentIndex(1);
         SetDrawStyle( POINTS );
-      }
-      else if (draw_style == "arrows")
-      {
+      } else if (draw_style == "arrows") {
         ui_.drawstyle->setCurrentIndex(2);
         SetDrawStyle( ARROWS );
       }
@@ -208,16 +200,14 @@ namespace mapviz_plugins
 
     if (node["position_tolerance"])
     {
-      double position_tolerance;
-      node["position_tolerance"] >> position_tolerance;
+      auto position_tolerance = node["position_tolerance"].as<double>();
       ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
     }
 
     if (node["buffer_size"])
     {
-      double buffer_size;
-      node["buffer_size"] >> buffer_size;
+      auto buffer_size = node["buffer_size"].as<double>();
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
@@ -255,8 +245,11 @@ namespace mapviz_plugins
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
 
-    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
+    emitter << YAML::Key
+      << "static_arrow_sizes"
+      << YAML::Value
+      << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
   }
-}
+}   // namespace mapviz_plugins

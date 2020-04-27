@@ -34,10 +34,11 @@
 
 namespace mapviz_plugins
 {
-  CanvasClickFilter::CanvasClickFilter() :
-    is_mouse_down_(false),
-    max_ms_(Q_INT64_C(500)),
-    max_distance_(2.0)
+  CanvasClickFilter::CanvasClickFilter()
+  : QObject()
+  , is_mouse_down_(false)
+  , max_ms_(Q_INT64_C(500))
+  , max_distance_(2.0)
   { }
 
   void CanvasClickFilter::setMaxClickTime(qint64 max_ms)
@@ -55,25 +56,15 @@ namespace mapviz_plugins
     if (event->type() == QEvent::MouseButtonPress)
     {
       is_mouse_down_ = true;
-      QMouseEvent* me = static_cast<QMouseEvent*>(event);
-#if QT_VERSION >= 0x050000
+      QMouseEvent* me = dynamic_cast<QMouseEvent*>(event);
       mouse_down_pos_ = me->localPos();
-#else
-      mouse_down_pos_ = me->posF();
-#endif
       mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
-    }
-    else if (event->type() == QEvent::MouseButtonRelease)
-    {
+    } else if (event->type() == QEvent::MouseButtonRelease) {
       if (is_mouse_down_)
       {
-        QMouseEvent* me = static_cast<QMouseEvent*>(event);
+        QMouseEvent* me = dynamic_cast<QMouseEvent*>(event);
 
-#if QT_VERSION >= 0x050000
         qreal distance = QLineF(mouse_down_pos_, me->localPos()).length();
-#else
-        qreal distance = QLineF(mouse_down_pos_, me->posF()).length();
-#endif
         qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
         // Only fire the event if the mouse has moved less than the maximum distance
@@ -82,15 +73,11 @@ namespace mapviz_plugins
         // or just holding the cursor in place.
         if (msecsDiff < max_ms_ && distance <= max_distance_)
         {
-#if QT_VERSION >= 0x050000
           Q_EMIT pointClicked(me->localPos());
-#else
-          Q_EMIT pointClicked(me->posF());
-#endif
         }
       }
       is_mouse_down_ = false;
     }
     return false;
   }
-}
+}   // namespace mapviz_plugins

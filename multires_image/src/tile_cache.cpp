@@ -30,7 +30,6 @@
 #include <multires_image/tile_cache.h>
 
 // C++ standard libraries
-#include <cmath>
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
@@ -44,20 +43,21 @@
 
 namespace multires_image
 {
-  TileCache::TileCache(TileSet* tileSet, QGLWidget* widget) :
-    m_tileSet(tileSet),
-    m_widget(widget),
-    m_currentLayer(0),
-    m_currentPosition(0, 0, 0),
-    m_exit(false),
-    m_memorySize(0),
-    m_cacheThread(this),
-    m_freeThread(this),
-    m_renderRequestsLock(QMutex::Recursive),
-    m_renderRequestSetLock(QMutex::Recursive),
-    m_precacheRequestsLock(QMutex::Recursive),
-    m_precacheRequestSetLock(QMutex::Recursive),
-    m_textureLoadedLock(QMutex::Recursive)
+  TileCache::TileCache(TileSet* tileSet, QGLWidget* widget)
+  : QObject()
+  , m_tileSet(tileSet)
+  , m_widget(widget)
+  , m_currentLayer(0)
+  , m_currentPosition(0, 0, 0)
+  , m_exit(false)
+  , m_memorySize(0)
+  , m_cacheThread(this)
+  , m_freeThread(this)
+  , m_renderRequestsLock(QMutex::Recursive)
+  , m_renderRequestSetLock(QMutex::Recursive)
+  , m_precacheRequestsLock(QMutex::Recursive)
+  , m_precacheRequestSetLock(QMutex::Recursive)
+  , m_textureLoadedLock(QMutex::Recursive)
   {
     connect(this, SIGNAL(SignalLoadTexture(Tile*)),
       SLOT(LoadTextureSlot(Tile*)), Qt::BlockingQueuedConnection);
@@ -73,11 +73,11 @@ namespace multires_image
 
     for (int i = 0; i < m_tileSet->LayerCount(); i++)
     {
-      m_precacheRequests.push_back(std::queue<Tile*>());
+      m_precacheRequests.emplace_back(std::queue<Tile*>());
     }
   }
 
-  TileCache::~TileCache(void)
+  TileCache::~TileCache()
   {
     m_exit = true;
     m_cacheThread.wait();
@@ -118,11 +118,11 @@ namespace multires_image
 
   void TileCache::Precache(double x, double y)
   {
-    tf::Point point(x, y, 0);
+    tf2::Vector3 point(x, y, 0);
     Precache(point);
   }
 
-  void TileCache::Precache(const tf::Point& position)
+  void TileCache::Precache(const tf2::Vector3& position)
   {
     m_currentPosition = position;
 
@@ -146,7 +146,7 @@ namespace multires_image
     }
   }
 
-  void TileCache::PrecacheLayer(int layerNum, const tf::Point& position, int size)
+  void TileCache::PrecacheLayer(int layerNum, const tf2::Vector3& position, int size)
   {
     TileSetLayer* layer = m_tileSet->GetLayer(layerNum);
 
@@ -242,10 +242,10 @@ namespace multires_image
   {
     while (!p->m_exit)
     {
-      Tile* tile = NULL;
+      Tile* tile = nullptr;
       p->m_renderRequestsLock.lock();
 
-      if (p->m_renderRequests.size() > 0)
+      if (!p->m_renderRequests.empty())
       {
         tile = p->m_renderRequests.top();
         p->m_renderRequests.pop();
@@ -253,7 +253,7 @@ namespace multires_image
 
       p->m_renderRequestsLock.unlock();
 
-      if (tile != NULL)
+      if (tile != nullptr)
       {
         if (!tile->Failed())
         {
@@ -266,7 +266,7 @@ namespace multires_image
             {
               if (!tile->TextureLoaded())
               {
-                if (tile->LoadImageToMemory() == true)
+                if (tile->LoadImageToMemory())
                 {
                   p->LoadTexture(tile);
                   tile->UnloadImage();
@@ -297,11 +297,11 @@ namespace multires_image
 
         try
         {
-          for (uint32_t i = 0; (i < p->m_precacheRequests.size()) && (tile == NULL); i++)
+          for (uint32_t i = 0; (i < p->m_precacheRequests.size()) && (tile == nullptr); i++)
           {
             int32_t index = p->m_currentLayer + i;
             if ((index < (int64_t)p->m_precacheRequests.size()) &&
-                (p->m_precacheRequests[index].size() > 0))
+                (!p->m_precacheRequests[index].empty()))
             {
               tile = p->m_precacheRequests[index].front();
               p->m_precacheRequests[index].pop();
@@ -309,7 +309,7 @@ namespace multires_image
             else if (i != 0)
             {
               index = p->m_currentLayer - i;
-              if (index >= 0 && p->m_precacheRequests[index].size() > 0)
+              if (index >= 0 && !p->m_precacheRequests[index].empty())
               {
                 tile = p->m_precacheRequests[index].front();
                 p->m_precacheRequests[index].pop();
@@ -324,13 +324,13 @@ namespace multires_image
 
         p->m_precacheRequestsLock.unlock();
 
-        if (tile != NULL && !tile->Failed() && !tile->TextureLoaded())
+        if (tile != nullptr && !tile->Failed() && !tile->TextureLoaded())
         {
           int row, column;
           p->m_tileSet->GetLayer(tile->Layer())->GetTileIndex(p->m_currentPosition, row, column);
           if (abs(tile->Row() - row) <= 3 || abs(tile->Column() - column) <= 3)
           {
-            if (tile->LoadImageToMemory() == true)
+            if (tile->LoadImageToMemory())
             {
               p->LoadTexture(tile);
 
@@ -348,7 +348,7 @@ namespace multires_image
         }
       }
 
-      if (tile == NULL)
+      if (tile == nullptr)
       {
         usleep(10);
       }

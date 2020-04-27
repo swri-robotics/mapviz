@@ -41,7 +41,7 @@
 #endif
 
 // ROS Libraries
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
 #include <mapviz/select_frame_dialog.h>
@@ -49,16 +49,20 @@
 //
 #include <swri_transform_util/transform.h>
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+
+#include <string>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::CoordinatePickerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
 
 CoordinatePickerPlugin::CoordinatePickerPlugin()
-  : config_widget_(new QWidget()),
-  map_canvas_(NULL),
-  copy_on_click_(false)
+  : MapvizPlugin()
+  , config_widget_(new QWidget())
+  , map_canvas_(nullptr)
+  , copy_on_click_(false)
 {
   ui_.setupUi(config_widget_);
 
@@ -71,9 +75,7 @@ CoordinatePickerPlugin::CoordinatePickerPlugin()
   QObject::connect(ui_.clearListButton, SIGNAL(clicked()),
                    this, SLOT(ClearCoordList()));
 
-#if QT_VERSION >= 0x050000
   ui_.coordTextEdit->setPlaceholderText(tr("Click on the map; coordinates appear here"));
-#endif
 }
 
 CoordinatePickerPlugin::~CoordinatePickerPlugin()
@@ -93,7 +95,7 @@ QWidget* CoordinatePickerPlugin::GetConfigWidget(QWidget* parent)
 
 bool CoordinatePickerPlugin::Initialize(QGLWidget* canvas)
 {
-  map_canvas_ = static_cast< mapviz::MapCanvas* >(canvas);
+  map_canvas_ = dynamic_cast< mapviz::MapCanvas* >(canvas);
   map_canvas_->installEventFilter(this);
 
   initialized_ = true;
@@ -107,11 +109,11 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
   switch (event->type())
   {
     case QEvent::MouseButtonPress:
-      return handleMousePress(static_cast< QMouseEvent* >(event));
+      return handleMousePress(dynamic_cast< QMouseEvent* >(event));
     case QEvent::MouseButtonRelease:
-      return handleMouseRelease(static_cast< QMouseEvent* >(event));
+      return handleMouseRelease(dynamic_cast< QMouseEvent* >(event));
     case QEvent::MouseMove:
-      return handleMouseMove(static_cast< QMouseEvent* >(event));
+      return handleMouseMove(dynamic_cast< QMouseEvent* >(event));
     default:
       return false;
   }
@@ -119,12 +121,8 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
-#if QT_VERSION >= 0x050000
   QPointF point = event->localPos();
-#else
-  QPointF point = event->posF();
-#endif
-  ROS_DEBUG("Map point: %f %f", point.x(), point.y());
+  RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;
   std::string frame = ui_.frame->text().toStdString();
@@ -140,28 +138,38 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   // Then we translate from that frame into *our* target frame, `frame`.
   if (tf_manager_->GetTransform(frame, target_frame_, transform))
   {
-    ROS_DEBUG("Transforming from fixed frame '%s' to (plugin) target frame '%s'",
+    RCLCPP_DEBUG(node_->get_logger(),
+              "Transforming from fixed frame '%s' to (plugin) target frame '%s'",
               target_frame_.c_str(),
               frame.c_str());
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-    ROS_DEBUG("Point in fixed frame: %f %f", transformed.x(), transformed.y());
-    tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
+    RCLCPP_DEBUG(node_->get_logger(),
+      "Point in fixed frame: %f %f",
+      transformed.x(),
+      transformed.y());
+    tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
     position = transform * position;
     point.setX(position.x());
     point.setY(position.y());
 
     PrintInfo("OK");
-  }
-  else
-  {
+  } else {
     QString warning;
-    QTextStream(&warning) << "No available transform from '" << QString::fromStdString(target_frame_) << "' to '" << QString::fromStdString(frame) << "'";
+    QTextStream(&warning) << "No available transform from '"
+      << QString::fromStdString(target_frame_)
+      << "' to '"
+      << QString::fromStdString(frame)
+      << "'";
     PrintWarning(warning.toStdString());
     return false;
   }
 
 
-  ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
+  RCLCPP_DEBUG(node_->get_logger(),
+    "Transformed point in frame '%s': %f %f",
+    frame.c_str(),
+    point.x(),
+    point.y());
   QString new_point;
   QTextStream stream(&new_point);
   stream.setRealNumberPrecision(4);
@@ -169,11 +177,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 
   if (copy_on_click_)
   {
-#if QT_VERSION >= 0x050000
     QClipboard* clipboard = QGuiApplication::clipboard();
-#else
-    QClipboard* clipboard = QApplication::clipboard();
-#endif
     clipboard->setText(new_point);
   }
 
@@ -199,7 +203,7 @@ bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent* event)
 
 void CoordinatePickerPlugin::SelectFrame()
 {
-  std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
+  std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
   if (!frame.empty())
   {
     ui_.frame->setText(QString::fromStdString(frame));
@@ -209,12 +213,14 @@ void CoordinatePickerPlugin::SelectFrame()
 
 void CoordinatePickerPlugin::FrameEdited()
 {
-  ROS_INFO("Setting target frame to %s", ui_.frame->text().toStdString().c_str());
+  RCLCPP_INFO(node_->get_logger(),
+    "Setting target frame to %s",
+    ui_.frame->text().toStdString().c_str());
 }
 
 void CoordinatePickerPlugin::ToggleCopyOnClick(int state)
 {
-  switch(state)
+  switch (state)
   {
     case Qt::Checked:
       copy_on_click_ = true;
@@ -241,20 +247,18 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
   if (node["frame"])
   {
     std::string frame;
-    node["frame"] >> frame;
+    frame = node["frame"].as<std::string>();
     ui_.frame->setText(QString::fromStdString(frame));
   }
 
   if (node["copy"])
   {
     bool copy;
-    node["copy"] >> copy;
+    copy = node["copy"].as<bool>();
     if (copy)
     {
       ui_.copyCheckBox->setCheckState(Qt::Checked);
-    }
-    else
-    {
+    } else {
       ui_.copyCheckBox->setCheckState(Qt::Unchecked);
     }
   }
@@ -284,4 +288,4 @@ void CoordinatePickerPlugin::PrintWarning(const std::string& message)
   PrintWarningHelper(ui_.status, message, 1.0);
 }
 
-} // namespace mapviz_plugins
+}   // namespace mapviz_plugins

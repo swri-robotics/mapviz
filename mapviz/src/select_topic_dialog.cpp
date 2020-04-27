@@ -28,8 +28,6 @@
 // *****************************************************************************
 #include <mapviz/select_topic_dialog.h>
 
-#include <algorithm>
-
 #include <QListWidget>
 #include <QLineEdit>
 #include <QVBoxLayout>
@@ -38,18 +36,27 @@
 #include <QLabel>
 #include <QTimerEvent>
 
+#include <algorithm>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
+
 namespace mapviz
 {
-ros::master::TopicInfo SelectTopicDialog::selectTopic(
-  const std::string &datatype,                                 
+std::string SelectTopicDialog::selectTopic(
+  const rclcpp::Node::SharedPtr& node,
+  const std::string &datatype,
   QWidget *parent)
 {
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype);
-  return selectTopic(datatypes, parent);
+  return selectTopic(node, datatypes, parent);
 }
 
-ros::master::TopicInfo SelectTopicDialog::selectTopic(
+std::string SelectTopicDialog::selectTopic(
+  const rclcpp::Node::SharedPtr& node,
   const std::string &datatype1,
   const std::string &datatype2,
   QWidget *parent)
@@ -57,33 +64,36 @@ ros::master::TopicInfo SelectTopicDialog::selectTopic(
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype1);
   datatypes.push_back(datatype2);
-  return selectTopic(datatypes, parent);
+  return selectTopic(node, datatypes, parent);
 }
 
-ros::master::TopicInfo SelectTopicDialog::selectTopic(
+std::string SelectTopicDialog::selectTopic(
+  const rclcpp::Node::SharedPtr& node,
   const std::vector<std::string> &datatypes,
   QWidget *parent)
 {
-  SelectTopicDialog dialog(parent);
+  SelectTopicDialog dialog(node, parent);
   dialog.allowMultipleTopics(false);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
     return dialog.selectedTopic();
   } else {
-    return ros::master::TopicInfo();
+    return std::string();
   }
 }
 
-std::vector<ros::master::TopicInfo> SelectTopicDialog::selectTopics(
-  const std::string &datatype,                                 
+std::vector<std::string> SelectTopicDialog::selectTopics(
+  const rclcpp::Node::SharedPtr& node,
+  const std::string &datatype,
   QWidget *parent)
 {
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype);
-  return selectTopics(datatypes, parent);  
+  return selectTopics(node, datatypes, parent);
 }
 
-std::vector<ros::master::TopicInfo> SelectTopicDialog::selectTopics(
+std::vector<std::string> SelectTopicDialog::selectTopics(
+  const rclcpp::Node::SharedPtr& node,
   const std::string &datatype1,
   const std::string &datatype2,
   QWidget *parent)
@@ -91,25 +101,27 @@ std::vector<ros::master::TopicInfo> SelectTopicDialog::selectTopics(
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype1);
   datatypes.push_back(datatype2);
-  return selectTopics(datatypes, parent);  
+  return selectTopics(node, datatypes, parent);
 }
 
-std::vector<ros::master::TopicInfo> SelectTopicDialog::selectTopics(
+std::vector<std::string> SelectTopicDialog::selectTopics(
+  const rclcpp::Node::SharedPtr& node,
   const std::vector<std::string> &datatypes,
   QWidget *parent)
 {
-  SelectTopicDialog dialog(parent);
+  SelectTopicDialog dialog(node, parent);
   dialog.allowMultipleTopics(true);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
     return dialog.selectedTopics();
   } else {
-    return std::vector<ros::master::TopicInfo>();
+    return std::vector<std::string>();
   }
 }
 
-SelectTopicDialog::SelectTopicDialog(QWidget *parent)
+SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidget *parent)
   :
+  nh_(node),
   ok_button_(new QPushButton("&Ok")),
   cancel_button_(new QPushButton("&Cancel")),
   list_widget_(new QListWidget()),
@@ -138,7 +150,7 @@ SelectTopicDialog::SelectTopicDialog(QWidget *parent)
           this, SLOT(updateDisplayedTopics()));
 
   ok_button_->setDefault(true);
-  
+
   allowMultipleTopics(false);
   setWindowTitle("Select topics...");
 
@@ -174,98 +186,112 @@ void SelectTopicDialog::setDatatypeFilter(
   const std::vector<std::string> &datatypes)
 {
   allowed_datatypes_.clear();
-  for (size_t i = 0; i < datatypes.size(); i++) {
-    allowed_datatypes_.insert(datatypes[i]);
+  for (const auto & datatype : datatypes) {
+    allowed_datatypes_.insert(datatype);
   }
   updateDisplayedTopics();
 }
 
-ros::master::TopicInfo SelectTopicDialog::selectedTopic() const
+std::string SelectTopicDialog::selectedTopic() const
 {
-  std::vector<ros::master::TopicInfo> selection = selectedTopics();
+  std::vector<std::string> selection = selectedTopics();
   if (selection.empty()) {
-    return ros::master::TopicInfo();
+    return std::string();
   } else {
     return selection.front();
   }
 }
 
-std::vector<ros::master::TopicInfo> SelectTopicDialog::selectedTopics() const
+std::vector<std::string> SelectTopicDialog::selectedTopics() const
 {
   QModelIndexList qt_selection = list_widget_->selectionModel()->selectedIndexes();
 
-  std::vector<ros::master::TopicInfo> selection;
+  std::vector<std::string> selection;
   selection.resize(qt_selection.size());
   for (int i = 0; i < qt_selection.size(); i++) {
     if (!qt_selection[i].isValid()) {
       continue;
     }
-    
+
     int row = qt_selection[i].row();
     if (row < 0 || static_cast<size_t>(row) >= displayed_topics_.size()) {
       continue;
     }
-    
+
     selection[i] = displayed_topics_[row];
   }
 
   return selection;
 }
 
-static bool topicSort(const ros::master::TopicInfo &info1,
-                      const ros::master::TopicInfo &info2)
+static bool topicSort(const std::string &info1,
+                      const std::string &info2)
 {
-  return info1.name < info2.name;
+  return info1 < info2;
 }
 
 void SelectTopicDialog::fetchTopics()
 {
-  ros::master::getTopics(known_topics_);
-  std::sort(known_topics_.begin(), known_topics_.end(), topicSort);
+  known_topics_ = nh_->get_topic_names_and_types();
+  std::vector<std::string> map_keys;
+  for (auto const& element : known_topics_)
+  {
+    map_keys.push_back(element.first);
+  }
+  std::sort(map_keys.begin(), map_keys.end(), topicSort);
   updateDisplayedTopics();
 }
 
-std::vector<ros::master::TopicInfo> SelectTopicDialog::filterTopics(
-  const std::vector<ros::master::TopicInfo> &topics) const
+std::vector<std::string> SelectTopicDialog::filterTopics(
+  const std::map<std::string, std::vector<std::string>> &topics) const
 {
   QString topic_filter = name_filter_->text();
-  std::vector<ros::master::TopicInfo> filtered;
+  std::vector<std::string> filtered;
 
-  for (size_t i = 0; i < topics.size(); i++) {
-    if (!allowed_datatypes_.empty() &&
-        allowed_datatypes_.count(topics[i].datatype) == 0) {
-      continue;
+  for (auto const& topic : topics) {
+    if (!allowed_datatypes_.empty()) {
+      // Skip any topic names that don't contain allowed types
+      bool missing_allowed_type = true;   // Assume the worst
+      for (auto const& datatype : topic.second) {
+        if (allowed_datatypes_.count(datatype) == 1) {
+          missing_allowed_type = false;
+          break;
+        }
+      }
+      if (missing_allowed_type) {
+        continue;
+      }
     }
 
-    QString topic_name = QString::fromStdString(topics[i].name);
+    QString topic_name = QString::fromStdString(topic.first);
     if (!topic_filter.isEmpty() &&
         !topic_name.contains(topic_filter, Qt::CaseInsensitive)) {
-      continue;
+          continue;
     }
 
-    filtered.push_back(topics[i]);
+    filtered.push_back(topic.first);
   }
-  
-  return filtered;  
+
+  return filtered;
 }
 
 void SelectTopicDialog::updateDisplayedTopics()
 {
-  std::vector<ros::master::TopicInfo> next_displayed_topics = filterTopics(known_topics_);
-  
+  std::vector<std::string> next_displayed_topics = filterTopics(known_topics_);
+
   // It's a lot more work to keep track of the additions/removals like
   // this compared to resetting the QListWidget's items each time, but
   // it allows Qt to properly track the selection and current items
   // across updates, which results in much less frustration for the user.
-  
+
   std::set<std::string> prev_names;
-  for (size_t i = 0; i < displayed_topics_.size(); i++) {
-    prev_names.insert(displayed_topics_[i].name);
+  for (const auto & displayed_topic : displayed_topics_) {
+    prev_names.insert(displayed_topic);
   }
-  
+
   std::set<std::string> next_names;
-  for (size_t i = 0; i < next_displayed_topics.size(); i++) {
-    next_names.insert(next_displayed_topics[i].name);
+  for (const auto & next_displayed_topic : next_displayed_topics) {
+    next_names.insert(next_displayed_topic);
   }
 
   std::set<std::string> added_names;
@@ -281,9 +307,10 @@ void SelectTopicDialog::updateDisplayedTopics()
   // Remove all the removed names
   size_t removed = 0;
   for (size_t i = 0; i < displayed_topics_.size(); i++) {
-    if (removed_names.count(displayed_topics_[i].name) == 0) {
+    if (removed_names.count(displayed_topics_[i]) == 0) {
       continue;
     }
+    RCLCPP_DEBUG(nh_->get_logger(), "Removing %s", displayed_topics_[i].c_str());
 
     QListWidgetItem *item = list_widget_->takeItem(i - removed);
     delete item;
@@ -292,16 +319,17 @@ void SelectTopicDialog::updateDisplayedTopics()
 
   // Now we can add the new items.
   for (size_t i = 0; i < next_displayed_topics.size(); i++) {
-    if (added_names.count(next_displayed_topics[i].name) == 0) {
+    if (added_names.count(next_displayed_topics[i]) == 0) {
       continue;
     }
 
-    list_widget_->insertItem(i, QString::fromStdString(next_displayed_topics[i].name));
+    list_widget_->insertItem(i, QString::fromStdString(next_displayed_topics[i]));
+    RCLCPP_DEBUG(nh_->get_logger(), "Inserting %s", next_displayed_topics[i].c_str());
     if (list_widget_->count() == 1) {
       list_widget_->setCurrentRow(0);
     }
   }
 
-  displayed_topics_.swap(next_displayed_topics);  
+  displayed_topics_.swap(next_displayed_topics);
 }
 }  // namespace mapviz

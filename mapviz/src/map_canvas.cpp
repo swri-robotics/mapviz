@@ -1,4 +1,4 @@
-﻿// *****************************************************************************
+  // *****************************************************************************
 //
 // Copyright (c) 2014, Southwest Research Institute® (SwRI®)
 // All rights reserved.
@@ -34,9 +34,16 @@
 
 #include <mapviz/map_canvas.h>
 
+#include <geometry_msgs/msg/point.h>
+#include <swri_math_util/constants.h>
+
+
 // C++ standard libraries
 #include <cmath>
-#include <swri_math_util/constants.h>
+#include <list>
+#include <memory>
+#include <string>
+
 
 namespace mapviz
 {
@@ -47,10 +54,44 @@ bool compare_plugins(MapvizPluginPtr a, MapvizPluginPtr b)
   return a->DrawOrder() < b->DrawOrder();
 }
 
+/**
+ * Convenience method for generating a geometry_msgs::msg::PointStamped in one line,
+ * since we do this a few times.
+ * @param x
+ * @param y
+ * @param z
+ * @return
+ */
+geometry_msgs::msg::PointStamped make_point_stamped(double x, double y, double z)
+{
+  geometry_msgs::msg::PointStamped point;
+  point.point.x = x;
+  point.point.y = y;
+  point.point.z = z;
+  return point;
+}
+
+/**
+ * Convenience method for converting a tf2::Stamped<tf2::Transform> object into
+ * the equivalent ROS message.  This has to be done differently between ROS Dashing
+ * and Eloquent, so this wraps it up conveniently.
+ * @param transform The source object
+ * @return That tf as a ROS message
+ */
+auto tf2_to_msg(const tf2::Stamped<tf2::Transform>& transform)
+{
+#if USE_NEW_TF2_TOMSG == 1
+  return tf2::toMsg(transform);
+#else
+  return tf2::toMsg<tf2::Stamped<tf2::Transform>, geometry_msgs::msg::TransformStamped>(transform);
+#endif
+}
+
 MapCanvas::MapCanvas(QWidget* parent) :
   QGLWidget(QGLFormat(QGL::SampleBuffers), parent),
   has_pixel_buffers_(false),
   pixel_buffer_size_(0),
+  pixel_buffer_ids_(),
   pixel_buffer_index_(0),
   capture_frames_(false),
   initialized_(false),
@@ -81,10 +122,9 @@ MapCanvas::MapCanvas(QWidget* parent) :
   scene_top_(10),
   scene_bottom_(-10)
 {
-  ROS_INFO("View scale: %f meters/pixel", view_scale_);
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "View scale: %f meters/pixel", view_scale_);
   setMouseTracking(true);
 
-  transform_.setIdentity();
 
   QObject::connect(&frame_rate_timer_, SIGNAL(timeout()), this, SLOT(update()));
   setFrameRate(50.0);
@@ -94,27 +134,23 @@ MapCanvas::MapCanvas(QWidget* parent) :
 
 MapCanvas::~MapCanvas()
 {
-  if(pixel_buffer_size_ != 0)
-  {
+  if (pixel_buffer_size_ != 0) {
     glDeleteBuffersARB(2, pixel_buffer_ids_);
   }
 }
 
-void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
+void MapCanvas::InitializeTf(std::shared_ptr<tf2_ros::Buffer> tf)
 {
-  tf_ = tf;
+  tf_buf_ = tf;
 }
 
 void MapCanvas::InitializePixelBuffers()
 {
-  if(has_pixel_buffers_)
-  {
+  if (has_pixel_buffers_) {
     int32_t buffer_size = width() * height() * 4;
 
-    if (pixel_buffer_size_ != buffer_size)
-    {
-      if (pixel_buffer_size_ != 0)
-      {
+    if (pixel_buffer_size_ != buffer_size) {
+      if (pixel_buffer_size_ != 0) {
         glDeleteBuffersARB(2, pixel_buffer_ids_);
       }
 
@@ -133,20 +169,16 @@ void MapCanvas::InitializePixelBuffers()
 void MapCanvas::initializeGL()
 {
   GLenum err = glewInit();
-  if (GLEW_OK != err)
-  {
-    ROS_ERROR("Error: %s\n", glewGetErrorString(err));
-  }
-  else
-  {
+  if (GLEW_OK != err) {
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error: %s\n", glewGetErrorString(err));
+  } else {
     // Check if pixel buffers are available for asynchronous capturing
     std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
     has_pixel_buffers_ = extensions.find("GL_ARB_pixel_buffer_object") != std::string::npos;
   }
 
   glClearColor(0.58f, 0.56f, 0.5f, 1);
-  if (enable_antialiasing_)
-  {
+  if (enable_antialiasing_) {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_POINT_SMOOTH);
     glEnable(GL_LINE_SMOOTH);
@@ -154,9 +186,7 @@ void MapCanvas::initializeGL()
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-  }
-  else
-  {
+  } else {
     glDisable(GL_MULTISAMPLE);
     glDisable(GL_POINT_SMOOTH);
     glDisable(GL_LINE_SMOOTH);
@@ -185,8 +215,7 @@ void MapCanvas::CaptureFrame(bool force)
   // Ensure the pixel size is actually 4
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
-  if (has_pixel_buffers_ && !force)
-  {
+  if (has_pixel_buffers_ && !force) {
     InitializePixelBuffers();
 
     pixel_buffer_index_ = (pixel_buffer_index_ + 1) % 2;
@@ -195,9 +224,9 @@ void MapCanvas::CaptureFrame(bool force)
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[pixel_buffer_index_]);
     glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_ids_[next_index]);
-    GLubyte* data = reinterpret_cast<GLubyte*>(glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
-    if(data)
-    {
+    GLubyte* data = reinterpret_cast<GLubyte*>(
+      glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
+    if (data) {
       capture_buffer_.resize(pixel_buffer_size_);
 
       memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
@@ -205,9 +234,7 @@ void MapCanvas::CaptureFrame(bool force)
       glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
     }
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
-  }
-  else
-  {
+  } else {
     int32_t buffer_size = width() * height() * 4;
     capture_buffer_.clear();
     capture_buffer_.resize(buffer_size);
@@ -218,8 +245,7 @@ void MapCanvas::CaptureFrame(bool force)
 
 void MapCanvas::paintEvent(QPaintEvent* event)
 {
-  if (capture_frames_)
-  {
+  if (capture_frames_) {
     CaptureFrame();
   }
 
@@ -257,8 +283,7 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   glEnd();
 
   std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     // Before we let a plugin do any drawing, push all matrices and attributes.
     // This helps to ensure that plugins can't accidentally mess something up
     // for the next plugin.
@@ -266,8 +291,7 @@ void MapCanvas::paintEvent(QPaintEvent* event)
 
     (*it)->DrawPlugin(view_center_x_, view_center_y_, view_scale_);
 
-    if ((*it)->SupportsPainting())
-    {
+    if ((*it)->SupportsPainting()) {
       p.endNativePainting();
       (*it)->PaintPlugin(&p, view_center_x_, view_center_y_, view_scale_);
       p.beginNativePainting();
@@ -331,8 +355,7 @@ void MapCanvas::mousePressEvent(QMouseEvent* e)
 void MapCanvas::keyPressEvent(QKeyEvent* event)
 {
   std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     (*it)->event(event);
   }
 }
@@ -360,24 +383,20 @@ void MapCanvas::mouseReleaseEvent(QMouseEvent* e)
 
 void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 {
-  if (mouse_pressed_ && canvas_able_to_move_)
-  {
+  if (mouse_pressed_ && canvas_able_to_move_) {
     int diff;
-    switch (mouse_button_)
-    {
+    switch (mouse_button_) {
       case Qt::LeftButton:
       case Qt::MiddleButton:
-        if (((mouse_x_ - e->x()) != 0 || (mouse_y_ - e->y()) != 0))
-        {
+        if (((mouse_x_ - e->x()) != 0 || (mouse_y_ - e->y()) != 0)) {
           drag_x_ = -((mouse_x_ - e->x()) * view_scale_);
           drag_y_ = ((mouse_y_ - e->y()) * view_scale_);
         }
         break;
       case Qt::RightButton:
         diff = e->y() - mouse_previous_y_;
-        if (diff != 0)
-        {
-          Zoom(((float)diff) / 10.0f);
+        if (diff != 0) {
+          Zoom((static_cast<float>(diff)) / 10.0f);
         }
         mouse_previous_y_ = e->y();
         break;
@@ -392,14 +411,17 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
   double x = center_x + (e->x() - width() / 2.0) * view_scale_;
   double y = center_y + (height() / 2.0 - e->y()) * view_scale_;
 
-  tf::Point point(x, y, 0);
-  point = transform_ * point;
+  geometry_msgs::msg::PointStamped point_in = make_point_stamped(x, y, 0.0);
+  geometry_msgs::msg::PointStamped point_out;
+
+  auto tfm_temp = tf2_to_msg(transform_);
+  tf2::doTransform(point_in, point_out, tfm_temp);
 
   mouse_hovering_ = true;
   mouse_hover_x_ = e->x();
   mouse_hover_y_ = e->y();
 
-  Q_EMIT Hover(point.x(), point.y(), view_scale_);
+  Q_EMIT Hover(point_out.point.x, point_out.point.y, view_scale_);
 }
 
 void MapCanvas::leaveEvent(QEvent* e)
@@ -412,8 +434,7 @@ void MapCanvas::SetFixedFrame(const std::string& frame)
 {
   fixed_frame_ = frame;
   std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     (*it)->SetTargetFrame(frame);
   }
 }
@@ -451,23 +472,20 @@ void MapCanvas::ToggleEnableAntialiasing(bool on)
 void MapCanvas::ToggleUseLatestTransforms(bool on)
 {
   std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     (*it)->SetUseLatestTransforms(on);
   }
 }
 
-void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int order)
+void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int)
 {
   plugins_.push_back(plugin);
 }
 
 void MapCanvas::RemovePlugin(MapvizPluginPtr plugin)
 {
-  
-  plugin->Shutdown(); 
+  plugin->Shutdown();
   plugins_.remove(plugin);
-  
 }
 
 void MapCanvas::TransformTarget(QPainter* painter)
@@ -482,8 +500,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
   view_center_x_ = -offset_x_ - drag_x_;
   view_center_y_ = -offset_y_ - drag_y_;
 
-  if (!tf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>")
-  {
+  if (!tf_buf_ || fixed_frame_.empty() || target_frame_.empty() || target_frame_ == "<none>") {
     qtransform_ = qtransform_.scale(1, -1);
     painter->setWorldTransform(qtransform_, false);
 
@@ -494,18 +511,23 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
   try
   {
-    tf_->lookupTransform(fixed_frame_, target_frame_, ros::Time(0), transform_);
+    auto tfrm = tf_buf_->lookupTransform(
+      fixed_frame_,
+      target_frame_,
+      tf2::TimePointZero,
+      std::chrono::seconds(1));
+
+    tf2::fromMsg(tfrm, transform_);
 
     // If the viewer orientation is fixed don't rotate the center point.
-    if (fix_orientation_)
-    {
-      transform_.setRotation(tf::Transform::getIdentity().getRotation());
+    if (fix_orientation_) {
+      transform_.setRotation(tf2::Transform::getIdentity().getRotation());
     }
 
-    if (rotate_90_)
-    {
-      transform_.setRotation(
-          tf::createQuaternionFromYaw(-swri_math_util::_half_pi) * transform_.getRotation());
+    if (rotate_90_) {
+      tf2::Quaternion yaw90;
+      yaw90.setRPY(0, 0, -swri_math_util::_half_pi);
+      transform_.setRotation(yaw90 * transform_.getRotation());
     }
 
     double roll, pitch, yaw;
@@ -515,48 +537,54 @@ void MapCanvas::TransformTarget(QPainter* painter)
     qtransform_ = qtransform_.rotateRadians(yaw);
 
     glTranslatef(-transform_.getOrigin().getX(), -transform_.getOrigin().getY(), 0);
-    qtransform_ = qtransform_.translate(-transform_.getOrigin().getX(), transform_.getOrigin().getY());
+    qtransform_ = qtransform_.translate(
+      -transform_.getOrigin().getX(),
+      transform_.getOrigin().getY());
 
-    tf::Point point(view_center_x_, view_center_y_, 0);
+    geometry_msgs::msg::PointStamped point = make_point_stamped(view_center_x_, view_center_y_, 0.0);
+    geometry_msgs::msg::PointStamped center;
 
-    tf::Point center = transform_ * point;
+    auto tfm_temp = tf2_to_msg(transform_);
+    tf2::doTransform(point, center, tfm_temp);
 
-    view_center_x_ = center.getX();
-    view_center_y_ = center.getY();
+    view_center_x_ = center.point.x;
+    view_center_y_ = center.point.y;
 
     qtransform_ = qtransform_.scale(1, -1);
     painter->setWorldTransform(qtransform_, false);
 
-    if (mouse_hovering_)
-    {
+    if (mouse_hovering_) {
       double center_x = -offset_x_ - drag_x_;
       double center_y = -offset_y_ - drag_y_;
       double x = center_x + (mouse_hover_x_ - width() / 2.0) * view_scale_;
       double y = center_y + (height() / 2.0  - mouse_hover_y_) * view_scale_;
 
-      tf::Point hover(x, y, 0);
-      hover = transform_ * hover;
+      geometry_msgs::msg::PointStamped hover_in = make_point_stamped(x, y, 0.0);
+      geometry_msgs::msg::PointStamped hover_out;
 
-      Q_EMIT Hover(hover.x(), hover.y(), view_scale_);
+      tfm_temp = tf2_to_msg(transform_);
+      tf2::doTransform(hover_in, hover_out, tfm_temp);
+
+      Q_EMIT Hover(hover_out.point.x, hover_out.point.y, view_scale_);
     }
 
     success = true;
   }
-  catch (const tf::LookupException& e)
+  catch (const tf2::LookupException& e)
   {
-    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
-  catch (const tf::ConnectivityException& e)
+  catch (const tf2::ConnectivityException& e)
   {
-    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
-  catch (const tf::ExtrapolationException& e)
+  catch (const tf2::ExtrapolationException& e)
   {
-    ROS_ERROR_THROTTLE(2.0, "%s", e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "%s", e.what());
   }
   catch (...)
   {
-    ROS_ERROR_THROTTLE(2.0, "Error looking up transform");
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Error looking up transform");
   }
 
   if (!success)
@@ -568,8 +596,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
 
 void MapCanvas::UpdateView()
 {
-  if (initialized_)
-  {
+  if (initialized_) {
     Recenter();
 
     glViewport(0, 0, width(), height());
@@ -605,7 +632,7 @@ void MapCanvas::Recenter()
 void MapCanvas::setFrameRate(const double fps)
 {
   if (fps <= 0.0) {
-    ROS_ERROR("Invalid frame rate: %f", fps);
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Invalid frame rate: %f", fps);
     return;
   }
 

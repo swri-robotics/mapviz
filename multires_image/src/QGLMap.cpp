@@ -34,31 +34,28 @@
 
 namespace multires_image
 {
-QGLMap::QGLMap(QWidget *parent) :
-  QGLWidget(parent),
-  m_initialized(false),
-  m_scale(1.0),
-  m_mouseDown(false),
-  m_mouseDownX(0),
-  m_mouseDownY(0),
-  m_tileView(NULL),
-  m_view_top_left(0, 0, 0),
-  m_view_bottom_right(0, 0, 0),
-  m_view_center(0, 0, 0),
-  m_scene_top_left(0, 0, 0),
-  m_scene_bottom_right(0, 0, 0),
-  m_scene_center(0, 0, 0)
+QGLMap::QGLMap(QWidget *parent)
+  : QGLWidget(parent)
+  , ui()
+  , m_initialized(false)
+  , m_scale(1.0)
+  , m_mouseDown(false)
+  , m_mouseDownX(0)
+  , m_mouseDownY(0)
+  , m_tileView(nullptr)
+  , m_view_top_left(0, 0, 0)
+  , m_view_bottom_right(0, 0, 0)
+  , m_view_center(0, 0, 0)
+  , m_scene_top_left(0, 0, 0)
+  , m_scene_bottom_right(0, 0, 0)
+  , m_scene_center(0, 0, 0)
 {
   ui.setupUi(this);
 }
 
-QGLMap::~QGLMap()
-{
-}
-
 void QGLMap::Exit()
 {
-  if (m_tileView != NULL)
+  if (m_tileView != nullptr)
   {
     m_tileView->Exit();
   }
@@ -70,7 +67,7 @@ void QGLMap::UpdateView()
   {
     Recenter();
 
-    if (m_tileView != NULL)
+    if (m_tileView != nullptr)
     {
       m_tileView->SetView(m_view_center.x(), m_view_center.y(), 1, m_scale);
     }
@@ -94,10 +91,14 @@ void QGLMap::SetTiles(TileSet* tiles)
 {
   double top, left, bottom, right;
   tiles->GeoReference().GetCoordinate(0, 0, left, top);
-  tiles->GeoReference().GetCoordinate(tiles->GeoReference().Width(), tiles->GeoReference().Height(), right, bottom);
+  tiles->GeoReference().GetCoordinate(
+      tiles->GeoReference().Width(),
+      tiles->GeoReference().Height(),
+      right,
+      bottom);
 
-  m_scene_top_left = tf::Point(left, top, 0);
-  m_scene_bottom_right = tf::Point(right, bottom, 0);
+  m_scene_top_left = tf2::Vector3(left, top, 0);
+  m_scene_bottom_right = tf2::Vector3(right, bottom, 0);
   m_scene_center = (m_scene_top_left + m_scene_bottom_right) / 2.0;
 
   m_view_center = m_scene_center;
@@ -115,7 +116,7 @@ void QGLMap::SetTiles(TileSet* tiles)
 
 void QGLMap::wheelEvent(QWheelEvent* e)
 {
-  float numDegrees = e->delta() / -8;
+  float numDegrees = static_cast<float>(e->delta()) / -8.0f;
 
   m_scale *= pow(1.1, numDegrees / 10.0);
 
@@ -175,7 +176,7 @@ void QGLMap::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if (m_tileView != NULL)
+  if (m_tileView != nullptr)
   {
     m_tileView->Draw();
   }

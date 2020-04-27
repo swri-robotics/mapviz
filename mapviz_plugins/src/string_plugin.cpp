@@ -17,12 +17,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL Southwest Research Institute® BE LIABLE 
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
+// ARE DISCLAIMED. IN NO EVENT SHALL Southwest Research Institute® BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 // OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 //
@@ -30,11 +30,13 @@
 
 #include <mapviz_plugins/string_plugin.h>
 
-#include <pluginlib/class_list_macros.h>
 #include <mapviz/select_topic_dialog.h>
 
 #include <QFontDialog>
 
+#include <pluginlib/class_list_macros.hpp>
+
+#include <string>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::StringPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -47,15 +49,17 @@ namespace mapviz_plugins
   const char* StringPlugin::OFFSET_X_KEY = "offset_x";
   const char* StringPlugin::OFFSET_Y_KEY = "offset_y";
 
-  StringPlugin::StringPlugin() :
-    config_widget_(new QWidget()),
-    anchor_(TOP_LEFT),
-    units_(PIXELS),
-    offset_x_(0),
-    offset_y_(0),
-    has_message_(false),
-    has_painted_(false),
-    color_(Qt::black)
+  StringPlugin::StringPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , anchor_(TOP_LEFT)
+  , units_(PIXELS)
+  , offset_x_(0)
+  , offset_y_(0)
+  , has_message_(false)
+  , has_painted_(false)
+  , color_(Qt::black)
   {
     ui_.setupUi(config_widget_);
     // Set background white
@@ -84,22 +88,18 @@ namespace mapviz_plugins
     ui_.color->setColor(color_);
   }
 
-  StringPlugin::~StringPlugin()
-  {
-  }
-
   bool StringPlugin::Initialize(QGLWidget* canvas)
   {
     canvas_ = canvas;
     return true;
   }
 
-  void StringPlugin::Draw(double x, double y, double scale)
+  void StringPlugin::Draw(double, double, double)
   {
     // This plugin doesn't do any  OpenGL drawing.
   }
 
-  void StringPlugin::Paint(QPainter* painter, double x, double y, double scale)
+  void StringPlugin::Paint(QPainter* painter, double, double, double)
   {
     if (has_message_)
     {
@@ -127,9 +127,7 @@ namespace mapviz_plugins
 
       painter->restore();
       PrintInfo("OK");
-    }
-    else
-    {
+    } else {
       PrintWarning("No messages received.");
     }
   }
@@ -141,14 +139,18 @@ namespace mapviz_plugins
     int y_offset = offset_y_;
     if (units_ == PERCENT)
     {
-      x_offset = static_cast<int>((float)(offset_x_ * canvas_->width()) / 100.0);
-      y_offset = static_cast<int>((float)(offset_y_ * canvas_->height()) / 100.0);
+      x_offset = static_cast<int>(static_cast<float>(offset_x_ * canvas_->width()) / 100.0);
+      y_offset = static_cast<int>(static_cast<float>(offset_y_ * canvas_->height()) / 100.0);
     }
 
-    int right = static_cast<int>((float)canvas_->width() - message_.size().width()) - x_offset;
-    int bottom = static_cast<int>((float)canvas_->height() - message_.size().height()) - y_offset;
-    int yCenter = static_cast<int>((float)canvas_->height() / 2.0 - message_.size().height()/2.0);
-    int xCenter = static_cast<int>((float)canvas_->width() / 2.0 - message_.size().width()/2.0);
+    int right = static_cast<int>(
+                  static_cast<float>(canvas_->width()) - message_.size().width()) - x_offset;
+    int bottom = static_cast<int>(
+                  static_cast<float>(canvas_->height()) - message_.size().height()) - y_offset;
+    int yCenter = static_cast<int>(
+                  static_cast<float>(canvas_->height()) / 2.0 - message_.size().height()/2.0);
+    int xCenter = static_cast<int>(
+                  static_cast<float>(canvas_->width()) / 2.0 - message_.size().width()/2.0);
 
     QPoint ulPoint;
 
@@ -294,12 +296,13 @@ namespace mapviz_plugins
 
   void StringPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-        "std_msgs/String");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+      node_, "std_msgs/msg/String"
+    );
 
-    if (!topic.name.empty())
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
   }
@@ -313,16 +316,35 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      string_sub_.shutdown();
+      string_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
-        string_sub_ = node_.subscribe(topic_, 1, &StringPlugin::stringCallback, this);
+        string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
+            rclcpp::QoS(1),
+            [this](const std_msgs::msg::String::ConstSharedPtr str) {
+          SetText(QString(str->data.c_str()));
+        });
+        string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
+            rclcpp::QoS(1),
+            [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
+          SetText(QString(str->value.c_str()));
+        });
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
+  }
+
+  void StringPlugin::SetText(const QString& text)
+  {
+    message_.setText(text);
+    message_.prepare(QTransform(), font_);
+
+    has_message_ = true;
+    has_painted_ = false;
+    initialized_ = true;
   }
 
   void StringPlugin::SetAnchor(QString anchor)
@@ -330,37 +352,21 @@ namespace mapviz_plugins
     if (anchor == "top left")
     {
       anchor_ = TOP_LEFT;
-    }
-    else if (anchor == "top center")
-    {
+    } else if (anchor == "top center") {
       anchor_ = TOP_CENTER;
-    }
-    else if (anchor == "top right")
-    {
+    } else if (anchor == "top right") {
       anchor_ = TOP_RIGHT;
-    }
-    else if (anchor == "center left")
-    {
+    } else if (anchor == "center left") {
       anchor_ = CENTER_LEFT;
-    }
-    else if (anchor == "center")
-    {
+    } else if (anchor == "center") {
       anchor_ = CENTER;
-    }
-    else if (anchor == "center right")
-    {
+    } else if (anchor == "center right") {
       anchor_ = CENTER_RIGHT;
-    }
-    else if (anchor == "bottom left")
-    {
+    } else if (anchor == "bottom left") {
       anchor_ = BOTTOM_LEFT;
-    }
-    else if (anchor == "bottom center")
-    {
+    } else if (anchor == "bottom center") {
       anchor_ = BOTTOM_CENTER;
-    }
-    else if (anchor == "bottom right")
-    {
+    } else if (anchor == "bottom right") {
       anchor_ = BOTTOM_RIGHT;
     }
   }
@@ -370,9 +376,7 @@ namespace mapviz_plugins
     if (units == "pixels")
     {
       units_ = PIXELS;
-    }
-    else if (units == "percent")
-    {
+    } else if (units == "percent") {
       units_ = PERCENT;
     }
   }
@@ -387,16 +391,6 @@ namespace mapviz_plugins
     offset_y_ = offset;
   }
 
-  void StringPlugin::stringCallback(const std_msgs::StringConstPtr& str)
-  {
-    message_.setText(QString(str->data.c_str()));
-    message_.prepare(QTransform(), font_);
-
-    has_message_ = true;
-    has_painted_ = false;
-    initialized_ = true;
-  }
-
   std::string StringPlugin::AnchorToString(StringPlugin::Anchor anchor)
   {
     std::string anchor_string = "top left";
@@ -404,37 +398,21 @@ namespace mapviz_plugins
     if (anchor == TOP_LEFT)
     {
       anchor_string = "top left";
-    }
-    else if (anchor == TOP_CENTER)
-    {
+    } else if (anchor == TOP_CENTER) {
       anchor_string = "top center";
-    }
-    else if (anchor == TOP_RIGHT)
-    {
+    } else if (anchor == TOP_RIGHT) {
       anchor_string = "top right";
-    }
-    else if (anchor == CENTER_LEFT)
-    {
+    } else if (anchor == CENTER_LEFT) {
       anchor_string = "center left";
-    }
-    else if (anchor == CENTER)
-    {
+    } else if (anchor == CENTER) {
       anchor_string = "center";
-    }
-    else if (anchor == CENTER_RIGHT)
-    {
+    } else if (anchor == CENTER_RIGHT) {
       anchor_string = "center right";
-    }
-    else if (anchor == BOTTOM_LEFT)
-    {
+    } else if (anchor == BOTTOM_LEFT) {
       anchor_string = "bottom left";
-    }
-    else if (anchor == BOTTOM_CENTER)
-    {
+    } else if (anchor == BOTTOM_CENTER) {
       anchor_string = "bottom center";
-    }
-    else if (anchor == BOTTOM_RIGHT)
-    {
+    } else if (anchor == BOTTOM_RIGHT) {
       anchor_string = "bottom right";
     }
 
@@ -448,12 +426,10 @@ namespace mapviz_plugins
     if (units == PIXELS)
     {
       units_string = "pixels";
-    }
-    else if (units == PERCENT)
-    {
+    } else if (units == PERCENT) {
       units_string = "percent";
     }
 
     return units_string;
   }
-}
+}   // namespace mapviz_plugins

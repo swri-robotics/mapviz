@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>multires_image</name>
   <version>1.2.0</version>
   <description>
@@ -7,32 +7,31 @@
 
   </description>
   <author>Marc Alban</author>
-  <maintainer email="malban@swri.org">Marc Alban</maintainer>
+  <maintainer email="preed@swri.org">P. J. Reed</maintainer>
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <buildtool_depend>qt_qmake</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>qt5-qmake</buildtool_depend>
 
-  <build_depend>libqt_dev</build_depend>
-  <build_depend>libqt_opengl_dev</build_depend>
+  <depend>libqt5-core</depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
 
   <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
-  <depend>gps_common</depend>
+  <depend>gps_msgs</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
-  <depend>roscpp</depend>
+  <depend>rclcpp</depend>
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
-  <depend>swri_yaml_util</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
 
-  <exec_depend>libqt_core</exec_depend>
-  <exec_depend>libqt_opengl</exec_depend>
-  <exec_depend>rospy</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
+  <exec_depend>rclpy</exec_depend>
 
   <export>
+    <build_type>ament_cmake</build_type>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
   </export>
 

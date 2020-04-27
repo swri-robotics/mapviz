@@ -36,33 +36,27 @@ namespace mapviz
 {
   ConfigItem::ConfigItem(QWidget *parent, Qt::WindowFlags flags) :
     QWidget(parent, flags),
-    item_(0),
+    item_(nullptr),
     visible_(true)
   {
     ui_.setupUi(this);
 
-    edit_name_action_   = new  QAction("Edit Name", this);
-    remove_item_action_ = new  QAction("Remove", this);
+    edit_name_action_   = new QAction("Edit Name", this);
+    remove_item_action_ = new QAction("Remove", this);
     remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
 
     connect(edit_name_action_, SIGNAL(triggered()), this, SLOT(EditName()));
     connect(remove_item_action_, SIGNAL(triggered()), this, SLOT(Remove()));
   }
 
-  ConfigItem::~ConfigItem()
-  {
-  }
-
   void ConfigItem::ToggleDraw(bool toggled)
   {
-    if (visible_ != toggled)
-    {
-      visible_ = toggled;      
-      if (ui_.show->isChecked() != toggled)
-      {
+    if (visible_ != toggled) {
+      visible_ = toggled;
+      if (ui_.show->isChecked() != toggled) {
         ui_.show->setChecked(toggled);
       }
-      
+
       Q_EMIT ToggledDraw(item_, toggled);
     }
   }
@@ -97,14 +91,13 @@ namespace mapviz
   {
     bool ok;
     QString text = QInputDialog::getText(
-      this, 
+      this,
       tr("Set Display name"),
-      tr(""), 
+      tr(""),
       QLineEdit::Normal,
       name_, &ok);
-     
-    if (ok && !text.isEmpty())
-    {
+
+    if (ok && !text.isEmpty()) {
       SetName(text);
     }
   }
@@ -116,17 +109,14 @@ namespace mapviz
 
   void ConfigItem::Hide()
   {
-    if (!ui_.content->isHidden())
-    {
+    if (!ui_.content->isHidden()) {
       ui_.content->hide();
       ui_.signlabel->setText(" + ");
-    }
-    else
-    {
+    } else {
       ui_.content->show();
       ui_.signlabel->setText(" - ");
     }
 
     Q_EMIT UpdateSizeHint();
   }
-}
+}   // namespace mapviz

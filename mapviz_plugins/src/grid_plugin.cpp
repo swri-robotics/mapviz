@@ -29,10 +29,6 @@
 
 #include <mapviz_plugins/grid_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 #include <boost/lexical_cast.hpp>
 
 // QT libraries
@@ -42,24 +38,33 @@
 #include <mapviz/select_frame_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <list>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GridPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  GridPlugin::GridPlugin() :
-    config_widget_(new QWidget()),
-    alpha_(1.0),
-    top_left_(0, 0, 0),
-    size_(1),
-    rows_(1),
-    columns_(1),
-    transformed_(false)
+  GridPlugin::GridPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , alpha_(1.0)
+  , top_left_(0, 0, 0)
+  , size_(1)
+  , rows_(1)
+  , columns_(1)
+  , transformed_(false)
   {
     ui_.setupUi(config_widget_);
 
     ui_.color->setColor(Qt::red);
-    
+
     // Set background white
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
@@ -81,27 +86,18 @@ namespace mapviz_plugins
     connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
   }
 
-  GridPlugin::~GridPlugin()
-  {
-    Shutdown();
-  }
-
-  void GridPlugin::Shutdown()
-  {
-  }
-
   void GridPlugin::DrawIcon()
   {
     if (icon_)
     {
       QPixmap icon(16, 16);
       icon.fill(Qt::transparent);
-      
+
       QPainter painter(&icon);
       painter.setRenderHint(QPainter::Antialiasing, true);
-      
+
       QPen pen(QColor(ui_.color->color()));
-      
+
       pen.setWidth(2);
       pen.setCapStyle(Qt::SquareCap);
       painter.setPen(pen);
@@ -112,7 +108,7 @@ namespace mapviz_plugins
       painter.drawLine(2, 14, 14, 14);
       painter.drawLine(8, 2, 8, 14);
       painter.drawLine(2, 8, 14, 8);
-      
+
       icon_->SetPixmap(icon);
     }
   }
@@ -159,7 +155,7 @@ namespace mapviz_plugins
 
   void GridPlugin::SelectFrame()
   {
-    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_);
+    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
     if (!frame.empty())
     {
       ui_.frame->setText(QString::fromStdString(frame));
@@ -209,33 +205,30 @@ namespace mapviz_plugins
 
   void GridPlugin::Draw(double x, double y, double scale)
   {
-    if (transformed_)
-    {
+    if (transformed_) {
       QColor color = ui_.color->color();
-      
+
       glLineWidth(3);
       glColor4d(color.redF(), color.greenF(), color.blueF(), alpha_);
       glBegin(GL_LINES);
 
-        std::list<tf::Point>::iterator transformed_left_it = transformed_left_points_.begin();
-        std::list<tf::Point>::iterator transformed_right_it = transformed_right_points_.begin();
-        for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it)
-        {
-          glVertex2d(transformed_left_it->getX(), transformed_left_it->getY());
-          glVertex2d(transformed_right_it->getX(), transformed_right_it->getY());
+      auto transformed_left_it = transformed_left_points_.begin();
+      auto transformed_right_it = transformed_right_points_.begin();
+      for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it) {
+        glVertex2d(transformed_left_it->getX(), transformed_left_it->getY());
+        glVertex2d(transformed_right_it->getX(), transformed_right_it->getY());
 
-          ++transformed_right_it;
-        }
+        ++transformed_right_it;
+      }
 
-        std::list<tf::Point>::iterator transformed_top_it = transformed_top_points_.begin();
-        std::list<tf::Point>::iterator transformed_bottom_it = transformed_bottom_points_.begin();
-        for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it)
-        {
-          glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
-          glVertex2d(transformed_bottom_it->getX(), transformed_bottom_it->getY());
+      auto transformed_top_it = transformed_top_points_.begin();
+      auto transformed_bottom_it = transformed_bottom_points_.begin();
+      for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it) {
+        glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
+        glVertex2d(transformed_bottom_it->getX(), transformed_bottom_it->getY());
 
-          ++transformed_bottom_it;
-        }
+        ++transformed_bottom_it;
+      }
 
       glEnd();
 
@@ -260,11 +253,11 @@ namespace mapviz_plugins
     // Set top and bottom
     for (int c = 0; c <= columns_; c++)
     {
-      tf::Point top_point(top_left_.getX() + c * size_, top_left_.getY(), 0);
+      tf2::Vector3 top_point(top_left_.getX() + c * size_, top_left_.getY(), 0);
       top_points_.push_back(top_point);
       transformed_top_points_.push_back(transform_ * top_point);
 
-      tf::Point bottom_point(top_left_.getX() + c * size_, top_left_.getY() + size_ * rows_, 0);
+      tf2::Vector3 bottom_point(top_left_.getX() + c * size_, top_left_.getY() + size_ * rows_, 0);
       bottom_points_.push_back(bottom_point);
       transformed_bottom_points_.push_back(transform_ * bottom_point);
     }
@@ -272,11 +265,14 @@ namespace mapviz_plugins
     // Set left and right
     for (int r = 0; r <= rows_; r++)
     {
-      tf::Point left_point(top_left_.getX(), top_left_.getY() + r * size_, 0);
+      tf2::Vector3 left_point(top_left_.getX(), top_left_.getY() + r * size_, 0);
       left_points_.push_back(left_point);
       transformed_left_points_.push_back(transform_ * left_point);
 
-      tf::Point right_point(top_left_.getX() + size_ * columns_, top_left_.getY() + r * size_, 0);
+      tf2::Vector3 right_point(
+        top_left_.getX() + size_ * columns_,
+        top_left_.getY() + r * size_,
+        0);
       right_points_.push_back(right_point);
       transformed_right_points_.push_back(transform_ * right_point);
     }
@@ -286,7 +282,7 @@ namespace mapviz_plugins
   {
     transformed_ = false;
 
-    if (GetTransform(ros::Time(), transform_))
+    if (GetTransform(rclcpp::Time(), transform_))
     {
       Transform(left_points_, transformed_left_points_);
       Transform(right_points_, transformed_right_points_);
@@ -297,10 +293,10 @@ namespace mapviz_plugins
     }
   }
 
-  void GridPlugin::Transform(std::list<tf::Point>& src, std::list<tf::Point>& dst)
+  void GridPlugin::Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst)
   {
-    std::list<tf::Point>::iterator points_it = src.begin();
-    std::list<tf::Point>::iterator transformed_it = dst.begin();
+    auto points_it = src.begin();
+    auto transformed_it = dst.begin();
     for (; points_it != src.end() && transformed_it != dst.end(); ++points_it)
     {
       (*transformed_it) = transform_ * (*points_it);
@@ -312,54 +308,50 @@ namespace mapviz_plugins
   void GridPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     if (node["color"])
-    {            
-      std::string color;
-      node["color"] >> color;
+    {
+      std::string color = node["color"].as<std::string>();
       ui_.color->setColor(QColor(color.c_str()));
     }
 
     if (node["frame"])
     {
-      std::string frame;
-      node["frame"] >> frame;
+      std::string frame = node["frame"].as<std::string>();
       ui_.frame->setText(QString::fromStdString(frame));
     }
 
     if (node["x"])
     {
-      float x = 0;
-      node["x"] >> x;
+      float x = node["x"].as<float>();
       ui_.x->setValue(x);
     }
 
     if (node["y"])
     {
-      float y = 0;
-      node["y"] >> y;
+      float y = node["y"].as<float>();
       ui_.y->setValue(y);
     }
 
     if (node["alpha"])
     {
-      node["alpha"] >> alpha_;
+      alpha_ = node["alpha"].as<double>();
       ui_.alpha->setValue(alpha_);
     }
 
     if (node["size"])
     {
-      node["size"] >> size_;
+      size_ = node["size"].as<double>();
       ui_.size->setValue(size_);
     }
 
     if (node["rows"])
     {
-      node["rows"] >> rows_;
+      rows_ = node["rows"].as<int>();
       ui_.rows->setValue(rows_);
     }
 
     if (node["columns"])
     {
-      node["columns"] >> columns_;
+      columns_ = node["columns"].as<int>();
       ui_.columns->setValue(columns_);
     }
 
@@ -381,5 +373,4 @@ namespace mapviz_plugins
     emitter << YAML::Key << "rows" << YAML::Value << rows_;
     emitter << YAML::Key << "columns" << YAML::Value << columns_;
   }
-}
-
+}   // namespace mapviz_plugins

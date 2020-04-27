@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2014-2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,8 @@
 #include <limits>
 
 #include <boost/cstdint.hpp>
-#include <boost/shared_ptr.hpp>
+
+#include <rclcpp/logger.hpp>
 
 #include <QCache>
 #include <QImage>
@@ -55,12 +56,12 @@ namespace tile_map
   {
   public:
     Image(const QString& uri, size_t uri_hash, uint64_t priority = 0);
-    ~Image();
+    ~Image() = default;
 
     QString Uri() const { return uri_; }
     size_t UriHash() const { return uri_hash_; }
 
-    boost::shared_ptr<QImage> GetImage() { return image_; }
+    std::shared_ptr<QImage> GetImage() { return image_; }
 
     void InitializeImage();
     void ClearImage();
@@ -91,21 +92,25 @@ namespace tile_map
     bool failed_;
     uint64_t priority_;
 
-    mutable boost::shared_ptr<QImage> image_;
+    mutable std::shared_ptr<QImage> image_;
 
     static const int MAXIMUM_FAILURES;
   };
-  typedef boost::shared_ptr<Image> ImagePtr;
+  typedef std::shared_ptr<Image> ImagePtr;
 
   class ImageCache : public QObject
   {
     Q_OBJECT
 
   public:
-    explicit ImageCache(const QString& cache_dir, size_t size = 4096);
-    ~ImageCache();
+    explicit ImageCache(const QString& cache_dir,
+        size_t size = 4096,
+        rclcpp::Logger logger = rclcpp::get_logger("tile_map::ImageCache"));
+    ~ImageCache() override;
 
     ImagePtr GetImage(size_t uri_hash, const QString& uri, int32_t priority = 0);
+
+    void SetLogger(rclcpp::Logger logger);
 
   public Q_SLOTS:
     void ProcessRequest(QString uri);
@@ -133,6 +138,8 @@ namespace tile_map
 
     QSemaphore network_request_semaphore_;
 
+    rclcpp::Logger logger_;
+
     friend class CacheThread;
 
     static const int MAXIMUM_NETWORK_REQUESTS;
@@ -144,7 +151,7 @@ namespace tile_map
     public:
       explicit CacheThread(ImageCache* parent);
 
-      virtual void run();
+      void run() override;
 
       void notify();
 
@@ -159,7 +166,7 @@ namespace tile_map
   };
 
 
-  typedef boost::shared_ptr<ImageCache> ImageCachePtr;
+  typedef std::shared_ptr<ImageCache> ImageCachePtr;
 }
 
 #endif  // TILE_MAP_IMAGE_CACHE_H_

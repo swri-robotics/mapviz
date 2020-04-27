@@ -29,26 +29,33 @@
 
 #include <mapviz_plugins/path_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
 
 // ROS libraries
-#include <ros/master.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PathPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PathPlugin::PathPlugin() : config_widget_(new QWidget())
+  PathPlugin::PathPlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
     ui_.path_color->setColor(Qt::green);
@@ -67,21 +74,15 @@ namespace mapviz_plugins
     connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     connect(ui_.path_color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
-
-  }
-
-  PathPlugin::~PathPlugin()
-  {
   }
 
   void PathPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic =
-        mapviz::SelectTopicDialog::selectTopic("nav_msgs/Path");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Path");
 
-    if (!topic.name.empty())
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
   }
@@ -96,19 +97,23 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      path_sub_.shutdown();
+      path_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
-        path_sub_ = node_.subscribe(topic_, 1, &PathPlugin::pathCallback, this);
+        path_sub_ = node_->create_subscription<nav_msgs::msg::Path>(
+          topic_,
+          rclcpp::QoS(1),
+          std::bind(&PathPlugin::pathCallback, this, std::placeholders::_1)
+        );
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void PathPlugin::pathCallback(const nav_msgs::PathConstPtr& path)
+  void PathPlugin::pathCallback(const nav_msgs::msg::Path::SharedPtr path)
   {
     if (!has_message_)
     {
@@ -123,10 +128,10 @@ namespace mapviz_plugins
       StampedPoint stamped_point;
       stamped_point.stamp = path->header.stamp;
       stamped_point.source_frame = path->header.frame_id;
-      stamped_point.point = tf::Point(path->poses[i].pose.position.x,
+      stamped_point.point = tf2::Vector3(path->poses[i].pose.position.x,
                                       path->poses[i].pose.position.y, 0);
 
-      pushPoint( std::move(stamped_point) );
+      pushPoint( stamped_point );
     }
   }
 
@@ -179,18 +184,16 @@ namespace mapviz_plugins
 
   void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
-    if (swri_yaml_util::FindValue(node, "topic"))
+    if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
       TopicEdited();
     }
 
-    if (swri_yaml_util::FindValue(node, "color"))
+    if (node["color"])
     {
-      std::string color;
-      node["color"] >> color;
+      std::string color = node["color"].as<std::string>();
       QColor qcolor(color.c_str());
       SetColor(qcolor);
       ui_.path_color->setColor(qcolor);
@@ -205,4 +208,4 @@ namespace mapviz_plugins
     std::string color = ui_.path_color->color().name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;
   }
-}
+}   // namespace mapviz_plugins

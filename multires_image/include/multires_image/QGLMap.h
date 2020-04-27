@@ -38,7 +38,7 @@
 // QT auto-generated headers
 #include "ui_QGLMap.h"
 
-#include <tf/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
 
 #include <multires_image/tile.h>
 #include <multires_image/tile_view.h>
@@ -51,14 +51,14 @@ namespace multires_image
 
   public:
     explicit QGLMap(QWidget *parent = 0);
-    ~QGLMap();
+    ~QGLMap() override = default;
 
     void Exit();
     void UpdateView();
     void SetTiles(TileSet* tiles);
 
-    tf::Point SceneCenter() { return m_scene_center; }
-    tf::Point ViewCenter() { return m_view_center; }
+    tf2::Vector3 SceneCenter() { return m_scene_center; }
+    tf2::Vector3 ViewCenter() { return m_view_center; }
 
   signals:
     void SignalZoomChange(double z);
@@ -72,14 +72,14 @@ namespace multires_image
     void SetTextureMemory(int64_t bytes);
 
   protected:
-    void initializeGL();
-    void resizeGL(int w, int h);
-    void paintGL();
-    void mousePressEvent(QMouseEvent* e);
-    void mouseDoubleClickEvent(QMouseEvent* e);
-    void mouseReleaseEvent(QMouseEvent* e);
-    void mouseMoveEvent(QMouseEvent* e);
-    void wheelEvent(QWheelEvent* e);
+    void initializeGL() override;
+    void resizeGL(int w, int h) override;
+    void paintGL() override;
+    void mousePressEvent(QMouseEvent* e) override;
+    void mouseDoubleClickEvent(QMouseEvent* e) override;
+    void mouseReleaseEvent(QMouseEvent* e) override;
+    void mouseMoveEvent(QMouseEvent* e) override;
+    void wheelEvent(QWheelEvent* e) override;
 
   private:
     Ui::QGLMapClass ui;
@@ -94,13 +94,13 @@ namespace multires_image
 
     TileView*       m_tileView;
 
-    tf::Point m_view_top_left;
-    tf::Point m_view_bottom_right;
-    tf::Point m_view_center;
+    tf2::Vector3 m_view_top_left;
+    tf2::Vector3 m_view_bottom_right;
+    tf2::Vector3 m_view_center;
 
-    tf::Point m_scene_top_left;
-    tf::Point m_scene_bottom_right;
-    tf::Point m_scene_center;
+    tf2::Vector3 m_scene_top_left;
+    tf2::Vector3 m_scene_bottom_right;
+    tf2::Vector3 m_scene_center;
 
     void Recenter();
     void MousePan(int x, int y);

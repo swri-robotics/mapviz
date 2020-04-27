@@ -1,70 +1,57 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10)
+
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 project(mapviz)
 
-set(COMMON_DEPS
-  cv_bridge
-  image_transport
-  marti_common_msgs
-  pluginlib
-  rosapi
-  roscpp
-  rqt_gui
-  rqt_gui_cpp
-  std_srvs
-  swri_transform_util
-  swri_yaml_util
-  tf
-)
-set(BUILD_DEPS
-  ${COMMON_DEPS}
-  message_generation
-)
-set(RUNTIME_DEPS
-  ${COMMON_DEPS}
-  message_runtime
-)
+### ROS Packages ###
+find_package(ament_cmake REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(mapviz_interfaces REQUIRED)
+find_package(marti_common_msgs REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rqt_gui_cpp REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(swri_math_util REQUIRED)
+find_package(swri_transform_util REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
-find_package(catkin REQUIRED COMPONENTS
-  ${BUILD_DEPS}
-)
+# tf2_geometry_msgs 0.12.1 broke API compatibility, so check which version
+# we need to use
+find_package(tf2_geometry_msgs REQUIRED)
+if("${tf2_geometry_msgs_VERSION}" VERSION_GREATER "0.12.0")
+  set(USE_NEW_TF2_TOMSG 1)
+else()
+  set(USE_NEW_TF2_TOMSG 0)
+endif()
+
+### PkgConfig ###
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YamlCpp yaml-cpp)
 
 ### Boost ###
-find_package(Boost REQUIRED system filesystem)
+find_package(Boost REQUIRED date_time system filesystem)
 
-### OpenCV 2 on ROS < Kinetic, OpenCV 3 on ROS >= Kinetic ###
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  find_package(OpenCV 2 REQUIRED)
-else()
-  find_package(OpenCV 3.1 COMPONENTS core imgproc imgcodecs videoio REQUIRED)
-endif()
+### OpenCV 3 on ROS2 ###
+find_package(OpenCV 3.1 COMPONENTS core imgproc imgcodecs videoio REQUIRED)
 
-### Qt4 on ROS < Kinetic, Qt5 on ROS >= Kinetic ###
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL)
-  set(Qt_FOUND TRUE)
-  set(Qt_INCLUDE_DIRS "${QT_INCLUDE_DIR};${QT_QTCORE_INCLUDE_DIR};${QT_QTGUI_INCLUDE_DIR};${QT_QTOPENGL_INCLUDE_DIR}")
-  set(Qt_LIBRARIES
-    Qt4::QtCore
-    Qt4::QtGui
-    Qt4::QtOpenGL
-  )
-else()
-  find_package(Qt5Concurrent REQUIRED)
-  find_package(Qt5Core REQUIRED)
-  find_package(Qt5Gui REQUIRED)
-  find_package(Qt5OpenGL REQUIRED)
-  find_package(Qt5Widgets REQUIRED)
-  set(Qt_FOUND TRUE)
-  set(Qt_INCLUDE_DIRS "${Qt5Concurrent_INCLUDE_DIRS};${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
-  set(Qt_LIBRARIES
-    Qt5::Concurrent
-    Qt5::Core
-    Qt5::Gui
-    Qt5::OpenGL
-    Qt5::Widgets
-  )
-  add_definitions(-DWFlags=WindowFlags)
-endif()
+# ### Qt5 on ROS2 ###
+find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+add_definitions(-DWFlags=WindowFlags)
 set(QT_USE_QTOPENGL TRUE)
 
 ### OpenGL ###
@@ -77,21 +64,6 @@ find_package(GLUT REQUIRED)
 ### GLEW ###
 find_package(GLEW REQUIRED)
 
-add_service_files(FILES
-  AddMapvizDisplay.srv
-)
-
-generate_messages(DEPENDENCIES
-  marti_common_msgs
-)
-
-catkin_package(
-  LIBRARIES rqt_${PROJECT_NAME}
-  INCLUDE_DIRS include
-  DEPENDS Qt
-  CATKIN_DEPENDS ${RUNTIME_DEPS}
-)
-
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
@@ -99,11 +71,11 @@ add_definitions(-DQT_NO_KEYWORDS)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
-  ${catkin_INCLUDE_DIRS}
   ${Qt_INCLUDE_DIRS}
   ${OpenGL_INCLUDE_DIR}
   ${GLEW_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${YamlCpp_INCLUDE_DIR}
 )
 
 # Qt UI files
@@ -117,7 +89,7 @@ set(QT_HEADERS
   include/${PROJECT_NAME}/color_button.h
   include/${PROJECT_NAME}/config_item.h
   include/${PROJECT_NAME}/map_canvas.h
-  include/${PROJECT_NAME}/${PROJECT_NAME}.h
+  include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
   include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h
   include/${PROJECT_NAME}/rqt_${PROJECT_NAME}.h
   include/${PROJECT_NAME}/select_frame_dialog.h
@@ -140,38 +112,51 @@ set(SRC_FILES
   src/video_writer.cpp
 )
 
-### Use Qt4 macros on ROS < Kinetic, Qt5 on ROS >= Kinetic ###
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  qt4_add_resources(RCC_SRCS src/resources/icons.qrc)
-  qt4_wrap_ui(SRC_FILES ${UI_FILES})
-  qt4_wrap_cpp(SRC_FILES ${QT_HEADERS})
-else()
-  qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
-  qt5_wrap_ui(SRC_FILES ${UI_FILES})
-  qt5_wrap_cpp(SRC_FILES ${QT_HEADERS})
-endif()
+### Qt5 on ROS2 ###
+qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
+qt5_wrap_ui(SRC_FILES ${UI_FILES})
+qt5_wrap_cpp(SRC_FILES ${QT_HEADERS})
 
 ### Build mapviz as an rqt plugin ###
 add_library(rqt_${PROJECT_NAME}
   ${SRC_FILES}
   ${RCC_SRCS}
 )
+target_compile_definitions(rqt_${PROJECT_NAME}
+  PRIVATE
+    USE_NEW_TF2_TOMSG=${USE_NEW_TF2_TOMSG}
+)
 target_link_libraries(rqt_${PROJECT_NAME}
-  ${Qt_LIBRARIES}
-  ${OpenGL_LIBRARY}
+  OpenGL::GL
   ${GLUT_LIBRARY}
   ${GLEW_LIBRARIES}
   ${OpenCV_LIBS}
-  ${catkin_LIBRARIES}
+  ${YamlCpp_LIBRARIES}
+  Qt5::Concurrent
+  Qt5::Core
+  Qt5::Gui
+  Qt5::OpenGL
+  Qt5::Widgets
 )
-add_dependencies(rqt_${PROJECT_NAME}
-  ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(rqt_${PROJECT_NAME}
+  ament_cmake
+  cv_bridge
+  geometry_msgs
+  image_transport
+  mapviz_interfaces
+  marti_common_msgs
+  pluginlib
+  rclcpp
+  rqt_gui_cpp
+  std_srvs
+  swri_math_util
+  swri_transform_util
+  tf2
+  tf2_geometry_msgs
+  tf2_ros
 )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
-)
-add_dependencies(rqt_${PROJECT_NAME}
-  ${PROJECT_NAME}_gencpp
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )
 
 ### Build mapviz as a standalone executable ###
@@ -187,34 +172,43 @@ target_link_libraries(${PROJECT_NAME}
   ${GLEW_LIBRARIES}
   ${GLU_LIBRARY}
   ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}
 )
-add_dependencies(${PROJECT_NAME}
-  ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(${PROJECT_NAME}
+  swri_math_util
+  swri_transform_util
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
-)
-add_dependencies(${PROJECT_NAME}
-  ${PROJECT_NAME}_gencpp
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )
 
 ### Install mapviz ###
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )
 
 install(TARGETS ${PROJECT_NAME} rqt_${PROJECT_NAME}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
 )
 
 install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
+  FILES_MATCHING PATTERN ".py" PATTERN ".launch"
 )
 
 install(FILES plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME} 
 )
+
+ament_export_dependencies(${RUNTIME_DEPS}
+  Qt5Concurrent
+  Qt5Core
+  Qt5Gui
+  Qt5OpenGL
+  Qt5Widgets
+)
+ament_export_include_directories(include)
+ament_export_libraries(rqt_${PROJECT_NAME} ${YamlCpp_LIBRARIES})
+ament_package()

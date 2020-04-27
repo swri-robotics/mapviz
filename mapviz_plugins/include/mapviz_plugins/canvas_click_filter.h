@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_PLUGINS_CANVAS_CLICK_FILTER_H
-#define MAPVIZ_PLUGINS_CANVAS_CLICK_FILTER_H
+#ifndef MAPVIZ_PLUGINS__CANVAS_CLICK_FILTER_H_
+#define MAPVIZ_PLUGINS__CANVAS_CLICK_FILTER_H_
 
 #include <QObject>
 #include <QPoint>
@@ -44,30 +44,30 @@
  */
 namespace mapviz_plugins
 {
-  class CanvasClickFilter : public QObject
-  {
-    Q_OBJECT
+class CanvasClickFilter : public QObject
+{
+  Q_OBJECT
 
-  public:
-    CanvasClickFilter();
+public:
+  CanvasClickFilter();
 
-    void setMaxClickTime(qint64 max_ms);
-    void setMaxClickMovement(qreal max_distance);
+  void setMaxClickTime(qint64 max_ms);
+  void setMaxClickMovement(qreal max_distance);
 
-  Q_SIGNALS:
-    void pointClicked(const QPointF&);
+Q_SIGNALS:
+  void pointClicked(const QPointF&);
 
-  protected:
-    bool eventFilter(QObject *object, QEvent* event);
+protected:
+  bool eventFilter(QObject *object, QEvent* event) override;
 
-  private:
-    bool is_mouse_down_;
-    QPointF mouse_down_pos_;
-    qint64 mouse_down_time_;
+private:
+  bool is_mouse_down_;
+  QPointF mouse_down_pos_;
+  qint64 mouse_down_time_;
 
-    qint64 max_ms_;
-    qreal max_distance_;
-  };
-}
+  qint64 max_ms_;
+  qreal max_distance_;
+};
+}   // namespace mapviz_plugins
 
-#endif //MAPVIZ_PLUGINS_CANVAS_CLICK_FILTER_H
+#endif  // MAPVIZ_PLUGINS__CANVAS_CLICK_FILTER_H_

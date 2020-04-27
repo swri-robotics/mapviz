@@ -42,7 +42,7 @@ namespace multires_image
   {
   public:
     TileView(TileSet* tiles, QGLWidget* widget);
-    ~TileView(void);
+    ~TileView() = default;
 
     const TileCache* Cache() { return &m_cache; }
 

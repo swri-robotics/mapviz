@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>mapviz_plugins</name>
   <version>1.2.0</version>
   <description>
@@ -7,29 +7,32 @@
 
   </description>
   <author>Marc Alban</author>
-  <maintainer email="malban@swri.org">Marc Alban</maintainer>
+  <maintainer email="preed@swri.org">P. J. Reed</maintainer>
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <buildtool_depend>qt_qmake</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>qt5-qmake</buildtool_depend>
 
-  <build_depend>libqt_dev</build_depend>
-  <build_depend>libqt_opengl_dev</build_depend>
+  <depend>libqt5-core</depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
 
-  <depend>actionlib</depend>
+  <depend>ament_index_cpp</depend>
   <depend>cv_bridge</depend>
-  <depend>gps_common</depend>
+  <depend>gps_msgs</depend>
   <depend>image_transport</depend>
+  <depend>map_msgs</depend>
   <depend>mapviz</depend>
   <depend>marti_common_msgs</depend>
   <depend>marti_nav_msgs</depend>
+  <depend>marti_sensor_msgs</depend>
   <depend>marti_visualization_msgs</depend>
-  <depend>move_base_msgs</depend>
+  <!-- move_base_msgs is commented out until MoveBasePlugin is ported to ROS 2 -->
+  <!-- depend>move_base_msgs</depend -->
   <depend>nav_msgs</depend>
-  <depend>map_msgs</depend>
   <depend>pluginlib</depend>
-  <depend>roscpp</depend>
+  <depend>rclcpp_action</depend>
+  <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>stereo_msgs</depend>
@@ -37,14 +40,13 @@
   <depend>swri_math_util</depend>
   <depend>swri_route_util</depend>
   <depend>swri_transform_util</depend>
-  <depend>swri_yaml_util</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
   <depend>visualization_msgs</depend>
   
-  <exec_depend>libqt_core</exec_depend>
-  <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
 
   <export>
+    <build_type>ament_cmake</build_type>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
   </export>
 

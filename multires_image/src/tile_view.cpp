@@ -56,10 +56,6 @@ namespace multires_image
       min_scale_ = scale_y;
   }
 
-  TileView::~TileView(void)
-  {
-  }
-
   void TileView::SetView(double x, double y, double radius, double scale)
   {
     int layer = 0;
@@ -78,28 +74,36 @@ namespace multires_image
     m_tiles->GetLayer(m_currentLayer)->GetTileIndex(x, y, row, column);
 
     m_startRow = row - 2;
-    if (m_startRow < 0)
+    if (m_startRow < 0) {
       m_startRow = 0;
-    if (m_startRow >= m_tiles->GetLayer(m_currentLayer)->RowCount())
+    }
+    if (m_startRow >= m_tiles->GetLayer(m_currentLayer)->RowCount()) {
       m_startRow = m_tiles->GetLayer(m_currentLayer)->RowCount() - 1;
+    }
 
     m_endRow = row + 2;
-    if (m_endRow < 0)
+    if (m_endRow < 0) {
       m_endRow = 0;
-    if (m_endRow >= m_tiles->GetLayer(m_currentLayer)->RowCount())
+    }
+    if (m_endRow >= m_tiles->GetLayer(m_currentLayer)->RowCount()) {
       m_endRow = m_tiles->GetLayer(m_currentLayer)->RowCount() - 1;
+    }
 
     m_startColumn = column - 2;
-    if (m_startColumn < 0)
+    if (m_startColumn < 0) {
       m_startColumn = 0;
-    if (m_startColumn >= m_tiles->GetLayer(m_currentLayer)->ColumnCount())
+    }
+    if (m_startColumn >= m_tiles->GetLayer(m_currentLayer)->ColumnCount()) {
       m_startColumn = m_tiles->GetLayer(m_currentLayer)->ColumnCount() - 1;
+    }
 
     m_endColumn = column + 2;
-    if (m_endColumn < 0)
+    if (m_endColumn < 0) {
       m_endColumn = 0;
-    if (m_endColumn >= m_tiles->GetLayer(m_currentLayer)->ColumnCount())
+    }
+    if (m_endColumn >= m_tiles->GetLayer(m_currentLayer)->ColumnCount()) {
       m_endColumn = m_tiles->GetLayer(m_currentLayer)->ColumnCount() - 1;
+    }
 
     m_cache.Precache(x, y);
   }

@@ -27,12 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_POINT_DRAW_H_
-#define MAPVIZ_POINT_DRAW_H_
-
-// C++ standard libraries
-#include <string>
-#include <list>
+#ifndef MAPVIZ_PLUGINS__POINT_DRAWING_PLUGIN_H_
+#define MAPVIZ_PLUGINS__POINT_DRAWING_PLUGIN_H_
 
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz/map_canvas.h>
@@ -43,102 +39,105 @@
 #include <QWidget>
 
 // ROS libraries
-#include <ros/ros.h>
-#include <tf/transform_datatypes.h>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.h>
+
+// C++ standard libraries
+#include <deque>
+#include <list>
+#include <string>
+#include <vector>
 
 namespace mapviz_plugins
 {
-  class PointDrawingPlugin : public mapviz::MapvizPlugin
+class PointDrawingPlugin : public mapviz::MapvizPlugin
+{
+  Q_OBJECT
+
+  public:
+  struct StampedPoint
   {
-    Q_OBJECT
+    StampedPoint(): transformed(false) {}
 
-   public:
-    struct StampedPoint
-    {
-      StampedPoint(): transformed(false) {}
+    tf2::Vector3 point;
+    tf2::Quaternion orientation;
+    tf2::Vector3 transformed_point;
+    tf2::Vector3 transformed_arrow_point;
+    tf2::Vector3 transformed_arrow_left;
+    tf2::Vector3 transformed_arrow_right;
+    std::string source_frame;
+    bool transformed;
+    rclcpp::Time stamp;
 
-      tf::Point point;
-      tf::Quaternion orientation;
-      tf::Point transformed_point;
-      tf::Point transformed_arrow_point;
-      tf::Point transformed_arrow_left;
-      tf::Point transformed_arrow_right;
-      std::string source_frame;
-      bool transformed;
-      ros::Time stamp;
-
-      std::vector<tf::Point> cov_points;
-      std::vector<tf::Point> transformed_cov_points;
-    };
-
-    enum DrawStyle
-    {
-      LINES = 0,
-      POINTS,
-      ARROWS
-    };
-
-    PointDrawingPlugin();
-    virtual ~PointDrawingPlugin()
-    {
-    }
-
-    void ClearHistory();
-
-    virtual void Transform();
-    virtual bool DrawPoints(double scale);
-    virtual bool DrawArrows();
-    virtual bool DrawArrow(const StampedPoint& point);
-    virtual bool DrawLaps();
-    virtual bool DrawLines();
-    virtual void CollectLaps();
-    virtual bool DrawLapsArrows();
-    virtual bool TransformPoint(StampedPoint& point);
-    virtual void UpdateColor(QColor base_color, int i);
-    virtual void DrawCovariance();
-
-   protected Q_SLOTS:
-    virtual void BufferSizeChanged(int value);
-    virtual void DrawIcon();
-    virtual void SetColor(const QColor& color);
-    virtual void SetDrawStyle(QString style);
-    virtual void SetDrawStyle(DrawStyle style);
-    virtual void SetStaticArrowSizes(bool isChecked);
-    virtual void SetArrowSize(int arrowSize);
-    virtual void PositionToleranceChanged(double value);
-    virtual void LapToggled(bool checked);
-    virtual void CovariancedToggled(bool checked);
-    virtual void ShowAllCovariancesToggled(bool checked);
-    void ResetTransformedPoints();
-    void ClearPoints();
-
-   protected:
-    void pushPoint(StampedPoint point);
-    double bufferSize() const;
-    double positionTolerance() const;
-    const std::deque<StampedPoint>& points() const;
-
-   private:
-    int arrow_size_;
-    DrawStyle draw_style_;
-    StampedPoint cur_point_;
-    std::deque<StampedPoint> points_;
-    double position_tolerance_;
-    int buffer_size_;
-    bool covariance_checked_;
-    bool show_all_covariances_checked_;
-    bool new_lap_;
-    QColor color_;
-    bool lap_checked_;
-    int buffer_holder_;
-    double scale_;
-    bool static_arrow_sizes_;
-
-   private:
-    std::vector<std::deque<StampedPoint> > laps_;
-    bool got_begin_;
-    tf::Point begin_;
+    std::vector<tf2::Vector3> cov_points;
+    std::vector<tf2::Vector3> transformed_cov_points;
   };
-}
 
-#endif  // MAPVIZ_PLUGINS_POINT_DRAW_H_
+  enum DrawStyle
+  {
+    LINES = 0,
+    POINTS,
+    ARROWS
+  };
+
+  PointDrawingPlugin();
+  ~PointDrawingPlugin() override = default;
+  void ClearHistory() override;
+
+  void Transform() override;
+  virtual bool DrawPoints(double scale);
+  virtual bool DrawArrows();
+  virtual bool DrawArrow(const StampedPoint& point);
+  virtual bool DrawLaps();
+  virtual bool DrawLines();
+  virtual void CollectLaps();
+  virtual bool DrawLapsArrows();
+  virtual bool TransformPoint(StampedPoint& point);
+  virtual void UpdateColor(QColor base_color, int i);
+  virtual void DrawCovariance();
+
+  protected Q_SLOTS:
+  virtual void BufferSizeChanged(int value);
+  void DrawIcon() override;
+  virtual void SetColor(const QColor& color);
+  virtual void SetDrawStyle(QString style);
+  virtual void SetDrawStyle(DrawStyle style);
+  virtual void SetStaticArrowSizes(bool isChecked);
+  virtual void SetArrowSize(int arrowSize);
+  virtual void PositionToleranceChanged(double value);
+  virtual void LapToggled(bool checked);
+  virtual void CovariancedToggled(bool checked);
+  virtual void ShowAllCovariancesToggled(bool checked);
+  void ResetTransformedPoints();
+  void ClearPoints();
+
+  protected:
+  void pushPoint(StampedPoint point);
+  double bufferSize() const;
+  double positionTolerance() const;
+  const std::deque<StampedPoint>& points() const;
+
+  private:
+  int arrow_size_;
+  DrawStyle draw_style_;
+  StampedPoint cur_point_;
+  std::deque<StampedPoint> points_;
+  double position_tolerance_;
+  int buffer_size_;
+  bool covariance_checked_;
+  bool show_all_covariances_checked_;
+  bool new_lap_;
+  QColor color_;
+  bool lap_checked_;
+  int buffer_holder_;
+  double scale_;
+  bool static_arrow_sizes_;
+
+  private:
+  std::vector<std::deque<StampedPoint> > laps_;
+  bool got_begin_;
+  tf2::Vector3 begin_;
+};
+}   // namespace mapviz_plugins
+
+#endif  // MAPVIZ_PLUGINS__POINT_DRAWING_PLUGIN_H_

@@ -42,7 +42,7 @@
 #include <QMutex>
 #include <QGLWidget>
 
-#include <tf/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
 
 #include <multires_image/tile_set.h>
 #include <multires_image/tile.h>
@@ -55,10 +55,10 @@ namespace multires_image
 
   public:
     TileCache(TileSet* tileSet, QGLWidget* widget);
-    ~TileCache(void);
+    ~TileCache() override;
 
     void Load(Tile* tile);
-    void Precache(const tf::Point& position);
+    void Precache(const tf2::Vector3& position);
     void Precache(double x, double y);
 
     void SetCurrentLayer(int layer) { m_currentLayer = layer; }
@@ -78,7 +78,7 @@ namespace multires_image
     TileSet*                  m_tileSet;
     QGLWidget*                m_widget;
     int32_t                   m_currentLayer;
-    tf::Point                 m_currentPosition;
+    tf2::Vector3                 m_currentPosition;
     bool                      m_exit;
     int64_t                   m_memorySize;
 
@@ -88,7 +88,7 @@ namespace multires_image
     std::map<int64_t, Tile*>        m_renderRequestSet;
     std::map<int64_t, Tile*>        m_precacheRequestSet;
 
-    void PrecacheLayer(int layer, const tf::Point& position, int size);
+    void PrecacheLayer(int layer, const tf2::Vector3& position, int size);
     void LoadTexture(Tile* tile);
     void UnloadTexture(Tile* tile);
 

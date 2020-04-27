@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_RQT_MAPVIZ_H
-#define MAPVIZ_RQT_MAPVIZ_H
+#ifndef MAPVIZ__RQT_MAPVIZ_H_
+#define MAPVIZ__RQT_MAPVIZ_H_
 
 /*
  * The RQT GUI CPP files use the Qt macros "slots" and "signals".  These conflict
@@ -43,22 +43,26 @@
 #undef slots
 #undef signals
 
-#include "mapviz.h"
+#include "mapviz.hpp"
 
 namespace mapviz
 {
-  class RqtMapviz : public rqt_gui_cpp::Plugin
-  {
-  Q_OBJECT
-  public:
-    RqtMapviz();
-    virtual void initPlugin(qt_gui_cpp::PluginContext& context);
-    virtual void shutdownPlugin();
-    virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const;
-    virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
-  private:
-    Mapviz* widget_;
-  };
-}
+class RqtMapviz : public rqt_gui_cpp::Plugin
+{
+Q_OBJECT
+public:
+  RqtMapviz();
+  virtual void initPlugin(qt_gui_cpp::PluginContext& context);
+  virtual void shutdownPlugin();
+  virtual void saveSettings(
+    qt_gui_cpp::Settings& plugin_settings,
+    qt_gui_cpp::Settings& instance_settings) const;
+  virtual void restoreSettings(
+    const qt_gui_cpp::Settings& plugin_settings,
+    const qt_gui_cpp::Settings& instance_settings);
+private:
+  Mapviz* widget_;
+};
+}   // namespace mapviz
 
-#endif //MAPVIZ_RQT_MAPVIZ_H
+#endif  // MAPVIZ__RQT_MAPVIZ_H_

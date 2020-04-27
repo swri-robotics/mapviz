@@ -32,12 +32,12 @@
 
 #include <string>
 
-#include <boost/shared_ptr.hpp>
-
 #include <tile_map/tile_source.h>
 #include <tile_map/texture_cache.h>
 
 #include <swri_transform_util/transform.h>
+
+#include <rclcpp/logger.hpp>
 
 namespace tile_map
 {
@@ -54,20 +54,22 @@ namespace tile_map
 
     TexturePtr texture;
 
-    std::vector<tf::Vector3> points;
-    std::vector<tf::Vector3> points_t;
+    std::vector<tf2::Vector3> points;
+    std::vector<tf2::Vector3> points_t;
   };
 
   class TileMapView
   {
   public:
-    TileMapView();
+    explicit TileMapView(rclcpp::Logger logger = rclcpp::get_logger("tile_map::TileMapView"));
 
     bool IsReady();
 
     void ResetCache();
 
-    void SetTileSource(const boost::shared_ptr<TileSource>& tile_source);
+    void SetLogger(rclcpp::Logger logger);
+
+    void SetTileSource(const std::shared_ptr<TileSource>& tile_source);
 
     void SetTransform(const swri_transform_util::Transform& transform);
 
@@ -83,7 +85,7 @@ namespace tile_map
   private:
     void DrawTiles(std::vector<Tile> &tiles ,int priority);
 
-    boost::shared_ptr<TileSource> tile_source_;
+    std::shared_ptr<TileSource> tile_source_;
 
     swri_transform_util::Transform transform_;
 
@@ -101,6 +103,8 @@ namespace tile_map
     std::vector<Tile> precache_;
 
     TextureCachePtr tile_cache_;
+
+    rclcpp::Logger logger_;
 
     void ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude);
 

@@ -17,12 +17,12 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL Southwest Research Institute® BE LIABLE 
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
+// ARE DISCLAIMED. IN NO EVENT SHALL Southwest Research Institute® BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 // OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 //
@@ -39,65 +39,46 @@
 #include <QPushButton>
 #include <QTimerEvent>
 #include <QVBoxLayout>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node_interfaces/node_graph.hpp>
 
-#include <rosapi/Services.h>
-#include <rosapi/ServicesForType.h>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace mapviz
 {
   void ServiceUpdaterThread::run()
   {
-    ros::ServiceClient client;
+    std::map<std::string, std::vector<std::string>> service_map =
+      nh_->get_service_names_and_types();
 
     if (allowed_datatype_.empty())
     {
-      client = nh_.serviceClient<rosapi::Services>("/rosapi/services");
-    }
-    else
-    {
-      client = nh_.serviceClient<rosapi::ServicesForType>("/rosapi/services_for_type");
-    }
-
-    if (!client.waitForExistence(ros::Duration(1)))
-    {
-      // Check to see whether the rosapi services are actually running.
-      Q_EMIT fetchingFailed(tr("Unable to list ROS services.  Is rosapi_node running?"));
-      return;
-    }
-
-    if (allowed_datatype_.empty())
-    {
-      rosapi::Services srv;
-
-      ROS_DEBUG("Listing all services.");
-      if (client.call(srv))
-      {
-        Q_EMIT servicesFetched(srv.response.services);
+      std::vector<std::string> service_list;
+      for (auto const& service : service_map) {
+        service_list.push_back(service.first);
       }
-    }
-    else {
-      rosapi::ServicesForType srv;
-      srv.request.type = allowed_datatype_;
-
-      ROS_DEBUG("Listing services for type %s", srv.request.type.c_str());
-      if (client.call(srv))
-      {
-        Q_EMIT servicesFetched(srv.response.services);
+      Q_EMIT servicesFetched(service_list);
+    } else {
+      std::vector<std::string> service_list;
+      for (auto const& service : service_map) {
+        if (std::find(service.second.begin(),
+              service.second.end(),
+              allowed_datatype_) != service.second.end()) {
+          service_list.push_back(service.first);
+        }
       }
-      else
-      {
-        // If there are any dead or unreachable nodes that provide services, even if
-        // they're not of the service type we're looking for, the services_for_type
-        // service will have an error and not return anything.  Super annoying.
-        Q_EMIT fetchingFailed(tr("Unable to list ROS services.  You may have " \
-                              "dead nodes; try running \"rosnode cleanup\"."));
-      }
+      Q_EMIT servicesFetched(service_list);
     }
   }
 
-  std::string SelectServiceDialog::selectService(const std::string& datatype, QWidget* parent)
+  std::string SelectServiceDialog::selectService(rclcpp::Node::SharedPtr node,
+      const std::string& datatype,
+      QWidget* parent)
   {
-    SelectServiceDialog dialog(datatype, parent);
+    SelectServiceDialog dialog(node, datatype, parent);
     dialog.setDatatypeFilter(datatype);
     if (dialog.exec() == QDialog::Accepted) {
       return dialog.selectedService();
@@ -106,14 +87,16 @@ namespace mapviz
     }
   }
 
-  SelectServiceDialog::SelectServiceDialog(const std::string& datatype, QWidget* parent)
-      :
-      QDialog(parent),
-      allowed_datatype_(datatype),
-      cancel_button_(new QPushButton("&Cancel")),
-      list_widget_(new QListWidget()),
-      name_filter_(new QLineEdit()),
-      ok_button_(new QPushButton("&Ok"))
+  SelectServiceDialog::SelectServiceDialog(const rclcpp::Node::SharedPtr& node,
+      const std::string& datatype,
+      QWidget* parent)
+      : QDialog(parent)
+      , nh_(node)
+      , allowed_datatype_(datatype)
+      , cancel_button_(new QPushButton("&Cancel"))
+      , list_widget_(new QListWidget())
+      , name_filter_(new QLineEdit())
+      , ok_button_(new QPushButton("&Ok"))
   {
     QHBoxLayout *filter_box = new QHBoxLayout();
     filter_box->addWidget(new QLabel("Filter:"));
@@ -191,7 +174,7 @@ namespace mapviz
     updateDisplayedServices();
   }
 
-  void SelectServiceDialog::displayUpdateError(const QString error_msg)
+  void SelectServiceDialog::displayUpdateError(const QString& error_msg)
   {
     killTimer(fetch_services_timer_id_);
     QMessageBox mbox(this->parentWidget());
@@ -206,7 +189,7 @@ namespace mapviz
 
     QString filter_text = name_filter_->text();
 
-    Q_FOREACH(const std::string& service, known_services_)
+    for(const std::string& service : known_services_)
     {
       if (QString::fromStdString(service).contains(filter_text, Qt::CaseInsensitive))
       {
@@ -227,13 +210,13 @@ namespace mapviz
     // across updates, which results in much less frustration for the user.
 
     std::set<std::string> prev_names;
-    for (size_t i = 0; i < displayed_services_.size(); i++) {
-      prev_names.insert(displayed_services_[i]);
+    for (const auto & displayed_service : displayed_services_) {
+      prev_names.insert(displayed_service);
     }
 
     std::set<std::string> next_names;
-    for (size_t i = 0; i < next_displayed_services.size(); i++) {
-      next_names.insert(next_displayed_services[i]);
+    for (const auto & next_displayed_service : next_displayed_services) {
+      next_names.insert(next_displayed_service);
     }
 
     std::set<std::string> added_names;
@@ -306,4 +289,4 @@ namespace mapviz
     killTimer(fetch_services_timer_id_);
     QDialog::closeEvent(event);
   }
-}
+}   // namespace mapviz

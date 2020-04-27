@@ -29,10 +29,6 @@
 
 #include <mapviz_plugins/odometry_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -42,19 +38,30 @@
 #include <opencv2/core/core.hpp>
 
 // ROS libraries
-#include <ros/master.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OdometryPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  OdometryPlugin::OdometryPlugin() : config_widget_(new QWidget())
+  OdometryPlugin::OdometryPlugin()
+  : PointDrawingPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
     ui_.color->setColor(Qt::green);
@@ -95,18 +102,13 @@ namespace mapviz_plugins
                      SLOT(ClearPoints()));
   }
 
-  OdometryPlugin::~OdometryPlugin()
-  {
-  }
-
   void OdometryPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic =
-        mapviz::SelectTopicDialog::selectTopic("nav_msgs/Odometry");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Odometry");
 
-    if (!topic.name.empty())
+    if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic.name));
+      ui_.topic->setText(QString::fromStdString(topic));
       TopicEdited();
     }
   }
@@ -121,21 +123,21 @@ namespace mapviz_plugins
       has_message_ = false;
       PrintWarning("No messages received.");
 
-      odometry_sub_.shutdown();
+      odometry_sub_.reset();
 
       topic_ = topic;
       if (!topic.empty())
       {
-        odometry_sub_ = node_.subscribe(
-                    topic_, 1, &OdometryPlugin::odometryCallback, this);
+        odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(topic_, rclcpp::QoS(1),
+          std::bind(&OdometryPlugin::odometryCallback, this, std::placeholders::_1));
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
   void OdometryPlugin::odometryCallback(
-      const nav_msgs::OdometryConstPtr odometry)
+      const nav_msgs::msg::Odometry::SharedPtr odometry)
   {
     if (!has_message_)
     {
@@ -151,11 +153,11 @@ namespace mapviz_plugins
     stamped_point.stamp = odometry->header.stamp;
     stamped_point.source_frame = odometry->header.frame_id;
 
-    stamped_point.point = tf::Point(odometry->pose.pose.position.x,
+    stamped_point.point = tf2::Vector3(odometry->pose.pose.position.x,
                                     odometry->pose.pose.position.y,
                                     odometry->pose.pose.position.z);
 
-    stamped_point.orientation = tf::Quaternion(
+    stamped_point.orientation = tf2::Quaternion(
         odometry->pose.pose.orientation.x,
         odometry->pose.pose.orientation.y,
         odometry->pose.pose.orientation.z,
@@ -163,7 +165,7 @@ namespace mapviz_plugins
 
     if ( ui_.show_covariance->isChecked() )
     {
-      tf::Matrix3x3 tf_cov =
+      tf2::Matrix3x3 tf_cov =
           swri_transform_util::GetUpperLeft(odometry->pose.covariance);
 
       if (tf_cov[0][0] < 100000 && tf_cov[1][1] < 100000)
@@ -185,16 +187,13 @@ namespace mapviz_plugins
               cov_matrix_2d, stamped_point.point, 3, 32);
 
           stamped_point.transformed_cov_points = stamped_point.cov_points;
-        }
-        else
-        {
-          ROS_ERROR("Failed to project x, y, z covariance to xy-plane.");
+        } else {
+          RCLCPP_ERROR(node_->get_logger(), "Failed to project x, y, z covariance to xy-plane.");
         }
       }
     }
 
-    pushPoint( std::move(stamped_point) );
-
+    pushPoint(std::move(stamped_point));
   }
 
   void OdometryPlugin::PrintError(const std::string& message)
@@ -238,11 +237,10 @@ namespace mapviz_plugins
       PrintInfo("OK");
     }
   }
-  
 
   void OdometryPlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
-    //dont render any timestamps if the show_timestamps is set to 0
+    // dont render any timestamps if the show_timestamps is set to 0
     int interval = ui_.show_timestamps->value();
     if (interval == 0)
     {
@@ -255,19 +253,20 @@ namespace mapviz_plugins
     painter->save();
     painter->resetTransform();
 
-    //set the draw color for the text to be the same as the rest
+    // set the draw color for the text to be the same as the rest
     QPen pen(QBrush(ui_.color->color()), 1);
     painter->setPen(pen);
 
-    int counter = 0;//used to alternate between rendering text on some points
-    for (const StampedPoint& point: points())
+    int counter = 0;  // used to alternate between rendering text on some points
+    for (const StampedPoint& point : points())
     {
-      if (point.transformed && counter % interval == 0)//this renders a timestamp every 'interval' points
+      // this renders a timestamp every 'interval' points
+      if (point.transformed && counter % interval == 0)
       {
         QPointF qpoint = tf.map(QPointF(point.transformed_point.getX(),
                                         point.transformed_point.getY()));
         QString time;
-        time.setNum(point.stamp.toSec(), 'g', 12);
+        time.setNum(point.stamp.seconds(), 'g', 12);
         painter->drawText(qpoint, time);
       }
       counter++;
@@ -281,15 +280,13 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
     }
 
     if (node["color"])
     {
-      std::string color;
-      node["color"] >> color;
+      std::string color = node["color"].as<std::string>();
       QColor qcolor(color.c_str());
       SetColor(qcolor);
       ui_.color->setColor(qcolor);
@@ -298,20 +295,16 @@ namespace mapviz_plugins
     if (node["draw_style"])
     {
       std::string draw_style;
-      node["draw_style"] >> draw_style;
+      draw_style = node["draw_style"].as<std::string>();
 
       if (draw_style == "lines")
       {
         ui_.drawstyle->setCurrentIndex(0);
         SetDrawStyle( LINES );
-      }
-      else if (draw_style == "points")
-      {
+      } else if (draw_style == "points") {
         ui_.drawstyle->setCurrentIndex(1);
         SetDrawStyle( POINTS );
-      }
-      else if (draw_style == "arrows")
-      {
+      } else if (draw_style == "arrows") {
         ui_.drawstyle->setCurrentIndex(2);
         SetDrawStyle( ARROWS );
       }
@@ -319,40 +312,35 @@ namespace mapviz_plugins
 
     if (node["position_tolerance"])
     {
-      double position_tolerance;
-      node["position_tolerance"] >> position_tolerance;
+      double position_tolerance = node["position_tolerance"].as<double>();
       ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
     }
 
     if (node["buffer_size"])
     {
-      double buffer_size;
-      node["buffer_size"] >> buffer_size;
+      int buffer_size = node["buffer_size"].as<int>();
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
 
     if (node["show_covariance"])
     {
-      bool show_covariance = false;
-      node["show_covariance"] >> show_covariance;
+      bool show_covariance = node["show_covariance"].as<bool>();
       ui_.show_covariance->setChecked(show_covariance);
       CovariancedToggled(show_covariance);
     }
 
     if (node["show_all_covariances"])
     {
-      bool show_all_covariances = false;
-      node["show_all_covariances"] >> show_all_covariances;
+      bool show_all_covariances = node["show_all_covariances"].as<bool>();
       ui_.show_all_covariances->setChecked(show_all_covariances);
       ShowAllCovariancesToggled(show_all_covariances);
     }
 
     if (node["show_laps"])
     {
-      bool show_laps = false;
-      node["show_laps"] >> show_laps;
+      bool show_laps = node["show_laps"].as<bool>();
       ui_.show_laps->setChecked(show_laps);
       LapToggled(show_laps);
     }
@@ -366,14 +354,14 @@ namespace mapviz_plugins
 
     if (node["arrow_size"])
     {
-      double arrow_size = node["arrow_size"].as<int>();
+      int arrow_size = node["arrow_size"].as<int>();
       ui_.arrow_size->setValue(arrow_size);
       SetArrowSize(arrow_size);
     }
 
     if (node["show_timestamps"])
     {
-      ui_.show_timestamps->setValue(node["show_timestamps"].as<int>());
+      ui_.show_timestamps->setValue(node["show_timestamps"].as<double>());
     }
 
     TopicEdited();
@@ -405,12 +393,15 @@ namespace mapviz_plugins
     bool show_all_covariances = ui_.show_all_covariances->isChecked();
     emitter << YAML::Key << "show_all_covariances" << YAML::Value << show_all_covariances;
 
-    emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
+    emitter << YAML::Key
+      << "static_arrow_sizes"
+      << YAML::Value
+      << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
 
     emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
   }
-}
+}   // namespace mapviz_plugins
 
 

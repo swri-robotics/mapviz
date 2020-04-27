@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>mapviz</name>
   <version>1.2.0</version>
   <description>
@@ -7,42 +7,44 @@
 
   </description>
   <author>Marc Alban</author>
-  <maintainer email="malban@swri.org">Marc Alban</maintainer>
+  <maintainer email="preed@swri.org">P. J. Reed</maintainer>
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>pkg-config</buildtool_depend>
-  <buildtool_depend>qt_qmake</buildtool_depend>
+  <buildtool_depend>qt5-qmake</buildtool_depend>
 
-  <build_depend>libqt_dev</build_depend>
-  <build_depend>libqt_opengl_dev</build_depend>
-  <build_depend>message_generation</build_depend>
+  <depend>libqt5-core</depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
 
   <depend>cv_bridge</depend>
+  <depend>geometry_msgs</depend>
   <depend>glut</depend>
   <depend>image_transport</depend>
   <depend>libglew-dev</depend>
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
+  <depend>mapviz_interfaces</depend>
   <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
-  <depend>rosapi</depend>
-  <depend>roscpp</depend>
+  <!-- <depend>rosapi</depend> -->
+  <depend>rclcpp</depend>
+  <!-- <depend>rqt</depend> -->
   <depend>rqt_gui_cpp</depend>
   <depend>rqt_gui</depend>
   <depend>std_srvs</depend>
+  <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
-  <depend>swri_yaml_util</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>yaml-cpp</depend>
 
-  <exec_depend>libqt_core</exec_depend>
-  <exec_depend>libqt_opengl</exec_depend>
-  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
 
   <export>
+    <build_type>ament_cmake</build_type>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
-
-
 </package>

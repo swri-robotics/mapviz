@@ -26,8 +26,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#ifndef MAPVIZ_PLUGINS_PLACEABLE_WINDOW_PROXY_H
-#define MAPVIZ_PLUGINS_PLACEABLE_WINDOW_PROXY_H
+#ifndef MAPVIZ_PLUGINS__PLACEABLE_WINDOW_PROXY_H_
+#define MAPVIZ_PLUGINS__PLACEABLE_WINDOW_PROXY_H_
 
 #include <QObject>
 #include <QRect>
@@ -55,68 +55,68 @@ QT_END_NAMESPACE;
  */
 namespace mapviz_plugins
 {
-  class PlaceableWindowProxy : public QObject
-  {
-  Q_OBJECT
+class PlaceableWindowProxy : public QObject
+{
+Q_OBJECT
 
-  public:
-    PlaceableWindowProxy();
-    ~PlaceableWindowProxy();
+public:
+  PlaceableWindowProxy();
+  ~PlaceableWindowProxy() override;
 
-    void setContainer(QWidget *);
+  void setContainer(QWidget *);
 
-    QRect rect() const;
+  QRect rect() const;
 
-  Q_SIGNALS:
-    void rectChanged(const QRect &);
+Q_SIGNALS:
+  void rectChanged(const QRect &);
 
-  public Q_SLOTS:
-    void setRect(const QRect &);
-    void setVisible(bool visible);
+public Q_SLOTS:
+  void setRect(const QRect &);
+  void setVisible(bool visible);
 
-  protected:
-    bool eventFilter(QObject *object, QEvent *event);
+protected:
+  bool eventFilter(QObject *object, QEvent *event) override;
 
-    bool handleMousePress(QMouseEvent *);
-    bool handleMouseRelease(QMouseEvent *);
-    bool handleMouseMove(QMouseEvent *);
-    bool handleResize(QResizeEvent *);
+  bool handleMousePress(QMouseEvent *);
+  bool handleMouseRelease(QMouseEvent *);
+  bool handleMouseMove(QMouseEvent *);
+  bool handleResize(QResizeEvent *);
 
-    void timerEvent(QTimerEvent *);
+  void timerEvent(QTimerEvent *) override;
 
-    void rectResize(int dx, int dy);
-    void winResize(const QSize &);
+  void rectResize(int dx, int dy);
+  void winResize(const QSize &);
 
-    QRectF resizeHelper(const QRectF &rect,
-                        const QPointF &p1,
-                        const QPointF &p2,
-                        const QPointF &p3) const;
+  QRectF resizeHelper(const QRectF &rect,
+                      const QPointF &p1,
+                      const QPointF &p2,
+                      const QPointF &p3) const;
 
 
 
-  private:
-    enum State {
-      INACTIVE = 0,
-      MOVE_ALL,
-      MOVE_TOP_LEFT,
-      MOVE_BOTTOM_LEFT,
-      MOVE_BOTTOM_RIGHT,
-      MOVE_TOP_RIGHT
-    };
+private:
+  enum State {
+    INACTIVE = 0,
+    MOVE_ALL,
+    MOVE_TOP_LEFT,
+    MOVE_BOTTOM_LEFT,
+    MOVE_BOTTOM_RIGHT,
+    MOVE_TOP_RIGHT
+  };
 
-    QWidget *target_;
-    bool visible_;
+  QWidget *target_;
+  bool visible_;
 
-    bool has_cursor_;
-    State state_;
-    QRectF rect_;
+  bool has_cursor_;
+  State state_;
+  QRectF rect_;
 
-    QRectF start_rect_;
-    QPoint start_point_;
+  QRectF start_rect_;
+  QPoint start_point_;
 
-    int win_resize_timer_;
+  int win_resize_timer_;
 
-    State getNextState(const QPointF &pt) const;
-  };  // class PlaceableWindowProxy
+  State getNextState(const QPointF &pt) const;
+};  // class PlaceableWindowProxy
 }  // namespace mapviz_plugins
-#endif //MAPVIZ_PLUGINS_CANVAS_CLICK_FILTER_H
+#endif  // MAPVIZ_PLUGINS__PLACEABLE_WINDOW_PROXY_H_

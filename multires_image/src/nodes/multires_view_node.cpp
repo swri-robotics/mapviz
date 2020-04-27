@@ -48,26 +48,22 @@
 
 namespace multires_image
 {
-  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WindowFlags flags) :
-    QMainWindow(parent, flags),
-    argc_(argc),
-    argv_(argv),
-    node_(NULL),
-    thread_(NULL),
-    initialized_(false)
+  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WindowFlags flags)
+  : QMainWindow(parent, flags)
+  , argc_(argc)
+  , argv_(argv)
+  , node_(nullptr)
+  , thread_(nullptr)
+  , initialized_(false)
+  , tile_set_(nullptr)
   {
     setCentralWidget(new QGLMap());
     this->setMinimumSize(640, 480);
   }
 
-  MultiresViewNode::~MultiresViewNode()
-  {
-    delete node_;
-  }
-
   void MultiresViewNode::Spin()
   {
-    if (thread_ == NULL)
+    if (!thread_)
     {
       thread_ = new boost::thread(&MultiresViewNode::SpinLoop, this);
     }
@@ -75,9 +71,9 @@ namespace multires_image
 
   void MultiresViewNode::SpinLoop()
   {
-    while (ros::ok())
+    while (rclcpp::ok())
     {
-      ros::spinOnce();
+      rclcpp::spin_some(node_);
 
       usleep(10);
     }
@@ -92,12 +88,13 @@ namespace multires_image
   {
     if (!initialized_)
     {
-      ros::init(argc_, argv_, "multires_view_node");
+      rclcpp::init(argc_, argv_);
 
-      node_ = new ros::NodeHandle();
+      node_ = std::make_shared<rclcpp::Node>("multires_view_node");
 
-      node_->param(ros::this_node::getName() + "/image_path", image_path_, std::string(""));
+      node_->declare_parameter("image_path", "");
 
+      node_->get_parameter("image_path", image_path_);
 
       tile_set_ = new TileSet(image_path_);
 
@@ -127,5 +124,5 @@ int main(int argc, char **argv)
   multires_image::MultiresViewNode node(argc, argv);
   node.show();
 
-  return app.exec();
+  return QApplication::exec();
 }

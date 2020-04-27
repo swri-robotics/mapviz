@@ -37,7 +37,7 @@
 #include <QImage>
 #include <QMutex>
 
-#include <tf/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
 
 #include <swri_transform_util/transform.h>
 
@@ -52,11 +52,11 @@ namespace multires_image
   public:
     Tile(
       const std::string& path, int column, int row, int level,
-      const tf::Point& topLeft,
-      const tf::Point& topRight,
-      const tf::Point& bottomLeft,
-      const tf::Point& bottomRight);
-    ~Tile(void);
+      const tf2::Vector3& topLeft,
+      const tf2::Vector3& topRight,
+      const tf2::Vector3& bottomLeft,
+      const tf2::Vector3& bottomRight);
+    ~Tile() = default;
 
     bool Exists();
     bool Failed() const { return m_failed; }
@@ -85,15 +85,15 @@ namespace multires_image
     const int           m_row;
     const int           m_level;
 
-    tf::Point           m_top_left;
-    tf::Point           m_top_right;
-    tf::Point           m_bottom_right;
-    tf::Point           m_bottom_left;
+    tf2::Vector3           m_top_left;
+    tf2::Vector3           m_top_right;
+    tf2::Vector3           m_bottom_right;
+    tf2::Vector3           m_bottom_left;
 
-    tf::Point           m_transformed_top_left;
-    tf::Point           m_transformed_top_right;
-    tf::Point           m_transformed_bottom_right;
-    tf::Point           m_transformed_bottom_left;
+    tf2::Vector3           m_transformed_top_left;
+    tf2::Vector3           m_transformed_top_right;
+    tf2::Vector3           m_transformed_bottom_right;
+    tf2::Vector3           m_transformed_bottom_left;
 
     bool                m_failed;
     bool                m_textureLoaded;

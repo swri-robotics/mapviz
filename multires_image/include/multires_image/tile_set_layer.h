@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include <tf/transform_datatypes.h>
+#include <tf2/transform_datatypes.h>
 
 #include <swri_transform_util/georeference.h>
 
@@ -50,18 +50,18 @@ namespace multires_image
       const std::string& path,
       int tileSize, int layer);
 
-    ~TileSetLayer(void);
+    ~TileSetLayer() = default;
 
     bool Load();
     bool Load(const std::string extension);
 
     Tile* GetTile(int column, int row) { return m_tiles[column][row]; }
 
-    void GetTileIndex(const tf::Point& position, int& row, int& column) const;
+    void GetTileIndex(const tf2::Vector3& position, int& row, int& column) const;
     void GetTileIndex(double x, double y, int& row, int& column) const;
     void GetTileRange(
-      const tf::Point& top_left,
-      const tf::Point& bottom_right,
+      const tf2::Vector3& top_left,
+      const tf2::Vector3& bottom_right,
       int& startRow, int& startColumn,
       int& endRow, int& endColumn) const;
 

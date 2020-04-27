@@ -29,18 +29,13 @@
 
 #include <mapviz_plugins/disparity_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <algorithm>
-#include <vector>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
 
 // ROS libraries
-#include <ros/master.h>
-#include <sensor_msgs/image_encodings.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <cv_bridge/cv_bridge.h>
@@ -48,22 +43,32 @@
 #include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
+
+// C++ standard libraries
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <vector>
+
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DisparityPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  DisparityPlugin::DisparityPlugin() :
-    config_widget_(new QWidget()),
-    anchor_(TOP_LEFT),
-    units_(PIXELS),
-    offset_x_(0),
-    offset_y_(0),
-    width_(320),
-    height_(240),
-    has_image_(false),
-    last_width_(0),
-    last_height_(0)
+  DisparityPlugin::DisparityPlugin()
+  : MapvizPlugin()
+  , ui_()
+  , config_widget_(new QWidget())
+  , anchor_(TOP_LEFT)
+  , units_(PIXELS)
+  , offset_x_(0)
+  , offset_y_(0)
+  , width_(320)
+  , height_(240)
+  , has_image_(false)
+  , last_width_(0)
+  , last_height_(0)
+  , has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -85,11 +90,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
     QObject::connect(ui_.width, SIGNAL(valueChanged(int)), this, SLOT(SetWidth(int)));
     QObject::connect(ui_.height, SIGNAL(valueChanged(int)), this, SLOT(SetHeight(int)));
-    QObject::connect(this,SIGNAL(VisibleChanged(bool)),this,SLOT(SetSubscription(bool)));
-  }
-
-  DisparityPlugin::~DisparityPlugin()
-  {
+    QObject::connect(this, SIGNAL(VisibleChanged(bool)), this, SLOT(SetSubscription(bool)));
   }
 
   void DisparityPlugin::SetOffsetX(int offset)
@@ -117,37 +118,21 @@ namespace mapviz_plugins
     if (anchor == "top left")
     {
       anchor_ = TOP_LEFT;
-    }
-    else if (anchor == "top center")
-    {
+    } else if (anchor == "top center") {
       anchor_ = TOP_CENTER;
-    }
-    else if (anchor == "top right")
-    {
+    } else if (anchor == "top right") {
       anchor_ = TOP_RIGHT;
-    }
-    else if (anchor == "center left")
-    {
+    } else if (anchor == "center left") {
       anchor_ = CENTER_LEFT;
-    }
-    else if (anchor == "center")
-    {
+    } else if (anchor == "center") {
       anchor_ = CENTER;
-    }
-    else if (anchor == "center right")
-    {
+    } else if (anchor == "center right") {
       anchor_ = CENTER_RIGHT;
-    }
-    else if (anchor == "bottom left")
-    {
+    } else if (anchor == "bottom left") {
       anchor_ = BOTTOM_LEFT;
-    }
-    else if (anchor == "bottom center")
-    {
+    } else if (anchor == "bottom center") {
       anchor_ = BOTTOM_CENTER;
-    }
-    else if (anchor == "bottom right")
-    {
+    } else if (anchor == "bottom right") {
       anchor_ = BOTTOM_RIGHT;
     }
   }
@@ -157,9 +142,7 @@ namespace mapviz_plugins
     if (units == "pixels")
     {
       units_ = PIXELS;
-    }
-    else if (units == "percent")
-    {
+    } else if (units == "percent") {
       units_ = PERCENT;
     }
   }
@@ -168,39 +151,37 @@ namespace mapviz_plugins
     if(topic_.empty())
     {
       return;
-    }
-    else if(!visible)
-    {
-      disparity_sub_.shutdown();
-      ROS_INFO("Dropped subscription to %s", topic_.c_str());
-    }
-    else
-    {
-      disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
+    } else if (!visible) {
+      disparity_sub_.reset();
+      RCLCPP_INFO(node_->get_logger(), "Dropped subscription to %s", topic_.c_str());
+    } else {
+      disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
+        topic_,
+        rclcpp::QoS(1),
+        std::bind(&DisparityPlugin::disparityCallback, this, std::placeholders::_1)
+      );
 
-      ROS_INFO("Subscribing to %s", topic_.c_str());
+      RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
     }
   }
   void DisparityPlugin::SelectTopic()
   {
-    ros::master::TopicInfo topic = mapviz::SelectTopicDialog::selectTopic(
-      "stereo_msgs/DisparityImage");
+    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+      node_,
+      "stereo_msgs/msg/DisparityImage"
+    );
 
-    if(topic.name.empty())
+    if (!topic.empty())
     {
-      topic.name.clear();
+      ui_.topic->setText(QString::fromStdString(topic));
+      TopicEdited();
     }
-    if (!topic.name.empty())
-    {
-      ui_.topic->setText(QString::fromStdString(topic.name));
-    }
-    TopicEdited();
   }
 
   void DisparityPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if(!this->Visible())
+    if (!this->Visible())
     {
       PrintWarning("Topic is Hidden");
       initialized_ = false;
@@ -209,7 +190,7 @@ namespace mapviz_plugins
       {
         topic_ = topic;
       }
-      disparity_sub_.shutdown();
+      disparity_sub_.reset();
       return;
     }
     if (topic != topic_)
@@ -220,18 +201,23 @@ namespace mapviz_plugins
       topic_ = topic;
       PrintWarning("No messages received.");
 
-      disparity_sub_.shutdown();
+      disparity_sub_.reset();
 
       if (!topic.empty())
       {
-        disparity_sub_ = node_.subscribe(topic_, 1, &DisparityPlugin::disparityCallback, this);
+        disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
+          topic_,
+          rclcpp::QoS(1),
+          std::bind(&DisparityPlugin::disparityCallback, this, std::placeholders::_1)
+        );
 
-        ROS_INFO("Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void DisparityPlugin::disparityCallback(const stereo_msgs::DisparityImageConstPtr& disparity)
+  void DisparityPlugin::disparityCallback(
+    const stereo_msgs::msg::DisparityImage::SharedPtr disparity)
   {
     if (!has_message_)
     {
@@ -260,7 +246,7 @@ namespace mapviz_plugins
     float max_disparity = disparity->max_disparity;
     float multiplier = 255.0f / (max_disparity - min_disparity);
 
-    cv_bridge::CvImageConstPtr cv_disparity = 
+    cv_bridge::CvImageConstPtr cv_disparity =
       cv_bridge::toCvShare(disparity->image, disparity);
 
     disparity_color_.create(disparity->image.height, disparity->image.width);
@@ -387,44 +373,28 @@ namespace mapviz_plugins
     {
       x_pos = x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == TOP_CENTER)
-    {
+    } else if (anchor_ == TOP_CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == TOP_RIGHT)
-    {
+    } else if (anchor_ == TOP_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = y_offset;
-    }
-    else if (anchor_ == CENTER_LEFT)
-    {
+    } else if (anchor_ == CENTER_LEFT) {
       x_pos = x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == CENTER)
-    {
+    } else if (anchor_ == CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == CENTER_RIGHT)
-    {
+    } else if (anchor_ == CENTER_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = (canvas_->height() - height) / 2.0 + y_offset;
-    }
-    else if (anchor_ == BOTTOM_LEFT)
-    {
+    } else if (anchor_ == BOTTOM_LEFT) {
       x_pos = x_offset;
       y_pos = canvas_->height() - height - y_offset;
-    }
-    else if (anchor_ == BOTTOM_CENTER)
-    {
+    } else if (anchor_ == BOTTOM_CENTER) {
       x_pos = (canvas_->width() - width) / 2.0 + x_offset;
       y_pos = canvas_->height() - height - y_offset;
-    }
-    else if (anchor_ == BOTTOM_RIGHT)
-    {
+    } else if (anchor_ == BOTTOM_RIGHT) {
       x_pos = canvas_->width() - width - x_offset;
       y_pos = canvas_->height() - height - y_offset;
     }
@@ -448,49 +418,46 @@ namespace mapviz_plugins
   {
     if (node["topic"])
     {
-      std::string topic;
-      node["topic"] >> topic;
+      std::string topic = node["topic"].as<std::string>();
       ui_.topic->setText(topic.c_str());
       TopicEdited();
     }
 
     if (node["anchor"])
-    {             
-      std::string anchor;
-      node["anchor"] >> anchor;
+    {
+      std::string anchor = node["anchor"].as<std::string>();
       ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
       SetAnchor(anchor.c_str());
     }
 
     if (node["units"])
     {
-      std::string units;
-      node["units"] >> units;
+      std::string units = node["units"].as<std::string>();
       ui_.units->setCurrentIndex(ui_.units->findText(units.c_str()));
       SetUnits(units.c_str());
     }
 
     if (node["offset_x"])
     {
-      node["offset_x"] >> offset_x_;
+      offset_x_ = node["offset_x"].as<double>();
       ui_.offsetx->setValue(static_cast<int>(offset_x_));
     }
 
     if (node["offset_y"])
     {
-      node["offset_y"] >> offset_y_;
+      offset_y_ = node["offset_y"].as<double>();
       ui_.offsety->setValue(static_cast<int>(offset_y_));
     }
 
     if (node["width"])
     {
-      node["width"] >> width_;
+      width_ = node["width"].as<double>();
       ui_.width->setValue(static_cast<int>(width_));
     }
 
     if (node["height"])
-    {             
-      node["height"] >> height_;
+    {
+      height_ = node["height"].as<double>();
       ui_.height->setValue(static_cast<int>(height_));
     }
   }
@@ -513,37 +480,21 @@ namespace mapviz_plugins
     if (anchor == TOP_LEFT)
     {
       anchor_string = "top left";
-    }
-    else if (anchor == TOP_CENTER)
-    {
+    } else if (anchor == TOP_CENTER) {
       anchor_string = "top center";
-    }
-    else if (anchor == TOP_RIGHT)
-    {
+    } else if (anchor == TOP_RIGHT) {
       anchor_string = "top right";
-    }
-    else if (anchor == CENTER_LEFT)
-    {
+    } else if (anchor == CENTER_LEFT) {
       anchor_string = "center left";
-    }
-    else if (anchor == CENTER)
-    {
+    } else if (anchor == CENTER) {
       anchor_string = "center";
-    }
-    else if (anchor == CENTER_RIGHT)
-    {
+    } else if (anchor == CENTER_RIGHT) {
       anchor_string = "center right";
-    }
-    else if (anchor == BOTTOM_LEFT)
-    {
+    } else if (anchor == BOTTOM_LEFT) {
       anchor_string = "bottom left";
-    }
-    else if (anchor == BOTTOM_CENTER)
-    {
+    } else if (anchor == BOTTOM_CENTER) {
       anchor_string = "bottom center";
-    }
-    else if (anchor == BOTTOM_RIGHT)
-    {
+    } else if (anchor == BOTTOM_RIGHT) {
       anchor_string = "bottom right";
     }
 
@@ -557,9 +508,7 @@ namespace mapviz_plugins
     if (units == PIXELS)
     {
       units_string = "pixels";
-    }
-    else if (units == PERCENT)
-    {
+    } else if (units == PERCENT) {
       units_string = "percent";
     }
 
@@ -824,5 +773,5 @@ namespace mapviz_plugins
       255,  6, 0,
       255,  0, 0,
     };
-}
+}   // namespace mapviz_plugins
 
