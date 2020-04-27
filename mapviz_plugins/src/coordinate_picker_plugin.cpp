@@ -106,6 +106,12 @@ bool CoordinatePickerPlugin::Initialize(QGLWidget* canvas)
 
 bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 {
+  if(!this->Visible())
+  {
+    RCLCPP_DEBUG(node_->get_logger(), "Ignoring mouse event, since coordinate picker plugin is hidden");
+    return false;
+  }
+
   switch (event->type())
   {
     case QEvent::MouseButtonPress:
