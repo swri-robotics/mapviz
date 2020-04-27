@@ -121,6 +121,12 @@ bool MeasuringPlugin::Initialize(QGLWidget* canvas)
 
 bool MeasuringPlugin::eventFilter(QObject* object, QEvent* event)
 {
+  if(!this->Visible())
+  {
+    ROS_DEBUG("Ignoring mouse event, since measuring plugin is hidden");
+    return false;
+  }
+
   switch (event->type())
   {
   case QEvent::MouseButtonPress:

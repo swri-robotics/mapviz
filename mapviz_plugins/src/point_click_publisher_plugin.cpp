@@ -133,10 +133,6 @@ namespace mapviz_plugins
       transformed.setY(tfPoint.y());
     }
 
-    std::stringstream ss;
-    ss << "Point in " << output_frame.c_str() << ": " << transformed.x() << "," << transformed.y();
-    PrintInfo(ss.str());
-
     boost::shared_ptr<geometry_msgs::PointStamped> stamped = boost::make_shared<geometry_msgs::PointStamped>();
     stamped->header.frame_id = output_frame;
     stamped->header.stamp = ros::Time::now();
@@ -144,7 +140,20 @@ namespace mapviz_plugins
     stamped->point.y = transformed.y();
     stamped->point.z = 0.0;
 
-    point_publisher_.publish(stamped);
+    std::stringstream ss;
+    ss << "Point in " << output_frame.c_str() << ": " << transformed.x() << "," << transformed.y();
+
+    // Only publish if this plugin is visible
+    if(this->Visible())
+    {
+      point_publisher_.publish(stamped);
+    }
+    else
+    {
+      ss << " (but not publishing since plugin is hidden)";
+    }
+    
+    PrintInfo(ss.str());
   }
 
   void PointClickPublisherPlugin::SetNode(const ros::NodeHandle& node)
