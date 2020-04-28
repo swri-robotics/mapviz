@@ -36,11 +36,7 @@
 #include <QTextStream>
 #include <QPainter>
 
-#if QT_VERSION >= 0x050000
 #include <QGuiApplication>
-#else
-#include <QApplication>
-#endif
 
 // ROS Libraries
 #include <rclcpp/rclcpp.hpp>
@@ -130,6 +126,12 @@ bool MeasuringPlugin::Initialize(QGLWidget* canvas)
 
 bool MeasuringPlugin::eventFilter(QObject* object, QEvent* event)
 {
+  if(!this->Visible())
+  {
+    RCLCPP_DEBUG(node_->get_logger(), "Ignoring mouse event, since measuring plugin is hidden");
+    return false;
+  }
+
   switch (event->type())
   {
   case QEvent::MouseButtonPress:
