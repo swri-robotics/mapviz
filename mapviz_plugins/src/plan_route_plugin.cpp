@@ -88,11 +88,27 @@ namespace mapviz_plugins
                      SLOT(PublishRoute()));
     QObject::connect(ui_.clear, SIGNAL(clicked()), this,
                      SLOT(Clear()));
+    QObject::connect(this,
+                     SIGNAL(VisibleChanged(bool)),
+                     this,
+                     SLOT(VisibilityChanged(bool)));
   }
 
   PlanRoutePlugin::~PlanRoutePlugin()
   {
     if (map_canvas_)
+    {
+      map_canvas_->removeEventFilter(this);
+    }
+  }
+
+  void PlanRoutePlugin::VisibilityChanged(bool visible)
+  {
+    if (visible)
+    {
+      map_canvas_->installEventFilter(this);
+    }
+    else
     {
       map_canvas_->removeEventFilter(this);
     }
