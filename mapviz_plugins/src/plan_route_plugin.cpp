@@ -88,11 +88,27 @@ namespace mapviz_plugins
                      SLOT(PublishRoute()));
     QObject::connect(ui_.clear, SIGNAL(clicked()), this,
                      SLOT(Clear()));
+    QObject::connect(this,
+                     SIGNAL(VisibleChanged(bool)),
+                     this,
+                     SLOT(VisibilityChanged(bool)));
   }
 
   PlanRoutePlugin::~PlanRoutePlugin()
   {
     if (map_canvas_)
+    {
+      map_canvas_->removeEventFilter(this);
+    }
+  }
+
+  void PlanRoutePlugin::VisibilityChanged(bool visible)
+  {
+    if (visible)
+    {
+      map_canvas_->installEventFilter(this);
+    }
+    else
     {
       map_canvas_->removeEventFilter(this);
     }
@@ -117,7 +133,7 @@ namespace mapviz_plugins
   {
     route_preview_ = sru::RoutePtr();
     bool start_from_vehicle = ui_.start_from_vehicle->isChecked();
-    if (waypoints_.size() + start_from_vehicle < 2)
+    if (waypoints_.size() + start_from_vehicle < 2 || !Visible())
     {
       return;
     }

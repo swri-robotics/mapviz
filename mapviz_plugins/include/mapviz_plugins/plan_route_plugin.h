@@ -100,6 +100,7 @@ namespace mapviz_plugins
     void PublishRoute();
     void PlanRoute();
     void Clear();
+    void VisibilityChanged(bool);
 
    private:
     void Retry(const ros::TimerEvent& e);
