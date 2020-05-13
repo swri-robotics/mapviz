@@ -2,6 +2,11 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove OpenGL warning (`#667 <https://github.com/swri-robotics/mapviz/issues/667>`_)
+* Contributors: Daniel D'Souza
+
 1.2.0 (2019-09-04)
 ------------------
 * Use local_xy_origin for loading tiles of GPSFix not available (`#634 <https://github.com/swri-robotics/mapviz/issues/634>`_)

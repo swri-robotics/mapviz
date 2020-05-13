@@ -2,6 +2,22 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix plan route visibility (`#680 <https://github.com/swri-robotics/mapviz/issues/680>`_)
+* Disable coordinate picker and measuring plugin when hidden (`#678 <https://github.com/swri-robotics/mapviz/issues/678>`_)
+* Increase odom queue size so messages dont drop (`#676 <https://github.com/swri-robotics/mapviz/issues/676>`_)
+* Add float plugin (`#665 <https://github.com/swri-robotics/mapviz/issues/665>`_)
+* Make string plugin also support string stamped (`#666 <https://github.com/swri-robotics/mapviz/issues/666>`_)
+* Don't draw arrow for invalid orientation (`#673 <https://github.com/swri-robotics/mapviz/issues/673>`_)
+* Remove OpenGL warning (`#667 <https://github.com/swri-robotics/mapviz/issues/667>`_)
+* Change for loop to while loop in marker plugin so that iterators aren't getting double incremented on erases. (`#663 <https://github.com/swri-robotics/mapviz/issues/663>`_)
+* Add ability to show all covariances (`#659 <https://github.com/swri-robotics/mapviz/issues/659>`_)
+* Add ability to use relative paths for images in the robot image plugin (`#658 <https://github.com/swri-robotics/mapviz/issues/658>`_)
+* Resolves segfault issue on ClearHistory() function call (`#651 <https://github.com/swri-robotics/mapviz/issues/651>`_)
+* Default show background and measuring text to true (`#657 <https://github.com/swri-robotics/mapviz/issues/657>`_)
+* Contributors: Daniel D'Souza, Matthew, Matthew Grogan, jgassaway, jreyes512, knickels
+
 1.2.0 (2019-09-04)
 ------------------
 * Add text to measuring plugin (`#640 <https://github.com/swri-robotics/mapviz/issues/640>`_)

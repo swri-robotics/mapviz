@@ -2,6 +2,14 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Implement (`#671 <https://github.com/swri-robotics/mapviz/issues/671>`_)
+* Remove OpenGL warning (`#667 <https://github.com/swri-robotics/mapviz/issues/667>`_)
+* Resolves segfault issue on ClearHistory() function call (`#651 <https://github.com/swri-robotics/mapviz/issues/651>`_)
+* Fix plug-in config panel to scroll per-pixel instead of per-item, allowing configuration of plug-ins that have config settings that are too large to fit in the panel all at once. (`#646 <https://github.com/swri-robotics/mapviz/issues/646>`_)
+* Contributors: Daniel D'Souza, Marc Alban, Matthew, jreyes512
+
 1.2.0 (2019-09-04)
 ------------------
 
