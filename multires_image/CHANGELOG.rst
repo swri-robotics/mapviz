@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.0 (2020-05-13)
+------------------
 * Remove OpenGL warning (`#667 <https://github.com/swri-robotics/mapviz/issues/667>`_)
 * Contributors: Daniel D'Souza
 

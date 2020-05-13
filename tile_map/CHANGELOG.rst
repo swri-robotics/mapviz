@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.0 (2020-05-13)
+------------------
 * Fix linking to OpenGL GLU library (`#675 <https://github.com/swri-robotics/mapviz/issues/675>`_)
 * Remove OpenGL warning (`#667 <https://github.com/swri-robotics/mapviz/issues/667>`_)
 * Contributors: Ben Wolsieffer, Daniel D'Souza

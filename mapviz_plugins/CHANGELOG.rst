@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.0 (2020-05-13)
+------------------
 * Fix plan route visibility (`#680 <https://github.com/swri-robotics/mapviz/issues/680>`_)
 * Disable coordinate picker and measuring plugin when hidden (`#678 <https://github.com/swri-robotics/mapviz/issues/678>`_)
 * Increase odom queue size so messages dont drop (`#676 <https://github.com/swri-robotics/mapviz/issues/676>`_)
