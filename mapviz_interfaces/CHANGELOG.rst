@@ -2,8 +2,8 @@
 Changelog for package mapviz_interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2020-05-13)
+------------------
 * Port mapviz to ROS 2 (`#672 <https://github.com/swri-robotics/mapviz/issues/672>`_)
 * Contributors: P. J. Reed
 

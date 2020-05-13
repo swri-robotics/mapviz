@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2020-05-13)
+------------------
 * Port mapviz to ROS 2 (`#672 <https://github.com/swri-robotics/mapviz/issues/672>`_)
 * Remove OpenGL warning (`#667 <https://github.com/swri-robotics/mapviz/issues/667>`_)
 * Contributors: Daniel D'Souza, P. J. Reed, Jacob Hassold, Kevin Nickels, Roger Strain, Matthew Bries
