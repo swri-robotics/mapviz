@@ -75,6 +75,8 @@ namespace mapviz_plugins
   {
     ROS_DEBUG("MarkerPlugin::ClearHistory()");
     markers_.clear();
+    marker_visible_.clear();
+    ui_.nsList->clear();
   }
 
   void MarkerPlugin::SelectTopic()
