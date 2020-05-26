@@ -1,8 +1,12 @@
 title: "Mapviz"
 description: Modular ROS visualization tool for 2D data
 baseurl: "/mapviz" # the subpath of your site, e.g. /blog
+<<<<<<< HEAD
 url: "https://jatowler.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 theme: "just-the-docs"
+=======
+url: "https://swri-robotics.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+>>>>>>> b4d9475... Remove plain `theme`
 remote_theme: pmarsceill/just-the-docs
 
 permalink: /:title/
