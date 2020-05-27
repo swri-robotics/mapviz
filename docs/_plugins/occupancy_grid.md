@@ -1,8 +1,6 @@
 ---
-name: "Occupancy Grid"
+title: "Occupancy Grid"
 description: ""
 image: ""
 parameters:
 ---
-
-# {{ page.plugin }}

@@ -1,8 +1,6 @@
 ---
-name: "Pointcloud2"
+title: "Pointcloud2"
 description: ""
 image: ""
 parameters:
 ---
-
-# {{ page.plugin }}

@@ -1,8 +1,6 @@
 ---
-name: "Point Drawing"
+title: "Point Drawing"
 description: ""
 image: ""
 parameters:
 ---
-
-# {{ page.plugin }}

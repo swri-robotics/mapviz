@@ -1,8 +1,6 @@
 ---
-name: "Route"
+title: "Route"
 description: ""
 image: ""
 parameters:
 ---
-
-# {{ page.plugin }}
