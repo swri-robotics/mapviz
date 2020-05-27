@@ -1,7 +1,7 @@
 title: "Mapviz"
 description: Modular ROS visualization tool for 2D data
 baseurl: "/mapviz" # the subpath of your site, e.g. /blog
-url: "https://jatowler.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://swri-robotics.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 remote_theme: pmarsceill/just-the-docs
 
 permalink: /:title/
