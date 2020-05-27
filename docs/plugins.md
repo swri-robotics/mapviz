@@ -15,7 +15,7 @@ has_children: true
 </tr>
 {% for plugin in site.plugins %}
 <tr>
-<td><a href="{{ site.baseurl }}{{ plugin.url }}" class="mb-1 mt-1 v-align-middle">{{ plugin.name | markdownify | remove: '<p>' | remove: '</p>' }}</a></td>
+<td><a href="{{ site.baseurl }}{{ plugin.url }}" class="mb-1 mt-1 v-align-middle">{{ plugin.title | markdownify | remove: '<p>' | remove: '</p>' }}</a></td>
 <td>{{ plugin.description | markdownify | remove: '<p>' | remove: '</p>' }}</td>
 </tr>
 {%- comment -%}
