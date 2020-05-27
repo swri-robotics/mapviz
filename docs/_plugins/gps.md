@@ -1,5 +1,5 @@
 ---
-name: "GPS"
+title: "GPS"
 description: "Projects [gps_common::GPSFix](http://docs.ros.org/kinetic/api/gps_common/html/msg/GPSFix.html) message data into the scene."
 image: ""
 parameters:
@@ -18,5 +18,3 @@ parameters:
   - name: Show Laps
     description: If checked, multiple loops of GPS coordinates will have different colors
 ---
-
-# {{ page.plugin }}

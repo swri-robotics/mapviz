@@ -1,5 +1,5 @@
 ---
-name: "NavSat"
+title: "NavSat"
 description: "Projects [sensor_msgs::NavSatFix](https://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene."
 image: ""
 parameters:
@@ -14,5 +14,3 @@ parameters:
   - name: "Buffer Size"
     description: "Size of circular buffer of GPS points"
 ---
-
-# {{ page.plugin }}

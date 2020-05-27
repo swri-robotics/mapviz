@@ -1,5 +1,5 @@
 ---
-name: "String"
+title: "String"
 description: "Displays the most recent string from a `std_msgs::String` message at a fixed location on the scene."
 image: ""
 parameters:
@@ -18,5 +18,3 @@ parameters:
   - name: "Units"
     description: "(pixels | percent of window)"
 ---
-
-# {{ page.plugin }}

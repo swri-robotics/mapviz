@@ -1,8 +1,6 @@
 ---
-name: "Pose"
+title: "Pose"
 description: ""
 image: ""
 parameters:
 ---
-
-# {{ page.plugin }}

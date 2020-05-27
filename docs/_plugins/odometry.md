@@ -1,5 +1,5 @@
 ---
-name: "Odometry"
+title: "Odometry"
 description: "Projects [nav_msgs::Odometry](http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html) message data into the scene."
 image: ""
 parameters:
@@ -16,5 +16,3 @@ parameters:
   - name: "Buffer Size"
     description: "Size of circular buffer of odometry points"
 ---
-
-# {{ page.plugin }}
