@@ -11,6 +11,8 @@ description: "Mapviz is a highly customizable ROS-based visualization tool focus
 Mapviz is a highly customizable ROS-based visualization tool focused on large-scale 2D data, with a plugin system for extreme extensibility.
 {: .fs-6 .fw-300}
 
+![]({{ site.baseurl }}/assets/images/mapviz.png)
+
 [Get started now](#getting-started){: .btn .btn-blue .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/swri-robotics/mapviz){: .btn .text-blue-000 .bg-grey-lt-000 .fs-5 .mb-4 .mb-md-0 }
 
 ---
