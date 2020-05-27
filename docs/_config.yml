@@ -41,6 +41,14 @@ collections:
   plugins:
     output: true
 
+defaults:
+  - scope:
+      path: ''
+      type: 'plugins'
+    values:
+      layout: 'plugin'
+      parent: 'Plugins'
+
 compress_html:
   clippings: all
   comments: all

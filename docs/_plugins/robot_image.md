@@ -1,5 +1,5 @@
 ---
-name: "Robot Image"
+title: "Robot Image"
 description: "Projects an image loaded from file into the scene to represent the robot platform."
 image: ""
 parameters:
@@ -12,5 +12,3 @@ parameters:
   - name: "Height"
     description: "The physical height represented by the image"
 ---
-
-# {{ page.plugin }}

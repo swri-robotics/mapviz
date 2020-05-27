@@ -1,8 +1,6 @@
 ---
-name: "Attitude Indicator"
+title: "Attitude Indicator"
 description: ""
 image: ""
 parameters:
 ---
-
-# {{ page.plugin }}

@@ -1,5 +1,5 @@
 ---
-name: "Grid"
+title: "Grid"
 description: "Projects a 2D grid into the scene."
 image: ""
 parameters:
@@ -20,5 +20,3 @@ parameters:
   - name: Columns
     description: Number of grid columns
 ---
-
-# {{ page.plugin }}
