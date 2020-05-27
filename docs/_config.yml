@@ -30,7 +30,7 @@ aux_links:
     - "//github.com/swri-robotics/mapviz"
 
 # Footer content appears at the bottom of every page's main content
-footer_content: "Copyright &copy; 2020 Southwest Research Institute. Distributed by an <a href=\"https://github.com/swri-robotics/mapviz/tree/master/LICENSE\">BSD 3-Clause license.</a>"
+footer_content: "Copyright &copy; 2020 Southwest Research Institute. Distributed under the <a href=\"https://github.com/swri-robotics/mapviz/tree/master/LICENSE\">BSD 3-Clause license.</a>"
 
 # Color scheme currently only supports "dark" or nil (default)
 color_scheme: nil
@@ -41,6 +41,10 @@ color_scheme: nil
 
 plugins:
   - jekyll-seo-tag
+
+collections:
+  plugins:
+    output: true
 
 compress_html:
   clippings: all
