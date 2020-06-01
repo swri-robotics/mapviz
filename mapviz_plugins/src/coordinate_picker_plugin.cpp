@@ -170,7 +170,7 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   ROS_DEBUG("Transformed point in frame '%s': %f %f", frame.c_str(), point.x(), point.y());
   QString new_point;
   QTextStream stream(&new_point);
-  if (frame == "/wgs84" || frame == "wgs84")
+  if (swri_transform_util::FrameIdsEqual(frame, swri_transform_util::_wgs84_frame))
   {
     stream.setRealNumberPrecision(9);
   }
