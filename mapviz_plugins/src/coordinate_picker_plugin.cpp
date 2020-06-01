@@ -47,7 +47,9 @@
 #include <mapviz/select_frame_dialog.h>
 
 //
+#include <swri_transform_util/frames.h>
 #include <swri_transform_util/transform.h>
+#include <swri_transform_util/transform_util.h>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -178,7 +180,14 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
     point.y());
   QString new_point;
   QTextStream stream(&new_point);
-  stream.setRealNumberPrecision(4);
+  if (swri_transform_util::FrameIdsEqual(frame, swri_transform_util::_wgs84_frame))
+  {
+    stream.setRealNumberPrecision(9);
+  }
+  else
+  {
+    stream.setRealNumberPrecision(4);
+  }
   stream << point.x() << ", " << point.y();
 
   if (copy_on_click_)
