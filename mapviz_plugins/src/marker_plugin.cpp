@@ -76,6 +76,8 @@ namespace mapviz_plugins
   {
     RCLCPP_DEBUG(node_->get_logger(), "MarkerPlugin::ClearHistory()");
     markers_.clear();
+    marker_visible_.clear();
+    ui_.nsList->clear();
   }
 
   void MarkerPlugin::SelectTopic()
