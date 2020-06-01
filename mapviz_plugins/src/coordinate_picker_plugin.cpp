@@ -47,7 +47,9 @@
 #include <mapviz/select_frame_dialog.h>
 
 //
+#include <swri_transform_util/frames.h>
 #include <swri_transform_util/transform.h>
+#include <swri_transform_util/transform_util.h>
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::CoordinatePickerPlugin, mapviz::MapvizPlugin)
