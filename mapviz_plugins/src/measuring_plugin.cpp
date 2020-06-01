@@ -306,6 +306,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
     tf::Vector3 position(transformed.x(), transformed.y(), 0.0);
     vertices_[selected_point_].setY(position.y());
     vertices_[selected_point_].setX(position.x());
+    DistanceCalculation(); //function to calculate distance
     return true;
   }// Let other plugins process this event too
   return false;
