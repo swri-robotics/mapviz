@@ -27,10 +27,11 @@
 //
 // *****************************************************************************
 
-
+#ifndef __aarch64__
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#endif
 
 #include <mapviz/map_canvas.h>
 
@@ -94,10 +95,12 @@ MapCanvas::MapCanvas(QWidget* parent) :
 
 MapCanvas::~MapCanvas()
 {
+#ifndef __aarch64__
   if(pixel_buffer_size_ != 0)
   {
     glDeleteBuffersARB(2, pixel_buffer_ids_);
   }
+#endif
 }
 
 void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
@@ -107,6 +110,7 @@ void MapCanvas::InitializeTf(boost::shared_ptr<tf::TransformListener> tf)
 
 void MapCanvas::InitializePixelBuffers()
 {
+#ifndef __aarch64__
   if(has_pixel_buffers_)
   {
     int32_t buffer_size = width() * height() * 4;
@@ -128,10 +132,12 @@ void MapCanvas::InitializePixelBuffers()
       pixel_buffer_size_ = buffer_size;
     }
   }
+#endif
 }
 
 void MapCanvas::initializeGL()
 {
+#ifndef __aarch64__
   GLenum err = glewInit();
   if (GLEW_OK != err)
   {
@@ -143,6 +149,9 @@ void MapCanvas::initializeGL()
     std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
     has_pixel_buffers_ = extensions.find("GL_ARB_pixel_buffer_object") != std::string::npos;
   }
+#else
+  has_pixel_buffers_ = false;
+#endif
 
   glClearColor(0.58f, 0.56f, 0.5f, 1);
   if (enable_antialiasing_)
@@ -185,6 +194,7 @@ void MapCanvas::CaptureFrame(bool force)
   // Ensure the pixel size is actually 4
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
+#ifndef __aarch64__
   if (has_pixel_buffers_ && !force)
   {
     InitializePixelBuffers();
@@ -207,6 +217,7 @@ void MapCanvas::CaptureFrame(bool force)
     glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
   }
   else
+#endif
   {
     int32_t buffer_size = width() * height() * 4;
     capture_buffer_.clear();

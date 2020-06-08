@@ -52,9 +52,18 @@
 
 #include <mapviz/mapviz_plugin.h>
 
+#ifdef __aarch64__
+#include <QGLFunctions>
+#include <GL/gl.h>
+#endif
+
 namespace mapviz
 {
+#ifdef __aarch64__
+  class MapCanvas : public QGLWidget, protected QGLFunctions
+#else
   class MapCanvas : public QGLWidget
+#endif
   {
     Q_OBJECT
 

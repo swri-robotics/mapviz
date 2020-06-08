@@ -29,6 +29,8 @@
 
 #include <multires_image/tile_view.h>
 
+#include <GL/gl.h>
+
 // C++ standard libraries
 #include <cmath>
 #include <iostream>

@@ -36,6 +36,7 @@
 #include <iostream>
 
 // QT libraries
+#include <GL/gl.h>
 #include <QGLWidget>
 #include <QFile>
 

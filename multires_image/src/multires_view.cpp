@@ -33,6 +33,8 @@
 #include <cmath>
 #include <iostream>
 
+#include <GL/gl.h>
+
 #include <ros/ros.h>
 #include <swri_transform_util/transform_util.h>
 

@@ -39,6 +39,8 @@
 
 #include <swri_transform_util/transform.h>
 
+#include <QGLFunctions>
+
 namespace tile_map
 {
   class TileSource;
@@ -58,7 +60,7 @@ namespace tile_map
     std::vector<tf::Vector3> points_t;
   };
 
-  class TileMapView
+  class TileMapView: protected QGLFunctions
   {
   public:
     TileMapView();

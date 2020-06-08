@@ -39,6 +39,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
+#include <QGLFunctions>
 #include <QGLWidget>
 #include <QColor>
 #include <QMutex>
@@ -51,7 +52,7 @@
 
 namespace mapviz_plugins
 {
-  class PointCloud2Plugin : public mapviz::MapvizPlugin
+  class PointCloud2Plugin : public mapviz::MapvizPlugin, protected QGLFunctions
   {
   Q_OBJECT
 
