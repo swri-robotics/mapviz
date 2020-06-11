@@ -45,7 +45,7 @@ find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 add_definitions(-DWFlags=WindowFlags)
 
-find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
+find_package(OpenCV COMPONENTS core imgproc REQUIRED)
 
 ### OpenGL ###
 if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")

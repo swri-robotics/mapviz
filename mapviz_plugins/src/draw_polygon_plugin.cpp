@@ -198,6 +198,12 @@ namespace mapviz_plugins
 
   bool DrawPolygonPlugin::handleMousePress(QMouseEvent* event)
   {
+    if(!this->Visible())
+    {
+      RCLCPP_DEBUG(node_->get_logger(), "Ignoring mouse press, since draw polygon plugin is hidden");
+      return false;
+    }
+    
     selected_point_ = -1;
     int closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();

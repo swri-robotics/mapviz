@@ -2,6 +2,11 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.0 (2020-05-13)
+------------------
+* Port mapviz to ROS 2 (`#672 <https://github.com/swri-robotics/mapviz/issues/672>`_)
+* Contributors: Daniel D'Souza, Matthew Bries, Matthew Grogan, P. J. Reed, Jason Gassaway, John Reyes, Jacob Hassold, Kevin Nickels, Roger Strain
+
 1.2.0 (2019-09-04)
 ------------------
 * Add text to measuring plugin (`#640 <https://github.com/swri-robotics/mapviz/issues/640>`_)

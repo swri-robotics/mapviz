@@ -41,7 +41,7 @@
 
 // ROS libraries
 #include <cv_bridge/cv_bridge.h>
-#include <opencv/highgui.h>
+#include <opencv2/highgui.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <stereo_msgs/msg/disparity_image.hpp>
 #include <tf2/transform_datatypes.h>

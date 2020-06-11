@@ -2,6 +2,12 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.0 (2020-05-13)
+------------------
+* Port mapviz to ROS 2 (`#672 <https://github.com/swri-robotics/mapviz/issues/672>`_)
+* Remove OpenGL warning (`#667 <https://github.com/swri-robotics/mapviz/issues/667>`_)
+* Contributors: Daniel D'Souza, P. J. Reed, Jacob Hassold, Kevin Nickels, Roger Strain
+
 1.2.0 (2019-09-04)
 ------------------
 * Use local_xy_origin for loading tiles of GPSFix not available (`#634 <https://github.com/swri-robotics/mapviz/issues/634>`_)
