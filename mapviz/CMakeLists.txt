@@ -42,8 +42,8 @@ pkg_check_modules(YamlCpp yaml-cpp)
 ### Boost ###
 find_package(Boost REQUIRED date_time system filesystem)
 
-### OpenCV 3 on ROS2 ###
-find_package(OpenCV 3.1 COMPONENTS core imgproc imgcodecs videoio REQUIRED)
+### OpenCV 3/4 on ROS2 ###
+find_package(OpenCV COMPONENTS core imgproc imgcodecs videoio REQUIRED)
 
 # ### Qt5 on ROS2 ###
 find_package(Qt5Concurrent REQUIRED)

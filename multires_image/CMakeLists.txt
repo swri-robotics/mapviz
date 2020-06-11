@@ -31,7 +31,7 @@ find_package(OpenGL REQUIRED)
 ### OpenCV ###
 # multires_image doesn't directly use OpenCV, but it uses swri_transform_util, and
 # we need to include OpenCV to make one of its headers compile.
-find_package(OpenCV 3.1 COMPONENTS core imgproc REQUIRED)
+find_package(OpenCV COMPONENTS core imgproc REQUIRED)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
