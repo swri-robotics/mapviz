@@ -53,7 +53,7 @@ namespace mapviz
         directory.c_str());
       video_writer_ = std::make_shared<cv::VideoWriter>(
           directory,
-          CV_FOURCC('M', 'J', 'P', 'G'),
+          cv::VideoWriter::fourcc('M', 'J', 'P', 'G'),
           30,
           cv::Size(width_, height_));
 
@@ -96,7 +96,7 @@ namespace mapviz
           // actually BGRA.  Need to convert it to BGR and flip it vertically
           // before giving it to the cv::VideoWriter.
           image = cv::Mat(frame.height(), frame.width(), CV_8UC4, frame.bits());
-          cv::cvtColor(image, temp_image, CV_BGRA2BGR);
+          cv::cvtColor(image, temp_image, cv::COLOR_BGRA2BGR);
           cv::flip(temp_image, image, 0);
           break;
         default:

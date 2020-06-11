@@ -1388,7 +1388,7 @@ void Mapviz::Screenshot()
   if (canvas_->CopyCaptureBuffer(frame)) {
     cv::Mat image(canvas_->height(), canvas_->width(), CV_8UC4, &frame[0]);
     cv::Mat screenshot;
-    cvtColor(image, screenshot, CV_BGRA2BGR);
+    cvtColor(image, screenshot, cv::COLOR_BGRA2BGR);
 
     cv::flip(screenshot, screenshot, 0);
 
