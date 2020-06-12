@@ -59,10 +59,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(include)
-include_directories(SYSTEM
-  ${OpenCV_INCLUDE_DIRS}
-)
 
 set(UI_FILES
     ui/attitude_indicator_config.ui
@@ -163,6 +159,9 @@ add_library(${PROJECT_NAME} SHARED
     ${SRC_FILES}
     ${UI_SRC_FILES}
 )
+target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 ament_target_dependencies(${PROJECT_NAME}
     ament_cmake
