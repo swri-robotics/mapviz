@@ -8,7 +8,9 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-project(mapviz)
+project(mapviz VERSION 2.0.0
+  DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
+  LANGUAGES CXX)
 
 ### ROS Packages ###
 find_package(ament_cmake REQUIRED)
@@ -69,14 +71,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(include)
-include_directories(SYSTEM
-  ${Qt_INCLUDE_DIRS}
-  ${OpenGL_INCLUDE_DIR}
-  ${GLEW_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${YamlCpp_INCLUDE_DIR}
-)
 
 # Qt UI files
 set(UI_FILES
@@ -122,6 +116,16 @@ add_library(rqt_${PROJECT_NAME}
   ${SRC_FILES}
   ${RCC_SRCS}
 )
+target_include_directories(rqt_${PROJECT_NAME} PUBLIC include)
+target_include_directories(rqt_${PROJECT_NAME} SYSTEM PUBLIC
+  ${Qt_INCLUDE_DIRS}
+  ${OpenGL_INCLUDE_DIR}
+  ${GLEW_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${YamlCpp_INCLUDE_DIR})
+target_include_directories(rqt_${PROJECT_NAME} PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_definitions(rqt_${PROJECT_NAME}
   PRIVATE
     USE_NEW_TF2_TOMSG=${USE_NEW_TF2_TOMSG}
