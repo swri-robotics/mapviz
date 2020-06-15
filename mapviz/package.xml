@@ -13,10 +13,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>pkg-config</buildtool_depend>
-  <buildtool_depend>qt_qmake</buildtool_depend>
+  <buildtool_depend>qt5-qmake</buildtool_depend>
 
-  <build_depend>libqt_dev</build_depend>
-  <build_depend>libqt_opengl_dev</build_depend>
+  <build_depend>qtbase5-dev</build_depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
   <build_depend>message_generation</build_depend>
 
   <depend>cv_bridge</depend>
@@ -36,8 +36,8 @@
   <depend>swri_yaml_util</depend>
   <depend>tf</depend>
 
-  <exec_depend>libqt_core</exec_depend>
-  <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
   <exec_depend>message_runtime</exec_depend>
 
   <export>

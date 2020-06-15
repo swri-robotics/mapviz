@@ -31,40 +31,26 @@ find_package(catkin REQUIRED COMPONENTS
 ### Boost ###
 find_package(Boost REQUIRED system filesystem)
 
-### OpenCV 2 on ROS < Kinetic, OpenCV 3 on ROS >= Kinetic ###
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  find_package(OpenCV 2 REQUIRED)
-else()
-  find_package(OpenCV 3.1 COMPONENTS core imgproc imgcodecs videoio REQUIRED)
-endif()
+### OpenCV
+find_package(OpenCV COMPONENTS core imgproc imgcodecs videoio REQUIRED)
 
-### Qt4 on ROS < Kinetic, Qt5 on ROS >= Kinetic ###
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL)
-  set(Qt_FOUND TRUE)
-  set(Qt_INCLUDE_DIRS "${QT_INCLUDE_DIR};${QT_QTCORE_INCLUDE_DIR};${QT_QTGUI_INCLUDE_DIR};${QT_QTOPENGL_INCLUDE_DIR}")
-  set(Qt_LIBRARIES
-    Qt4::QtCore
-    Qt4::QtGui
-    Qt4::QtOpenGL
-  )
-else()
-  find_package(Qt5Concurrent REQUIRED)
-  find_package(Qt5Core REQUIRED)
-  find_package(Qt5Gui REQUIRED)
-  find_package(Qt5OpenGL REQUIRED)
-  find_package(Qt5Widgets REQUIRED)
-  set(Qt_FOUND TRUE)
-  set(Qt_INCLUDE_DIRS "${Qt5Concurrent_INCLUDE_DIRS};${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
-  set(Qt_LIBRARIES
-    Qt5::Concurrent
-    Qt5::Core
-    Qt5::Gui
-    Qt5::OpenGL
-    Qt5::Widgets
-  )
-  add_definitions(-DWFlags=WindowFlags)
-endif()
+### Qt
+find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+# Setting these variable so catkin_package can export Qt as a dependency
+set(Qt_FOUND TRUE)
+set(Qt_INCLUDE_DIRS "${Qt5Concurrent_INCLUDE_DIRS};${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
+set(Qt_LIBRARIES
+  Qt5::Concurrent
+  Qt5::Core
+  Qt5::Gui
+  Qt5::OpenGL
+  Qt5::Widgets
+)
+add_definitions(-DWFlags=WindowFlags)
 set(QT_USE_QTOPENGL TRUE)
 
 ### OpenGL ###
@@ -100,7 +86,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
-  ${Qt_INCLUDE_DIRS}
   ${OpenGL_INCLUDE_DIR}
   ${GLEW_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -140,16 +125,9 @@ set(SRC_FILES
   src/video_writer.cpp
 )
 
-### Use Qt4 macros on ROS < Kinetic, Qt5 on ROS >= Kinetic ###
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  qt4_add_resources(RCC_SRCS src/resources/icons.qrc)
-  qt4_wrap_ui(SRC_FILES ${UI_FILES})
-  qt4_wrap_cpp(SRC_FILES ${QT_HEADERS})
-else()
-  qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
-  qt5_wrap_ui(SRC_FILES ${UI_FILES})
-  qt5_wrap_cpp(SRC_FILES ${QT_HEADERS})
-endif()
+qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
+qt5_wrap_ui(SRC_FILES ${UI_FILES})
+qt5_wrap_cpp(SRC_FILES ${QT_HEADERS})
 
 ### Build mapviz as an rqt plugin ###
 add_library(rqt_${PROJECT_NAME}

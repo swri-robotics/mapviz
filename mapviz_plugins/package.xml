@@ -12,10 +12,10 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <buildtool_depend>qt_qmake</buildtool_depend>
+  <buildtool_depend>qt5-qmake</buildtool_depend>
 
-  <build_depend>libqt_dev</build_depend>
-  <build_depend>libqt_opengl_dev</build_depend>
+  <build_depend>qtbase5-dev</build_depend>
+  <build_depend>libqt5-opengl-dev</build_depend>
 
   <depend>actionlib</depend>
   <depend>cv_bridge</depend>
@@ -42,8 +42,8 @@
   <depend>tf</depend>
   <depend>visualization_msgs</depend>
   
-  <exec_depend>libqt_core</exec_depend>
-  <exec_depend>libqt_opengl</exec_depend>
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
 
   <export>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

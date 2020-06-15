@@ -14,34 +14,22 @@ find_package(catkin REQUIRED COMPONENTS
   ${DEPENDENCIES}
 )
 
-### Qt4 on ROS < Kinetic, Qt5 on ROS >= Kinetic ###
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  find_package(Qt4 COMPONENTS REQUIRED QtCore QtGui QtOpenGL QtNetwork)
-  set(Qt_FOUND TRUE)
-  set(Qt_INCLUDE_DIRS "${QT_INCLUDE_DIR};${QT_QTCORE_INCLUDE_DIR};${QT_QTGUI_INCLUDE_DIR};${QT_QTOPENGL_INCLUDE_DIR};${QT_QTNETWORK_INCLUDE_DIR}")
-  set(Qt_LIBRARIES
-      Qt4::QtCore
-      Qt4::QtGui
-      Qt4::QtOpenGL
-      Qt4::QtNetwork
-      )
-else()
-  find_package(Qt5Network REQUIRED)
-  find_package(Qt5Core REQUIRED)
-  find_package(Qt5Gui REQUIRED)
-  find_package(Qt5OpenGL REQUIRED)
-  find_package(Qt5Widgets REQUIRED)
-  set(Qt_FOUND TRUE)
-  set(Qt_INCLUDE_DIRS "${Qt5Network_INCLUDE_DIRS};${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
-  set(Qt_LIBRARIES
-      Qt5::Network
-      Qt5::Core
-      Qt5::Gui
-      Qt5::OpenGL
-      Qt5::Widgets
-      )
-  add_definitions(-DWFlags=WindowFlags)
-endif()
+### Qt
+find_package(Qt5Network REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+set(Qt_FOUND TRUE)
+set(Qt_INCLUDE_DIRS "${Qt5Network_INCLUDE_DIRS};${Qt5Core_INCLUDE_DIRS};${Qt5Gui_INCLUDE_DIRS};${Qt5OpenGL_INCLUDE_DIRS};${Qt5Widgets_INCLUDE_DIRS}")
+set(Qt_LIBRARIES
+    Qt5::Network
+    Qt5::Core
+    Qt5::Gui
+    Qt5::OpenGL
+    Qt5::Widgets
+    )
+add_definitions(-DWFlags=WindowFlags)
 
 ### OpenGL ###
 if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
@@ -76,7 +64,6 @@ include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
   ${GLEW_INCLUDE_DIRS}
   ${JSONCPP_INCLUDE_DIRS}
-  ${Qt_INCLUDE_DIRS}
 )
 
 set(TILE_SRC_FILES
@@ -93,11 +80,7 @@ set(QT_HEADERS
   include/${PROJECT_NAME}/wmts_source.h
   include/${PROJECT_NAME}/bing_source.h
 )
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  qt4_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
-else()
-  qt5_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
-endif()
+qt5_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}
   ${Qt_LIBRARIES}
@@ -111,13 +94,8 @@ set(PLUGIN_SRC_FILES
 set(PLUGIN_UI_FILES
   src/${PROJECT_NAME}_config.ui)
 
-if("$ENV{ROS_DISTRO}" STRLESS "kinetic")
-  qt4_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
-  qt4_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
-else()
-  qt5_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
-  qt5_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
-endif()
+qt5_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
+qt5_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
 
 add_library(${PROJECT_NAME}_plugin ${PLUGIN_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
