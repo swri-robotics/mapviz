@@ -121,16 +121,19 @@ add_library(rqt_${PROJECT_NAME}
   ${SRC_FILES}
   ${RCC_SRCS}
 )
-target_include_directories(rqt_${PROJECT_NAME} PUBLIC include)
-target_include_directories(rqt_${PROJECT_NAME} SYSTEM PUBLIC
-  ${Qt_INCLUDE_DIRS}
-  ${OpenGL_INCLUDE_DIR}
-  ${GLEW_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${YamlCpp_INCLUDE_DIR})
-target_include_directories(rqt_${PROJECT_NAME} PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(rqt_${PROJECT_NAME} 
+  PUBLIC
+    include
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(rqt_${PROJECT_NAME} SYSTEM
+  PUBLIC
+    ${Qt_INCLUDE_DIRS}
+    ${OpenGL_INCLUDE_DIR}
+    ${GLEW_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+    ${YamlCpp_INCLUDE_DIR})
 target_compile_definitions(rqt_${PROJECT_NAME}
   PRIVATE
     USE_NEW_TF2_TOMSG=${USE_NEW_TF2_TOMSG}
