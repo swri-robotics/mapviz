@@ -15,7 +15,10 @@ endif()
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-project(multires_image)
+
+project(multires_image
+  VERSION 2.0.0
+  LANGUAGES CXX)
 
 find_package(ament_cmake REQUIRED)
 find_package(cv_bridge REQUIRED)
