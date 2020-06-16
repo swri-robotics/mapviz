@@ -12,7 +12,9 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-project(mapviz_plugins)
+project(mapviz_plugins
+  VERSION 2.0.0
+  LANGUAGES CXX)
 
 # Ros Packages
 find_package(ament_cmake REQUIRED)
