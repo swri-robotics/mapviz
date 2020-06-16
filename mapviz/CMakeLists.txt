@@ -16,7 +16,8 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-project(mapviz VERSION 2.0.0
+project(mapviz 
+  VERSION 2.0.0
   DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
   LANGUAGES CXX)
 
