@@ -166,10 +166,15 @@ add_library(${PROJECT_NAME} SHARED
     ${SRC_FILES}
     ${UI_SRC_FILES}
 )
-target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-  ${OpenCV_INCLUDE_DIRS})
-target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_include_directories(${PROJECT_NAME} 
+  PUBLIC
+    include)
+target_include_directories(${PROJECT_NAME} SYSTEM
+  PUBLIC
+    ${OpenCV_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME}
+  PUBLIC
+    "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 ament_target_dependencies(${PROJECT_NAME}
     ament_cmake
     ament_index_cpp
