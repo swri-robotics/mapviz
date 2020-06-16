@@ -1,10 +1,15 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10...3.17)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+endif()
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
-project(mapviz_interfaces)
+project(mapviz_interfaces
+  VERSION 2.0.0)
 
 find_package(ament_cmake REQUIRED)
 find_package(marti_common_msgs REQUIRED)
