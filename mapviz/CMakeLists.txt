@@ -177,13 +177,9 @@ add_executable(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
   rqt_${PROJECT_NAME}
-  ${Qt_LIBRARIES}
   ${Boost_LIBRARIES}
-  ${OpenGL_LIBRARY}
   ${GLUT_LIBRARY}
-  ${GLEW_LIBRARIES}
   ${GLU_LIBRARY}
-  ${OpenCV_LIBRARIES}
 )
 ament_target_dependencies(${PROJECT_NAME}
   swri_math_util
