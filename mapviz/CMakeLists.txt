@@ -178,7 +178,6 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   rqt_${PROJECT_NAME}
   ${Boost_LIBRARIES}
-  ${GLUT_LIBRARY}
   ${GLU_LIBRARY}
 )
 ament_target_dependencies(${PROJECT_NAME}
