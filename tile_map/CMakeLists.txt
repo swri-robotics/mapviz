@@ -85,7 +85,7 @@ target_include_directories(${PROJECT_NAME}
     include)
 target_include_directories(${PROJECT_NAME} SYSTEM
   PUBLIC
-    ${GLEW_INCLUDE_DIRS}
+    GLEW::GLEW
     ${JSONCPP_INCLUDE_DIRS}
     ${YamlCpp_INCLUDE_DIRS})
 ament_target_dependencies(${PROJECT_NAME}
