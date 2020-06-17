@@ -59,7 +59,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
-  ${GLEW_INCLUDE_DIRS}
+  GLEW::GLEW
   ${JSONCPP_INCLUDE_DIRS}
   ${YamlCpp_INCLUDE_DIRS}
 )
