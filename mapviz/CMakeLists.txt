@@ -129,7 +129,6 @@ target_include_directories(rqt_${PROJECT_NAME}
     ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(rqt_${PROJECT_NAME} SYSTEM
   PUBLIC
-    ${OpenCV_INCLUDE_DIRS}
     ${YamlCpp_INCLUDE_DIR})
 target_compile_definitions(rqt_${PROJECT_NAME}
   PRIVATE
@@ -139,7 +138,12 @@ target_link_libraries(rqt_${PROJECT_NAME}
   OpenGL::GL
   ${GLUT_LIBRARY}
   GLEW::GLEW
-  ${OpenCV_LIBS}
+  # ${OpenCV_LIBS}
+  opencv_core
+  opencv_highgui
+  opencv_imgproc
+  opencv_imgcodecs
+  opencv_videoio
   ${YamlCpp_LIBRARIES}
   Qt5::Concurrent
   Qt5::Core
