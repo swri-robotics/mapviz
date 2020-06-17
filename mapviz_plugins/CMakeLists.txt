@@ -209,7 +209,9 @@ target_link_libraries(${PROJECT_NAME}
     Qt5::Widgets
     ${GLU_LIBRARY}
     ${GLUT_LIBRARY}
-    ${OpenCV_LIBS}
+    opencv_core
+    opencv_imgproc
+    opencv_highgui
 )
 
 ### Install the plugins ###
