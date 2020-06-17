@@ -138,7 +138,6 @@ target_link_libraries(rqt_${PROJECT_NAME}
   OpenGL::GL
   ${GLUT_LIBRARY}
   GLEW::GLEW
-  # ${OpenCV_LIBS}
   opencv_core
   opencv_highgui
   opencv_imgproc
