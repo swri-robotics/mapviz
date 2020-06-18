@@ -1,3 +1,4 @@
+### SET CMAKE POLICIES ###
 cmake_minimum_required(VERSION 3.10...3.17)
 
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
@@ -7,6 +8,7 @@ endif()
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
+### END CMAKE POLICIES ###
 
 project(mapviz_interfaces)
 

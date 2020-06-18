@@ -1,3 +1,4 @@
+### SET CMAKE POLICIES ###
 cmake_minimum_required(VERSION 3.10...3.17)
 
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
@@ -15,6 +16,7 @@ endif()
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+### END CMAKE POLICIES ###
 
 project(mapviz 
   DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
