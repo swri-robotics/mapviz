@@ -63,9 +63,6 @@ add_library(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
   PUBLIC
     include)
-target_include_directories(${PROJECT_NAME} SYSTEM
-  PUBLIC
-    ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   OpenGL::GL

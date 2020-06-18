@@ -57,12 +57,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(include)
-include_directories(SYSTEM
-  GLEW::GLEW
-  ${JSONCPP_INCLUDE_DIRS}
-  ${YamlCpp_INCLUDE_DIRS}
-)
 
 set(TILE_SRC_FILES
   src/image_cache.cpp

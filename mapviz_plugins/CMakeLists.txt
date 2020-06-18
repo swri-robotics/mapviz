@@ -168,9 +168,6 @@ add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME} 
   PUBLIC
     include)
-target_include_directories(${PROJECT_NAME} SYSTEM
-  PUBLIC
-    ${OpenCV_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME}
   PUBLIC
     "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
