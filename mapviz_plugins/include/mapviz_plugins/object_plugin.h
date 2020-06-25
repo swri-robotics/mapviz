@@ -89,6 +89,7 @@ namespace mapviz_plugins
     void SelectTopic();
     void TopicEdited();
     void SetColor(const QColor& color);
+    void showIdsToggled(bool value);
 
   private:
     struct Color

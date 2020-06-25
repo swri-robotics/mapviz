@@ -32,7 +32,7 @@
    <property name="verticalSpacing">
     <number>4</number>
    </property>
-   <item row="4" column="3" colspan="2">
+   <item row="5" column="3" colspan="2">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
@@ -61,7 +61,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
@@ -130,6 +130,20 @@
      <property name="styleSheet">
       <string notr="true"/>
      </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Show IDs:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="3">
+    <widget class="QCheckBox" name="show_ids">
      <property name="text">
       <string/>
      </property>

@@ -64,6 +64,7 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    QObject::connect(ui_.show_ids, SIGNAL(toggled(bool)), this, SLOT(showIdsToggled(bool)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
 
@@ -72,6 +73,11 @@ namespace mapviz_plugins
 
   ObjectPlugin::~ObjectPlugin()
   {
+  }
+
+  void ObjectPlugin::showIdsToggled(bool value)
+  {
+
   }
 
   void ObjectPlugin::SetColor(const QColor& color)
@@ -332,6 +338,11 @@ namespace mapviz_plugins
 
   void ObjectPlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
+    if (!ui_.show_ids->isChecked())
+    {
+      return;
+    }
+
     // Most of the marker drawing is done using OpenGL commands, but text labels
     // are rendered using a QPainter.  This is intended primarily as an example
     // of how the QPainter works.
@@ -419,6 +430,13 @@ namespace mapviz_plugins
       SetColor(qcolor);
       ui_.color->setColor(qcolor);
     }
+
+    if (node["show_ids"])
+    {
+      bool checked;
+      node["show_ids"] >> checked;
+      ui_.show_ids->setChecked( checked );
+    }
   }
 
   void ObjectPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -427,6 +445,8 @@ namespace mapviz_plugins
 
     emitter << YAML::Key << "color" << YAML::Value
             << ui_.color->color().name().toStdString();
+
+    emitter << YAML::Key << "show_ids" << YAML::Value << ui_.show_ids->isChecked();
   }
 
   void ObjectPlugin::timerEvent(QTimerEvent *event)
