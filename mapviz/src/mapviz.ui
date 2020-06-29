@@ -40,7 +40,8 @@
     </property>
     <addaction name="actionOpen_config"/>
     <addaction name="separator"/>
-    <addaction name="actionSave_config"/>
+    <addaction name="actionSave_Config"/>
+    <addaction name="actionSaveAs_config"/>
     <addaction name="actionClear"/>
     <addaction name="separator"/>
     <addaction name="actionSet_Capture_Directory"/>
@@ -350,9 +351,9 @@
     <string>Open Config</string>
    </property>
   </action>
-  <action name="actionSave_config">
+  <action name="actionSaveAs_config">
    <property name="text">
-    <string>Save Config</string>
+    <string>Save Config As...</string>
    </property>
   </action>
   <action name="actionConfig_Dock">
@@ -490,6 +491,11 @@
   <action name="actionClear">
    <property name="text">
     <string>Clear Config</string>
+   </property>
+  </action>
+  <action name="actionSave_Config">
+   <property name="text">
+    <string>Save Config</string>
    </property>
   </action>
  </widget>
@@ -631,10 +637,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionSave_config</sender>
+   <sender>actionSaveAs_config</sender>
    <signal>triggered()</signal>
    <receiver>mapviz</receiver>
-   <slot>SaveConfig()</slot>
+   <slot>SaveConfigAs()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -790,6 +796,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSave_Config</sender>
+   <signal>triggered()</signal>
+   <receiver>mapviz</receiver>
+   <slot>SaveConfig()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SelectNewDisplay()</slot>
@@ -802,6 +824,7 @@
   <slot>MoveDisplay(QModelIndexList)</slot>
   <slot>OpenConfig()</slot>
   <slot>SaveConfig()</slot>
+  <slot>SaveConfigAs()</slot>
   <slot>Force720p(bool)</slot>
   <slot>Force480p(bool)</slot>
   <slot>SetResizable(bool)</slot>

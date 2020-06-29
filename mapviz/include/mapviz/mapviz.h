@@ -87,6 +87,7 @@ namespace mapviz
     void AutoSave();
     void OpenConfig();
     void SaveConfig();
+    void SaveConfigAs();
     void ClearConfig();
     void SelectNewDisplay();
     void RemoveDisplay();
@@ -162,6 +163,8 @@ namespace mapviz
     bool force_480p_;
     bool resizable_;
     QColor background_;
+
+    std::string save_location_;
 
     std::string capture_directory_;
     QThread video_thread_;

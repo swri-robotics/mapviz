@@ -524,6 +524,7 @@ void Mapviz::AdjustWindowSize()
 void Mapviz::Open(const std::string& filename)
 {
   ROS_INFO("Loading configuration from: %s", filename.c_str());
+  save_location_ = filename;
 
   std::string title;
   size_t last_slash = filename.find_last_of('/');
@@ -876,6 +877,8 @@ void Mapviz::OpenConfig()
   QFileDialog dialog(this, "Select Config File");
   dialog.setFileMode(QFileDialog::ExistingFile);
   dialog.setNameFilter(tr("Mapviz Config Files (*.mvc)"));
+  std::string directory = save_location_.substr(0, save_location_.find_last_of('/') + 1);
+  dialog.setDirectory(QString(directory.c_str()));
 
   dialog.exec();
 
@@ -893,12 +896,24 @@ void Mapviz::ClearConfig()
 
 void Mapviz::SaveConfig()
 {
+  if (save_location_.length() == 0)
+  {
+    SaveConfigAs();
+    return;
+  }
+
+  Save(save_location_);
+}
+
+void Mapviz::SaveConfigAs()
+{
   QFileDialog dialog(this, "Save Config File");
   dialog.setFileMode(QFileDialog::AnyFile);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   dialog.setNameFilter(tr("Mapviz Config Files (*.mvc)"));
   dialog.setDefaultSuffix("mvc");
-
+  std::string directory = save_location_.substr(0, save_location_.find_last_of('/') + 1);
+  dialog.setDirectory(QString(directory.c_str()));
   dialog.exec();
 
   if (dialog.result() == QDialog::Accepted && dialog.selectedFiles().count() == 1)
@@ -919,6 +934,7 @@ void Mapviz::SaveConfig()
     title += " - mapviz";
     setWindowTitle(QString::fromStdString(title));
     Save(path);
+    save_location_ = path;
   }
 }
 
