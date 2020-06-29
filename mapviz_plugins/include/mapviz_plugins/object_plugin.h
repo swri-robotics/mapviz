@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -89,7 +89,6 @@ namespace mapviz_plugins
     void SelectTopic();
     void TopicEdited();
     void SetColor(const QColor& color);
-    void showIdsToggled(bool value);
 
   private:
     struct Color

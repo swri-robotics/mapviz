@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2020, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,6 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    QObject::connect(ui_.show_ids, SIGNAL(toggled(bool)), this, SLOT(showIdsToggled(bool)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
 
@@ -73,11 +72,6 @@ namespace mapviz_plugins
 
   ObjectPlugin::~ObjectPlugin()
   {
-  }
-
-  void ObjectPlugin::showIdsToggled(bool value)
-  {
-
   }
 
   void ObjectPlugin::SetColor(const QColor& color)
@@ -304,26 +298,19 @@ namespace mapviz_plugins
 
   void ObjectPlugin::Draw(double x, double y, double scale)
   {
-    auto objIter = objects_.begin();
-    while (objIter != objects_.end())
+    for (const auto& obj: objects_)
     {
-      const ObjectData& obj = *objIter;
-
-      if (!obj.transformed) {
-        objIter++;
+      if (!obj.transformed)
+      {
         continue;
       }
 
       glColor4f(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
 
-      //glColor4f(marker.color.r, marker.color.g, marker.color.b, marker.color.a);
-
-      glLineWidth(3.0);//marker.scale_x);
+      glLineWidth(3.0);
       glBegin(GL_LINE_STRIP);
 
       for (const auto &point : obj.polygon) {
-        //glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
-
         glVertex2d(
           point.transformed_point.getX(),
           point.transformed_point.getY());
@@ -331,7 +318,6 @@ namespace mapviz_plugins
 
       glEnd();
 
-      objIter++;
       PrintInfo("OK");
     }
   }
@@ -358,17 +344,13 @@ namespace mapviz_plugins
     painter->save();
     painter->resetTransform();
 
-    for (auto objIter = objects_.begin(); objIter != objects_.end(); ++objIter)
+    for (const auto& obj: objects_)
     {
-      const ObjectData& obj = *objIter;
-
       if (!obj.transformed)
       {
         continue;
       }
 
-      //QPen pen(QBrush(QColor::fromRgbF(marker.color.r, marker.color.g,
-      //                       marker.color.b, marker.color.a)), 1);
       QPen pen(QBrush(QColor::fromRgbF(0, 0, 0, 1)), 1);
       painter->setPen(pen);
 
@@ -390,10 +372,8 @@ namespace mapviz_plugins
 
   void ObjectPlugin::Transform()
   {
-    for (auto objIter = objects_.begin(); objIter != objects_.end(); ++objIter)
+    for (auto& obj: objects_)
     {
-      ObjectData& obj = *objIter;
-
       swri_transform_util::Transform transform;
       if (GetTransform(obj.source_frame, obj.stamp, transform))
       {
