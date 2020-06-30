@@ -79,5 +79,8 @@
   <class name="mapviz_plugins/occupancy_grid" type="mapviz_plugins::OccupancyGridPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Display maps and other OccupancyGrids</description>
   </class>
+  <class name="mapviz_plugins/object" type="mapviz_plugins::ObjectPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Display marti_nav_msgs::Obstacles and TrackedObjects</description>
+  </class>
 </library>
 

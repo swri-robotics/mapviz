@@ -104,6 +104,7 @@ set(UI_FILES
     ui/measuring_config.ui
     ui/move_base_config.ui
     ui/navsat_config.ui
+    ui/object_config.ui
     ui/occupancy_grid_config.ui
     ui/odometry_config.ui
     ui/path_config.ui
@@ -134,6 +135,7 @@ set(SRC_FILES
     src/measuring_plugin.cpp 
     src/move_base_plugin.cpp
     src/navsat_plugin.cpp
+    src/object_plugin.cpp
     src/occupancy_grid_plugin.cpp
     src/odometry_plugin.cpp 
     src/path_plugin.cpp
@@ -165,6 +167,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/measuring_plugin.h
     include/${PROJECT_NAME}/move_base_plugin.h
     include/${PROJECT_NAME}/navsat_plugin.h
+    include/${PROJECT_NAME}/object_plugin.h
     include/${PROJECT_NAME}/occupancy_grid_plugin.h
     include/${PROJECT_NAME}/odometry_plugin.h
     include/${PROJECT_NAME}/path_plugin.h
