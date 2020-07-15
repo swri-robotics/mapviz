@@ -202,8 +202,6 @@ namespace tile_map
         true);
 
     QNetworkReply *reply = network_manager_.get(request);
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
   }
 
   void ImageCache::ProcessReply(QNetworkReply* reply)
@@ -229,6 +227,7 @@ namespace tile_map
       }
       else
       {
+        ROS_ERROR("NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
         image->AddFailure();
       }
     }
@@ -244,12 +243,6 @@ namespace tile_map
     unprocessed_mutex_.unlock();
 
     reply->deleteLater();
-  }
-
-  void ImageCache::NetworkError(QNetworkReply::NetworkError error)
-  {
-    ROS_ERROR("NETWORK ERROR: %d", error);
-    // TODO add failure
   }
 
   const int CacheThread::MAXIMUM_SEQUENTIAL_REQUESTS = 12;
