@@ -2,6 +2,16 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Support ROS Noetic (`#696 <https://github.com/swri-robotics/mapviz/issues/696>`_)
+* Add Visualization for marti_nav_msgs::TrackedObjectArray and marti_nav_msgs::ObstacleArray (`#701 <https://github.com/swri-robotics/mapviz/issues/701>`_)
+* Merge pull request `#689 <https://github.com/swri-robotics/mapviz/issues/689>`_ from mdgrogan/update-distance-on-move-point
+* Use higher precision in the coordinate picker for wgs84 (`#692 <https://github.com/swri-robotics/mapviz/issues/692>`_)
+* Clear the namespace list after hitting the clear button. (`#691 <https://github.com/swri-robotics/mapviz/issues/691>`_)
+* Update the displayed distance continuously while moving a point.
+* Contributors: Matt Grogan, Matthew, P. J. Reed
+
 1.3.0 (2020-05-13)
 ------------------
 * Fix plan route visibility (`#680 <https://github.com/swri-robotics/mapviz/issues/680>`_)

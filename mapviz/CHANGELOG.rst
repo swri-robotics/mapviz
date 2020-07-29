@@ -2,6 +2,12 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Support ROS Noetic (`#696 <https://github.com/swri-robotics/mapviz/issues/696>`_)
+* Separate Save and Save As and open file dialogs in better locations. (`#700 <https://github.com/swri-robotics/mapviz/issues/700>`_)
+* Contributors: Matthew, P. J. Reed
+
 1.3.0 (2020-05-13)
 ------------------
 * Implement (`#671 <https://github.com/swri-robotics/mapviz/issues/671>`_)
