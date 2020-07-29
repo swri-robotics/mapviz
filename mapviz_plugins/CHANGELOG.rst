@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2020-07-28)
+------------------
 * Support ROS Noetic (`#696 <https://github.com/swri-robotics/mapviz/issues/696>`_)
 * Add Visualization for marti_nav_msgs::TrackedObjectArray and marti_nav_msgs::ObstacleArray (`#701 <https://github.com/swri-robotics/mapviz/issues/701>`_)
 * Merge pull request `#689 <https://github.com/swri-robotics/mapviz/issues/689>`_ from mdgrogan/update-distance-on-move-point

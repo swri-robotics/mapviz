@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2020-07-28)
+------------------
 * Support ROS Noetic (`#696 <https://github.com/swri-robotics/mapviz/issues/696>`_)
 * Contributors: P. J. Reed
 
