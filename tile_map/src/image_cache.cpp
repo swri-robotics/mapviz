@@ -227,7 +227,7 @@ namespace tile_map
       }
       else
       {
-        ROS_ERROR("NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
+        ROS_ERROR_THROTTLE(1.0, "NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
         image->AddFailure();
       }
     }
