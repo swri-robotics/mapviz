@@ -523,7 +523,7 @@ namespace mapviz_plugins
         glEnd();
       }
       else if (marker.display_type == visualization_msgs::Marker::POINTS) {
-        glLineWidth(std::max(1.0f, marker.scale_x));
+        glPointSize(std::max(1.0f, marker.scale_x));
         glBegin(GL_POINTS);
 
         for (const auto &point : marker.points) {
