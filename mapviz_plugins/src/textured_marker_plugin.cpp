@@ -312,7 +312,7 @@ namespace mapviz_plugins
         size_t expected = marker.image.height*marker.image.width*bpp;
         if (markerData.texture_.size() > 0 && marker.image.data.size() < expected)
         {
-          ROS_ERROR("TexturedMarker image had expected data size %i but only got %i. Dropping message.", expected, marker.image.data.size());
+          ROS_ERROR("TexturedMarker image had expected data size %zu but only got %zu. Dropping message.", expected, marker.image.data.size());
           return;
         }
 
