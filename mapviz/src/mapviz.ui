@@ -254,24 +254,6 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0" colspan="3">
-         <widget class="QCheckBox" name="uselatesttransforms">
-          <property name="toolTip">
-           <string>Use the current time when transforming data instead of using the
-                                                timestamps associated with the data
-                                            </string>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="text">
-           <string>Use Latest Transforms</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
      </item>
@@ -514,7 +496,6 @@
  <tabstops>
   <tabstop>fixedframe</tabstop>
   <tabstop>targetframe</tabstop>
-  <tabstop>uselatesttransforms</tabstop>
   <tabstop>bg_color</tabstop>
   <tabstop>configs</tabstop>
   <tabstop>addbutton</tabstop>
@@ -701,22 +682,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>uselatesttransforms</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>mapviz</receiver>
-   <slot>ToggleUseLatestTransforms(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>58</x>
-     <y>130</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>460</x>
-     <y>242</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionSet_Capture_Directory</sender>
    <signal>triggered()</signal>
    <receiver>mapviz</receiver>
@@ -828,7 +793,6 @@
   <slot>Force720p(bool)</slot>
   <slot>Force480p(bool)</slot>
   <slot>SetResizable(bool)</slot>
-  <slot>ToggleUseLatestTransforms(bool)</slot>
   <slot>SetCaptureDirectory()</slot>
   <slot>ToggleStatusBar(bool)</slot>
   <slot>ToggleCaptureTools(bool)</slot>

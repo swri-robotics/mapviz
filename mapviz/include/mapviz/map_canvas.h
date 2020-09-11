@@ -71,7 +71,6 @@ namespace mapviz
     void ToggleFixOrientation(bool on);
     void ToggleRotate90(bool on);
     void ToggleEnableAntialiasing(bool on);
-    void ToggleUseLatestTransforms(bool on);
     void UpdateView();
     void ReorderDisplays();
     void ResetLocation();
