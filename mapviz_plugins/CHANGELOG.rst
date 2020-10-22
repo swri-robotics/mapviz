@@ -2,6 +2,12 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Constrain the minimum line and point marker sizes to be 1 pixel wide. (`#704 <https://github.com/swri-robotics/mapviz/issues/704>`_)
+* Fix compile warning in ROS Noetic (`#706 <https://github.com/swri-robotics/mapviz/issues/706>`_)
+* Contributors: Marc Alban, P. J. Reed
+
 1.4.0 (2020-07-28)
 ------------------
 * Support ROS Noetic (`#696 <https://github.com/swri-robotics/mapviz/issues/696>`_)
