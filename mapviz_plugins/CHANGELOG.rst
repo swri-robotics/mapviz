@@ -2,6 +2,15 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Constrain the minimum line and point marker sizes to be 1 pixel wide. (`#704 <https://github.com/swri-robotics/mapviz/issues/704>`_)
+* ROS Foxy support (`#695 <https://github.com/swri-robotics/mapviz/issues/695>`_)
+* Update the displayed distance continuously while moving a point.
+* Use higher precision in the coordinate picker for wgs84 (`#692 <https://github.com/swri-robotics/mapviz/issues/692>`_)
+* Clear the namespace list after hitting the clear button. (`#691 <https://github.com/swri-robotics/mapviz/issues/691>`_)
+* Contributors: Matt Grogan, Matthew, P. J. Reed, Marc Alban
+
 2.0.0 (2020-05-13)
 ------------------
 * Port mapviz to ROS 2 (`#672 <https://github.com/swri-robotics/mapviz/issues/672>`_)
