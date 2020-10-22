@@ -302,12 +302,6 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
       glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-      size_t expected = marker.image.height*marker.image.width*bpp;
-      if (markerData.texture_.size() > 0 && marker.image.data.size() < expected)
-      {
-        RCLCPP_ERROR(node_->get_logger(), "TexturedMarker image had expected data size %zu but only got %zu. Dropping message.", expected, marker.image.data.size());
-        return;
-      }
 
       glBindTexture(GL_TEXTURE_2D, 0);
 
