@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2020-10-22)
+------------------
 * ROS Foxy support (`#695 <https://github.com/swri-robotics/mapviz/issues/695>`_)
 * Contributors: P. J. Reed
 

@@ -1,6 +1,6 @@
 <package format="3">
   <name>tile_map</name>
-  <version>2.0.0</version>
+  <version>2.1.0</version>
   <description>
 
      Tile map provides a slippy map style interface for visualizing 

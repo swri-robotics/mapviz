@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2020-10-22)
+------------------
 * Constrain the minimum line and point marker sizes to be 1 pixel wide. (`#704 <https://github.com/swri-robotics/mapviz/issues/704>`_)
 * ROS Foxy support (`#695 <https://github.com/swri-robotics/mapviz/issues/695>`_)
 * Update the displayed distance continuously while moving a point.
