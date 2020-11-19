@@ -38,6 +38,7 @@
 #include <QNetworkDiskCache>
 #include <QUrl>
 
+#include <rclcpp/clock.hpp>
 #include <rclcpp/logging.hpp>
 
 namespace tile_map
@@ -205,7 +206,7 @@ namespace tile_map
         QNetworkRequest::HttpPipeliningAllowedAttribute,
         true);
 
-    QNetworkReply *reply = network_manager_.get(request);
+    network_manager_.get(request);
   }
 
   void ImageCache::ProcessReply(QNetworkReply* reply)
@@ -231,7 +232,8 @@ namespace tile_map
       }
       else
       {
-        RCLCPP_ERROR_THROTTLE(logger_, 1.0, "NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
+        auto steady_clock = rclcpp::Clock();
+        RCLCPP_ERROR_THROTTLE(logger_, steady_clock, 1.0, "NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
         image->AddFailure();
       }
     }
