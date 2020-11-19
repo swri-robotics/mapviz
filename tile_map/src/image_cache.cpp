@@ -231,7 +231,7 @@ namespace tile_map
       }
       else
       {
-        RCLCPP_ERROR_THROTTLE(1.0, "NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
+        RCLCPP_ERROR_THROTTLE(logger_, 1.0, "NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
         image->AddFailure();
       }
     }
