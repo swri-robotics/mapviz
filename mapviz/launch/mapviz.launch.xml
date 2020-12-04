@@ -1,8 +1,9 @@
 <launch>
+  <!-- Note that the XML-based launch format is only supported in ROS Eloquent and newer. -->
 
-  <node pkg="mapviz" exec="mapviz" name="mapviz"></node>
+  <node pkg="mapviz" exec="mapviz" name="mapviz"/>
 
-  <node pkg="swri_transform_util" exec="initialize_origin.py" name="initialize_origin" >
+  <node pkg="swri_transform_util" exec="initialize_origin.py" name="initialize_origin">
     <param name="local_xy_frame" value="map"/>
     <param name="local_xy_origin" value="swri"/>
     <param name="local_xy_origins" value="
@@ -19,8 +20,8 @@
          heading: 0.0}]"/>
   </node>
 
-  <node pkg="tf" type="static_transform_publisher" name="swri_transform" args="0 0 0 0 0 0 /map /origin 100"  />
-
-
-
+  <node pkg="tf2_ros"
+        exec="static_transform_publisher"
+        name="swri_transform"
+        args="0 0 0 0 0 0 map origin"/>
 </launch>

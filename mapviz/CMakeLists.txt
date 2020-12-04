@@ -201,7 +201,6 @@ install(TARGETS ${PROJECT_NAME} rqt_${PROJECT_NAME}
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
-  FILES_MATCHING PATTERN ".py" PATTERN ".launch"
 )
 
 install(FILES plugin.xml
