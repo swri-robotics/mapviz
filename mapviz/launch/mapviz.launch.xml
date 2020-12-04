@@ -1,4 +1,5 @@
 <launch>
+  <!-- Note that the XML-based launch format is only supported in ROS Eloquent and newer. -->
 
   <node pkg="mapviz" exec="mapviz" name="mapviz"/>
 

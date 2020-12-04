@@ -41,7 +41,7 @@
   <depend>tf2_ros</depend>
   <depend>yaml-cpp</depend>
 
-  <exec_depend>launch_xml</exec_depend>
+  <exec_depend condition="$ROS_DISTRO != dashing">launch_xml</exec_depend>
   <exec_depend>libqt5-opengl</exec_depend>
 
   <export>
