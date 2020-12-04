@@ -3,21 +3,22 @@ import launch.actions
 import launch.substitutions
 import launch_ros.actions
 
+
 def generate_launch_description():
     return launch.LaunchDescription([
         launch_ros.actions.Node(
             package="mapviz",
-            node_executable="mapviz",
-            node_name="mapviz",
+            executable="mapviz",
+            name="mapviz",
         ),
         launch_ros.actions.Node(
             package="swri_transform_util",
-            node_executable="initialize_origin.py",
-            node_name="initialize_origin",
+            executable="initialize_origin.py",
+            name="initialize_origin",
             parameters=[
                 {"name": "local_xy_frame", "value": "map"},
                 {"name": "local_xy_origin", "value": "swri"},
-                {"name": "local_xy_origins", "value": [
+                {"name": "local_xy_origins", "value": """[
                     {"name": "swri",
                         "latitude": 29.45196669,
                         "longitude": -98.61370577,
@@ -28,13 +29,13 @@ def generate_launch_description():
                         "longitude": -98.629367,
                         "altitude": 200.0,
                         "heading": 0.0}
-                ]}
+                ]"""}
             ]
         ),
         launch_ros.actions.Node(
-            package="tf2",
-            node_executable="static_transform_publisher",
-            node_name="swri_transform",
-            arguments="0 0 0 0 0 0 /map /origin 100"
+            package="tf2_ros",
+            executable="static_transform_publisher",
+            name="swri_transform",
+            arguments=["0", "0", "0", "0", "0", "0", "map", "origin"]
         )
     ])
