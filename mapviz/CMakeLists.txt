@@ -1,14 +1,26 @@
-cmake_minimum_required(VERSION 3.10)
+### SET CMAKE POLICIES ###
+cmake_minimum_required(VERSION 3.10...3.17)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+endif()
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
+if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+  cmake_policy(SET CMP0072 NEW)
+endif()
+
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+### END CMAKE POLICIES ###
 
-project(mapviz)
+project(mapviz 
+  DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
+  LANGUAGES CXX)
 
 ### ROS Packages ###
 find_package(ament_cmake REQUIRED)
@@ -55,9 +67,6 @@ add_definitions(-DWFlags=WindowFlags)
 set(QT_USE_QTOPENGL TRUE)
 
 ### OpenGL ###
-if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  cmake_policy(SET CMP0072 NEW)
-endif()
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
@@ -69,14 +78,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(include)
-include_directories(SYSTEM
-  ${Qt_INCLUDE_DIRS}
-  ${OpenGL_INCLUDE_DIR}
-  ${GLEW_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${YamlCpp_INCLUDE_DIR}
-)
 
 # Qt UI files
 set(UI_FILES
@@ -122,6 +123,12 @@ add_library(rqt_${PROJECT_NAME}
   ${SRC_FILES}
   ${RCC_SRCS}
 )
+target_include_directories(rqt_${PROJECT_NAME} 
+  PUBLIC
+    include
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_definitions(rqt_${PROJECT_NAME}
   PRIVATE
     USE_NEW_TF2_TOMSG=${USE_NEW_TF2_TOMSG}
@@ -129,8 +136,12 @@ target_compile_definitions(rqt_${PROJECT_NAME}
 target_link_libraries(rqt_${PROJECT_NAME}
   OpenGL::GL
   ${GLUT_LIBRARY}
-  ${GLEW_LIBRARIES}
-  ${OpenCV_LIBS}
+  GLEW::GLEW
+  opencv_core
+  opencv_highgui
+  opencv_imgproc
+  opencv_imgcodecs
+  opencv_videoio
   ${YamlCpp_LIBRARIES}
   Qt5::Concurrent
   Qt5::Core
@@ -165,13 +176,8 @@ add_executable(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
   rqt_${PROJECT_NAME}
-  ${Qt_LIBRARIES}
   ${Boost_LIBRARIES}
-  ${OpenGL_LIBRARY}
-  ${GLUT_LIBRARY}
-  ${GLEW_LIBRARIES}
   ${GLU_LIBRARY}
-  ${OpenCV_LIBRARIES}
 )
 ament_target_dependencies(${PROJECT_NAME}
   swri_math_util
@@ -195,7 +201,6 @@ install(TARGETS ${PROJECT_NAME} rqt_${PROJECT_NAME}
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
-  FILES_MATCHING PATTERN ".py" PATTERN ".launch"
 )
 
 install(FILES plugin.xml

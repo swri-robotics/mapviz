@@ -1,14 +1,25 @@
-cmake_minimum_required(VERSION 3.10)
+### SET CMAKE POLICIES ###
+cmake_minimum_required(VERSION 3.10...3.17)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+endif()
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
+if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+  cmake_policy(SET CMP0072 NEW)
+endif()
+
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+### END CMAKE POLICIES ###
 
-project(mapviz_plugins)
+project(mapviz_plugins
+  LANGUAGES CXX)
 
 # Ros Packages
 find_package(ament_cmake REQUIRED)
@@ -48,9 +59,6 @@ add_definitions(-DWFlags=WindowFlags)
 find_package(OpenCV COMPONENTS core imgproc REQUIRED)
 
 ### OpenGL ###
-if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  cmake_policy(SET CMP0072 NEW)
-endif()
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
@@ -59,10 +67,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(include)
-include_directories(SYSTEM
-  ${OpenCV_INCLUDE_DIRS}
-)
 
 set(UI_FILES
     ui/attitude_indicator_config.ui
@@ -163,7 +167,12 @@ add_library(${PROJECT_NAME} SHARED
     ${SRC_FILES}
     ${UI_SRC_FILES}
 )
-target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_include_directories(${PROJECT_NAME} 
+  PUBLIC
+    include)
+target_compile_definitions(${PROJECT_NAME}
+  PUBLIC
+    "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 ament_target_dependencies(${PROJECT_NAME}
     ament_cmake
     ament_index_cpp
@@ -199,7 +208,9 @@ target_link_libraries(${PROJECT_NAME}
     Qt5::Widgets
     ${GLU_LIBRARY}
     ${GLUT_LIBRARY}
-    ${OpenCV_LIBS}
+    opencv_core
+    opencv_imgproc
+    opencv_highgui
 )
 
 ### Install the plugins ###

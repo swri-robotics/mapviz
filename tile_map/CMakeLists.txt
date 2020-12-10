@@ -1,13 +1,25 @@
-cmake_minimum_required(VERSION 3.10)
-project(tile_map)
+### SET CMAKE POLICIES ###
+cmake_minimum_required(VERSION 3.10...3.17)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+endif()
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
+if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+  cmake_policy(SET CMP0072 NEW)
+endif()
+
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+### END CMAKE POLICIES ###
+
+project(tile_map
+  LANGUAGES CXX)
 
 # ROS packages
 find_package(ament_cmake REQUIRED)
@@ -28,9 +40,6 @@ find_package(Qt5Widgets REQUIRED)
 # add_definitions(-DWFlags=WindowFlags)
 
 ### OpenGL ###
-if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  cmake_policy(SET CMP0072 NEW)
-endif()
 find_package(OpenGL REQUIRED)
 
 ### GLEW ###
@@ -50,12 +59,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(include)
-include_directories(SYSTEM
-  ${GLEW_INCLUDE_DIRS}
-  ${JSONCPP_INCLUDE_DIRS}
-  ${YamlCpp_INCLUDE_DIRS}
-)
 
 set(TILE_SRC_FILES
   src/image_cache.cpp
@@ -73,6 +76,14 @@ set(QT_HEADERS
 )
 qt5_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+    include)
+target_include_directories(${PROJECT_NAME} SYSTEM
+  PUBLIC
+    GLEW::GLEW
+    ${JSONCPP_INCLUDE_DIRS}
+    ${YamlCpp_INCLUDE_DIRS})
 ament_target_dependencies(${PROJECT_NAME}
   ament_cmake
   mapviz

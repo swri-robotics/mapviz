@@ -1,13 +1,25 @@
-cmake_minimum_required(VERSION 3.10)
+### SET CMAKE POLICIES ###
+cmake_minimum_required(VERSION 3.10...3.17)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+endif()
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
+if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+  cmake_policy(SET CMP0072 NEW)
+endif()
+
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-project(multires_image)
+### END CMAKE POLICIES ###
+
+project(multires_image
+  LANGUAGES CXX)
 
 find_package(ament_cmake REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -23,9 +35,6 @@ find_package(swri_math_util REQUIRED)
 find_package(Boost REQUIRED filesystem thread)
 
 ### OpenGL ###
-if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  cmake_policy(SET CMP0072 NEW)
-endif()
 find_package(OpenGL REQUIRED)
 
 ### OpenCV ###
@@ -40,10 +49,6 @@ find_package(Qt5Widgets REQUIRED)
 add_definitions(-DWFlags=WindowFlags)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(include)
-include_directories(SYSTEM
-  ${OpenCV_INCLUDE_DIRS}
-)
 
 # Build libtile_cache
 set(TILE_SRC_FILES 
@@ -57,6 +62,9 @@ qt5_wrap_cpp(TILE_SRC_FILES include/${PROJECT_NAME}/tile_cache.h)
 add_library(${PROJECT_NAME} 
   ${TILE_SRC_FILES}
 )
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+    include)
 target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   OpenGL::GL

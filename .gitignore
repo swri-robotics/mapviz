@@ -19,4 +19,5 @@ cmake-build-debug/
 .vscode/
 Gemfile.lock
 _site/
+venv/
 __pycache__/
