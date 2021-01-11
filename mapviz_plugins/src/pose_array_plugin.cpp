@@ -31,8 +31,8 @@
 #include <mapviz_plugins/pose_array_plugin.h>
 
 // C++ standard libraries
-#include <cstdio>
-#include <vector>
+//#include <cstdio>
+//#include <vector>
 
 // QT libraries
 #include <QDialog>
@@ -134,7 +134,7 @@ namespace mapviz_plugins
   {  
     if (!has_message_)
     {
-      initialized_ = true;
+      initialized_ = true; // callback won't draw till this is true
       has_message_ = true;
     }
 
