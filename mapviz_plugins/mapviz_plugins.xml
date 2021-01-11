@@ -70,6 +70,9 @@
   <class name="mapviz_plugins/point_click_publisher" type="mapviz_plugins::PointClickPublisherPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Publishes a StampedPoint when a point on the map canvas is clicked.</description>
   </class>
+  <class name="mapviz_plugins/pose_publisher" type="mapviz_plugins::PosePublisherPlugin" base_class_type="mapviz::MapvizPlugin">
+      <description>Publishes a PoseWithCovarianceStamped when a point on the map canvas is clicked.  Orientation is set by dragging away from that point and releasing the mouse button.</description>
+  </class>
   <class name="mapviz_plugins/string" type="mapviz_plugins::StringPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Displays a std_msgs/String at a fixed point on the canvas.</description>
   </class>
