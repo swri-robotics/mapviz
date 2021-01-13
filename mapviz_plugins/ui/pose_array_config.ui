@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>pose_config</class>
+ <class>pose_array_config</class>
  <widget class="QWidget" name="pose_array_config">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>222</height>
+    <height>208</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -121,14 +121,20 @@
        <pointsize>9</pointsize>
       </font>
      </property>
+     <property name="currentText">
+      <string>arrows</string>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
      <item>
       <property name="text">
-       <string>points</string>
+       <string>arrows</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>arrows</string>
+       <string>points</string>
       </property>
      </item>
     </widget>
@@ -173,8 +179,8 @@
      </item>
     </layout>
    </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_4">
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
        <family>Sans Serif</family>
@@ -182,9 +188,41 @@
       </font>
      </property>
      <property name="text">
-      <string>Position Tolerance:</string>
+      <string>Status:</string>
      </property>
     </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QLabel" name="status">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>No topic</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item row="5" column="1">
     <widget class="QDoubleSpinBox" name="positiontolerance">
@@ -205,8 +243,8 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_6">
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_4">
      <property name="font">
       <font>
        <family>Sans Serif</family>
@@ -214,95 +252,9 @@
       </font>
      </property>
      <property name="text">
-      <string>Buffer Size:</string>
+      <string>Position Tolerance:</string>
      </property>
     </widget>
-   </item>
-   <item row="6" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QSpinBox" name="buffersize">
-       <property name="buttonSymbols">
-        <enum>QAbstractSpinBox::PlusMinus</enum>
-       </property>
-       <property name="maximum">
-        <number>99999999</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="buttonResetBuffer">
-       <property name="maximumSize">
-        <size>
-         <width>55</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Clear</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>Show Laps</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="QCheckBox" name="show_laps">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Status:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="QLabel" name="status">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>No topic</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="1">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

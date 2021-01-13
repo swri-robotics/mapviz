@@ -76,8 +76,6 @@ namespace mapviz_plugins
                      SLOT(TopicEdited()));
     QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this,
                      SLOT(PositionToleranceChanged(double)));
-    QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this,
-                     SLOT(BufferSizeChanged(int)));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
                      SLOT(SetDrawStyle(QString)));
     QObject::connect(ui_.static_arrow_sizes, SIGNAL(clicked(bool)),
@@ -86,10 +84,6 @@ namespace mapviz_plugins
                      this, SLOT(SetArrowSize(int)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
-    QObject::connect(ui_.show_laps, SIGNAL(toggled(bool)), this,
-            SLOT(LapToggled(bool)));
-    QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
-                     SLOT(ClearPoints()));
   }
 
   PoseArrayPlugin::~PoseArrayPlugin()
@@ -137,6 +131,8 @@ namespace mapviz_plugins
       initialized_ = true; // callback won't draw till this is true
       has_message_ = true;
     }
+
+    ClearPoints();
 
     StampedPoint stamped_point;
     for (unsigned int i=0 ; i < msg->poses.size(); i++)
@@ -220,15 +216,15 @@ namespace mapviz_plugins
       std::string draw_style;
       node["draw_style"] >> draw_style;
 
-      if (draw_style == "points")
+      if (draw_style == "arrows")
+      {
+        ui_.drawstyle->setCurrentIndex(0);
+        SetDrawStyle( ARROWS );
+      }
+      else if (draw_style == "points")
       {
         ui_.drawstyle->setCurrentIndex(1);
         SetDrawStyle( POINTS );
-      }
-      else if (draw_style == "arrows")
-      {
-        ui_.drawstyle->setCurrentIndex(2);
-        SetDrawStyle( ARROWS );
       }
     }
 
@@ -238,22 +234,6 @@ namespace mapviz_plugins
       node["position_tolerance"] >> position_tolerance;
       ui_.positiontolerance->setValue(position_tolerance);
       PositionToleranceChanged(position_tolerance);
-    }
-
-    if (node["buffer_size"])
-    {
-      double buffer_size;
-      node["buffer_size"] >> buffer_size;
-      ui_.buffersize->setValue(buffer_size);
-      BufferSizeChanged(buffer_size);
-    }
-
-    if (node["show_laps"])
-    {
-      bool show_laps = false;
-      node["show_laps"] >> show_laps;
-      ui_.show_laps->setChecked(show_laps);
-      LapToggled(show_laps);
     }
 
     if (node["static_arrow_sizes"])
@@ -270,7 +250,7 @@ namespace mapviz_plugins
       SetArrowSize(arrow_size);
     }
 
-    TopicEdited();
+    TopicEdited(); // forces redraw
   }
 
   void PoseArrayPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -286,11 +266,6 @@ namespace mapviz_plugins
 
     emitter << YAML::Key << "position_tolerance" <<
                YAML::Value << positionTolerance();
-
-    emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
-
-    bool show_laps = ui_.show_laps->isChecked();
-    emitter << YAML::Key << "show_laps" << YAML::Value << show_laps;
 
     emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
 

@@ -89,7 +89,7 @@ namespace mapviz_plugins
     void TopicEdited();
 
    private:
-    Ui::pose_config ui_;
+    Ui::pose_array_config ui_;
     QWidget* config_widget_;
 
     std::string topic_;
