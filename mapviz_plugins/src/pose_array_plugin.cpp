@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Trinity University
+ * Copyright 2021 Trinity University
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -29,24 +29,6 @@
  **/ 
 
 #include <mapviz_plugins/pose_array_plugin.h>
-
-// C++ standard libraries
-//#include <cstdio>
-//#include <vector>
-
-// QT libraries
-#include <QDialog>
-#include <QGLWidget>
-#include <QPalette>
-
-#include <opencv2/core/core.hpp>
-
-// ROS libraries
-#include <ros/master.h>
-
-#include <swri_image_util/geometry_util.h>
-#include <swri_transform_util/transform_util.h>
-#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
