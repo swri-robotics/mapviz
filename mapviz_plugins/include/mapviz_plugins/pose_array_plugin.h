@@ -37,11 +37,6 @@
 #include <mapviz/map_canvas.h>
 #include <mapviz_plugins/point_drawing_plugin.h>
 
-// C++ standard libraries
-#include <list>
-#include <string>
-#include <vector>
-
 // QT libraries
 #include <QGLWidget>
 #include <QObject>
