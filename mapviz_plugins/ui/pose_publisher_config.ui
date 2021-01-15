@@ -96,7 +96,7 @@
       </font>
      </property>
      <property name="text">
-      <string>clicked_point</string>
+      <string>/selected_pose</string>
      </property>
     </widget>
    </item>

@@ -29,29 +29,9 @@
 
 #include <mapviz_plugins/pose_publisher_plugin.h>
 
-// C++ standard libraries
-#include <cstdio>
-#include <vector>
-
-// QT libraries
-#include <QDateTime>
-#include <QDialog>
-#include <QGLWidget>
-#include <QMouseEvent>
-#include <QPainter>
-#include <QPalette>
-#include <QStaticText>
-#include <QDebug>
-#include <QSettings>
-#include <fstream>
-
-// ROS libraries
-#include <ros/master.h>
-#include <swri_transform_util/frames.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.h>
-
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PosePublisherPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
@@ -59,7 +39,7 @@ namespace mapviz_plugins
 
 PosePublisherPlugin::PosePublisherPlugin() :
     config_widget_(new QWidget()),
-    map_canvas_(NULL),
+    map_canvas_(nullptr),
     is_mouse_down_(false),
     monitoring_action_state_(false)
 {
@@ -202,26 +182,49 @@ bool PosePublisherPlugin::handleMouseRelease(QMouseEvent* event)
         return false;
     }
 
-    tf::Quaternion quat = tf::createQuaternionFromYaw(arrow_angle_);
 
     if( pose_checked )
     {
-        geometry_msgs::PoseWithCovarianceStamped pose;
-        pose.header.frame_id = target_frame_;
-        pose.header.stamp = ros::Time::now();
-        pose.pose.pose.position.x = arrow_tail_position_.x();
-        pose.pose.pose.position.y = arrow_tail_position_.y();
-        pose.pose.pose.position.z = 0.0;
-        tf::quaternionTFToMsg( quat, pose.pose.pose.orientation );
+      // Get angle/arrow_tail_position in fixed_frame
+      tf::Quaternion quat_ff = tf::createQuaternionFromYaw(arrow_angle_);
+      geometry_msgs::PoseWithCovarianceStamped pose;
 
-        pose_pub_.publish(pose);
-        ui_.pushButtonPose->setChecked(false);
+      // Here it is in the target_frame_
+      pose.header.frame_id = target_frame_;
+      pose.header.stamp = ros::Time::now();
+      pose.pose.pose.position.x = arrow_tail_position_.x();
+      pose.pose.pose.position.y = arrow_tail_position_.y();
+      pose.pose.pose.position.z = 0.0;
+      tf::quaternionTFToMsg( quat_ff, pose.pose.pose.orientation );
 
+      // Try to transform to output_frame
+      swri_transform_util::Transform transform;
+      std::string output_frame = ui_.outputframe->currentText().toStdString();
+      if (tf_manager_->GetTransform(output_frame, target_frame_, transform))
+        {
+        pose.header.frame_id = output_frame;
+        tf::Vector3 pose_oframe = transform * tf::Vector3(pose.pose.pose.position.x,
+                                                          pose.pose.pose.position.y, 0);
+        pose.pose.pose.position.x = pose_oframe.x();
+        pose.pose.pose.position.y = pose_oframe.y();
+        tf::Quaternion quat_oframe = transform * quat_ff;
+        tf::quaternionTFToMsg( quat_oframe, pose.pose.pose.orientation );
+        }
+      else
+        {
         std::stringstream ss;
-        ss << "Pose published to to topic: " <<  ui_.topic->text().toStdString().c_str()
-           << "in frame " << target_frame_;
-        PrintInfo(ss.str());
-        PrintInfoHelper( ui_.status, ss.str());
+        ss << "Couldn't get transform from "<< target_frame_
+           << " to frame " << output_frame;
+        PrintWarning(ss.str());
+        }
+
+      pose_pub_.publish(pose);
+      std::stringstream ss;
+      ss << "Pose published to topic: " <<  ui_.topic->text().toStdString().c_str()
+         << " in frame " << pose.header.frame_id;
+      PrintInfo(ss.str());
+
+      ui_.pushButtonPose->setChecked(false);
     }
     return true;
 }
@@ -325,14 +328,6 @@ void PosePublisherPlugin::on_pushButtonPose_toggled(bool checked)
     std::vector<std::string> frames;
     tf_->getFrameStrings(frames);
 
-    std::stringstream ss;
-    ss << "tf_ knows about: ";
-    for (auto f: frames)
-    {
-      ss << f << ", ";
-    }
-    PrintInfo(ss.str());
-
     bool supports_wgs84 = tf_manager_->SupportsTransform(
         swri_transform_util::_local_xy_frame,
         swri_transform_util::_wgs84_frame);
@@ -342,13 +337,6 @@ void PosePublisherPlugin::on_pushButtonPose_toggled(bool checked)
       frames.push_back(swri_transform_util::_wgs84_frame);
     }
 
-    ss.str(std::string()); // clear string
-    ss << "possibly including wgs84: ";
-    for (auto f: frames)
-    {
-      ss << f << ", ";
-    }
-    PrintInfo(ss.str());
 
     if (ui_.outputframe->count() >= 0 &&
         static_cast<size_t>(ui_.outputframe->count()) == frames.size())
@@ -363,42 +351,27 @@ void PosePublisherPlugin::on_pushButtonPose_toggled(bool checked)
       }
 
       if (!changed)
-        PrintInfo("frame not changed");
         return;
     }
 
-    std::string current_output = ui_.outputframe->currentText().toStdString();
-
-    ss.str(std::string()); // clear string
-    ss << "current_output = " << current_output;
-    PrintInfo(ss.str());
+    std::string output_frame = ui_.outputframe->currentText().toStdString();
 
     ui_.outputframe->clear();
     for (size_t i = 0; i < frames.size(); i++)
     {
       ui_.outputframe->addItem(frames[i].c_str());
-      ss.str(std::string()); // clear string
-      ss << "adding " << frames[i];
-      PrintInfo(ss.str());
     }
 
-    if (current_output != "")
+    if (output_frame != "")
     {
-      int index = ui_.outputframe->findText(current_output.c_str());
+      int index = ui_.outputframe->findText(output_frame.c_str());
       if (index < 0)
       {
-        ui_.outputframe->addItem(current_output.c_str());
+        ui_.outputframe->addItem(output_frame.c_str());
       }
 
-      index = ui_.outputframe->findText(current_output.c_str());
+      index = ui_.outputframe->findText(output_frame.c_str());
       ui_.outputframe->setCurrentIndex(index);
-      ss.str(std::string()); // clear string
-      ss << "setting frame to " << current_output;
-      PrintInfo(ss.str());
-    }
-    else
-    {
-    PrintInfo("current output is blank...");
     }
   }
 
