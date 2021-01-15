@@ -43,17 +43,14 @@ PosePublisherPlugin::PosePublisherPlugin() :
     is_mouse_down_(false),
     monitoring_action_state_(false)
 {
-    // TODO - make pose a field
-    //pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/selected_pose", 1, false);
-
     ui_.setupUi(config_widget_);
 
     // Set background white
     QPalette p(config_widget_->palette());
     p.setColor(QPalette::Background, Qt::white);
     config_widget_->setPalette(p);
-    // Set status text red
 
+    // Set status text green
     ui_.status->setText("OK");
     QPalette p3(ui_.status->palette());
     p3.setColor(QPalette::Text, Qt::green);
