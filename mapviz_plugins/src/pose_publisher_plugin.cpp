@@ -56,8 +56,8 @@ PosePublisherPlugin::PosePublisherPlugin() :
     p3.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.pushButtonPose, SIGNAL(toggled()),
-                     this, SLOT(on_pushButtonPose_toggled()));
+    QObject::connect(ui_.pushButtonPose, SIGNAL(toggled(bool)),
+                     this, SLOT(on_pushButtonPose_toggled(bool)));
 
     QObject::connect(ui_.topic, SIGNAL(textEdited(const QString&)),
             this, SLOT(topicChanged(const QString&)));
@@ -100,6 +100,8 @@ bool PosePublisherPlugin::Initialize(QGLWidget* canvas)
 {
     map_canvas_ = static_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
+
+    topicChanged(ui_.topic->text()); // set up the publish topic
     initialized_ = true;
     return true;
 }
@@ -122,7 +124,6 @@ bool PosePublisherPlugin::eventFilter(QObject *object, QEvent* event)
 void PosePublisherPlugin::timerCallback(const ros::TimerEvent &)
 {
   ui_.pushButtonPose->setEnabled( true );
-  PrintInfoHelper( ui_.status, "OK");
 }
 
 
@@ -215,6 +216,13 @@ bool PosePublisherPlugin::handleMouseRelease(QMouseEvent* event)
         PrintWarning(ss.str());
         }
 
+      if (pose_pub_==nullptr)
+        {
+        std::stringstream ss;
+        ss << "Attempting to publish to " <<  ui_.topic->text().toStdString().c_str()
+           << " but it's not set up...";
+        PrintError(ss.str());
+        }
       pose_pub_.publish(pose);
       std::stringstream ss;
       ss << "Pose published to topic: " <<  ui_.topic->text().toStdString().c_str()
@@ -334,7 +342,6 @@ void PosePublisherPlugin::on_pushButtonPose_toggled(bool checked)
       frames.push_back(swri_transform_util::_wgs84_frame);
     }
 
-
     if (ui_.outputframe->count() >= 0 &&
         static_cast<size_t>(ui_.outputframe->count()) == frames.size())
     {
@@ -360,16 +367,25 @@ void PosePublisherPlugin::on_pushButtonPose_toggled(bool checked)
     }
 
     if (output_frame != "")
-    {
+      {
+      // Add output_frame to frame list if no already there.
       int index = ui_.outputframe->findText(output_frame.c_str());
       if (index < 0)
-      {
+        {
         ui_.outputframe->addItem(output_frame.c_str());
-      }
+        }
 
+      // Get index of output_frame in list
       index = ui_.outputframe->findText(output_frame.c_str());
       ui_.outputframe->setCurrentIndex(index);
-    }
+      }
+    // output_frame is ""
+    else  // use map frame
+      {
+      PrintWarning("using map target frame as fallback");
+      int index = ui_.outputframe->findText(QString("map"));
+      ui_.outputframe->setCurrentIndex(index);
+      }
   }
 
 }
