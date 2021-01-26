@@ -1,0 +1,5 @@
+<library path="lib/libfollow_waypoints_mapviz_plugin">
+  <class name="mapviz_plugins/follow_waypoints" type="mapviz_plugins::FollowWaypointsPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Follow waypoints mapviz plugin.</description>
+  </class>
+</library>
