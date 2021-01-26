@@ -114,6 +114,10 @@ namespace mapviz_plugins
       has_message_ = true;
     }
 
+    std::stringstream ss;
+    ss << "Got PoseArray of size "<< msg->poses.size();
+    PrintWarning(ss.str());
+
     ClearPoints();
 
     StampedPoint stamped_point;
@@ -134,7 +138,12 @@ namespace mapviz_plugins
                 pose.orientation.w);
 
         pushPoint( std::move( stamped_point) );
+        std::stringstream ss;
+        ss << "Pushing point "<< i ;
+        PrintWarning(ss.str());
     }
+
+    TopicEdited(); // forces redraw
   }
 
   void PoseArrayPlugin::PrintError(const std::string& message)
