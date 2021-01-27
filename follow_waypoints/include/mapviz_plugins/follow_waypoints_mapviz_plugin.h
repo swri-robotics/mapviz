@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_PLUGINS_FOLLOW_WAYPOINTS_PLUGIN_H_
-#define MAPVIZ_PLUGINS_FOLLOW_WAYPOINTS_PLUGIN_H_
+#ifndef MAPVIZ_PLUGINS_FOLLOW_WAYPOINTS_MAPVIZ_PLUGIN_H_
+#define MAPVIZ_PLUGINS_FOLLOW_WAYPOINTS_MAPVIZ_PLUGIN_H_
 
 // Mapviz libraries
 #include <mapviz/mapviz_plugin.h>
@@ -88,4 +88,4 @@ namespace mapviz_plugins
   };
 }
 
-#endif // MAPVIZ_PLUGINS_FOLLOW_WAYPOINTS_PLUGIN_H_
+#endif // MAPVIZ_PLUGINS_FOLLOW_WAYPOINTS_MAPVIZ_PLUGIN_H_

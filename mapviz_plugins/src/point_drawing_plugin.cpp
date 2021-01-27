@@ -101,7 +101,7 @@ namespace mapviz_plugins
         pen.setWidth(2);
         pen.setCapStyle(Qt::SquareCap);
         painter.setPen(pen);
-        painter.drawLine(2, 13, 13, 2);
+        rainter.drawLine(2, 13, 13, 2);
         painter.drawLine(13, 2, 13, 8);
         painter.drawLine(13, 2, 7, 2);
       }
@@ -184,7 +184,7 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::pushPoint(PointDrawingPlugin::StampedPoint stamped_point)
   {
-    cur_point_ = stamped_point;
+    cur_point_ = stamped_point; // most recent point pushed?k
 
     if (points_.empty() ||
         (stamped_point.point.distance(points_.back().point)) >=

@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/follow_waypoints_plugin.h>
+#include <mapviz_plugins/follow_waypoints_mapviz_plugin.h>
 
 
 // Declare plugin

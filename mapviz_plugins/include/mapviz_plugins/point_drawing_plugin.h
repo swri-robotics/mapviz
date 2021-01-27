@@ -121,7 +121,7 @@ namespace mapviz_plugins
    private:
     int arrow_size_;
     DrawStyle draw_style_;
-    StampedPoint cur_point_;
+    StampedPoint cur_point_; // most recent point pushed to points_ (?)
     std::deque<StampedPoint> points_;
     double position_tolerance_;
     int buffer_size_;
