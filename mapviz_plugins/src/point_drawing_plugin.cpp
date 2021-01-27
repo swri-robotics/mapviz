@@ -101,7 +101,7 @@ namespace mapviz_plugins
         pen.setWidth(2);
         pen.setCapStyle(Qt::SquareCap);
         painter.setPen(pen);
-        rainter.drawLine(2, 13, 13, 2);
+        painter.drawLine(2, 13, 13, 2);
         painter.drawLine(13, 2, 13, 8);
         painter.drawLine(13, 2, 7, 2);
       }

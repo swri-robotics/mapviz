@@ -58,7 +58,7 @@ set(SRC_FILES
   src/follow_waypoints_mapviz_plugin.cpp
 )
 set(HEADER_FILES
-    include/mapviz_plugins/follow_waypoints_mapviz_plugin.h
+    include/follow_waypoints_mapviz_plugin.h
 )
 
 qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
