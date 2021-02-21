@@ -95,6 +95,12 @@ catkin_package(
 # Fix conflict between Boost signals used by tf and QT signals used by mapviz
 add_definitions(-DQT_NO_KEYWORDS)
 
+# If using <= kinetic, require C++11, otherwise default to C++14
+if ($ENV{ROS_DISTRO} STREQUAL "kinetic" OR $ENV{ROS_DISTRO} STRLESS "kinetic")
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
@@ -168,7 +174,7 @@ add_dependencies(rqt_${PROJECT_NAME}
   ${catkin_EXPORTED_TARGETS}
 )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )
 add_dependencies(rqt_${PROJECT_NAME}
   ${PROJECT_NAME}_gencpp
@@ -193,7 +199,7 @@ add_dependencies(${PROJECT_NAME}
   ${catkin_EXPORTED_TARGETS}
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-std=c++11 -D__STDC_FORMAT_MACROS"
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
 )
 add_dependencies(${PROJECT_NAME}
   ${PROJECT_NAME}_gencpp
