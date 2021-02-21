@@ -70,6 +70,12 @@ catkin_package(
     tf
 )
 
+# If using <= kinetic, require C++11, otherwise default to C++14
+if ($ENV{ROS_DISTRO} STREQUAL "kinetic" OR $ENV{ROS_DISTRO} STRLESS "kinetic")
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(include)
 include_directories(SYSTEM
