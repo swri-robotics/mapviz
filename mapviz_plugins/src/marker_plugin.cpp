@@ -595,6 +595,18 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
+    for (size_t i = 0; i < ui_.nsList->count(); i++)
+    {
+      if (ui_.nsList->item(i)->checkState() == Qt::Checked)
+      {
+        marker_visible_[ui_.nsList->item(i)->text().toStdString()] = true;
+      }
+      else
+      {
+        marker_visible_[ui_.nsList->item(i)->text().toStdString()] = false;
+      }
+    }
+
     // Most of the marker drawing is done using OpenGL commands, but text labels
     // are rendered using a QPainter.  This is intended primarily as an example
     // of how the QPainter works.
@@ -617,6 +629,11 @@ namespace mapviz_plugins
       if (marker.display_type != visualization_msgs::Marker::TEXT_VIEW_FACING ||
           marker.expire_time <= now ||
           !marker.transformed)
+      {
+        continue;
+      }
+
+      if (!marker_visible_[markerIter->first.first])
       {
         continue;
       }
