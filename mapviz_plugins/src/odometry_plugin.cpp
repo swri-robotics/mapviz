@@ -81,6 +81,8 @@ namespace mapviz_plugins
                      SLOT(SetDrawStyle(QString)));
     QObject::connect(ui_.static_arrow_sizes, SIGNAL(clicked(bool)),
                      this, SLOT(SetStaticArrowSizes(bool)));
+    QObject::connect(ui_.use_latest_transforms, SIGNAL(clicked(bool)),
+                     this, SLOT(SetUseLatestTransforms(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
@@ -150,6 +152,11 @@ namespace mapviz_plugins
     StampedPoint stamped_point;
     stamped_point.stamp = odometry->header.stamp;
     stamped_point.source_frame = odometry->header.frame_id;
+
+    if (!points().empty() && points().back().source_frame != stamped_point.source_frame)
+    {
+      single_frame_ = false;
+    }
 
     stamped_point.point = tf::Point(odometry->pose.pose.position.x,
                                     odometry->pose.pose.position.y,
@@ -371,6 +378,13 @@ namespace mapviz_plugins
       SetArrowSize(arrow_size);
     }
 
+    if (node["use_latest_transforms"])
+    {
+      bool use_latest_transforms = node["use_latest_transforms"].as<bool>();
+      ui_.use_latest_transforms->setChecked(use_latest_transforms);
+      SetUseLatestTransforms(use_latest_transforms);
+    }
+
     if (node["show_timestamps"])
     {
       ui_.show_timestamps->setValue(node["show_timestamps"].as<int>());
@@ -408,6 +422,8 @@ namespace mapviz_plugins
     emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
+
+    emitter << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.use_latest_transforms->isChecked();
 
     emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
   }

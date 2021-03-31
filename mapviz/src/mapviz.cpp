@@ -690,14 +690,6 @@ void Mapviz::Open(const std::string& filename)
       node_->setParam(IMAGE_TRANSPORT_PARAM, image_transport);
     }
 
-    bool use_latest_transforms = true;
-    if (swri_yaml_util::FindValue(doc, "use_latest_transforms"))
-    {
-      doc["use_latest_transforms"] >> use_latest_transforms;
-    }
-    ui_.uselatesttransforms->setChecked(use_latest_transforms);
-    canvas_->ToggleUseLatestTransforms(use_latest_transforms);
-
     if (swri_yaml_util::FindValue(doc, "background"))
     {
       std::string color;
@@ -790,7 +782,6 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "view_scale" << YAML::Value << canvas_->ViewScale();
   out << YAML::Key << "offset_x" << YAML::Value << canvas_->OffsetX();
   out << YAML::Key << "offset_y" << YAML::Value << canvas_->OffsetY();
-  out << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.uselatesttransforms->isChecked();
   out << YAML::Key << "background" << YAML::Value << background_.name().toStdString();
   std::string image_transport;
   if (node_->getParam(IMAGE_TRANSPORT_PARAM, image_transport))
@@ -1216,7 +1207,6 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   // Add plugin to canvas
   plugin->SetTargetFrame(ui_.fixedframe->currentText().toStdString());
-  plugin->SetUseLatestTransforms(ui_.uselatesttransforms->isChecked());
   plugins_[item] = plugin;
   canvas_->AddPlugin(plugin, -1);
 
@@ -1264,11 +1254,6 @@ void Mapviz::TargetFrameSelected(const QString& text)
       canvas_->SetTargetFrame(text.toStdString().c_str());
     }
   }
-}
-
-void Mapviz::ToggleUseLatestTransforms(bool on)
-{
-  canvas_->ToggleUseLatestTransforms(on);
 }
 
 void Mapviz::ToggleFixOrientation(bool on)

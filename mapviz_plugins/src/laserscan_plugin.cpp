@@ -362,18 +362,7 @@ namespace mapviz_plugins
 
   bool LaserScanPlugin::GetScanTransform(const Scan& scan, swri_transform_util::Transform& transform)
   {
-      bool was_using_latest_transforms = this->use_latest_transforms_;
-      //Try first with use_latest_transforms_ = false
-      this->use_latest_transforms_ = false;
       bool has_tranform = GetTransform(scan.source_frame_, scan.stamp, transform);
-      if( !has_tranform && was_using_latest_transforms)
-      {
-          //If failed use_latest_transforms_ = true
-          this->use_latest_transforms_ = true;
-          has_tranform = GetTransform(scan.source_frame_, scan.stamp, transform);
-      }
-
-      this->use_latest_transforms_ = was_using_latest_transforms;
       return has_tranform;
   }
 

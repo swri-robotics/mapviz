@@ -64,6 +64,8 @@ namespace mapviz_plugins
                      SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this,
                      SLOT(TopicEdited()));
+    QObject::connect(ui_.use_latest_transforms, SIGNAL(clicked(bool)),
+                     this, SLOT(SetUseLatestTransforms(bool)));
     QObject::connect(ui_.positiontolerance, SIGNAL(valueChanged(double)), this,
                      SLOT(PositionToleranceChanged(double)));
     QObject::connect(ui_.buffersize, SIGNAL(valueChanged(int)), this,
@@ -212,6 +214,13 @@ namespace mapviz_plugins
       }
     }
 
+    if (node["use_latest_transforms"])
+    {
+      bool use_latest_transforms = node["use_latest_transforms"].as<bool>();
+      ui_.use_latest_transforms->setChecked(use_latest_transforms);
+      SetUseLatestTransforms(use_latest_transforms);
+    }
+
     if (node["position_tolerance"])
     {
       double position_tolerance;
@@ -241,6 +250,8 @@ namespace mapviz_plugins
 
     std::string draw_style = ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
+
+    emitter << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.use_latest_transforms->isChecked();
 
     emitter << YAML::Key << "position_tolerance" <<
                YAML::Value << positionTolerance();

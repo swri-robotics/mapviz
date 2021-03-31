@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>383</width>
-    <height>197</height>
+    <height>284</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,7 +30,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <widget class="QDoubleSpinBox" name="positiontolerance">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -134,7 +134,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="2">
+   <item row="6" column="2">
     <widget class="QPushButton" name="buttonResetBuffer">
      <property name="maximumSize">
       <size>
@@ -147,7 +147,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
+   <item row="7" column="0">
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
@@ -160,7 +160,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_6">
      <property name="font">
       <font>
@@ -173,7 +173,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QSpinBox" name="buffersize">
      <property name="buttonSymbols">
       <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -183,7 +183,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="label_4">
      <property name="font">
       <font>
@@ -196,7 +196,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="7" column="1">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
@@ -278,7 +278,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
+   <item row="8" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -290,6 +290,25 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="4" column="1">
+    <widget class="QCheckBox" name="use_latest_transforms">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_8">
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Use Latest Transforms:</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

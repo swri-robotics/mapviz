@@ -94,6 +94,7 @@ namespace mapviz_plugins
     virtual void CollectLaps();
     virtual bool DrawLapsArrows();
     virtual bool TransformPoint(StampedPoint& point);
+    virtual void TransformPoint(StampedPoint& point, const swri_transform_util::Transform& transform);
     virtual void UpdateColor(QColor base_color, int i);
     virtual void DrawCovariance();
 
@@ -109,6 +110,8 @@ namespace mapviz_plugins
     virtual void LapToggled(bool checked);
     virtual void CovariancedToggled(bool checked);
     virtual void ShowAllCovariancesToggled(bool checked);
+    virtual void SetUseLatestTransforms(bool checked);
+
     void ResetTransformedPoints();
     void ClearPoints();
 
@@ -117,6 +120,8 @@ namespace mapviz_plugins
     double bufferSize() const;
     double positionTolerance() const;
     const std::deque<StampedPoint>& points() const;
+    bool single_frame_;
+
 
    private:
     int arrow_size_;
@@ -133,6 +138,7 @@ namespace mapviz_plugins
     int buffer_holder_;
     double scale_;
     bool static_arrow_sizes_;
+    bool use_latest_transforms_;
 
    private:
     std::vector<std::deque<StampedPoint> > laps_;

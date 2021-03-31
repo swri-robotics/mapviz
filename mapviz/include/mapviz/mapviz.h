@@ -95,7 +95,6 @@ namespace mapviz
     void ReorderDisplays();
     void FixedFrameSelected(const QString& text);
     void TargetFrameSelected(const QString& text);
-    void ToggleUseLatestTransforms(bool on);
     void UpdateFrames();
     void SpinOnce();
     void UpdateSizeHints();

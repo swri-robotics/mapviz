@@ -448,15 +448,6 @@ void MapCanvas::ToggleEnableAntialiasing(bool on)
   this->setFormat(format);
 }
 
-void MapCanvas::ToggleUseLatestTransforms(bool on)
-{
-  std::list<MapvizPluginPtr>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); ++it)
-  {
-    (*it)->SetUseLatestTransforms(on);
-  }
-}
-
 void MapCanvas::AddPlugin(MapvizPluginPtr plugin, int order)
 {
   plugins_.push_back(plugin);

@@ -77,11 +77,17 @@ namespace mapviz_plugins
                      SLOT(SetDrawStyle(QString)));
     QObject::connect(ui_.static_arrow_sizes, SIGNAL(clicked(bool)),
                      this, SLOT(SetStaticArrowSizes(bool)));
+    QObject::connect(ui_.use_latest_transforms, SIGNAL(clicked(bool)),
+                     this, SLOT(SetUseLatestTransforms(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
                      SLOT(SetColor(const QColor&)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
+                     SLOT(ClearPoints()));
+    QObject::connect(this,
+                     SIGNAL(TargetFrameChanged(const std::string&)),
+                     this,
                      SLOT(ClearPoints()));
   }
 
@@ -105,6 +111,8 @@ namespace mapviz_plugins
     PrintWarning("Waiting for transform.");
 
     ROS_INFO("Setting target frame to to %s", source_frame_.c_str());
+
+    ClearPoints();
 
     initialized_ = true;
   }
@@ -236,6 +244,13 @@ namespace mapviz_plugins
       SetArrowSize(arrow_size);
     }
 
+    if (node["use_latest_transforms"])
+    {
+      bool use_latest_transforms = node["use_latest_transforms"].as<bool>();
+      ui_.use_latest_transforms->setChecked(use_latest_transforms);
+      SetUseLatestTransforms(use_latest_transforms);
+    }
+
     FrameEdited();
   }
 
@@ -258,5 +273,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
+
+    emitter << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.use_latest_transforms->isChecked();
   }
 }

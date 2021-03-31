@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>159</height>
+    <height>186</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,22 +17,13 @@
    <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="leftMargin">
-    <number>2</number>
-   </property>
-   <property name="topMargin">
-    <number>2</number>
-   </property>
-   <property name="rightMargin">
-    <number>2</number>
-   </property>
-   <property name="bottomMargin">
-    <number>2</number>
-   </property>
    <property name="verticalSpacing">
     <number>4</number>
    </property>
-   <item row="6" column="0">
+   <property name="margin">
+    <number>2</number>
+   </property>
+   <item row="7" column="0">
     <widget class="QLabel" name="label_6">
      <property name="font">
       <font>
@@ -45,7 +36,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="1" colspan="2">
+   <item row="8" column="1" colspan="2">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
@@ -64,7 +55,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_4">
      <property name="font">
       <font>
@@ -77,7 +68,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="7" column="1">
     <widget class="QSpinBox" name="buffersize">
      <property name="buttonSymbols">
       <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -100,7 +91,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
+   <item row="7" column="2">
     <widget class="QPushButton" name="buttonResetBuffer">
      <property name="maximumSize">
       <size>
@@ -135,7 +126,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QDoubleSpinBox" name="positiontolerance">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -222,7 +213,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0">
+   <item row="8" column="0">
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
@@ -248,7 +239,7 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="1">
+   <item row="9" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -260,6 +251,25 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="5" column="1">
+    <widget class="QCheckBox" name="use_latest_transforms">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Use Latest Transforms:</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
