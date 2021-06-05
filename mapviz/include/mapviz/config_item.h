@@ -33,6 +33,7 @@
 // C++ standard libraries
 #include <string>
 #include <vector>
+#include <iostream>
 
 // QT libraries
 #include <QWidget>
@@ -66,11 +67,13 @@ namespace mapviz
   Q_SIGNALS:
     void UpdateSizeHint();
     void ToggledDraw(QListWidgetItem* plugin, bool visible);
+    void DuplicateRequest(QListWidgetItem* plugin);
     void RemoveRequest(QListWidgetItem* plugin);
 
   public Q_SLOTS:
     void Hide();
     void EditName();
+    void Duplicate();
     void Remove();
     void ToggleDraw(bool toggled);
 
@@ -82,6 +85,7 @@ namespace mapviz
     QString name_;
     QString type_;
     QAction* edit_name_action_;
+    QAction* duplicate_item_action_;
     QAction* remove_item_action_;
     bool visible_;
   };

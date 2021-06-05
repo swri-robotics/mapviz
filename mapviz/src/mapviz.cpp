@@ -201,6 +201,10 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
   ui_.bg_color->setColor(background_);
   canvas_->SetBackground(background_);
+
+  // Keyboard shortcuts for the main window
+  QShortcut *duplicate_display_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_D), this);
+  connect(duplicate_display_shortcut, SIGNAL(activated()), this, SLOT(DuplicateDisplay()));
 }
 
 Mapviz::~Mapviz()
@@ -1188,6 +1192,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   item->setSizeHint(config_item->sizeHint());
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
   connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
+  connect(config_item, SIGNAL(DuplicateRequest(QListWidgetItem*)), this, SLOT(DuplicateDisplay(QListWidgetItem*)));
   connect(config_item, SIGNAL(RemoveRequest(QListWidgetItem*)), this, SLOT(RemoveDisplay(QListWidgetItem*)));
   connect(plugin.get(), SIGNAL(VisibleChanged(bool)), config_item, SLOT(ToggleDraw(bool)));
   connect(plugin.get(), SIGNAL(SizeChanged()), this, SLOT(UpdateSizeHints()));
@@ -1496,6 +1501,86 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
     plugins_.erase(item);
 
     delete item;
+  }
+}
+
+void Mapviz::DuplicateDisplay()
+{
+  QListWidgetItem* item = ui_.configs->item(ui_.configs->currentRow());
+  if (item != nullptr)
+  {
+    DuplicateDisplay(item);
+  }
+}
+
+void Mapviz::DuplicateDisplay(QListWidgetItem* item)
+{
+  ROS_INFO("Duplicating active display... ");
+  // - Get plugin associated with QListWidgetItem
+  if (plugins_.count(item) != 1)
+  {
+    ROS_ERROR("Item attempted to duplicate is not a plugin.");
+    return;
+  }
+  MapvizPluginPtr target_plugin = plugins_[item];
+  ConfigItem* target_config_item = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
+
+  // - Save plugin config to a temporary file location to reload it via the class
+  //   loader as a completely new object
+  QString temp_config_path = QDir::tempPath() + "/mapviz_duplicate_config";
+  QTemporaryFile temp_config_file(temp_config_path);
+  if (!temp_config_file.open())
+  {
+    ROS_ERROR_STREAM("Cannot duplicate plugin of type: "
+        << target_plugin->Type() << "\nCould not open file: " 
+        << temp_config_file.fileName().toStdString());
+    return;
+  }
+
+  YAML::Emitter out;
+  out << YAML::BeginMap;
+  out << YAML::Key << "type" << YAML::Value << target_plugin->Type();
+  out << YAML::Key << "name" << YAML::Value << target_config_item->Name().toStdString();
+  out << YAML::Key << "config" << YAML::Value;
+  out << YAML::BeginMap; 
+  out << YAML::Key << "visible" << YAML::Value << target_plugin->Visible();
+  out << YAML::Key << "collapsed" << YAML::Value << target_config_item->Collapsed(); 
+  target_plugin->SaveConfig(out, temp_config_path.toStdString());
+  out << YAML::EndMap;
+  out << YAML::EndMap;
+  QTextStream temp_file_writer(&temp_config_file);
+  temp_file_writer << out.c_str();
+  temp_config_file.close();
+
+  // - Create the new display via existing methods
+  // I Don't think I actually need to create a temporary file. the file
+  // path does not seem to be used in either the LoadConfig or SaveConfig
+  // methods, but I'll keep the temp file creation for now because it simplifies
+  // going from YAML::Emitter to YAML::Node. Maybe MapvizPlugin::SaveConfig
+  // could be updated to use YAML::Node and conver to emitter internally?
+  YAML::Node temp_node;
+  swri_yaml_util::LoadFile(temp_config_file.fileName().toStdString(), temp_node);
+  YAML::Node temp_config_node = temp_node["config"];
+  if (!temp_config_node)
+  {
+    ROS_ERROR("Cannot duplicate plugin of type %s. Invalid config.",
+        target_plugin->Type().c_str());
+    return;
+  }
+  try
+  {
+    MapvizPluginPtr duplicate_plugin = CreateNewDisplay(
+        target_config_item->Name().toStdString(), 
+        target_plugin->Type(), 
+        target_plugin->Visible(), 
+        target_config_item->Collapsed());
+    duplicate_plugin->LoadConfig(temp_config_node, 
+        temp_config_file.fileName().toStdString());
+    duplicate_plugin->DrawIcon();
+  }
+  catch (const pluginlib::LibraryLoadException& e)
+  {
+    ROS_ERROR("%s", e.what());
   }
 }
 
