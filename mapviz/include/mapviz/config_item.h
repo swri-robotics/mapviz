@@ -33,7 +33,6 @@
 // C++ standard libraries
 #include <string>
 #include <vector>
-#include <iostream>
 
 // QT libraries
 #include <QWidget>
