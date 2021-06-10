@@ -44,7 +44,7 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <opencv2/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 
 #include <mapviz/map_canvas.h>
 
