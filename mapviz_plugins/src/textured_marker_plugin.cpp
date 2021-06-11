@@ -481,7 +481,7 @@ namespace mapviz_plugins
       for (markerIter = nsIter->second.begin(); markerIter != nsIter->second.end(); ++markerIter)
       {
         MarkerData& marker = markerIter->second;
-        marker.alpha_ = alphaVal; // Update current marker's alpha value
+        double alpha = marker.alpha_*alphaVal;
 
         if (marker.expire_time > now)
         {
@@ -493,7 +493,7 @@ namespace mapviz_plugins
           
             glBegin(GL_TRIANGLES);
             
-            glColor4f(1.0f, 1.0f, 1.0f, marker.alpha_);
+            glColor4f(1.0f, 1.0f, 1.0f, alpha);
 
             double marker_x = marker.texture_x_;
             double marker_y = marker.texture_y_;
@@ -530,6 +530,7 @@ namespace mapviz_plugins
         swri_transform_util::Transform transform;
         if (GetTransform(markerIter->second.source_frame_, markerIter->second.stamp, transform))
         {
+          markerIter->second.transformed = true;
           markerIter->second.transformed_quad_.clear();
           for (size_t i = 0; i < markerIter->second.quad_.size(); i++)
           {
