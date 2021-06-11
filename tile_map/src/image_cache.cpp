@@ -38,6 +38,7 @@
 #include <QNetworkDiskCache>
 #include <QUrl>
 
+#include <rclcpp/clock.hpp>
 #include <rclcpp/logging.hpp>
 
 namespace tile_map
@@ -205,9 +206,7 @@ namespace tile_map
         QNetworkRequest::HttpPipeliningAllowedAttribute,
         true);
 
-    QNetworkReply *reply = network_manager_.get(request);
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+    network_manager_.get(request);
   }
 
   void ImageCache::ProcessReply(QNetworkReply* reply)
@@ -233,6 +232,8 @@ namespace tile_map
       }
       else
       {
+        auto steady_clock = rclcpp::Clock();
+        RCLCPP_ERROR_THROTTLE(logger_, steady_clock, 1.0, "NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
         image->AddFailure();
       }
     }
@@ -248,14 +249,6 @@ namespace tile_map
     unprocessed_mutex_.unlock();
 
     reply->deleteLater();
-  }
-
-  void ImageCache::NetworkError(QNetworkReply::NetworkError error)
-  {
-    // See https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum for a
-    // list of possible error codes.
-    // TODO pjr Print friendly strings here instead of numbers.
-    RCLCPP_ERROR(logger_, "NETWORK ERROR: %d", error);
   }
 
   const int CacheThread::MAXIMUM_SEQUENTIAL_REQUESTS = 12;

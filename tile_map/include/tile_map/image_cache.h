@@ -115,7 +115,6 @@ namespace tile_map
   public Q_SLOTS:
     void ProcessRequest(QString uri);
     void ProcessReply(QNetworkReply* reply);
-    void NetworkError(QNetworkReply::NetworkError error);
     void Clear();
 
   private:
