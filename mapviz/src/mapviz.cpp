@@ -1525,18 +1525,7 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
   MapvizPluginPtr target_plugin = plugins_[item];
   ConfigItem* target_config_item = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
 
-  // - Save plugin config to a temporary file location to reload it via the class
-  //   loader as a completely new object
-  QString temp_config_path = QDir::tempPath() + "/mapviz_duplicate_config";
-  QTemporaryFile temp_config_file(temp_config_path);
-  if (!temp_config_file.open())
-  {
-    ROS_ERROR_STREAM("Cannot duplicate plugin of type: "
-        << target_plugin->Type() << "\nCould not open file: " 
-        << temp_config_file.fileName().toStdString());
-    return;
-  }
-
+  // - Save plugin config to a temporary string via an emitter
   YAML::Emitter out;
   out << YAML::BeginMap;
   out << YAML::Key << "type" << YAML::Value << target_plugin->Type();
@@ -1545,21 +1534,13 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
   out << YAML::BeginMap; 
   out << YAML::Key << "visible" << YAML::Value << target_plugin->Visible();
   out << YAML::Key << "collapsed" << YAML::Value << target_config_item->Collapsed(); 
-  target_plugin->SaveConfig(out, temp_config_path.toStdString());
+  target_plugin->SaveConfig(out, "");
   out << YAML::EndMap;
   out << YAML::EndMap;
-  QTextStream temp_file_writer(&temp_config_file);
-  temp_file_writer << out.c_str();
-  temp_config_file.close();
 
-  // - Create the new display via existing methods
-  // I Don't think I actually need to create a temporary file. the file
-  // path does not seem to be used in either the LoadConfig or SaveConfig
-  // methods, but I'll keep the temp file creation for now because it simplifies
-  // going from YAML::Emitter to YAML::Node. Maybe MapvizPlugin::SaveConfig
-  // could be updated to use YAML::Node and conver to emitter internally?
+  // - Create the new display via existing MapvizPlugin::LoadConfig interface
   YAML::Node temp_node;
-  swri_yaml_util::LoadFile(temp_config_file.fileName().toStdString(), temp_node);
+  swri_yaml_util::LoadString(out.c_str(), temp_node);
   YAML::Node temp_config_node = temp_node["config"];
   if (!temp_config_node)
   {
@@ -1574,8 +1555,7 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
         target_plugin->Type(), 
         target_plugin->Visible(), 
         target_config_item->Collapsed());
-    duplicate_plugin->LoadConfig(temp_config_node, 
-        temp_config_file.fileName().toStdString());
+    duplicate_plugin->LoadConfig(temp_config_node, "");
     duplicate_plugin->DrawIcon();
   }
   catch (const pluginlib::LibraryLoadException& e)
