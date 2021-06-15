@@ -68,7 +68,7 @@
 #include <mapviz/config_item.h>
 #include <QtGui/QtGui>
 
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 
 // YAML libraries
 #include <yaml-cpp/yaml.h>
