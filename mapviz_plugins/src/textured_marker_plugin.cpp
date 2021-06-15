@@ -200,7 +200,7 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
       markerData.expire_time = rclcpp::Time::max();
     } else {
       // Temporarily add 5 seconds to fix some existing markers.
-      markerData.expire_time = rclcpp::Time() + lifetime + rclcpp::Duration(5ns);
+      markerData.expire_time = rclcpp::Time() + lifetime + rclcpp::Duration(5s);
     }
 
     tf2::Transform offset(
