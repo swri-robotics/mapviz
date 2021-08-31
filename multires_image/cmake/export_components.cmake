@@ -1,2 +1,1 @@
-find_package(OpenCV COMPONENTS core imgproc REQUIRED)
-find_package(Boost REQUIRED filesystem thread)
+find_package(Boost REQUIRED COMPONENTS filesystem thread)
