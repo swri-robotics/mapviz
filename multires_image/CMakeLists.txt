@@ -51,7 +51,7 @@ add_definitions(-DWFlags=WindowFlags)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Build libtile_cache
-set(TILE_SRC_FILES 
+set(TILE_SRC_FILES
    src/tile.cpp
    src/tile_cache.cpp
    src/tile_set.cpp
@@ -59,7 +59,7 @@ set(TILE_SRC_FILES
 
 qt5_wrap_cpp(TILE_SRC_FILES include/${PROJECT_NAME}/tile_cache.h)
 
-add_library(${PROJECT_NAME} 
+add_library(${PROJECT_NAME}
   ${TILE_SRC_FILES}
 )
 target_include_directories(${PROJECT_NAME}
@@ -79,10 +79,10 @@ ament_target_dependencies(${PROJECT_NAME}
   gps_msgs
   mapviz
   pluginlib
-  rclcpp 
-  tf2
-  swri_transform_util 
+  rclcpp
   swri_math_util
+  swri_transform_util
+  tf2
 )
 
 # Build libmultires_widget
@@ -123,7 +123,7 @@ ament_target_dependencies(multires_view_node
 )
 
 # Build mapviz plugin
-set(MAPVIZ_SRC_FILES 
+set(MAPVIZ_SRC_FILES
   src/${PROJECT_NAME}_plugin.cpp
   src/multires_view.cpp)
 qt5_wrap_ui(MAPVIZ_SRC_FILES src/multires_config.ui)
@@ -163,7 +163,26 @@ install(DIRECTORY launch
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
-ament_export_dependencies(${RUNTIME_DEPS} Qt)
+set(RUNTIME_DEPS
+  ament_cmake
+  Boost
+  cv_bridge
+  gps_msgs
+  mapviz
+  OpenCV
+  OpenGL
+  pluginlib
+  Qt5Core
+  Qt5Gui
+  Qt5OpenGL
+  Qt5Widgets
+  rclcpp
+  swri_math_util
+  swri_transform_util
+  tf2
+)
+
+ament_export_dependencies(${RUNTIME_DEPS})
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_package()
+ament_package(CONFIG_EXTRAS cmake/export_components.cmake)
