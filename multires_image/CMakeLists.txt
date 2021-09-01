@@ -165,21 +165,21 @@ pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
 set(RUNTIME_DEPS
   ament_cmake
+  Boost
   cv_bridge
   gps_msgs
   mapviz
-  pluginlib
-  rclcpp
-  tf2
-  swri_transform_util
-  swri_math_util
-  Boost
-  OpenGL
   OpenCV
+  OpenGL
+  pluginlib
   Qt5Core
   Qt5Gui
   Qt5OpenGL
   Qt5Widgets
+  rclcpp
+  swri_math_util
+  swri_transform_util
+  tf2
 )
 
 ament_export_dependencies(${RUNTIME_DEPS})
