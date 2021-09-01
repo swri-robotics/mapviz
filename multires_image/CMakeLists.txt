@@ -80,9 +80,9 @@ ament_target_dependencies(${PROJECT_NAME}
   mapviz
   pluginlib
   rclcpp
-  tf2
-  swri_transform_util
   swri_math_util
+  swri_transform_util
+  tf2
 )
 
 # Build libmultires_widget
