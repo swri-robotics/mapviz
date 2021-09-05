@@ -1531,9 +1531,9 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
   out << YAML::Key << "type" << YAML::Value << target_plugin->Type();
   out << YAML::Key << "name" << YAML::Value << target_config_item->Name().toStdString();
   out << YAML::Key << "config" << YAML::Value;
-  out << YAML::BeginMap; 
+  out << YAML::BeginMap;
   out << YAML::Key << "visible" << YAML::Value << target_plugin->Visible();
-  out << YAML::Key << "collapsed" << YAML::Value << target_config_item->Collapsed(); 
+  out << YAML::Key << "collapsed" << YAML::Value << target_config_item->Collapsed();
   target_plugin->SaveConfig(out, "");
   out << YAML::EndMap;
   out << YAML::EndMap;
@@ -1551,9 +1551,9 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
   try
   {
     MapvizPluginPtr duplicate_plugin = CreateNewDisplay(
-        target_config_item->Name().toStdString(), 
-        target_plugin->Type(), 
-        target_plugin->Visible(), 
+        target_config_item->Name().toStdString(),
+        target_plugin->Type(),
+        target_plugin->Visible(),
         target_config_item->Collapsed());
     duplicate_plugin->LoadConfig(temp_config_node, "");
     duplicate_plugin->DrawIcon();
