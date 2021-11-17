@@ -47,11 +47,14 @@
 
 // C++ standard libraries
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <map>
 #include <string>
 #include <vector>
+
+using namespace std::chrono_literals;
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TexturedMarkerPlugin, mapviz::MapvizPlugin)
 
@@ -197,7 +200,7 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
       markerData.expire_time = rclcpp::Time::max();
     } else {
       // Temporarily add 5 seconds to fix some existing markers.
-      markerData.expire_time = rclcpp::Time() + lifetime + rclcpp::Duration(5);
+      markerData.expire_time = rclcpp::Time() + lifetime + rclcpp::Duration(5s);
     }
 
     tf2::Transform offset(
@@ -289,7 +292,7 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
       if (!markerData.texture_.empty() && marker.image.data.size() < expected) {
         RCLCPP_ERROR(
           node_->get_logger(),
-          "TexturedMarker image had expected data size %i but only got %i. Dropping message.",
+          "TexturedMarker image had expected data size %li but only got %li. Dropping message.",
           expected,
           marker.image.data.size());
         return;
