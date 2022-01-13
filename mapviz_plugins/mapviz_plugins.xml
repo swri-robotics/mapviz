@@ -46,6 +46,12 @@
   <class name="mapviz_plugins/path" type="mapviz_plugins::PathPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Path mapviz plugin.</description>
   </class>
+  <class name="mapviz_plugins/marti_nav_path" type="mapviz_plugins::MartiNavPathPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>marti_nav_msgs::Path mapviz plugin.</description>
+  </class>
+  <class name="mapviz_plugins/marti_nav_plan" type="mapviz_plugins::MartiNavPlanPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>marti_nav_msgs::Plan mapviz plugin.</description>
+  </class>
   <class name="mapviz_plugins/tf_frame" type="mapviz_plugins::TfFramePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>TF frame mapviz plugin.</description>
   </class>

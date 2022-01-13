@@ -85,6 +85,8 @@ set(UI_FILES
     ui/image_config.ui
     ui/laserscan_config.ui
     ui/marker_config.ui
+    ui/marti_nav_path_config.ui
+    ui/marti_nav_plan_config.ui
     ui/measuring_config.ui
     ui/move_base_config.ui
     ui/navsat_config.ui
@@ -116,6 +118,8 @@ set(SRC_FILES
     src/grid_plugin.cpp
     src/image_plugin.cpp
     src/laserscan_plugin.cpp
+    src/marti_nav_path_plugin.cpp
+    src/marti_nav_plan_plugin.cpp
     src/marker_plugin.cpp 
     src/measuring_plugin.cpp 
     src/move_base_plugin.cpp
@@ -149,6 +153,8 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/grid_plugin.h
     include/${PROJECT_NAME}/image_plugin.h
     include/${PROJECT_NAME}/laserscan_plugin.h
+    include/${PROJECT_NAME}/marti_nav_path_plugin.h
+    include/${PROJECT_NAME}/marti_nav_plan_plugin.h
     include/${PROJECT_NAME}/marker_plugin.h
     include/${PROJECT_NAME}/measuring_plugin.h
     include/${PROJECT_NAME}/move_base_plugin.h
