@@ -108,7 +108,7 @@ namespace mapviz_plugins
       {
         navsat_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::SensorDataQoS(rclcpp::KeepLast(1)),
             std::bind(&NavSatPlugin::NavSatFixCallback, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
