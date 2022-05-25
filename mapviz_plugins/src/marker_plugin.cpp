@@ -123,14 +123,42 @@ namespace mapviz_plugins
     marker_array_sub_.reset();
     if (!topic_.empty())
     {
-      marker_sub_ = node_->create_subscription<visualization_msgs::msg::Marker>(
-          topic_,
-          rclcpp::QoS(100),
-          std::bind(&MarkerPlugin::handleMarker, this, std::placeholders::_1));
-      marker_array_sub_ = node_->create_subscription<visualization_msgs::msg::MarkerArray>(
-          topic_,
-          rclcpp::QoS(100),
-          std::bind(&MarkerPlugin::handleMarkerArray, this, std::placeholders::_1));
+      // ROS 2 does not allow for a simple way to subscribe to a general type of message (i.e. Marker and MarkerArray)
+      // That would require a way to de-serialize the data for mapviz to consume (based on message type)
+      // The code below checks for the topic type and subscribes in the appropriate manner
+
+      auto known_topics = node_->get_topic_names_and_types();
+      if (known_topics.count(topic_) > 0)
+      {
+        std::string topic_type = known_topics[topic_][0];
+        if (topic_type == "visualization_msgs/msg/Marker")
+        {
+          marker_sub_ = node_->create_subscription<visualization_msgs::msg::Marker>(
+              topic_,
+              rclcpp::QoS(100),
+              std::bind(&MarkerPlugin::handleMarker, this, std::placeholders::_1));
+        }
+        else if (topic_type == "visualization_msgs/msg/MarkerArray")
+        {
+          marker_array_sub_ = node_->create_subscription<visualization_msgs::msg::MarkerArray>(
+              topic_,
+              rclcpp::QoS(100),
+              std::bind(&MarkerPlugin::handleMarkerArray, this, std::placeholders::_1));
+        }
+        else
+        {
+          RCLCPP_ERROR(node_->get_logger(),
+              "Unable to subscribe to topic %s (unsupported type %s).",
+              topic_.c_str(), topic_type.c_str());
+          return;
+        }
+      }
+      else
+      {
+        RCLCPP_ERROR(node_->get_logger(),
+            "Unable to subscribe to topic %s (does not exist).", topic_.c_str());
+        return;
+      }
 
       RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
     }
