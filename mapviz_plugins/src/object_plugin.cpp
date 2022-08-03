@@ -188,6 +188,7 @@ namespace mapviz_plugins
     data.id = obj.id;
     data.stamp = header.stamp;
     data.transformed = false;
+    data.active = true;
 
     swri_transform_util::Transform transform;
     if (GetTransform(data.source_frame, data.stamp, transform))
@@ -244,6 +245,7 @@ namespace mapviz_plugins
     data.source_frame = obj.header.frame_id;
     data.id = std::to_string(obj.id);
     data.transformed = false;
+    data.active = obj.active;
 
     swri_transform_util::Transform transform;
     if (GetTransform(data.source_frame, data.stamp, transform))
@@ -301,6 +303,11 @@ namespace mapviz_plugins
     for (const auto& obj: objects_)
     {
       if (!obj.transformed)
+      {
+        continue;
+      }
+
+      if (!obj.active && !ui_.show_inactive->isChecked())
       {
         continue;
       }
@@ -417,6 +424,13 @@ namespace mapviz_plugins
       node["show_ids"] >> checked;
       ui_.show_ids->setChecked( checked );
     }
+
+    if (node["show_inactive"])
+    {
+      bool checked;
+      node["show_inactive"] >> checked;
+      ui_.show_inactive->setChecked( checked );
+    }
   }
 
   void ObjectPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -427,6 +441,8 @@ namespace mapviz_plugins
             << ui_.color->color().name().toStdString();
 
     emitter << YAML::Key << "show_ids" << YAML::Value << ui_.show_ids->isChecked();
+
+    emitter << YAML::Key << "show_inactive" << YAML::Value << ui_.show_inactive->isChecked();
   }
 
   void ObjectPlugin::timerEvent(QTimerEvent *event)
