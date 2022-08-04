@@ -4,15 +4,19 @@ on: [push, pull_request]
 
 jobs:
   industrial_ci:
+    name: ROS CI
+    runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        env:
-          - {ROS_DISTRO: melodic, ROS_REPO: testing}
-          - {ROS_DISTRO: melodic, ROS_REPO: main}
-          - {ROS_DISTRO: noetic, ROS_REPO: testing}
-          # - {ROS_DISTRO: noetic, ROS_REPO: main}
-    runs-on: ubuntu-latest
+        ros_distro: [melodic, noetic]
+        ros_repo: [main, testing]
+
     steps:
-      - uses: actions/checkout@v1
-      - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{matrix.env}}
+      - name: Fetch repository
+        uses: actions/checkout@v2
+      - name: Run industrial_ci
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: ${{ matrix.ros_distro }}
+          ROS_REPO: ${{ matrix.ros_repo }}
