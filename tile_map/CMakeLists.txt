@@ -129,6 +129,15 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
+set(RUNTIME_DEPS
+  mapviz
+  pluginlib
+  rclcpp
+  swri_math_util
+  swri_transform_util
+  tf2
+)
+
 ament_export_dependencies(${RUNTIME_DEPS}
   Qt5::Network
   Qt5::Core
