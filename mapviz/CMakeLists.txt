@@ -207,6 +207,22 @@ install(FILES plugin.xml
   DESTINATION share/${PROJECT_NAME} 
 )
 
+set(RUNTIME_DEPS
+  cv_bridge
+  geometry_msgs
+  image_transport
+  mapviz_interfaces
+  marti_common_msgs
+  pluginlib
+  rclcpp
+  rqt_gui_cpp
+  std_srvs
+  swri_math_util
+  swri_transform_util
+  tf2
+  tf2_ros
+)
+
 ament_export_dependencies(${RUNTIME_DEPS}
   Qt5Concurrent
   Qt5Core

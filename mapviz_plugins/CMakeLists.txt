@@ -228,6 +228,32 @@ install(TARGETS ${PROJECT_NAME}
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
+set(RUNTIME_DEPS
+  cv_bridge
+  gps_msgs
+  image_transport
+  map_msgs
+  mapviz
+  marti_common_msgs
+  marti_nav_msgs
+  marti_sensor_msgs
+  marti_visualization_msgs
+  nav_msgs
+  pluginlib
+  rclcpp
+  sensor_msgs
+  std_msgs
+  stereo_msgs
+  swri_image_util
+  swri_math_util
+  swri_route_util
+  swri_transform_util
+  tf2_geometry_msgs
+  tf2
+  tf2_ros
+  visualization_msgs
+)
+
 ament_export_dependencies(${RUNTIME_DEPS} Qt)
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})

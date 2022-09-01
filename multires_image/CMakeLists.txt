@@ -163,7 +163,26 @@ install(DIRECTORY launch
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
-ament_export_dependencies(${RUNTIME_DEPS} Qt)
+set(RUNTIME_DEPS
+  ament_cmake
+  Boost
+  cv_bridge
+  gps_msgs
+  mapviz
+  OpenCV
+  OpenGL
+  pluginlib
+  Qt5Core
+  Qt5Gui
+  Qt5OpenGL
+  Qt5Widgets
+  rclcpp
+  swri_math_util
+  swri_transform_util
+  tf2
+)
+
+ament_export_dependencies(${RUNTIME_DEPS})
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_package()
