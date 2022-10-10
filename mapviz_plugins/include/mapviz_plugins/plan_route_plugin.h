@@ -112,7 +112,7 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin
 
   std::string route_topic_;
 
-  rclcpp::Publisher<swri_route_util::Route>::SharedPtr route_pub_;
+  rclcpp::Publisher<marti_nav_msgs::msg::Route>::SharedPtr route_pub_;
   rclcpp::TimerBase::SharedPtr retry_timer_;
 
   bool failed_service_;
