@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.2 (2022-12-13)
+------------------
 * Merge pull request `#716 <https://github.com/swri-robotics/mapviz/issues/716>`_ from swri-robotics/pose_publisher
   Pose publisher
 * Merge pull request `#752 <https://github.com/swri-robotics/mapviz/issues/752>`_ from matt-attack/add-stuff
