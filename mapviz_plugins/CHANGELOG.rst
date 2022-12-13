@@ -2,6 +2,29 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#716 <https://github.com/swri-robotics/mapviz/issues/716>`_ from swri-robotics/pose_publisher
+  Pose publisher
+* Merge pull request `#752 <https://github.com/swri-robotics/mapviz/issues/752>`_ from matt-attack/add-stuff
+  Add bus features
+* Update dates
+* Add bus features
+* Merge pull request `#734 <https://github.com/swri-robotics/mapviz/issues/734>`_ from matt-attack/improve-textured-marker
+  Fix Issues With Textured Marker Plugin
+* Make sure textured marker can handle delayed transforms and use marker alpha values
+* Merge pull request `#715 <https://github.com/swri-robotics/mapviz/issues/715>`_ from swri-robotics/posearray
+  Add visualizer for PoseArray
+* Merge pull request `#718 <https://github.com/swri-robotics/mapviz/issues/718>`_ from agyoungs/fix-text-marker-disable
+  Allow text markers to be enabled/disabled via their namespace using the marker plugin checkboxes
+* Merge pull request `#721 <https://github.com/swri-robotics/mapviz/issues/721>`_ from rjb0026/720-allow-building-with-c++14-for-version-greater-than-kinetic
+  720 allow building with c++14 for version greater than kinetic
+* Conditionally setting c++ standard per target.
+* Removed explicit setting of compile flags for c++ standard version and replaced with conditional for building with C++11 in kinetic for mapviz and mapviz_plugins.
+* Allow text markers to be enabled/disabled via their namespace using the marker plugin checkboxes
+* Add visualizer for PoseArray
+* Contributors: Alex Youngs, David Anthony, Kevin Nickels, Matthew, Matthew Bries, rjb0026
+
 1.4.1 (2020-10-22)
 ------------------
 * Constrain the minimum line and point marker sizes to be 1 pixel wide. (`#704 <https://github.com/swri-robotics/mapviz/issues/704>`_)

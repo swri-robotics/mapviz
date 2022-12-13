@@ -2,6 +2,16 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#721 <https://github.com/swri-robotics/mapviz/issues/721>`_ from rjb0026/720-allow-building-with-c++14-for-version-greater-than-kinetic
+  720 allow building with c++14 for version greater than kinetic
+* Conditionally setting c++ standard per target.
+* Added conditional for building with C++11 in kinetic for multires_image and tile_map packages
+* [tile_map] Output human-readable error message (`#703 <https://github.com/swri-robotics/mapviz/issues/703>`_)
+  * [tile_map] Output human-readable error message
+* Contributors: Dominik Kleiser, Matthew, rjb0026
+
 1.4.1 (2020-10-22)
 ------------------
 
