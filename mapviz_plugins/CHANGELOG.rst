@@ -2,6 +2,14 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updating maintainers list (`#778 <https://github.com/swri-robotics/mapviz/issues/778>`_)
+* Fix Plan Route plugin in ROS2 Humble (`#765 <https://github.com/swri-robotics/mapviz/issues/765>`_)
+* Merge pull request `#759 <https://github.com/swri-robotics/mapviz/issues/759>`_ from agyoungs/fix-marker-plugin-subs
+* Check topic for type to determine which subscription callback to trigger
+* Contributors: Alex Youngs, David Anthony, P. J. Reed
+
 2.1.0 (2020-10-22)
 ------------------
 * Constrain the minimum line and point marker sizes to be 1 pixel wide. (`#704 <https://github.com/swri-robotics/mapviz/issues/704>`_)

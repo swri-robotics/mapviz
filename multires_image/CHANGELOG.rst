@@ -2,6 +2,13 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updating maintainers list (`#778 <https://github.com/swri-robotics/mapviz/issues/778>`_)
+* Merge pull request `#754 <https://github.com/swri-robotics/mapviz/issues/754>`_ from cottsay/python3-shebang
+* Use python3 in mapviz_tile_loader shebang
+* Contributors: David Anthony, Scott K Logan
+
 2.1.0 (2020-10-22)
 ------------------
 * ROS Foxy support (`#695 <https://github.com/swri-robotics/mapviz/issues/695>`_)

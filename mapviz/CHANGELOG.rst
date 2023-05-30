@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updating maintainers list (`#778 <https://github.com/swri-robotics/mapviz/issues/778>`_)
+* Contributors: David Anthony
+
 2.1.0 (2020-10-22)
 ------------------
 * ROS Foxy support (`#695 <https://github.com/swri-robotics/mapviz/issues/695>`_)
