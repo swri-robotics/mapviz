@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.2.1 (2023-05-30)
+------------------
 * Updating maintainers list (`#778 <https://github.com/swri-robotics/mapviz/issues/778>`_)
 * Fix Plan Route plugin in ROS2 Humble (`#765 <https://github.com/swri-robotics/mapviz/issues/765>`_)
 * Merge pull request `#759 <https://github.com/swri-robotics/mapviz/issues/759>`_ from agyoungs/fix-marker-plugin-subs

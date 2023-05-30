@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.2.1 (2023-05-30)
+------------------
 * Updating maintainers list (`#778 <https://github.com/swri-robotics/mapviz/issues/778>`_)
 * Merge pull request `#754 <https://github.com/swri-robotics/mapviz/issues/754>`_ from cottsay/python3-shebang
 * Use python3 in mapviz_tile_loader shebang
