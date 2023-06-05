@@ -83,7 +83,7 @@ public:
     int argc,
     char** argv,
     QWidget *parent = 0,
-    Qt::WindowFlags flags = 0);
+    Qt::WindowFlags flags = Qt::WindowFlags());
   ~Mapviz();
 
   rclcpp::Node::SharedPtr GetNode();
