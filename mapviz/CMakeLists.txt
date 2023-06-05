@@ -135,7 +135,7 @@ target_compile_definitions(rqt_${PROJECT_NAME}
 )
 target_link_libraries(rqt_${PROJECT_NAME}
   OpenGL::GL
-  ${GLUT_LIBRARY}
+  ${GLUT_LIBRARIES}
   GLEW::GLEW
   opencv_core
   opencv_highgui
