@@ -137,7 +137,7 @@ add_library(rqt_${PROJECT_NAME}
 target_link_libraries(rqt_${PROJECT_NAME}
   ${Qt_LIBRARIES}
   ${OpenGL_LIBRARY}
-  ${GLUT_LIBRARY}
+  ${GLUT_LIBRARIES}
   ${GLEW_LIBRARIES}
   ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
@@ -167,7 +167,7 @@ target_link_libraries(${PROJECT_NAME}
   ${Qt_LIBRARIES}
   ${Boost_LIBRARIES}
   ${OpenGL_LIBRARY}
-  ${GLUT_LIBRARY}
+  ${GLUT_LIBRARIES}
   ${GLEW_LIBRARIES}
   ${GLU_LIBRARY}
   ${OpenCV_LIBRARIES}
