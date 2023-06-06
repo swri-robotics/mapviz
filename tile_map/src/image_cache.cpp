@@ -277,7 +277,7 @@ namespace tile_map
       QList<ImagePtr> images = image_cache_->unprocessed_.values();
       image_cache_->unprocessed_mutex_.unlock();
 
-      qSort(images.begin(), images.end(), ComparePriority);
+      std::sort(images.begin(), images.end(), ComparePriority);
 
       // Go through all of them and request them.  Qt's network manager will
       // only handle six simultaneous requests at once, so we use a semaphore

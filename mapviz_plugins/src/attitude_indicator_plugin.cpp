@@ -62,7 +62,7 @@ namespace mapviz_plugins
 
     // Set background white
     QPalette p(config_widget_->palette());
-    p.setColor(QPalette::Background, Qt::white);
+    p.setColor(QPalette::Window, Qt::white);
     config_widget_->setPalette(p);
     roll_ = pitch_ = yaw_ = 0;
     topics_.emplace_back("nav_msgs/msg/Odometry");

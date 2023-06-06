@@ -55,7 +55,7 @@ namespace multires_image
     Q_OBJECT
 
   public:
-    MultiresViewNode(int argc, char **argv, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    MultiresViewNode(int argc, char **argv, QWidget *parent = 0, Qt::WindowFlags flags = Qt::WindowFlags());
     ~MultiresViewNode() override = default;
 
     virtual void showEvent(QShowEvent* event) override;

@@ -116,7 +116,7 @@ void QGLMap::SetTiles(TileSet* tiles)
 
 void QGLMap::wheelEvent(QWheelEvent* e)
 {
-  float numDegrees = static_cast<float>(e->delta()) / -8.0f;
+  float numDegrees = static_cast<float>(e->angleDelta().y()) / -8.0f;
 
   m_scale *= pow(1.1, numDegrees / 10.0);
 
