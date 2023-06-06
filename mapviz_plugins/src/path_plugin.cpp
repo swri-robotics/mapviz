@@ -169,7 +169,7 @@ namespace mapviz_plugins
     bool lines;
     bool points;
     QColor old_color = ui_.path_color->color();
-    QColor color = old_color.dark(200);
+    QColor color = old_color.darker(200);
     SetDrawStyle( LINES );
     lines = DrawPoints(scale);
     SetColor(color);
