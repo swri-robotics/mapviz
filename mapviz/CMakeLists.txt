@@ -134,6 +134,7 @@ target_compile_definitions(rqt_${PROJECT_NAME}
     USE_NEW_TF2_TOMSG=${USE_NEW_TF2_TOMSG}
 )
 
+# Foxy uses TF2 .h files, not .hpp files
 if ("$ENV{ROS_DISTRO}" STRLESS_EQUAL "galactic")
   target_compile_definitions(rqt_${PROJECT_NAME} PRIVATE "-DUSE_TF2_H_FILES")
 endif()

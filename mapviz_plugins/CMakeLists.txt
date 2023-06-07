@@ -167,12 +167,20 @@ add_library(${PROJECT_NAME} SHARED
     ${SRC_FILES}
     ${UI_SRC_FILES}
 )
+
 target_include_directories(${PROJECT_NAME} 
   PUBLIC
     include)
+
 target_compile_definitions(${PROJECT_NAME}
   PUBLIC
     "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+
+# Iron and later switched some cv_bridge files to .hpp from .h
+if ("$ENV{ROS_DISTRO}" STRLESS "iron")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE "-DUSE_CVBRIDGE_H_FILES")
+endif()
+
 ament_target_dependencies(${PROJECT_NAME}
     ament_cmake
     ament_index_cpp
