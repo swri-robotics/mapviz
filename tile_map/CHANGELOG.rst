@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.2.2 (2023-06-07)
+------------------
 * Iron Compatibility (`#779 <https://github.com/swri-robotics/mapviz/issues/779>`_)
 * Contributors: David Anthony
 
