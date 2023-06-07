@@ -135,7 +135,7 @@ target_compile_definitions(rqt_${PROJECT_NAME}
 )
 
 if ("$ENV{ROS_DISTRO}" STRLESS_EQUAL "galactic")
-  target_compile_definitions(rqt_${PROJECT_NAME} "-DUSE_TF2_H_FILES")
+  target_compile_definitions(rqt_${PROJECT_NAME} PRIVATE "-DUSE_TF2_H_FILES")
 endif()
 
 target_link_libraries(rqt_${PROJECT_NAME}
