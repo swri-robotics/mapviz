@@ -252,8 +252,7 @@ void MapCanvas::paintEvent(QPaintEvent* event)
   QPainter p(this);
   p.setRenderHints(QPainter::Antialiasing |
                    QPainter::TextAntialiasing |
-                   QPainter::SmoothPixmapTransform |
-                   QPainter::HighQualityAntialiasing,
+                   QPainter::SmoothPixmapTransform,
                    enable_antialiasing_);
   p.beginNativePainting();
   // .beginNativePainting() disables blending and clears a handful of other
@@ -330,7 +329,7 @@ void MapCanvas::popGlMatrices()
 
 void MapCanvas::wheelEvent(QWheelEvent* e)
 {
-  float numDegrees = e->delta() / -8;
+  float numDegrees = e->angleDelta().y() / -8;
 
   Zoom(numDegrees / 10.0);
 }

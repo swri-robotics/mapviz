@@ -100,7 +100,7 @@ namespace tile_map
     tile_sources_[BING_NAME] = bing;
 
     QPalette p(config_widget_->palette());
-    p.setColor(QPalette::Background, Qt::white);
+    p.setColor(QPalette::Window, Qt::white);
     config_widget_->setPalette(p);
 
     QPalette p2(ui_.status->palette());

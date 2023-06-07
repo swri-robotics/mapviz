@@ -72,7 +72,7 @@ namespace mapviz_plugins
     ui_.color->setColor(Qt::green);
     // Set background white
     QPalette p(config_widget_->palette());
-    p.setColor(QPalette::Background, Qt::white);
+    p.setColor(QPalette::Window, Qt::white);
     config_widget_->setPalette(p);
     // Set status text red
     QPalette p3(ui_.status->palette());

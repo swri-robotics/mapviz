@@ -38,7 +38,11 @@
 #include <sensor_msgs/image_encodings.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#ifdef USE_CVBRIDGE_H_FILES
 #include <cv_bridge/cv_bridge.h>
+#else
+#include <cv_bridge/cv_bridge.hpp>
+#endif
 
 #include <mapviz/select_topic_dialog.h>
 
@@ -74,7 +78,7 @@ namespace mapviz_plugins
 
     // Set background white
     QPalette p(config_widget_->palette());
-    p.setColor(QPalette::Background, Qt::white);
+    p.setColor(QPalette::Window, Qt::white);
     config_widget_->setPalette(p);
 
     // Set status text red

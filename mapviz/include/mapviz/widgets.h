@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ__WIDGETS_H_
-#define MAPVIZ__WIDGETS_H_
+#ifndef MAPVIZ_WIDGETS_H_
+#define MAPVIZ_WIDGETS_H_
 
 // QT libraries
 #include <QWidget>
@@ -87,7 +87,7 @@ class SingleClickLabel : public QLabel
   Q_OBJECT
 
 public:
-  explicit SingleClickLabel(QWidget *parent = 0, Qt::WindowFlags flags = 0) :
+  explicit SingleClickLabel(QWidget *parent = 0, Qt::WindowFlags flags = Qt::WindowFlags()) :
     QLabel(parent, flags) {}
 
   ~SingleClickLabel() override = default;
@@ -107,7 +107,7 @@ class DoubleClickWidget : public QWidget
   Q_OBJECT
 
 public:
-  explicit DoubleClickWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0) :
+  explicit DoubleClickWidget(QWidget *parent = 0, Qt::WindowFlags flags = Qt::WindowFlags()) :
     QWidget(parent, flags) {}
 
   ~DoubleClickWidget() override = default;
@@ -137,7 +137,7 @@ class IconWidget : public QWidget
   Q_OBJECT
 
 public:
-  explicit IconWidget(QWidget *parent = nullptr, Qt::WindowFlags flags = nullptr) :
+  explicit IconWidget(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags()) :
     QWidget(parent, flags)
   {
     pixmap_ = QPixmap(16, 16);

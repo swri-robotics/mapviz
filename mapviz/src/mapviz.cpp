@@ -1471,7 +1471,7 @@ void Mapviz::SelectBackgroundColor(const QColor &color)
 void Mapviz::SetCaptureDirectory()
 {
   QFileDialog dialog(this, "Select Capture Directory");
-  dialog.setFileMode(QFileDialog::DirectoryOnly);
+  dialog.setOption(QFileDialog::ShowDirsOnly, true);
 
   dialog.exec();
 

@@ -133,9 +133,15 @@ target_compile_definitions(rqt_${PROJECT_NAME}
   PRIVATE
     USE_NEW_TF2_TOMSG=${USE_NEW_TF2_TOMSG}
 )
+
+# Foxy uses TF2 .h files, not .hpp files
+if ("$ENV{ROS_DISTRO}" STRLESS_EQUAL "galactic")
+  target_compile_definitions(rqt_${PROJECT_NAME} PRIVATE "-DUSE_TF2_H_FILES")
+endif()
+
 target_link_libraries(rqt_${PROJECT_NAME}
   OpenGL::GL
-  ${GLUT_LIBRARY}
+  ${GLUT_LIBRARIES}
   GLEW::GLEW
   opencv_core
   opencv_highgui

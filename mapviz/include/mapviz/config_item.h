@@ -50,7 +50,7 @@ class ConfigItem : public QWidget
   Q_OBJECT
 
 public:
-  explicit ConfigItem(QWidget *parent = nullptr, Qt::WindowFlags flags = nullptr);
+  explicit ConfigItem(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
   ~ConfigItem() override = default;
 
   void SetName(QString name);
