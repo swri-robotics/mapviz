@@ -30,9 +30,7 @@
   <depend>mapviz_interfaces</depend>
   <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
-  <!-- <depend>rosapi</depend> -->
   <depend>rclcpp</depend>
-  <!-- <depend>rqt</depend> -->
   <depend>rqt_gui_cpp</depend>
   <depend>rqt_gui</depend>
   <depend>std_srvs</depend>
@@ -43,7 +41,6 @@
   <depend>tf2_ros</depend>
   <depend>yaml-cpp</depend>
 
-  <exec_depend condition="$ROS_DISTRO != dashing">launch_xml</exec_depend>
   <exec_depend>libqt5-opengl</exec_depend>
 
   <export>

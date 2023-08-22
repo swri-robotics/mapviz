@@ -38,14 +38,7 @@ find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-# tf2_geometry_msgs 0.12.1 broke API compatibility, so check which version
-# we need to use
 find_package(tf2_geometry_msgs REQUIRED)
-if("${tf2_geometry_msgs_VERSION}" VERSION_GREATER "0.12.0")
-  set(USE_NEW_TF2_TOMSG 1)
-else()
-  set(USE_NEW_TF2_TOMSG 0)
-endif()
 
 ### PkgConfig ###
 find_package(PkgConfig REQUIRED)
@@ -128,16 +121,8 @@ target_include_directories(rqt_${PROJECT_NAME}
     include
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR})
-target_compile_definitions(rqt_${PROJECT_NAME}
-  PRIVATE
-    USE_NEW_TF2_TOMSG=${USE_NEW_TF2_TOMSG}
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
-
-# Foxy uses TF2 .h files, not .hpp files
-if ("$ENV{ROS_DISTRO}" STRLESS_EQUAL "galactic")
-  target_compile_definitions(rqt_${PROJECT_NAME} PRIVATE "-DUSE_TF2_H_FILES")
-endif()
 
 target_link_libraries(rqt_${PROJECT_NAME}
   OpenGL::GL
