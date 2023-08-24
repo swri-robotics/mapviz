@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.3.0 (2023-08-24)
+------------------
 * Updates for rolling and removing EOL distro support (`#785 <https://github.com/swri-robotics/mapviz/issues/785>`_)
 * Contributors: David Anthony
 
