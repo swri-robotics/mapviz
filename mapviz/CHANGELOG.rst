@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updates for rolling and removing EOL distro support (`#785 <https://github.com/swri-robotics/mapviz/issues/785>`_)
+* Contributors: David Anthony
+
 2.2.2 (2023-06-07)
 ------------------
 * Add ros_environment as dependency
