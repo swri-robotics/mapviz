@@ -1,5 +1,8 @@
-Mapviz [![Build Status](https://travis-ci.org/swri-robotics/mapviz.svg?branch=master)](https://travis-ci.org/swri-robotics/mapviz)
+Mapviz
 ======
+| Noetic |
+| :--- |
+| [![Build Status](https://build.ros.org/job/Nbin_uF64__mapviz_plugins__ubuntu_focal_amd64__binary/badge/icon)](https://build.ros.org/job/Nbin_uF64__mapviz_plugins__ubuntu_focal_amd64__binary/) |
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RVIZ](http://wiki.ros.org/rviz) focused on visualizing 2D data.
 
