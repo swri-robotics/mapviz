@@ -7,14 +7,14 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: humble,  ROS_REPO: testing}
-          - {ROS_DISTRO: humble,  ROS_REPO: main}
-          - {ROS_DISTRO: iron,    ROS_REPO: testing}
-          - {ROS_DISTRO: iron,    ROS_REPO: main}
+          - {ROS_DISTRO: humble, ROS_REPO: testing}
+          - {ROS_DISTRO: humble, ROS_REPO: main}
+          - {ROS_DISTRO: iron, ROS_REPO: testing}
+          - {ROS_DISTRO: iron, ROS_REPO: main}
           - {ROS_DISTRO: rolling, ROS_REPO: testing}
           - {ROS_DISTRO: rolling, ROS_REPO: main}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
