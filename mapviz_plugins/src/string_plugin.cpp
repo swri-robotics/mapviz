@@ -284,6 +284,10 @@ namespace mapviz_plugins
   void StringPlugin::SelectFont()
   {
     bool ok;
+      RCLCPP_ERROR(
+        node_->get_logger(),
+        "Loading font: %s, ",
+        font_.toString().toStdString().c_str());
     QFont font = QFontDialog::getFont(&ok, font_, canvas_);
     if (ok)
     {
@@ -291,6 +295,13 @@ namespace mapviz_plugins
       message_.prepare(QTransform(), font_);
       ui_.font_button->setFont(font_);
       ui_.font_button->setText(font_.family());
+    }
+    else
+    {
+      RCLCPP_WARN(
+        node_->get_logger(),
+        "Unable to load font: %s, reverting to default font",
+        font_.toString().toStdString().c_str());
     }
   }
 
