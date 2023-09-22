@@ -690,8 +690,6 @@ namespace mapviz_plugins
     {
       QMutexLocker locker(&scan_mutex_);
 
-      bool was_using_latest_transforms = use_latest_transforms_;
-      use_latest_transforms_ = false;
       for (Scan& scan: scans_)
       {
         if (!scan.transformed)
@@ -717,7 +715,6 @@ namespace mapviz_plugins
           }
         }
       }
-      use_latest_transforms_ = was_using_latest_transforms;
     }
     // Z color is based on transformed color, so it is dependent on the
     // transform

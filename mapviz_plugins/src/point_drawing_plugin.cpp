@@ -56,8 +56,14 @@ namespace mapviz_plugins
         buffer_holder_(false),
         scale_(1.0),
         static_arrow_sizes_(false),
+        use_latest_transforms_(false),
+        single_frame_(true),
         got_begin_(false)
   {
+    QObject::connect(this,
+                     SIGNAL(TargetFrameChanged(const std::string&)),
+                     this,
+                     SLOT(ResetTransformedPoints()));
     QObject::connect(this,
                      SIGNAL(TargetFrameChanged(const std::string&)),
                      this,
@@ -166,19 +172,26 @@ namespace mapviz_plugins
     show_all_covariances_checked_ = checked;
   }
 
+  void PointDrawingPlugin::SetUseLatestTransforms(bool checked)
+  {
+    use_latest_transforms_ = checked;
+    ResetTransformedPoints();
+  }
+
   void PointDrawingPlugin::ResetTransformedPoints()
   {
-    for (std::deque<StampedPoint>& lap: laps_)
+    for (auto& lap: laps_)
     {
-      for (StampedPoint& point: lap)
+      for (auto& point: lap)
       {
         point.transformed = false;
       }
     }
-    for (StampedPoint& point: points_)
+    for (auto& point: points_)
     {
       point.transformed = false;
     }
+    cur_point_.transformed = false;
     Transform();
   }
 
@@ -244,7 +257,7 @@ namespace mapviz_plugins
 
   bool PointDrawingPlugin::DrawPoints(double scale)
   {
-    if( scale_ != scale && draw_style_ == ARROWS && static_arrow_sizes_)
+    if(use_latest_transforms_ || (scale_ != scale && draw_style_ == ARROWS && static_arrow_sizes_))
     {
       ResetTransformedPoints();
     }
@@ -405,53 +418,16 @@ namespace mapviz_plugins
       return true;
     }
 
-    swri_transform_util::Transform transform;
-    if( GetTransform(point.source_frame, point.stamp, transform))
+    ros::Time stamp;
+    if (!use_latest_transforms_)
     {
-      point.transformed_point = transform * point.point;
+      stamp = point.stamp;
+    }
 
-      if (draw_style_ == ARROWS)
-      {
-        tf::Transform orientation(tf::Transform(transform.GetOrientation()) *
-                                  point.orientation);
-
-        double size = static_cast<double>(arrow_size_);
-        if (static_arrow_sizes_)
-        {
-          size *= scale_;
-        }
-        else
-        {
-          size /= 10.0;
-        }
-        double arrow_width = size / 5.0;
-        double head_length = size * 0.75;
-
-        // If quaternion malformed, just draw point instead
-        const tf::Quaternion q(point.orientation);
-        if(std::fabs(q.x()*q.x() + q.y()*q.y() + q.z()*q.z() + q.w()*q.w() - 1) > 0.01)
-        {
-          orientation = tf::Transform(tf::Transform(transform.GetOrientation()));
-          arrow_width = 0.0;
-          head_length = 0.0;
-          size = 0;
-        }
-
-        point.transformed_arrow_point =
-            point.transformed_point + orientation * tf::Point(size, 0.0, 0.0);
-        point.transformed_arrow_left =
-            point.transformed_point + orientation * tf::Point(head_length, -arrow_width, 0.0);
-        point.transformed_arrow_right =
-            point.transformed_point + orientation * tf::Point(head_length, arrow_width, 0.0);
-      }
-
-      if (covariance_checked_)
-      {
-        for (uint32_t i = 0; i < point.cov_points.size(); i++)
-        {
-          point.transformed_cov_points[i] = transform * point.cov_points[i];
-        }
-      }
+    swri_transform_util::Transform transform;
+    if (GetTransform(point.source_frame, stamp, transform))
+    {
+      TransformPoint(point, transform);
       point.transformed = true;
       return true;
     }
@@ -459,30 +435,123 @@ namespace mapviz_plugins
     return false;
   }
 
-  void PointDrawingPlugin::Transform()
+  void PointDrawingPlugin::TransformPoint(StampedPoint& point, const swri_transform_util::Transform& transform)
   {
-    bool transformed = false;
+    point.transformed_point = transform * point.point;
 
-    for (auto &pt : points_)
+    if (draw_style_ == ARROWS)
     {
-      transformed = transformed | TransformPoint(pt);
+      tf::Transform orientation(tf::Transform(transform.GetOrientation()) *
+                                point.orientation);
+
+      double size = static_cast<double>(arrow_size_);
+      if (static_arrow_sizes_)
+      {
+        size *= scale_;
+      }
+      else
+      {
+        size /= 10.0;
+      }
+      double arrow_width = size / 5.0;
+      double head_length = size * 0.75;
+
+      // If quaternion malformed, just draw point instead
+      const tf::Quaternion q(point.orientation);
+      if(std::fabs(q.x()*q.x() + q.y()*q.y() + q.z()*q.z() + q.w()*q.w() - 1) > 0.01)
+      {
+        orientation = tf::Transform(tf::Transform(transform.GetOrientation()));
+        arrow_width = 0.0;
+        head_length = 0.0;
+        size = 0;
+      }
+
+      point.transformed_arrow_point =
+          point.transformed_point + orientation * tf::Point(size, 0.0, 0.0);
+      point.transformed_arrow_left =
+          point.transformed_point + orientation * tf::Point(head_length, -arrow_width, 0.0);
+      point.transformed_arrow_right =
+          point.transformed_point + orientation * tf::Point(head_length, arrow_width, 0.0);
     }
 
-    transformed = transformed | TransformPoint(cur_point_);
-    if (laps_.size() > 0)
+    if (covariance_checked_)
     {
-      for (auto &lap : laps_)
+      for (uint32_t i = 0; i < point.cov_points.size(); i++)
       {
-        for (auto &pt : lap)
-        {
-          transformed = transformed | TransformPoint(pt);
-        }
+        point.transformed_cov_points[i] = transform * point.cov_points[i];
       }
     }
-    if (!points_.empty() && !transformed)
+    point.transformed = true;
+  }
+
+  void PointDrawingPlugin::Transform()
+  {
+    if (points_.empty())
     {
-      PrintError("No transform between " + cur_point_.source_frame + " and " +
-                 target_frame_);
+      return;
+    }
+
+    if (single_frame_ && use_latest_transforms_)
+    {
+      swri_transform_util::Transform transform;
+      if (GetTransform(points_.front().source_frame, ros::Time(), transform))
+      {
+        for (auto &pt : points_)
+        {
+          TransformPoint(pt, transform);
+        }
+        TransformPoint(cur_point_, transform);
+        for (auto &lap : laps_)
+        {
+          for (auto &pt : lap)
+          {
+            TransformPoint(pt, transform);
+          }
+        }
+      }
+      else
+      {
+        for (auto &pt : points_)
+        {
+          pt.transformed = false;
+        }
+        cur_point_.transformed = false;
+        for (auto &lap : laps_)
+        {
+          for (auto &pt : lap)
+          {
+            pt.transformed = false;
+          }
+        }
+        PrintError("No transform between " + points_.front().source_frame + " and " +
+                   target_frame_);
+      }
+    }
+    else
+    {
+      bool transformed = false;
+
+      for (auto &pt : points_)
+      {
+        transformed = transformed | TransformPoint(pt);
+      }
+
+      transformed = transformed | TransformPoint(cur_point_);
+      if (laps_.size() > 0)
+      {
+        for (auto &lap : laps_)
+        {
+          for (auto &pt : lap)
+          {
+            transformed = transformed | TransformPoint(pt);
+          }
+        }
+      }
+      if (!transformed)
+      {
+        PrintError("No transform between " + cur_point_.source_frame + " and " +
+                   target_frame_);
+      }
     }
   }
 

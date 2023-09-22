@@ -86,15 +86,6 @@ namespace mapviz
      */
     virtual void Paint(QPainter* painter, double x, double y, double scale) {};
 
-    void SetUseLatestTransforms(bool value)
-    {
-      if (value != use_latest_transforms_)
-      {
-        use_latest_transforms_ = value;
-        Q_EMIT UseLatestTransformsChanged(use_latest_transforms_);
-      }
-    }
-
     void SetName(const std::string& name) { name_ = name; }
 
     std::string Name() const { return name_; }
@@ -172,62 +163,24 @@ namespace mapviz
       }
     }
 
-    bool GetTransform(const ros::Time& stamp, swri_transform_util::Transform& transform, bool use_latest_transforms = true)
+    bool GetTransform(const ros::Time& stamp, swri_transform_util::Transform& transform)
     {
-      if (!initialized_)
-        return false;
-
-      ros::Time time = stamp;
-
-      if (use_latest_transforms_ && use_latest_transforms)
-      {
-        time = ros::Time();
-      }
-
-      ros::Duration elapsed = ros::Time::now() - time;
-
-      if (time != ros::Time() && elapsed > tf_->getCacheLength())
-      {
-        return false;
-      }
-
-      if (tf_manager_->GetTransform(target_frame_, source_frame_, time, transform))
-      {
-        return true;
-      }
-      else if (elapsed.toSec() < 0.1)
-      {
-        // If the stamped transform failed because it is too recent, find the
-        // most recent transform in the cache instead.
-        if (tf_manager_->GetTransform(target_frame_, source_frame_,  ros::Time(), transform))
-        {
-          return true;
-        }
-      }
-
-      return false;
+      return GetTransform(source_frame_, stamp, transform);
     }
-    
+
     bool GetTransform(const std::string& source, const ros::Time& stamp, swri_transform_util::Transform& transform)
     {
       if (!initialized_)
         return false;
 
-      ros::Time time = stamp;
+      ros::Duration elapsed = ros::Time::now() - stamp;
 
-      if (use_latest_transforms_)
-      {
-        time = ros::Time();
-      }
-
-      ros::Duration elapsed = ros::Time::now() - time;
-
-      if (time != ros::Time() && elapsed > tf_->getCacheLength())
+      if (stamp != ros::Time() && elapsed > tf_->getCacheLength())
       {
         return false;
       }
 
-      if (tf_manager_->GetTransform(target_frame_, source, time, transform))
+      if (tf_manager_->GetTransform(target_frame_, source, stamp, transform))
       {
         return true;
       }
@@ -306,8 +259,6 @@ namespace mapviz
     std::string type_;
     std::string name_;
 
-    bool use_latest_transforms_;
-
     int draw_order_;
 
     virtual bool Initialize(QGLWidget* canvas) = 0;
@@ -320,7 +271,6 @@ namespace mapviz
       tf_(),
       target_frame_(""),
       source_frame_(""),
-      use_latest_transforms_(false),
       draw_order_(0) {}
 
    private:

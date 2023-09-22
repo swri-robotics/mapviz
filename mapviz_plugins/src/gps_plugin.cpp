@@ -73,6 +73,8 @@ namespace mapviz_plugins
                      this, SLOT(SetStaticArrowSizes(bool)));
     QObject::connect(ui_.arrow_size, SIGNAL(valueChanged(int)),
                      this, SLOT(SetArrowSize(int)));
+    QObject::connect(ui_.use_latest_transforms, SIGNAL(clicked(bool)),
+                     this, SLOT(SetUseLatestTransforms(bool)));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
     QObject::connect(ui_.show_laps, SIGNAL(toggled(bool)), this,
@@ -266,6 +268,13 @@ namespace mapviz_plugins
       SetArrowSize(arrow_size);
     }
 
+    if (node["use_latest_transforms"])
+    {
+      bool use_latest_transforms = node["use_latest_transforms"].as<bool>();
+      ui_.use_latest_transforms->setChecked(use_latest_transforms);
+      SetUseLatestTransforms(use_latest_transforms);
+    }
+
     TopicEdited();
   }
 
@@ -291,5 +300,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "static_arrow_sizes" << YAML::Value << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
+
+    emitter << YAML::Key << "use_latest_transforms" << YAML::Value << ui_.use_latest_transforms->isChecked();
   }
 }
