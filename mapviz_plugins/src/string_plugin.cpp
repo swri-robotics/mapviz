@@ -347,17 +347,36 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
-            rclcpp::QoS(1),
-            [this](const std_msgs::msg::String::ConstSharedPtr str) {
-          SetText(QString(str->data.c_str()));
-        });
-        string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
-            rclcpp::QoS(1),
-            [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
-          SetText(QString(str->value.c_str()));
-        });
+        try
+        {
+          string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
+              rclcpp::QoS(1),
+              [this](const std_msgs::msg::String::ConstSharedPtr str) {
+            SetText(QString(str->data.c_str()));
+          });
+        }
+        catch(...)
+        {
+          RCLCPP_ERROR(node_->get_logger(),
+            "Exception thrown while subscribing to standard string: %s",
+            topic_.c_str());
+        }
 
+        try
+        {
+          string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
+              rclcpp::QoS(1),
+              [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
+            SetText(QString(str->value.c_str()));
+          });
+        }
+        catch(...)
+        {
+          RCLCPP_ERROR(node_->get_logger(),
+            "Exception thrown while subscribing to Marti stamped string: %s",
+            topic_.c_str());
+        }
+         
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
