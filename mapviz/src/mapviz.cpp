@@ -1046,10 +1046,10 @@ void Mapviz::Hover(double x, double y, double scale)
       fixed_frame.length() > 0 &&
       tf_manager_->SupportsTransform(
         swri_transform_util::_wgs84_frame,
-        ui_.fixedframe->currentText().toStdString()) &&
+        fixed_frame) &&
       tf_manager_->GetTransform(
         swri_transform_util::_wgs84_frame,
-        ui_.fixedframe->currentText().toStdString(),
+        fixed_frame,
         transform))
     {
       tf2::Vector3 point(x, y, 0);
