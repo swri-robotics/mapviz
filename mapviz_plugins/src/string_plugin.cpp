@@ -33,6 +33,7 @@
 #include <mapviz/select_topic_dialog.h>
 
 #include <QFontDialog>
+#include <QFontDatabase>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -48,6 +49,7 @@ namespace mapviz_plugins
   const char* StringPlugin::UNITS_KEY = "units";
   const char* StringPlugin::OFFSET_X_KEY = "offset_x";
   const char* StringPlugin::OFFSET_Y_KEY = "offset_y";
+  static constexpr int DEFAULT_FONT_SIZE = 9;
 
   StringPlugin::StringPlugin()
   : MapvizPlugin()
@@ -82,7 +84,8 @@ namespace mapviz_plugins
     QObject::connect(ui_.font_button, SIGNAL(clicked()), this, SLOT(SelectFont()));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectColor()));
 
-    font_.setFamily(tr("Helvetica"));
+    // Change the default font size to our desired size and update the UI with it
+    font_.setPointSize(DEFAULT_FONT_SIZE);
     ui_.font_button->setFont(font_);
     ui_.font_button->setText(font_.family());
 
@@ -207,18 +210,27 @@ namespace mapviz_plugins
 
     if (node[FONT_KEY])
     {
-      font_.fromString(QString(node[FONT_KEY].as<std::string>().c_str()));
-      if (!QFont(font_).exactMatch())
+      std::string saved_font = node[FONT_KEY].as<std::string>();
+      bool ok = font_.fromString(QString(saved_font.c_str()));
+
+      // Revert to the default system font and size if we fail to load
+      // the stored font setting
+      if (!ok)
       {
         RCLCPP_ERROR(
           node_->get_logger(),
           "Unable to load saved font: %s, reverting to default font",
-          font_.toString().toStdString().c_str());
+          saved_font.c_str());
         font_ = QFont();
-        font_.setFamily(tr("Helvetica"));
+        font_.setPointSize(DEFAULT_FONT_SIZE);
       }
-      ui_.font_button->setFont(font_);
-      ui_.font_button->setText(font_.family());
+
+      // Make a copy of the display font here so that we can change the size
+      // to a consistent value, and update the UI with that information
+      QFont button_font = font_;
+      button_font.setPointSize(DEFAULT_FONT_SIZE); 
+      ui_.font_button->setFont(button_font);
+      ui_.font_button->setText(button_font.family());
     }
 
     if (node[COLOR_KEY])
@@ -300,7 +312,7 @@ namespace mapviz_plugins
       font_ = font;
       message_.prepare(QTransform(), font_);
       QFont font = font_;
-      font.setPixelSize(12);
+      font.setPointSize(DEFAULT_FONT_SIZE);
       ui_.font_button->setFont(font);
       ui_.font_button->setText(font.family());
     }
