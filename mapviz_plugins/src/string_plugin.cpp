@@ -33,6 +33,7 @@
 #include <mapviz/select_topic_dialog.h>
 
 #include <QFontDialog>
+#include <QFontDatabase>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -48,6 +49,7 @@ namespace mapviz_plugins
   const char* StringPlugin::UNITS_KEY = "units";
   const char* StringPlugin::OFFSET_X_KEY = "offset_x";
   const char* StringPlugin::OFFSET_Y_KEY = "offset_y";
+  static constexpr int DEFAULT_FONT_SIZE = 9;
 
   StringPlugin::StringPlugin()
   : MapvizPlugin()
@@ -60,6 +62,7 @@ namespace mapviz_plugins
   , has_message_(false)
   , has_painted_(false)
   , color_(Qt::black)
+  , font_()
   {
     ui_.setupUi(config_widget_);
     // Set background white
@@ -81,7 +84,8 @@ namespace mapviz_plugins
     QObject::connect(ui_.font_button, SIGNAL(clicked()), this, SLOT(SelectFont()));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectColor()));
 
-    font_.setFamily(tr("Helvetica"));
+    // Change the default font size to our desired size and update the UI with it
+    font_.setPointSize(DEFAULT_FONT_SIZE);
     ui_.font_button->setFont(font_);
     ui_.font_button->setText(font_.family());
 
@@ -206,9 +210,27 @@ namespace mapviz_plugins
 
     if (node[FONT_KEY])
     {
-      font_.fromString(QString(node[FONT_KEY].as<std::string>().c_str()));
-      ui_.font_button->setFont(font_);
-      ui_.font_button->setText(font_.family());
+      std::string saved_font = node[FONT_KEY].as<std::string>();
+      bool ok = font_.fromString(QString(saved_font.c_str()));
+
+      // Revert to the default system font and size if we fail to load
+      // the stored font setting
+      if (!ok)
+      {
+        RCLCPP_ERROR(
+          node_->get_logger(),
+          "Unable to load saved font: %s, reverting to default font",
+          saved_font.c_str());
+        font_ = QFont();
+        font_.setPointSize(DEFAULT_FONT_SIZE);
+      }
+
+      // Make a copy of the display font here so that we can change the size
+      // to a consistent value, and update the UI with that information
+      QFont button_font = font_;
+      button_font.setPointSize(DEFAULT_FONT_SIZE); 
+      ui_.font_button->setFont(button_font);
+      ui_.font_button->setText(button_font.family());
     }
 
     if (node[COLOR_KEY])
@@ -285,12 +307,16 @@ namespace mapviz_plugins
   {
     bool ok;
     QFont font = QFontDialog::getFont(&ok, font_, canvas_);
+    // Update the UI if a font was chosen
     if (ok)
     {
       font_ = font;
       message_.prepare(QTransform(), font_);
-      ui_.font_button->setFont(font_);
-      ui_.font_button->setText(font_.family());
+      // Override the user's font size so the button size stays consistent
+      QFont font = font_;
+      font.setPointSize(DEFAULT_FONT_SIZE);
+      ui_.font_button->setFont(font);
+      ui_.font_button->setText(font.family());
     }
   }
 
@@ -321,17 +347,36 @@ namespace mapviz_plugins
       topic_ = topic;
       if (!topic.empty())
       {
-        string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
-            rclcpp::QoS(1),
-            [this](const std_msgs::msg::String::ConstSharedPtr str) {
-          SetText(QString(str->data.c_str()));
-        });
-        string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
-            rclcpp::QoS(1),
-            [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
-          SetText(QString(str->value.c_str()));
-        });
+        try
+        {
+          string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
+              rclcpp::QoS(1),
+              [this](const std_msgs::msg::String::ConstSharedPtr str) {
+            SetText(QString(str->data.c_str()));
+          });
+        }
+        catch(...)
+        {
+          RCLCPP_ERROR(node_->get_logger(),
+            "Exception thrown while subscribing to standard string: %s",
+            topic_.c_str());
+        }
 
+        try
+        {
+          string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
+              rclcpp::QoS(1),
+              [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
+            SetText(QString(str->value.c_str()));
+          });
+        }
+        catch(...)
+        {
+          RCLCPP_ERROR(node_->get_logger(),
+            "Exception thrown while subscribing to Marti stamped string: %s",
+            topic_.c_str());
+        }
+         
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
