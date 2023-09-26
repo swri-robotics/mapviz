@@ -60,6 +60,7 @@ namespace mapviz_plugins
   , has_message_(false)
   , has_painted_(false)
   , color_(Qt::black)
+  , font_()
   {
     ui_.setupUi(config_widget_);
     // Set background white
@@ -207,6 +208,15 @@ namespace mapviz_plugins
     if (node[FONT_KEY])
     {
       font_.fromString(QString(node[FONT_KEY].as<std::string>().c_str()));
+      if (!QFont(font_).exactMatch())
+      {
+        RCLCPP_ERROR(
+          node_->get_logger(),
+          "Unable to load saved font: %s, reverting to default font",
+          font_.toString().toStdString().c_str());
+        font_ = QFont();
+        font_.setFamily(tr("Helvetica"));
+      }
       ui_.font_button->setFont(font_);
       ui_.font_button->setText(font_.family());
     }
@@ -284,24 +294,15 @@ namespace mapviz_plugins
   void StringPlugin::SelectFont()
   {
     bool ok;
-      RCLCPP_ERROR(
-        node_->get_logger(),
-        "Loading font: %s, ",
-        font_.toString().toStdString().c_str());
     QFont font = QFontDialog::getFont(&ok, font_, canvas_);
     if (ok)
     {
       font_ = font;
       message_.prepare(QTransform(), font_);
-      ui_.font_button->setFont(font_);
-      ui_.font_button->setText(font_.family());
-    }
-    else
-    {
-      RCLCPP_WARN(
-        node_->get_logger(),
-        "Unable to load font: %s, reverting to default font",
-        font_.toString().toStdString().c_str());
+      QFont font = font_;
+      font.setPixelSize(12);
+      ui_.font_button->setFont(font);
+      ui_.font_button->setText(font.family());
     }
   }
 
