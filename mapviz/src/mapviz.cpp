@@ -1040,14 +1040,16 @@ void Mapviz::Hover(double x, double y, double scale)
     xy_pos_label_->update();
 
     swri_transform_util::Transform transform;
+    std::string fixed_frame = ui_.fixedframe->currentText().toStdString();
     if
     (
+      fixed_frame.length() > 0 &&
       tf_manager_->SupportsTransform(
         swri_transform_util::_wgs84_frame,
-        ui_.fixedframe->currentText().toStdString()) &&
+        fixed_frame) &&
       tf_manager_->GetTransform(
         swri_transform_util::_wgs84_frame,
-        ui_.fixedframe->currentText().toStdString(),
+        fixed_frame,
         transform))
     {
       tf2::Vector3 point(x, y, 0);
