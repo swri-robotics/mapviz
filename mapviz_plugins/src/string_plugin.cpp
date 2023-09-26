@@ -307,10 +307,12 @@ namespace mapviz_plugins
   {
     bool ok;
     QFont font = QFontDialog::getFont(&ok, font_, canvas_);
+    // Update the UI if a font was chosen
     if (ok)
     {
       font_ = font;
       message_.prepare(QTransform(), font_);
+      // Override the user's font size so the button size stays consistent
       QFont font = font_;
       font.setPointSize(DEFAULT_FONT_SIZE);
       ui_.font_button->setFont(font);
