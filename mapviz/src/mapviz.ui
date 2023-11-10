@@ -60,6 +60,7 @@
     <addaction name="actionResizable"/>
     <addaction name="separator"/>
     <addaction name="actionConfig_Dock"/>
+    <addaction name="actionAction_Dock"/>
     <addaction name="actionShow_Status_Bar"/>
     <addaction name="actionShow_Capture_Tools"/>
     <addaction name="separator"/>
@@ -79,6 +80,108 @@
     <bool>true</bool>
    </property>
   </widget>
+  <widget class="QDockWidget" name="actiondock">
+    <property name="minimumSize">
+     <size>
+      <width>332</width>
+      <height>301</height>
+     </size>
+    </property>
+    <property name="features">
+     <set>QDockWidget::DockWidgetMovable</set>
+    </property>
+    <property name="allowedAreas">
+     <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+    </property>
+    <property name="windowTitle">
+     <string>Action</string>
+    </property>
+    <attribute name="dockWidgetArea">
+     <number>2</number>
+    </attribute>
+    <widget class="QWidget" name="actionDockWidgetContents">
+     <layout class="QVBoxLayout" name="actionVerticalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="mapviz::PluginConfigList" name="actions">
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="dragEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="dragDropMode">
+         <enum>QAbstractItemView::InternalMove</enum>
+        </property>
+        <property name="defaultDropAction">
+         <enum>Qt::MoveAction</enum>
+        </property>
+        <property name="verticalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="actionWidget" native="true">
+        <layout class="QHBoxLayout" name="actionHorizontalLayoutAction">
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="actionaddbutton">
+           <property name="maximumSize">
+            <size>
+             <width>80</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Add a new display</string>
+           </property>
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="actionremovebutton">
+           <property name="maximumSize">
+            <size>
+             <width>80</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Remove the selected display</string>
+           </property>
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
   <widget class="QDockWidget" name="configdock">
    <property name="minimumSize">
     <size>
@@ -286,7 +389,7 @@
          <number>4</number>
         </property>
         <item>
-         <widget class="QPushButton" name="addbutton">
+         <widget class="QPushButton" name="configaddbutton">
           <property name="maximumSize">
            <size>
             <width>80</width>
@@ -302,7 +405,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="removebutton">
+         <widget class="QPushButton" name="configremovebutton">
           <property name="maximumSize">
            <size>
             <width>80</width>
@@ -352,6 +455,20 @@
     <string>Show the display configuration panel</string>
    </property>
   </action>
+  <action name="actionAction_Dock">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>Show Action Panel</string>
+    </property>
+    <property name="statusTip">
+     <string>Show the action widget panel</string>
+    </property>
+   </action>
   <action name="actionFix_Orientation">
    <property name="checkable">
     <bool>true</bool>
@@ -498,15 +615,49 @@
   <tabstop>targetframe</tabstop>
   <tabstop>bg_color</tabstop>
   <tabstop>configs</tabstop>
-  <tabstop>addbutton</tabstop>
-  <tabstop>removebutton</tabstop>
+  <tabstop>configaddbutton</tabstop>
+  <tabstop>configremovebutton</tabstop>
+  <tabstop>actionaddbutton</tabstop>
+  <tabstop>actionremovebutton</tabstop>
  </tabstops>
  <resources>
   <include location="resources/icons.qrc"/>
  </resources>
  <connections>
   <connection>
-   <sender>addbutton</sender>
+    <sender>actionaddbutton</sender>
+    <signal>clicked()</signal>
+    <receiver>mapviz</receiver>
+    <slot>SelectNewDisplay()</slot>
+    <hints>
+    <hint type="sourcelabel">
+    <x>107</x>
+    <y>573</y>
+    </hint>
+    <hint type="destinationlabel">
+    <x>327</x>
+    <y>471</y>
+    </hint>
+    </hints>
+  </connection>
+  <connection>
+    <sender>actionremovebutton</sender>
+    <signal>clicked()</signal>
+    <receiver>mapviz</receiver>
+    <slot>RemoveDisplay()</slot>
+    <hints>
+     <hint type="sourcelabel">
+      <x>224</x>
+      <y>573</y>
+     </hint>
+     <hint type="destinationlabel">
+      <x>328</x>
+      <y>407</y>
+     </hint>
+    </hints>
+   </connection>
+  <connection>
+   <sender>configaddbutton</sender>
    <signal>clicked()</signal>
    <receiver>mapviz</receiver>
    <slot>SelectNewDisplay()</slot>
@@ -522,7 +673,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>removebutton</sender>
+   <sender>configremovebutton</sender>
    <signal>clicked()</signal>
    <receiver>mapviz</receiver>
    <slot>RemoveDisplay()</slot>
@@ -542,6 +693,22 @@
    <signal>toggled(bool)</signal>
    <receiver>mapviz</receiver>
    <slot>ToggleConfigPanel(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionAction_Dock</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>mapviz</receiver>
+   <slot>ToggleActionPanel(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
