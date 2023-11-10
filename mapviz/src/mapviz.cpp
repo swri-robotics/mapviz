@@ -1184,7 +1184,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   }
 
 
-  ROS_INFO("creating: %s, in panel: ", real_type.c_str(), listName.c_str());
+  ROS_INFO("creating: %s, in panel: %s.", real_type.c_str(), listName.c_str());
   MapvizPluginPtr plugin = loader_->createInstance(real_type.c_str());
 
   // Setup configure widget
