@@ -172,15 +172,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   canvas_ = new MapCanvas(this);
   setCentralWidget(canvas_);
 
-  QSignalMapper* signalMapper = new QSignalMapper (this) ;;
-  connect (ui_.configs, SIGNAL(ItemsMoved()), signalMapper, SLOT(map())) ;
-  connect (ui_.actions, SIGNAL(ItemsMoved()), signalMapper, SLOT(map())) ;
-  signalMapper -> setMapping (ui_.configs, "config") ;
-  signalMapper -> setMapping (ui_.actions, "action") ;
-  connect (signalMapper, SIGNAL(mapped(std::string)), this, SLOT(ReorderDisplays(std::string))) ;
-
   connect(canvas_, SIGNAL(Hover(double,double,double)), this, SLOT(Hover(double,double,double)));
-  // connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
   connect(ui_.actionClear, SIGNAL(triggered()), this, SLOT(ClearConfig()));
   connect(ui_.bg_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectBackgroundColor(const QColor &)));
@@ -190,6 +182,13 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
   connect(screenshot_button_, SIGNAL(clicked()), this, SLOT(Screenshot()));
   connect(ui_.actionClear_History, SIGNAL(triggered()), this, SLOT(ClearHistory()));
+  
+  QSignalMapper* pclMapper = new QSignalMapper (this) ;;
+  connect (ui_.configs, SIGNAL(ItemsMoved()), pclMapper, SLOT(map())) ;
+  connect (ui_.actions, SIGNAL(ItemsMoved()), pclMapper, SLOT(map())) ;
+  pclMapper -> setMapping (ui_.configs, "config") ;
+  pclMapper -> setMapping (ui_.actions, "action") ;
+  connect (pclMapper, SIGNAL(mapped(std::string)), this, SLOT(ReorderDisplays(std::string))) ;
 
   // Use a separate thread for writing video files so that it won't cause
   // lag on the main thread.
