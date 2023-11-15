@@ -51,6 +51,7 @@ namespace tile_map
     network_manager_(this)
   {
     name_ = name;
+    is_ready_ = false;
     is_custom_ = false;
     max_zoom_ = 19;
     base_url_ = "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?uriScheme=https&include=ImageryProviders&key={api_key}";
