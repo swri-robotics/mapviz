@@ -51,7 +51,6 @@
 #include <QWidget>
 #include <QStringList>
 #include <QMainWindow>
-#include <QShortcut>
 
 // ROS libraries
 #include <ros/ros.h>

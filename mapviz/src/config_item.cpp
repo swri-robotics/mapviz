@@ -43,7 +43,6 @@ namespace mapviz
 
     edit_name_action_   = new  QAction("Edit Name", this);
     duplicate_item_action_ = new QAction("Duplicate", this);
-    duplicate_item_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     remove_item_action_ = new  QAction("Remove", this);
     remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
 

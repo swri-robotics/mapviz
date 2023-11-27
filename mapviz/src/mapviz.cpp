@@ -201,10 +201,6 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
   ui_.bg_color->setColor(background_);
   canvas_->SetBackground(background_);
-
-  // Keyboard shortcuts for the main window
-  QShortcut *duplicate_display_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_D), this);
-  connect(duplicate_display_shortcut, SIGNAL(activated()), this, SLOT(DuplicateDisplay()));
 }
 
 Mapviz::~Mapviz()
