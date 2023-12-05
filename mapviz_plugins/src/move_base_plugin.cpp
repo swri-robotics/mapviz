@@ -79,14 +79,14 @@ MoveBasePlugin::MoveBasePlugin() :
     p3.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.pushButtonInitialPose, SIGNAL(&QPushButton::toggled),
-                     this, SLOT(&MoveBasePlugin::on_pushButtonInitialPose_toggled));
+    QObject::connect(ui_.pushButtonInitialPose, SIGNAL(toggled(bool)),
+                     this, SLOT(on_pushButtonInitialPose_toggled(bool)));
 
-    QObject::connect(ui_.pushButtonGoalPose, SIGNAL(&QPushButton::toggled),
-                     this, SLOT(&MoveBasePlugin::on_pushButtonGoalPose_toggled));
+    QObject::connect(ui_.pushButtonGoalPose, SIGNAL(toggled(bool)),
+                     this, SLOT(on_pushButtonGoalPose_toggled(bool)));
 
-    QObject::connect(ui_.pushButtonAbort, SIGNAL(&QPushButton::clicked),
-                     this, SLOT(&MoveBasePlugin::on_pushButtonAbort_clicked));
+    QObject::connect(ui_.pushButtonAbort, SIGNAL(clicked()),
+                     this, SLOT(on_pushButtonAbort_clicked()));
 
     timer_ = nh_.createTimer(ros::Duration(1.0), &MoveBasePlugin::timerCallback, this);
 
