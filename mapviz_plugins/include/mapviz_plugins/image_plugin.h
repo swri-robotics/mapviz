@@ -113,6 +113,7 @@ namespace mapviz_plugins
     void SetHeight(double height);
     void SetSubscription(bool visible);
     void SetTransport(const QString& transport);
+    void SetRotation(QString rotation);
     void KeepRatioChanged(bool checked);
 
   private:
@@ -127,12 +128,14 @@ namespace mapviz_plugins
     double width_;
     double height_;
     std::string transport_;
+    int rotation_;
 
     bool force_resubscribe_;
     bool has_image_;
 
     double last_width_;
     double last_height_;
+    int last_rotation_;
     double original_aspect_ratio_;
 
     ros::NodeHandle local_node_;
@@ -143,6 +146,7 @@ namespace mapviz_plugins
 
     cv_bridge::CvImagePtr cv_image_;
     cv::Mat scaled_image_;
+    cv::Mat rotated_image_;
 
     void imageCallback(const sensor_msgs::ImageConstPtr& image);
 
@@ -151,6 +155,7 @@ namespace mapviz_plugins
 
     std::string AnchorToString(Anchor anchor);
     std::string UnitsToString(Units units);
+    std::string RotationToString(int rotation);
   };
 }
 
