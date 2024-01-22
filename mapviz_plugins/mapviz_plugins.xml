@@ -1,4 +1,4 @@
-<library path="lib/libmapviz_plugins">
+<library path="mapviz_plugins">
   <class name="mapviz_plugins/attitude_indicator" 
          type="mapviz_plugins::AttitudeIndicatorPlugin" 
          base_class_type="mapviz::MapvizPlugin">
@@ -19,18 +19,16 @@
   <class name="mapviz_plugins/pose" type="mapviz_plugins::PosePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Pose mapviz plugin.</description>
   </class>
-  <class name="mapviz_plugins/pose_array" type="mapviz_plugins::PoseArrayPlugin" base_class_type="mapviz::MapvizPlugin">
-    <description>Pose Array mapviz plugin.</description>
-  </class>
   <class name="mapviz_plugins/marker" type="mapviz_plugins::MarkerPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Marker mapviz plugin.</description>
   </class>
   <class name="mapviz_plugins/textured_marker" type="mapviz_plugins::TexturedMarkerPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Textured marker mapviz plugin.</description>
   </class>
-  <class name="mapviz_plugins/move_base" type="mapviz_plugins::MoveBasePlugin" base_class_type="mapviz::MapvizPlugin">
+  <!-- MoveBasePlugin is commented out until the plugin is ported to ROS 2 -->
+  <!--class name="mapviz_plugins/move_base" type="mapviz_plugins::MoveBasePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Interface to the [move_base] action server.</description>
-  </class>
+  </class-->
   <class name="mapviz_plugins/grid" type="mapviz_plugins::GridPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Grid mapviz plugin.</description>
   </class>
@@ -45,12 +43,6 @@
   </class>
   <class name="mapviz_plugins/path" type="mapviz_plugins::PathPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Path mapviz plugin.</description>
-  </class>
-  <class name="mapviz_plugins/marti_nav_path" type="mapviz_plugins::MartiNavPathPlugin" base_class_type="mapviz::MapvizPlugin">
-    <description>marti_nav_msgs::Path mapviz plugin.</description>
-  </class>
-  <class name="mapviz_plugins/marti_nav_plan" type="mapviz_plugins::MartiNavPlanPlugin" base_class_type="mapviz::MapvizPlugin">
-    <description>marti_nav_msgs::Plan mapviz plugin.</description>
   </class>
   <class name="mapviz_plugins/tf_frame" type="mapviz_plugins::TfFramePlugin" base_class_type="mapviz::MapvizPlugin">
     <description>TF frame mapviz plugin.</description>
@@ -79,8 +71,8 @@
   <class name="mapviz_plugins/point_click_publisher" type="mapviz_plugins::PointClickPublisherPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Publishes a StampedPoint when a point on the map canvas is clicked.</description>
   </class>
-  <class name="mapviz_plugins/pose_publisher" type="mapviz_plugins::PosePublisherPlugin" base_class_type="mapviz::MapvizPlugin">
-      <description>Publishes a PoseWithCovarianceStamped when a point on the map canvas is clicked.  Orientation is set by dragging away from that point and releasing the mouse button.</description>
+    <class name="mapviz_plugins/pose_click_publisher" type="mapviz_plugins::PoseClickPublisherPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Publishes a StampedPose when a point on the map canvas is clicked.</description>
   </class>
   <class name="mapviz_plugins/string" type="mapviz_plugins::StringPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Displays a std_msgs/String at a fixed point on the canvas.</description>
@@ -90,9 +82,6 @@
   </class>
   <class name="mapviz_plugins/occupancy_grid" type="mapviz_plugins::OccupancyGridPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Display maps and other OccupancyGrids</description>
-  </class>
-  <class name="mapviz_plugins/object" type="mapviz_plugins::ObjectPlugin" base_class_type="mapviz::MapvizPlugin">
-    <description>Display marti_nav_msgs::Obstacles and TrackedObjects</description>
   </class>
 </library>
 
