@@ -1179,6 +1179,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   item->setSizeHint(config_item->sizeHint());
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
   connect(config_item, SIGNAL(ToggledDraw(QListWidgetItem*, bool)), this, SLOT(ToggleShowPlugin(QListWidgetItem*, bool)));
+  connect(config_item, SIGNAL(DuplicateRequest(QListWidgetItem*)), this, SLOT(DuplicateDisplay(QListWidgetItem*)));
   connect(config_item, SIGNAL(RemoveRequest(QListWidgetItem*)), this, SLOT(RemoveDisplay(QListWidgetItem*)));
   connect(plugin.get(), SIGNAL(VisibleChanged(bool)), config_item, SLOT(ToggleDraw(bool)));
   connect(plugin.get(), SIGNAL(SizeChanged()), this, SLOT(UpdateSizeHints()));
@@ -1481,6 +1482,66 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
     plugins_.erase(item);
 
     delete item;
+  }
+}
+
+void Mapviz::DuplicateDisplay()
+{
+  QListWidgetItem* item = ui_.configs->item(ui_.configs->currentRow());
+  if (item != nullptr)
+  {
+    DuplicateDisplay(item);
+  }
+}
+
+void Mapviz::DuplicateDisplay(QListWidgetItem* item)
+{
+  ROS_INFO("Duplicating active display... ");
+  // - Get plugin associated with QListWidgetItem
+  if (plugins_.count(item) != 1)
+  {
+    ROS_ERROR("Item attempted to duplicate is not a plugin.");
+    return;
+  }
+  MapvizPluginPtr target_plugin = plugins_[item];
+  ConfigItem* target_config_item = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
+
+  // - Save plugin config to a temporary string via an emitter
+  YAML::Emitter out;
+  out << YAML::BeginMap;
+  out << YAML::Key << "type" << YAML::Value << target_plugin->Type();
+  out << YAML::Key << "name" << YAML::Value << target_config_item->Name().toStdString();
+  out << YAML::Key << "config" << YAML::Value;
+  out << YAML::BeginMap;
+  out << YAML::Key << "visible" << YAML::Value << target_plugin->Visible();
+  out << YAML::Key << "collapsed" << YAML::Value << target_config_item->Collapsed();
+  target_plugin->SaveConfig(out, "");
+  out << YAML::EndMap;
+  out << YAML::EndMap;
+
+  // - Create the new display via existing MapvizPlugin::LoadConfig interface
+  YAML::Node temp_node;
+  swri_yaml_util::LoadString(out.c_str(), temp_node);
+  YAML::Node temp_config_node = temp_node["config"];
+  if (!temp_config_node)
+  {
+    ROS_ERROR("Cannot duplicate plugin of type %s. Invalid config.",
+        target_plugin->Type().c_str());
+    return;
+  }
+  try
+  {
+    MapvizPluginPtr duplicate_plugin = CreateNewDisplay(
+        target_config_item->Name().toStdString(),
+        target_plugin->Type(),
+        target_plugin->Visible(),
+        target_config_item->Collapsed());
+    duplicate_plugin->LoadConfig(temp_config_node, "");
+    duplicate_plugin->DrawIcon();
+  }
+  catch (const pluginlib::LibraryLoadException& e)
+  {
+    ROS_ERROR("%s", e.what());
   }
 }
 

@@ -92,6 +92,8 @@ namespace mapviz
     void SelectNewDisplay();
     void RemoveDisplay();
     void RemoveDisplay(QListWidgetItem* item);
+    void DuplicateDisplay();
+    void DuplicateDisplay(QListWidgetItem *item);
     void ReorderDisplays();
     void FixedFrameSelected(const QString& text);
     void TargetFrameSelected(const QString& text);

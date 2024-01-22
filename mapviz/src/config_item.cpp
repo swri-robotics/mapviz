@@ -42,10 +42,12 @@ namespace mapviz
     ui_.setupUi(this);
 
     edit_name_action_   = new  QAction("Edit Name", this);
+    duplicate_item_action_ = new QAction("Duplicate", this);
     remove_item_action_ = new  QAction("Remove", this);
     remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
 
     connect(edit_name_action_, SIGNAL(triggered()), this, SLOT(EditName()));
+    connect(duplicate_item_action_, SIGNAL(triggered()), this, SLOT(Duplicate()));
     connect(remove_item_action_, SIGNAL(triggered()), this, SLOT(Remove()));
   }
 
@@ -71,6 +73,7 @@ namespace mapviz
   {
     QMenu menu(this);
     menu.addAction(edit_name_action_);
+    menu.addAction(duplicate_item_action_);
     menu.addAction(remove_item_action_);
     menu.exec(event->globalPos());
   }
@@ -107,6 +110,11 @@ namespace mapviz
     {
       SetName(text);
     }
+  }
+
+  void ConfigItem::Duplicate()
+  {
+    Q_EMIT DuplicateRequest(item_);
   }
 
   void ConfigItem::Remove()
