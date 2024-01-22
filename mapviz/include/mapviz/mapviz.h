@@ -92,13 +92,14 @@ namespace mapviz
     void SelectNewDisplay();
     void RemoveDisplay();
     void RemoveDisplay(QListWidgetItem* item);
-    void ReorderDisplays();
+    void ReorderDisplays(std::string listName);
     void FixedFrameSelected(const QString& text);
     void TargetFrameSelected(const QString& text);
     void UpdateFrames();
     void SpinOnce();
     void UpdateSizeHints();
     void ToggleConfigPanel(bool on);
+    void ToggleActionPanel(bool on);
     void ToggleStatusBar(bool on);
     void ToggleCaptureTools(bool on);
     void ToggleFixOrientation(bool on);
@@ -184,8 +185,11 @@ namespace mapviz
 
     void Open(const std::string& filename);
     void Save(const std::string& filename);
+    void SavePluginList(YAML::Emitter& emitter, const std::string& listName, const std::string& config_path);
+    void UpdateHintSizesByList(const std::string& listName);
 
     MapvizPluginPtr CreateNewDisplay(
+        const std::string& listName,
         const std::string& name,
         const std::string& type,
         bool visible,
@@ -196,6 +200,7 @@ namespace mapviz
       AddMapvizDisplay::Request& req,
       AddMapvizDisplay::Response& resp);
 
+    mapviz::PluginConfigList* GetPluginConfigListByName(const std::string& name);
     void ClearDisplays();
     void AdjustWindowSize();
 
