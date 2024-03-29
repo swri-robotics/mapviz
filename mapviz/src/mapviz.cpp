@@ -284,9 +284,17 @@ void Mapviz::Initialize()
 
     connect(group, SIGNAL(triggered(QAction*)), this, SLOT(SetImageTransport(QAction*)));
 
+    rclcpp::QoS dynamic_tf_qos(100);
+    dynamic_tf_qos.best_effort();
+    dynamic_tf_qos.durability_volatile();
     tf_buf_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_buf_->setUsingDedicatedThread(true);
-    tf_ = std::make_shared<tf2_ros::TransformListener>(*tf_buf_, node_, false);
+    tf_ = std::make_shared<tf2_ros::TransformListener>(
+      *tf_buf_,
+      node_,
+      false,
+      dynamic_tf_qos);
+    
     tf_manager_ = std::make_shared<swri_transform_util::TransformManager>(node_);
     try
     {
