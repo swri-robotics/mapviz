@@ -26,22 +26,24 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#include <mapviz/select_topic_dialog.h>
-
-#include <QListWidget>
-#include <QLineEdit>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QPushButton>
-#include <QLabel>
-#include <QTimerEvent>
-
 #include <algorithm>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QListWidget>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QTimerEvent>
+#include <QVBoxLayout>
+
+#include <rmw/qos_profiles.h>
+
+#include <mapviz/select_topic_dialog.h>
 
 namespace mapviz
 {
@@ -125,11 +127,42 @@ SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidge
   ok_button_(new QPushButton("&Ok")),
   cancel_button_(new QPushButton("&Cancel")),
   list_widget_(new QListWidget()),
-  name_filter_(new QLineEdit())
+  name_filter_(new QLineEdit()),
+  qos_depth_widget_(new QSpinBox()),
+  qos_history_widget_(new QListWidget()),
+  qos_reliability_widget_(new QListWidget()),
+  qos_durability_widget_(new QListWidget())
 {
   QHBoxLayout *filter_box = new QHBoxLayout();
   filter_box->addWidget(new QLabel("Filter:"));
   filter_box->addWidget(name_filter_);
+
+  QHBoxLayout *qos_depth_box = new QHBoxLayout();
+  qos_depth_box->addWidget(new QLabel("Depth:"));
+  qos_depth_widget_->setRange(1, 100);
+  qos_depth_widget_->setValue(rmw_qos_profile_default.depth);
+  qos_depth_box->addWidget(qos_depth_widget_);
+
+  QHBoxLayout *qos_history_box = new QHBoxLayout();
+  qos_history_box->addWidget(new QLabel("History:"));
+  qos_history_widget_->addItem("Keep Last");
+  qos_history_widget_->addItem("Keep All");
+  qos_reliability_widget_->setCurrentRow(0);
+  qos_history_box->addWidget(qos_history_widget_);
+
+  QHBoxLayout *qos_reliability_box = new QHBoxLayout();
+  qos_reliability_box->addWidget(new QLabel("Reliability:"));
+  qos_reliability_widget_->addItem("Reliable");
+  qos_reliability_widget_->addItem("Best Effort");
+  qos_reliability_widget_->setCurrentRow(0);
+  qos_reliability_box->addWidget(qos_reliability_widget_);
+
+  QHBoxLayout *qos_durability_box = new QHBoxLayout();
+  qos_durability_box->addWidget(new QLabel("Reliability:"));
+  qos_durability_widget_->addItem("Transient Local");
+  qos_durability_widget_->addItem("Volatile");
+  qos_reliability_widget_->setCurrentRow(1);
+  qos_durability_box->addWidget(qos_durability_widget_);
 
   QHBoxLayout *button_box = new QHBoxLayout();
   button_box->addStretch(1);
@@ -139,6 +172,10 @@ SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidge
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget(list_widget_);
   vbox->addLayout(filter_box);
+  vbox->addLayout(qos_depth_box);
+  vbox->addLayout(qos_history_box);
+  vbox->addLayout(qos_reliability_box);
+  vbox->addLayout(qos_durability_box);
   vbox->addLayout(button_box);
   setLayout(vbox);
 

@@ -43,6 +43,7 @@ QT_BEGIN_NAMESPACE
 class QLineEdit;
 class QListWidget;
 class QPushButton;
+class QSpinBox;
 QT_END_NAMESPACE
 
 namespace mapviz
@@ -190,6 +191,11 @@ class SelectTopicDialog : public QDialog
   QPushButton *ok_button_;
   QPushButton *cancel_button_;
   QListWidget *list_widget_;
+  QSpinBox *qos_depth_widget_;
+  QListWidget *qos_history_widget_;
+  QListWidget *qos_reliability_widget_;
+  QListWidget *qos_durability_widget_;
+
   QLineEdit *name_filter_;
 };  // class SelectTopicDialog
 }  // namespace mapviz
