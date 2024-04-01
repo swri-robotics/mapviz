@@ -147,7 +147,7 @@ SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidge
   qos_history_box->addWidget(new QLabel("History:"));
   qos_history_widget_->addItem("Keep Last");
   qos_history_widget_->addItem("Keep All");
-  qos_reliability_widget_->setCurrentRow(0);
+  qos_history_widget_->setCurrentRow(0);
   qos_history_box->addWidget(qos_history_widget_);
 
   QHBoxLayout *qos_reliability_box = new QHBoxLayout();
@@ -161,7 +161,7 @@ SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidge
   qos_durability_box->addWidget(new QLabel("Reliability:"));
   qos_durability_widget_->addItem("Transient Local");
   qos_durability_widget_->addItem("Volatile");
-  qos_reliability_widget_->setCurrentRow(1);
+  qos_durability_widget_->setCurrentRow(1);
   qos_durability_box->addWidget(qos_durability_widget_);
 
   QHBoxLayout *button_box = new QHBoxLayout();
@@ -179,12 +179,26 @@ SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidge
   vbox->addLayout(button_box);
   setLayout(vbox);
 
-  connect(ok_button_, SIGNAL(clicked(bool)),
-          this, SLOT(accept()));
-  connect(cancel_button_, SIGNAL(clicked(bool)),
-          this, SLOT(reject()));
-  connect(name_filter_, SIGNAL(textChanged(const QString &)),
-          this, SLOT(updateDisplayedTopics()));
+  connect(
+    ok_button_,
+    SIGNAL(clicked(bool)),
+    this,
+    SLOT(accept()));
+  connect(
+    cancel_button_,
+    SIGNAL(clicked(bool)),
+    this,
+    SLOT(reject()));
+  connect(
+    name_filter_,
+    SIGNAL(textChanged(const QString &)),
+    this,
+    SLOT(updateDisplayedTopics()));
+  connect(
+    qos_depth_widget_,
+    SIGNAL(valueChanged(const int)),
+    this,
+    SLOT(updateDepth()));
 
   ok_button_->setDefault(true);
 
@@ -368,5 +382,10 @@ void SelectTopicDialog::updateDisplayedTopics()
   }
 
   displayed_topics_.swap(next_displayed_topics);
+}
+
+void SelectTopicDialog::updateDepth(const int depth)
+{
+
 }
 }  // namespace mapviz
