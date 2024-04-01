@@ -194,11 +194,6 @@ SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidge
     SIGNAL(textChanged(const QString &)),
     this,
     SLOT(updateDisplayedTopics()));
-  connect(
-    qos_depth_widget_,
-    SIGNAL(valueChanged(const int)),
-    this,
-    SLOT(updateDepth()));
 
   ok_button_->setDefault(true);
 
@@ -382,10 +377,5 @@ void SelectTopicDialog::updateDisplayedTopics()
   }
 
   displayed_topics_.swap(next_displayed_topics);
-}
-
-void SelectTopicDialog::updateDepth(const int depth)
-{
-
 }
 }  // namespace mapviz
