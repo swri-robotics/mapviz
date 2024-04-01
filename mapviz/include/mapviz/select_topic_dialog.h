@@ -178,7 +178,6 @@ class SelectTopicDialog : public QDialog
  private Q_SLOTS:
   void fetchTopics();
   void updateDisplayedTopics();
-  void updateDepth(const int depth);
 
  private:
   std::set<std::string> allowed_datatypes_;
