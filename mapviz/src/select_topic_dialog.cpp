@@ -44,6 +44,7 @@
 #include <rmw/qos_profiles.h>
 
 #include <mapviz/select_topic_dialog.h>
+#include "ui_topic_select.h"
 
 namespace mapviz
 {
@@ -213,7 +214,7 @@ void SelectTopicDialog::timerEvent(QTimerEvent *event)
 
 void SelectTopicDialog::closeEvent(QCloseEvent *event)
 {
-  // We don't need to keep making requests from the ROS master.
+  // We don't need to keep querying the system
   killTimer(fetch_topics_timer_id_);
   QDialog::closeEvent(event);
 }

@@ -74,9 +74,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Qt UI files
 set(UI_FILES
-  src/configitem.ui
-  src/${PROJECT_NAME}.ui
-  src/pluginselect.ui
+  ui/configitem.ui
+  ui/mapviz.ui
+  ui/pluginselect.ui
+  ui/topic_select.ui
 )
 # Headers containing QObject definitions
 set(QT_HEADERS

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Select Topic</string>
+   <string>Select Topic(s)</string>
   </property>
   <property name="modal">
    <bool>true</bool>

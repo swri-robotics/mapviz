@@ -33,7 +33,6 @@ find_package(marti_common_msgs REQUIRED)
 find_package(marti_nav_msgs REQUIRED)
 find_package(marti_sensor_msgs REQUIRED)
 find_package(marti_visualization_msgs REQUIRED)
-# find_package(move_base_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -94,7 +93,6 @@ set(UI_FILES
     ui/string_config.ui
     ui/textured_marker_config.ui
     ui/tf_frame_config.ui
-    ui/topic_select.ui
 )
 
 set(SRC_FILES
