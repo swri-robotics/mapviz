@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/path_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -35,8 +36,6 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-
-#include <mapviz/topic_select.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

@@ -68,31 +68,31 @@ add_definitions(-DQT_NO_KEYWORDS)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(UI_FILES
-    ui/attitude_indicator_config.ui
-    ui/coordinate_picker_config.ui
-    ui/disparity_config.ui
-    ui/draw_polygon_config.ui
-    ui/float_config.ui
-    ui/gps_config.ui
-    ui/grid_config.ui
-    ui/image_config.ui
-    ui/laserscan_config.ui
-    ui/marker_config.ui
-    ui/measuring_config.ui
-    # ui/move_base_config.ui
-    ui/navsat_config.ui
-    ui/occupancy_grid_config.ui
-    ui/odometry_config.ui
-    ui/path_config.ui
-    ui/plan_route_config.ui
-    ui/point_click_publisher_config.ui
-    ui/pointcloud2_config.ui
-    ui/pose_config.ui
-    ui/robot_image_config.ui
-    ui/route_config.ui
-    ui/string_config.ui
-    ui/textured_marker_config.ui
-    ui/tf_frame_config.ui
+  ui/attitude_indicator_config.ui
+  ui/coordinate_picker_config.ui
+  ui/disparity_config.ui
+  ui/draw_polygon_config.ui
+  ui/float_config.ui
+  ui/gps_config.ui
+  ui/grid_config.ui
+  ui/image_config.ui
+  ui/laserscan_config.ui
+  ui/marker_config.ui
+  ui/measuring_config.ui
+  ui/navsat_config.ui
+  ui/occupancy_grid_config.ui
+  ui/odometry_config.ui
+  ui/path_config.ui
+  ui/plan_route_config.ui
+  ui/point_click_publisher_config.ui
+  ui/pointcloud2_config.ui
+  ui/pose_config.ui
+  ui/robot_image_config.ui
+  ui/route_config.ui
+  ui/string_config.ui
+  ui/textured_marker_config.ui
+  ui/tf_frame_config.ui
+  ui/topicselect.ui
 )
 
 set(SRC_FILES
@@ -108,7 +108,6 @@ set(SRC_FILES
     src/laserscan_plugin.cpp
     src/marker_plugin.cpp
     src/measuring_plugin.cpp 
-    # src/move_base_plugin.cpp
     src/navsat_plugin.cpp
     src/occupancy_grid_plugin.cpp
     src/odometry_plugin.cpp 
@@ -124,6 +123,7 @@ set(SRC_FILES
     src/string_plugin.cpp
     src/textured_marker_plugin.cpp
     src/tf_frame_plugin.cpp
+    src/topic_select.cpp
 )
 
 set(HEADER_FILES
@@ -139,7 +139,6 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/laserscan_plugin.h
     include/${PROJECT_NAME}/marker_plugin.h
     include/${PROJECT_NAME}/measuring_plugin.h
-    # include/${PROJECT_NAME}/move_base_plugin.h
     include/${PROJECT_NAME}/navsat_plugin.h
     include/${PROJECT_NAME}/occupancy_grid_plugin.h
     include/${PROJECT_NAME}/odometry_plugin.h
@@ -155,6 +154,7 @@ set(HEADER_FILES
     include/${PROJECT_NAME}/string_plugin.h
     include/${PROJECT_NAME}/textured_marker_plugin.h
     include/${PROJECT_NAME}/tf_frame_plugin.h
+    include/${PROJECT_NAME}/topic_select.h
 )
     
 qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})

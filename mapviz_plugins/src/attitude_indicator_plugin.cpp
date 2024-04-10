@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/attitude_indicator_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 #include <GL/glut.h>
 
 // QT libraries
@@ -39,7 +40,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <mapviz/select_frame_dialog.h>
-#include <mapviz/topic_select.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

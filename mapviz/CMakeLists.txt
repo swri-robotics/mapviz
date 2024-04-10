@@ -77,7 +77,6 @@ set(UI_FILES
   ui/configitem.ui
   ui/mapviz.ui
   ui/pluginselect.ui
-  ui/topicselect.ui
 )
 # Headers containing QObject definitions
 set(HEADER_FILES
@@ -89,7 +88,6 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/rqt_${PROJECT_NAME}.h
   include/${PROJECT_NAME}/select_frame_dialog.h
   include/${PROJECT_NAME}/select_service_dialog.h
-  include/${PROJECT_NAME}/topic_select.h
   include/${PROJECT_NAME}/video_writer.h
   include/${PROJECT_NAME}/widgets.h
 )
@@ -103,7 +101,6 @@ set(SRC_FILES
   src/rqt_${PROJECT_NAME}.cpp
   src/select_frame_dialog.cpp
   src/select_service_dialog.cpp
-  src/topic_select.cpp
   src/video_writer.cpp
 )
 

@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/textured_marker_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // Boost libraries
 #include <boost/algorithm/string.hpp>
@@ -39,8 +40,6 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/image_encodings.hpp>
-
-#include <mapviz/topic_select.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

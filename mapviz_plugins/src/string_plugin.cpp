@@ -29,8 +29,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/string_plugin.h>
-
-#include <mapviz/topic_select.h>
+#include <mapviz_plugins/topic_select.h>
 
 #include <QFontDialog>
 #include <QFontDatabase>

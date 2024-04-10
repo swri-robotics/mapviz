@@ -29,6 +29,7 @@
  **/ 
 
 #include <mapviz_plugins/pose_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -40,7 +41,6 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
-#include <mapviz/topic_select.h>
 #include <swri_transform_util/transform_util.h>
 
 // Declare plugin

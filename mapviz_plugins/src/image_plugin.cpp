@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/image_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -36,8 +37,6 @@
 // ROS libraries
 #include <sensor_msgs/image_encodings.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
-#include <mapviz/topic_select.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

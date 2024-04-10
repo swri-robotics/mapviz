@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/disparity_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -44,7 +45,6 @@
 #include <cv_bridge/cv_bridge.hpp>
 #endif
 
-#include <mapviz/topic_select.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

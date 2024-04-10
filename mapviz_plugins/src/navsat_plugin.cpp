@@ -18,6 +18,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/navsat_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -28,8 +29,6 @@
 
 // ROS libraries
 #include <swri_transform_util/transform_util.h>
-
-#include <mapviz/topic_select.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

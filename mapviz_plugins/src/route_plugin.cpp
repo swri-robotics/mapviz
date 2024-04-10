@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/route_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -40,7 +41,6 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
-#include <mapviz/topic_select.h>
 #include <swri_image_util/geometry_util.h>
 #include <swri_route_util/util.h>
 #include <swri_transform_util/transform_util.h>
