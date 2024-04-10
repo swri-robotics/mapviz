@@ -43,8 +43,7 @@
 
 #include <rmw/qos_profiles.h>
 
-#include <mapviz/select_topic_dialog.h>
-#include "ui_topic_select.h"
+#include <mapviz/topic_select.h>
 
 namespace mapviz
 {

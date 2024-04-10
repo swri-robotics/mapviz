@@ -26,18 +26,19 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#ifndef MAPVIZ__SELECT_TOPIC_DIALOG_H_
-#define MAPVIZ__SELECT_TOPIC_DIALOG_H_
-
-#include <rclcpp/rclcpp.hpp>
-
-#include <QDialog>
+#ifndef MAPVIZ__SELECT_TOPIC_H_
+#define MAPVIZ__SELECT_TOPIC_H_
 
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
+
+#include <QDialog>
+
+#include <rclcpp/rclcpp.hpp>
+#include "ui_topicselect.h"
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -53,7 +54,7 @@ namespace mapviz
  * Several static functions are provided that can be used instead of
  * instantiating the class directly.
  */
-class SelectTopicDialog : public QDialog
+class SelectTopicDialog : public QDialog, public Ui::TopicSelect
 {
   Q_OBJECT;
 
