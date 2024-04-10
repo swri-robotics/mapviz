@@ -128,7 +128,10 @@ SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidge
   nh_(node)
 {
   ui_->setupUi(this);
-  allowMultipleTopics(false);
+  connect(ui_->filterLineEdit,
+    SIGNAL(textChanged(const QString &)),
+    this,
+    SLOT(updateDisplayedTopics()));
 
   fetch_topics_timer_id_ = startTimer(1000);
   fetchTopics();
@@ -151,11 +154,11 @@ void SelectTopicDialog::closeEvent(QCloseEvent *event)
 void SelectTopicDialog::allowMultipleTopics(
   bool allow)
 {
-  //if (allow) {
-  //  list_widget_->setSelectionMode(QAbstractItemView::MultiSelection);
-  //} else {
-  //  list_widget_->setSelectionMode(QAbstractItemView::SingleSelection);
-  //}
+  if (allow) {
+    ui_->topicList->setSelectionMode(QAbstractItemView::MultiSelection);
+  } else {
+    ui_->topicList->setSelectionMode(QAbstractItemView::SingleSelection);
+  }
 }
 
 void SelectTopicDialog::setDatatypeFilter(
@@ -180,24 +183,24 @@ std::string SelectTopicDialog::selectedTopic() const
 
 std::vector<std::string> SelectTopicDialog::selectedTopics() const
 {
-//  QModelIndexList qt_selection = list_widget_->selectionModel()->selectedIndexes();
-//
-//  std::vector<std::string> selection;
-//  selection.resize(qt_selection.size());
-//  for (int i = 0; i < qt_selection.size(); i++) {
-//    if (!qt_selection[i].isValid()) {
-//      continue;
-//    }
-//
-//    int row = qt_selection[i].row();
-//    if (row < 0 || static_cast<size_t>(row) >= displayed_topics_.size()) {
-//      continue;
-//    }
-//
-//    selection[i] = displayed_topics_[row];
-//  }
-//
-//  return selection;
+  QModelIndexList qt_selection = ui_->topicList->selectionModel()->selectedIndexes();
+
+  std::vector<std::string> selection;
+  selection.resize(qt_selection.size());
+  for (int i = 0; i < qt_selection.size(); i++) {
+    if (!qt_selection[i].isValid()) {
+      continue;
+    }
+
+    int row = qt_selection[i].row();
+    if (row < 0 || static_cast<size_t>(row) >= displayed_topics_.size()) {
+      continue;
+    }
+
+    selection[i] = displayed_topics_[row];
+  }
+
+  return selection;
 }
 
 static bool topicSort(const std::string &info1,
@@ -221,91 +224,91 @@ void SelectTopicDialog::fetchTopics()
 std::vector<std::string> SelectTopicDialog::filterTopics(
   const std::map<std::string, std::vector<std::string>> &topics) const
 {
-//  QString topic_filter = name_filter_->text();
-//  std::vector<std::string> filtered;
-//
-//  for (auto const& topic : topics) {
-//    if (!allowed_datatypes_.empty()) {
-//      // Skip any topic names that don't contain allowed types
-//      bool missing_allowed_type = true;   // Assume the worst
-//      for (auto const& datatype : topic.second) {
-//        if (allowed_datatypes_.count(datatype) == 1) {
-//          missing_allowed_type = false;
-//          break;
-//        }
-//      }
-//      if (missing_allowed_type) {
-//        continue;
-//      }
-//    }
-//
-//    QString topic_name = QString::fromStdString(topic.first);
-//    if (!topic_filter.isEmpty() &&
-//        !topic_name.contains(topic_filter, Qt::CaseInsensitive)) {
-//          continue;
-//    }
-//
-//    filtered.push_back(topic.first);
-//  }
-//
-//  return filtered;
+  QString topic_filter = ui_->filterLineEdit->text();
+  std::vector<std::string> filtered;
+
+  for (auto const& topic : topics) {
+    if (!allowed_datatypes_.empty()) {
+      // Skip any topic names that don't contain allowed types
+      bool missing_allowed_type = true;   // Assume the worst
+      for (auto const& datatype : topic.second) {
+        if (allowed_datatypes_.count(datatype) == 1) {
+          missing_allowed_type = false;
+          break;
+        }
+      }
+      if (missing_allowed_type) {
+        continue;
+      }
+    }
+
+    QString topic_name = QString::fromStdString(topic.first);
+    if (!topic_filter.isEmpty() &&
+        !topic_name.contains(topic_filter, Qt::CaseInsensitive)) {
+          continue;
+    }
+
+    filtered.push_back(topic.first);
+  }
+
+  return filtered;
 }
 
 void SelectTopicDialog::updateDisplayedTopics()
 {
-//  std::vector<std::string> next_displayed_topics = filterTopics(known_topics_);
-//
-//  // It's a lot more work to keep track of the additions/removals like
-//  // this compared to resetting the QListWidget's items each time, but
-//  // it allows Qt to properly track the selection and current items
-//  // across updates, which results in much less frustration for the user.
-//
-//  std::set<std::string> prev_names;
-//  for (const auto & displayed_topic : displayed_topics_) {
-//    prev_names.insert(displayed_topic);
-//  }
-//
-//  std::set<std::string> next_names;
-//  for (const auto & next_displayed_topic : next_displayed_topics) {
-//    next_names.insert(next_displayed_topic);
-//  }
-//
-//  std::set<std::string> added_names;
-//  std::set_difference(next_names.begin(), next_names.end(),
-//                      prev_names.begin(), prev_names.end(),
-//                      std::inserter(added_names, added_names.end()));
-//
-//  std::set<std::string> removed_names;
-//  std::set_difference(prev_names.begin(), prev_names.end(),
-//                      next_names.begin(), next_names.end(),
-//                      std::inserter(removed_names, removed_names.end()));
-//
-//  // Remove all the removed names
-//  size_t removed = 0;
-//  for (size_t i = 0; i < displayed_topics_.size(); i++) {
-//    if (removed_names.count(displayed_topics_[i]) == 0) {
-//      continue;
-//    }
-//    RCLCPP_DEBUG(nh_->get_logger(), "Removing %s", displayed_topics_[i].c_str());
-//
-//    QListWidgetItem *item = list_widget_->takeItem(i - removed);
-//    delete item;
-//    removed++;
-//  }
-//
-//  // Now we can add the new items.
-//  for (size_t i = 0; i < next_displayed_topics.size(); i++) {
-//    if (added_names.count(next_displayed_topics[i]) == 0) {
-//      continue;
-//    }
-//
-//    list_widget_->insertItem(i, QString::fromStdString(next_displayed_topics[i]));
-//    RCLCPP_DEBUG(nh_->get_logger(), "Inserting %s", next_displayed_topics[i].c_str());
-//    if (list_widget_->count() == 1) {
-//      list_widget_->setCurrentRow(0);
-//    }
-//  }
-//
-//  displayed_topics_.swap(next_displayed_topics);
+  std::vector<std::string> next_displayed_topics = filterTopics(known_topics_);
+
+  // It's a lot more work to keep track of the additions/removals like
+  // this compared to resetting the QListWidget's items each time, but
+  // it allows Qt to properly track the selection and current items
+  // across updates, which results in much less frustration for the user.
+
+  std::set<std::string> prev_names;
+  for (const auto & displayed_topic : displayed_topics_) {
+    prev_names.insert(displayed_topic);
+  }
+
+  std::set<std::string> next_names;
+  for (const auto & next_displayed_topic : next_displayed_topics) {
+    next_names.insert(next_displayed_topic);
+  }
+
+  std::set<std::string> added_names;
+  std::set_difference(next_names.begin(), next_names.end(),
+                      prev_names.begin(), prev_names.end(),
+                      std::inserter(added_names, added_names.end()));
+
+  std::set<std::string> removed_names;
+  std::set_difference(prev_names.begin(), prev_names.end(),
+                      next_names.begin(), next_names.end(),
+                      std::inserter(removed_names, removed_names.end()));
+
+  // Remove all the removed names
+  size_t removed = 0;
+  for (size_t i = 0; i < displayed_topics_.size(); i++) {
+    if (removed_names.count(displayed_topics_[i]) == 0) {
+      continue;
+    }
+    RCLCPP_DEBUG(nh_->get_logger(), "Removing %s", displayed_topics_[i].c_str());
+
+    QListWidgetItem *item = ui_->topicList->takeItem(i - removed);
+    delete item;
+    removed++;
+  }
+
+  // Now we can add the new items.
+  for (size_t i = 0; i < next_displayed_topics.size(); i++) {
+    if (added_names.count(next_displayed_topics[i]) == 0) {
+      continue;
+    }
+
+    ui_->topicList->insertItem(i, QString::fromStdString(next_displayed_topics[i]));
+    RCLCPP_DEBUG(nh_->get_logger(), "Inserting %s", next_displayed_topics[i].c_str());
+    if (ui_->topicList->count() == 1) {
+      ui_->topicList->setCurrentRow(0);
+    }
+  }
+
+  displayed_topics_.swap(next_displayed_topics);
 }
 }  // namespace mapviz
