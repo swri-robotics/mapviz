@@ -186,18 +186,9 @@ class SelectTopicDialog : public QDialog
 
   std::vector<std::string> displayed_topics_;
   int fetch_topics_timer_id_;
+  Ui::TopicSelect *ui_;
 
   std::shared_ptr<rclcpp::Node> nh_;   // This may need to be a shared instance of Mapviz's node
-
-  QPushButton *ok_button_;
-  QPushButton *cancel_button_;
-  QListWidget *list_widget_;
-  QSpinBox *qos_depth_widget_;
-  QListWidget *qos_history_widget_;
-  QListWidget *qos_reliability_widget_;
-  QListWidget *qos_durability_widget_;
-
-  QLineEdit *name_filter_;
 };  // class SelectTopicDialog
 }  // namespace mapviz
 
