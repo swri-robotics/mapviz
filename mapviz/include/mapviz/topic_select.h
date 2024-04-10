@@ -54,7 +54,7 @@ namespace mapviz
  * Several static functions are provided that can be used instead of
  * instantiating the class directly.
  */
-class SelectTopicDialog : public QDialog, public Ui::TopicSelect
+class SelectTopicDialog : public QDialog
 {
   Q_OBJECT;
 
