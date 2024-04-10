@@ -29,7 +29,7 @@
 
 #include <mapviz_plugins/marker_plugin.h>
 
-#include <mapviz/select_topic_dialog.h>
+#include <mapviz/topic_select.h>
 
 #include <swri_math_util/constants.h>
 

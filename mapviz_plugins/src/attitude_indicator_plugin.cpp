@@ -38,8 +38,8 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
-#include <mapviz/select_topic_dialog.h>
 #include <mapviz/select_frame_dialog.h>
+#include <mapviz/topic_select.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

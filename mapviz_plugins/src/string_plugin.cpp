@@ -30,7 +30,7 @@
 
 #include <mapviz_plugins/string_plugin.h>
 
-#include <mapviz/select_topic_dialog.h>
+#include <mapviz/topic_select.h>
 
 #include <QFontDialog>
 #include <QFontDatabase>

@@ -40,8 +40,8 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
+#include <mapviz/topic_select.h>
 #include <swri_transform_util/transform_util.h>
-#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

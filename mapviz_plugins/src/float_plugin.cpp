@@ -31,7 +31,7 @@
 #include <mapviz_plugins/float_plugin.h>
 
 #include <pluginlib/class_list_macros.hpp>
-#include <mapviz/select_topic_dialog.h>
+#include <mapviz/topic_select.h>
 
 #include <QFontDialog>
 

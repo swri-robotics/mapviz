@@ -40,10 +40,10 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
+#include <mapviz/topic_select.h>
 #include <swri_image_util/geometry_util.h>
 #include <swri_route_util/util.h>
 #include <swri_transform_util/transform_util.h>
-#include <mapviz/select_topic_dialog.h>
 
 #include <marti_nav_msgs/msg/route.hpp>
 

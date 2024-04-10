@@ -44,7 +44,7 @@
 #include <cv_bridge/cv_bridge.hpp>
 #endif
 
-#include <mapviz/select_topic_dialog.h>
+#include <mapviz/topic_select.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
