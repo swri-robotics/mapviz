@@ -214,9 +214,9 @@ namespace mapviz_plugins
 
   void ImagePlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
       node_, "sensor_msgs/msg/Image");
-
+    // TODO: set QoS profile
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));

@@ -90,8 +90,8 @@ namespace mapviz_plugins
 
   void GpsPlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "gps_msgs/msg/GPSFix");
-
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(node_, "gps_msgs/msg/GPSFix");
+    // TODO: Set QoS profile
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));

@@ -100,9 +100,9 @@ namespace mapviz_plugins
 
   void PosePlugin::SelectTopic()
   {
-    std::string topic =
+    auto [topic, qos_profile] =
         mapviz::SelectTopicDialog::selectTopic(node_, "geometry_msgs/msg/PoseStamped");
-
+    // TODO: Set QoS profile
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));

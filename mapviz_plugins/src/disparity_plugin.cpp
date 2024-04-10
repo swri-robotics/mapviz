@@ -170,11 +170,11 @@ namespace mapviz_plugins
   }
   void DisparityPlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
       node_,
       "stereo_msgs/msg/DisparityImage"
     );
-
+    // TODO: Set QoS profile
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));

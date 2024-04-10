@@ -134,9 +134,9 @@ namespace mapviz_plugins
 
   void RoutePlugin::SelectTopic()
   {
-    std::string topic =
+    auto [topic, qos_profile] =
         mapviz::SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/Route");
-
+    // TODO: Set QoS Profile
     if (topic.empty())
     {
       return;
@@ -148,9 +148,9 @@ namespace mapviz_plugins
 
   void RoutePlugin::SelectPositionTopic()
   {
-    std::string topic =
+    auto [topic, qos_profile] =
         mapviz::SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/RoutePosition");
-
+    // TODO: Set QoS Profile
     if (topic.empty())
     {
       return;

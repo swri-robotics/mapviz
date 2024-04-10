@@ -83,9 +83,10 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
         node_,
         topics_);
+    // TODO: Set QoS profile
     if (topic.empty())
     {
       return;

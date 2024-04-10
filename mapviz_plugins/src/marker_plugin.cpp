@@ -81,11 +81,11 @@ namespace mapviz_plugins
 
   void MarkerPlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
       node_,
       "visualization_msgs/msg/Marker",
       "visualization_msgs/msg/MarkerArray");
-
+    // TODO: Set QoS Profile
     if (topic.empty())
     {
       return;

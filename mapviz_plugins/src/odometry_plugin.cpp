@@ -104,8 +104,8 @@ namespace mapviz_plugins
 
   void OdometryPlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Odometry");
-
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Odometry");
+    // TODO: Set QoS profile
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));

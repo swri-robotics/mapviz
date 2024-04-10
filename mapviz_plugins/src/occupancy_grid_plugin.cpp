@@ -230,7 +230,8 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::SelectTopicGrid()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/OccupancyGrid");
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/OccupancyGrid");
+    // TODO: Set QoS profile
     if (!topic.empty())
     {
       QString str = QString::fromStdString(topic);

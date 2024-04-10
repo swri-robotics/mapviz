@@ -47,7 +47,7 @@
 
 namespace mapviz
 {
-std::string SelectTopicDialog::selectTopic(
+std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   const rclcpp::Node::SharedPtr& node,
   const std::string &datatype,
   QWidget *parent)
@@ -57,7 +57,7 @@ std::string SelectTopicDialog::selectTopic(
   return selectTopic(node, datatypes, parent);
 }
 
-std::string SelectTopicDialog::selectTopic(
+std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   const rclcpp::Node::SharedPtr& node,
   const std::string &datatype1,
   const std::string &datatype2,
@@ -69,7 +69,7 @@ std::string SelectTopicDialog::selectTopic(
   return selectTopic(node, datatypes, parent);
 }
 
-std::string SelectTopicDialog::selectTopic(
+std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   const rclcpp::Node::SharedPtr& node,
   const std::vector<std::string> &datatypes,
   QWidget *parent)
@@ -78,13 +78,17 @@ std::string SelectTopicDialog::selectTopic(
   dialog.allowMultipleTopics(false);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
-    return dialog.selectedTopic();
+    return std::make_pair<std::string, rmw_qos_profile_t>(
+      dialog.selectedTopic(),
+      rmw_qos_profile_default);
   } else {
-    return std::string();
+    return std::make_pair<std::string, rmw_qos_profile_t>(
+      std::string(),
+      rmw_qos_profile_default);
   }
 }
 
-std::vector<std::string> SelectTopicDialog::selectTopics(
+std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
   const rclcpp::Node::SharedPtr& node,
   const std::string &datatype,
   QWidget *parent)
@@ -94,7 +98,7 @@ std::vector<std::string> SelectTopicDialog::selectTopics(
   return selectTopics(node, datatypes, parent);
 }
 
-std::vector<std::string> SelectTopicDialog::selectTopics(
+std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
   const rclcpp::Node::SharedPtr& node,
   const std::string &datatype1,
   const std::string &datatype2,
@@ -106,7 +110,7 @@ std::vector<std::string> SelectTopicDialog::selectTopics(
   return selectTopics(node, datatypes, parent);
 }
 
-std::vector<std::string> SelectTopicDialog::selectTopics(
+std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
   const rclcpp::Node::SharedPtr& node,
   const std::vector<std::string> &datatypes,
   QWidget *parent)
@@ -115,9 +119,13 @@ std::vector<std::string> SelectTopicDialog::selectTopics(
   dialog.allowMultipleTopics(true);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
-    return dialog.selectedTopics();
+    return std::make_pair<std:string, rmw_qos_profile_t>(
+      dialog.selectedTopics(),
+      rmw_qos_profile_default);
   } else {
-    return std::vector<std::string>();
+    return std::make_pair<std::vector<std::string>, rmq_qos_profile_t>(
+      std::vector<std::string>(),
+      rmw_qos_profile_default);
   }
 }
 

@@ -123,12 +123,12 @@ void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
 
 void TexturedMarkerPlugin::SelectTopic()
 {
-  std::string topic = mapviz::SelectTopicDialog::selectTopic(
+  auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
     node_,
     "marti_visualization_msgs/msg/TexturedMarker",
     "marti_visualization_msgs/msg/TexturedMarkerArray"
   );
-
+  // TODO: Set QoS profile
   if (!topic.empty()) {
     ui_.topic->setText(QString::fromStdString(topic));
 

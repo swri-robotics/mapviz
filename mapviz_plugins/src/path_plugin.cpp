@@ -77,8 +77,8 @@ namespace mapviz_plugins
 
   void PathPlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Path");
-
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Path");
+    // TODO: Set QoS
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));

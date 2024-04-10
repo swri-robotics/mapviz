@@ -337,10 +337,10 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
       node_,
       "sensor_msgs/msg/PointCloud2");
-
+    // TODO: Set QoS profile
     if (!topic.empty())
     {
       ui_.topic->setText(QString::fromStdString(topic));
