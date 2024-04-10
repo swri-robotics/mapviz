@@ -78,13 +78,12 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   dialog.allowMultipleTopics(false);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
-    return std::make_pair<std::string, rmw_qos_profile_t>(
-      dialog.selectedTopic(),
-      rmw_qos_profile_default);
+    return dialog.selectedTopic();
   } else {
+    rmw_qos_profile_t default_profile = std::move(rmw_qos_profile_default);
     return std::make_pair<std::string, rmw_qos_profile_t>(
       std::string(),
-      rmw_qos_profile_default);
+      default_profile);
   }
 }
 
@@ -119,13 +118,11 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
   dialog.allowMultipleTopics(true);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
-    return std::make_pair<std:string, rmw_qos_profile_t>(
-      dialog.selectedTopics(),
-      rmw_qos_profile_default);
+    return dialog.selectedTopics();
   } else {
-    return std::make_pair<std::vector<std::string>, rmq_qos_profile_t>(
+    return std::make_pair<std::vector<std::string>, rmw_qos_profile_t>(
       std::vector<std::string>(),
-      rmw_qos_profile_default);
+      std::move(rmw_qos_profile_default));
   }
 }
 
@@ -183,8 +180,9 @@ std::string SelectTopicDialog::selectedTopic() const
 {
   std::vector<std::string> selection = selectedTopics();
   if (selection.empty()) {
-    return std::string();
+    return std::make_pair<std::string, rmw_qos_profile_t>(std::string(), rmw_qos_profile_default);
   } else {
+    // TODO: Fill in QoS profile
     return selection.front();
   }
 }
@@ -193,6 +191,7 @@ std::vector<std::string> SelectTopicDialog::selectedTopics() const
 {
   QModelIndexList qt_selection = ui_->topicList->selectionModel()->selectedIndexes();
 
+  // TODO: Fill in QoS profile
   std::vector<std::string> selection;
   selection.resize(qt_selection.size());
   for (int i = 0; i < qt_selection.size(); i++) {
