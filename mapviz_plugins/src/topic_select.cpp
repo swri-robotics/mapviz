@@ -80,10 +80,10 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   if (dialog.exec() == QDialog::Accepted) {
     return dialog.selectedTopic();
   } else {
-    rmw_qos_profile_t default_profile = std::move(rmw_qos_profile_default);
+    rmw_qos_profile_t default_profile = rmw_qos_profile_default;
     return std::make_pair<std::string, rmw_qos_profile_t>(
       std::string(),
-      default_profile);
+      std::forward<rmw_qos_profile_t>(default_profile));
   }
 }
 
@@ -120,9 +120,10 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
   if (dialog.exec() == QDialog::Accepted) {
     return dialog.selectedTopics();
   } else {
+    rmw_qos_profile_t default_profile = rmw_qos_profile_default;
     return std::make_pair<std::vector<std::string>, rmw_qos_profile_t>(
       std::vector<std::string>(),
-      std::move(rmw_qos_profile_default));
+      std::forward<rmw_qos_profile_t>(rmw_qos_profile_default));
   }
 }
 
@@ -176,18 +177,18 @@ void SelectTopicDialog::setDatatypeFilter(
   updateDisplayedTopics();
 }
 
-std::string SelectTopicDialog::selectedTopic() const
+std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectedTopic() const
 {
   std::vector<std::string> selection = selectedTopics();
   if (selection.empty()) {
     return std::make_pair<std::string, rmw_qos_profile_t>(std::string(), rmw_qos_profile_default);
   } else {
     // TODO: Fill in QoS profile
-    return selection.front();
+    return std::make_pair<std::string, rmw_qos_profile_t>(selection.front(), rmw_qos_profile_default);
   }
 }
 
-std::vector<std::string> SelectTopicDialog::selectedTopics() const
+std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectedTopics() const
 {
   QModelIndexList qt_selection = ui_->topicList->selectionModel()->selectedIndexes();
 
@@ -207,7 +208,8 @@ std::vector<std::string> SelectTopicDialog::selectedTopics() const
     selection[i] = displayed_topics_[row];
   }
 
-  return selection;
+  // TODO: Fill in QoS
+  return std:make_pair<std::vector<std::string>, rmw_qos_profile_t>(selection, rmw_qos_profile_default);
 }
 
 static bool topicSort(const std::string &info1,
