@@ -83,7 +83,7 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
     rmw_qos_profile_t default_profile = rmw_qos_profile_default;
     return std::make_pair<std::string, rmw_qos_profile_t>(
       std::string(),
-      std::forward<rmw_qos_profile_t>(default_profile));
+      std::move(default_profile));
   }
 }
 
@@ -121,9 +121,10 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
     return dialog.selectedTopics();
   } else {
     rmw_qos_profile_t default_profile = rmw_qos_profile_default;
+    std::vector<std::string> topics;
     return std::make_pair<std::vector<std::string>, rmw_qos_profile_t>(
-      std::vector<std::string>(),
-      std::forward<rmw_qos_profile_t>(rmw_qos_profile_default));
+      std::move(topics),
+      std::move(default_profile));
   }
 }
 
@@ -179,12 +180,11 @@ void SelectTopicDialog::setDatatypeFilter(
 
 std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectedTopic() const
 {
-  std::vector<std::string> selection = selectedTopics();
+  auto [selection, qos] = selectedTopics();
   if (selection.empty()) {
-    return std::make_pair<std::string, rmw_qos_profile_t>(std::string(), rmw_qos_profile_default);
+    return std::make_pair<std::string, rmw_qos_profile_t>(std::string(), std::move(qos));
   } else {
-    // TODO: Fill in QoS profile
-    return std::make_pair<std::string, rmw_qos_profile_t>(selection.front(), rmw_qos_profile_default);
+    return std::make_pair<std::string, rmw_qos_profile_t>(std::move(selection.front()), std::move(qos));
   }
 }
 
@@ -207,9 +207,12 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
 
     selection[i] = displayed_topics_[row];
   }
-
-  // TODO: Fill in QoS
-  return std:make_pair<std::vector<std::string>, rmw_qos_profile_t>(selection, rmw_qos_profile_default);
+  rmw_qos_profile_t qos = rmw_qos_profile_default;
+  auto ret_value = std::make_pair<std::vector<std::string>, rmw_qos_profile_t>(
+    std::move(selection),
+    std::move(qos));
+  
+  return ret_value;
 }
 
 static bool topicSort(const std::string &info1,
