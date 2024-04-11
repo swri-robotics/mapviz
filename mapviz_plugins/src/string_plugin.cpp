@@ -50,18 +50,18 @@ namespace mapviz_plugins
   const char* StringPlugin::OFFSET_Y_KEY = "offset_y";
   static constexpr int DEFAULT_FONT_SIZE = 9;
 
-  StringPlugin::StringPlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , anchor_(TOP_LEFT)
-  , units_(PIXELS)
-  , offset_x_(0)
-  , offset_y_(0)
-  , has_message_(false)
-  , has_painted_(false)
-  , color_(Qt::black)
-  , font_()
+  StringPlugin::StringPlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    anchor_(TOP_LEFT),
+    units_(PIXELS),
+    offset_x_(0),
+    offset_y_(0),
+    has_message_(false),
+    has_painted_(false),
+    color_(Qt::black),
+    font_()
   {
     ui_.setupUi(config_widget_);
     // Set background white
@@ -321,22 +321,26 @@ namespace mapviz_plugins
 
   void StringPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
       node_, "std_msgs/msg/String"
     );
 
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      //TODO: Set QoS
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void StringPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void StringPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       has_message_ = false;
@@ -345,12 +349,13 @@ namespace mapviz_plugins
       string_sub_.reset();
 
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
         try
         {
           string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
-              rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
               [this](const std_msgs::msg::String::ConstSharedPtr str) {
             SetText(QString(str->data.c_str()));
           });
@@ -365,7 +370,7 @@ namespace mapviz_plugins
         try
         {
           string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
-              rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
               [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
             SetText(QString(str->value.c_str()));
           });

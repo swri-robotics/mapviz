@@ -107,7 +107,6 @@ namespace mapviz_plugins
   void OdometryPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Odometry");
-    // TODO: Set QoS profile
     if (!topic.empty())
     {
       connectCallback(topic, qos);

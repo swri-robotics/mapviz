@@ -62,10 +62,14 @@ namespace stu = swri_transform_util;
 
 namespace mapviz_plugins
 {
-  RoutePlugin::RoutePlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget()), draw_style_(LINES)
+  RoutePlugin::RoutePlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()), draw_style_(LINES),
+    topic_(""),
+    position_topic_(""),
+    qos_(rmw_qos_profile_default),
+    position_qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -134,48 +138,44 @@ namespace mapviz_plugins
 
   void RoutePlugin::SelectTopic()
   {
-    auto [topic, qos_profile] =
+    auto [topic, qos] =
         SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/Route");
-    // TODO: Set QoS Profile
-    if (topic.empty())
+    if (!topic.empty())
     {
-      return;
+      connectRouteCallback(topic, qos);
     }
-
-    ui_.topic->setText(QString::fromStdString(topic));
-    TopicEdited();
   }
-
+  
   void RoutePlugin::SelectPositionTopic()
   {
-    auto [topic, qos_profile] =
+    auto [topic, qos] =
         SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/RoutePosition");
-    // TODO: Set QoS Profile
-    if (topic.empty())
+    if (!topic.empty())
     {
-      return;
+      connectPositionCallback(topic, qos);
     }
-
-    ui_.positiontopic->setText(QString::fromStdString(topic));
-    PositionTopicEdited();
   }
 
   void RoutePlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+  }
+
+  void RoutePlugin::connectRouteCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       src_route_ = sru::Route();
-
       route_sub_.reset();
-
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
         route_sub_ =
             node_->create_subscription<marti_nav_msgs::msg::Route>(
               topic_,
-              rclcpp::QoS(1),
+              rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
               std::bind(&RoutePlugin::RouteCallback, this, std::placeholders::_1)
             );
 
@@ -187,7 +187,13 @@ namespace mapviz_plugins
   void RoutePlugin::PositionTopicEdited()
   {
     std::string topic = ui_.positiontopic->text().trimmed().toStdString();
-    if (topic != position_topic_)
+    connectPositionCallback(topic, position_qos_);
+  }
+
+  void RoutePlugin::connectPositionCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.positiontopic->setText(QString::fromStdString(topic));
+    if ((topic != position_topic_) || !qosEqual(qos, position_qos_))
     {
       src_route_position_.reset();
       position_sub_.reset();
@@ -195,15 +201,17 @@ namespace mapviz_plugins
       if (!topic.empty())
       {
         position_topic_ = topic;
+        position_qos_ = qos;
         position_sub_ = node_->create_subscription<marti_nav_msgs::msg::RoutePosition>(
           topic_,
-          rclcpp::QoS(1),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
           std::bind(&RoutePlugin::PositionCallback, this, std::placeholders::_1)
         );
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", position_topic_.c_str());
       }
     }
+
   }
 
   void RoutePlugin::PositionCallback(

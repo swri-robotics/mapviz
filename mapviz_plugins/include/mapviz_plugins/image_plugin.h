@@ -123,6 +123,7 @@ private:
   QWidget* config_widget_;
 
   std::string topic_;
+  rmw_qos_profile_t qos_;
   Anchor anchor_;
   Units units_;
   int offset_x_;
@@ -144,6 +145,7 @@ private:
   cv_bridge::CvImagePtr cv_image_;
   cv::Mat scaled_image_;
 
+  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image);
 
   void ScaleImage(double width, double height);

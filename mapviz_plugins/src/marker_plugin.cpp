@@ -45,12 +45,14 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MarkerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  MarkerPlugin::MarkerPlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , connected_(false)
-  , has_message_(false)
+  MarkerPlugin::MarkerPlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    connected_(false),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -81,24 +83,27 @@ namespace mapviz_plugins
 
   void MarkerPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
       node_,
       "visualization_msgs/msg/Marker",
       "visualization_msgs/msg/MarkerArray");
-    // TODO: Set QoS Profile
-    if (topic.empty())
+    if (!topic.empty())
     {
-      return;
+      connectCallback(topic, qos);
     }
-
-    ui_.topic->setText(QString::fromStdString(topic));
-    TopicEdited();
   }
 
   void MarkerPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void MarkerPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       markers_.clear();
@@ -112,12 +117,9 @@ namespace mapviz_plugins
       connected_ = false;
 
       topic_ = topic;
-      subscribe();
+      qos_ = qos;
     }
-  }
 
-  void MarkerPlugin::subscribe()
-  {
     marker_sub_.reset();
     marker_array_sub_.reset();
     if (!topic_.empty())
@@ -133,22 +135,22 @@ namespace mapviz_plugins
         if (topic_type == "visualization_msgs/msg/Marker")
         {
           marker_sub_ = node_->create_subscription<visualization_msgs::msg::Marker>(
-              topic_,
-              rclcpp::QoS(100),
-              std::bind(&MarkerPlugin::handleMarker, this, std::placeholders::_1));
+            topic_,
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            std::bind(&MarkerPlugin::handleMarker, this, std::placeholders::_1));
         }
         else if (topic_type == "visualization_msgs/msg/MarkerArray")
         {
           marker_array_sub_ = node_->create_subscription<visualization_msgs::msg::MarkerArray>(
-              topic_,
-              rclcpp::QoS(100),
-              std::bind(&MarkerPlugin::handleMarkerArray, this, std::placeholders::_1));
+            topic_,
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            std::bind(&MarkerPlugin::handleMarkerArray, this, std::placeholders::_1));
         }
         else
         {
           RCLCPP_ERROR(node_->get_logger(),
-              "Unable to subscribe to topic %s (unsupported type %s).",
-              topic_.c_str(), topic_type.c_str());
+            "Unable to subscribe to topic %s (unsupported type %s).",
+            topic_.c_str(), topic_type.c_str());
           return;
         }
       }
@@ -716,7 +718,7 @@ namespace mapviz_plugins
         (marker_array_sub_ && marker_array_sub_->get_publisher_count() > 0);
     if (connected_ && !new_connected)
     {
-      subscribe();
+      connectCallback(topic_, qos_);
     }
     connected_ = new_connected;
   }

@@ -104,6 +104,8 @@ private:
   rclcpp::Subscription<map_msgs::msg::OccupancyGridUpdate>::SharedPtr update_sub_;
 
   bool transformed_;
+  std::string topic_;
+  rmw_qos_profile_t qos_;
   swri_transform_util::Transform transform_;
 
   GLuint texture_id_;
@@ -117,6 +119,7 @@ private:
   Palette map_palette_;
   Palette costmap_palette_;
 
+  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   void Callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
   void CallbackUpdate(const map_msgs::msg::OccupancyGridUpdate::SharedPtr msg);
   void updateTexture();

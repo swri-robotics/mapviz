@@ -43,11 +43,13 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::NavSatPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  NavSatPlugin::NavSatPlugin()
-  : PointDrawingPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , has_message_(false)
+  NavSatPlugin::NavSatPlugin() :
+    PointDrawingPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -81,21 +83,25 @@ namespace mapviz_plugins
 
   void NavSatPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] =
+    auto [topic, qos] =
         SelectTopicDialog::selectTopic(node_, "sensor_msgs/msg/NavSatFix");
 
-    // TODO: Set QoS profile
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void NavSatPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void NavSatPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       ClearPoints();
@@ -104,11 +110,12 @@ namespace mapviz_plugins
 
       navsat_sub_.reset();
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
         navsat_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             std::bind(&NavSatPlugin::NavSatFixCallback, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());

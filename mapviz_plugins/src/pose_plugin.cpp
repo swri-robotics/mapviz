@@ -56,11 +56,13 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PosePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PosePlugin::PosePlugin()
-  : PointDrawingPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , has_message_(false)
+  PosePlugin::PosePlugin() :
+    PointDrawingPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -100,20 +102,24 @@ namespace mapviz_plugins
 
   void PosePlugin::SelectTopic()
   {
-    auto [topic, qos_profile] =
+    auto [topic, qos] =
         SelectTopicDialog::selectTopic(node_, "geometry_msgs/msg/PoseStamped");
-    // TODO: Set QoS profile
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void PosePlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void PosePlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       ClearPoints();

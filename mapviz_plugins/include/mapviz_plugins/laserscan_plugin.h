@@ -121,6 +121,7 @@ class LaserScanPlugin : public mapviz::MapvizPlugin
     };
 
     void laserScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
+    void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
     QColor CalculateColor(const StampedPoint& point, bool has_intensity);
     void updatePreComputedTriginometic(const sensor_msgs::msg::LaserScan::SharedPtr msg);
 
@@ -128,6 +129,7 @@ class LaserScanPlugin : public mapviz::MapvizPlugin
     QWidget* config_widget_;
 
     std::string topic_;
+    rmw_qos_profile_t qos_;
     double alpha_;
     double min_value_;
     double max_value_;

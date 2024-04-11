@@ -77,10 +77,12 @@ class NavSatPlugin : public mapviz_plugins::PointDrawingPlugin
   QWidget* config_widget_;
 
   std::string topic_;
+  rmw_qos_profile_t qos_;
 
   rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr navsat_sub_;
   bool has_message_;
 
+  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   void NavSatFixCallback(const sensor_msgs::msg::NavSatFix::ConstSharedPtr navsat);
 };
 }   // namespace mapviz_plugins

@@ -131,6 +131,7 @@ private:
   };
 
   float PointFeature(const uint8_t*, const FieldInfo&);
+  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   void PointCloud2Callback(const sensor_msgs::msg::PointCloud2::SharedPtr scan);
   QColor CalculateColor(const StampedPoint& point);
   void UpdateMinMaxWidgets();
@@ -139,6 +140,7 @@ private:
   QWidget* config_widget_;
 
   std::string topic_;
+  rmw_qos_profile_t qos_;
   double alpha_;
   double max_value_;
   double min_value_;

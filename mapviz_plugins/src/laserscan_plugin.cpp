@@ -54,20 +54,21 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::LaserScanPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  LaserScanPlugin::LaserScanPlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , topic_("")
-  , alpha_(1.0)
-  , min_value_(0.0)
-  , max_value_(100.0)
-  , point_size_(3)
-  , buffer_size_(0)
-  , has_message_(false)
-  , prev_ranges_size_(0)
-  , prev_angle_min_(0.0)
-  , prev_increment_(0.0)
+  LaserScanPlugin::LaserScanPlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    topic_(""),
+    alpha_(1.0),
+    min_value_(0.0),
+    max_value_(100.0),
+    point_size_(3),
+    buffer_size_(0),
+    has_message_(false),
+    prev_ranges_size_(0),
+    prev_angle_min_(0.0),
+    prev_increment_(0.0),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -253,21 +254,25 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
       node_,
       "sensor_msgs/msg/LaserScan");
-    // TODO: Set QoS profile
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void LaserScanPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void LaserScanPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       scans_.clear();
@@ -277,11 +282,12 @@ namespace mapviz_plugins
       laserscan_sub_.reset();
 
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
         laserscan_sub_ = node_->create_subscription<sensor_msgs::msg::LaserScan>(
           topic_,
-          rclcpp::QoS(100),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
           std::bind(&LaserScanPlugin::laserScanCallback, this, std::placeholders::_1)
         );
 

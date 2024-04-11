@@ -56,21 +56,22 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointCloud2Plugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PointCloud2Plugin::PointCloud2Plugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , topic_("")
-  , alpha_(1.0)
-  , max_value_(100.0)
-  , min_value_(0.0)
-  , point_size_(3)
-  , buffer_size_(1)
-  , new_topic_(true)
-  , has_message_(false)
-  , num_of_feats_(0)
-  , need_new_list_(true)
-  , need_minmax_(false)
+  PointCloud2Plugin::PointCloud2Plugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    topic_(""),
+    alpha_(1.0),
+    max_value_(100.0),
+    min_value_(0.0),
+    point_size_(3),
+    buffer_size_(1),
+    new_topic_(true),
+    has_message_(false),
+    num_of_feats_(0),
+    need_new_list_(true),
+    need_minmax_(false),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -229,7 +230,7 @@ namespace mapviz_plugins
     {
       pc2_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
         topic_,
-        rclcpp::QoS(10),
+        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos_)),
         std::bind(&PointCloud2Plugin::PointCloud2Callback, this, std::placeholders::_1)
       );
       new_topic_ = true;
@@ -337,14 +338,12 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::SelectTopic()
   {
-    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
       node_,
       "sensor_msgs/msg/PointCloud2");
-    // TODO: Set QoS profile
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
@@ -352,7 +351,13 @@ namespace mapviz_plugins
   void PointCloud2Plugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void PointCloud2Plugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       {
@@ -363,8 +368,10 @@ namespace mapviz_plugins
       PrintWarning("No messages received.");
 
       topic_ = topic;
+      qos_ = qos;
       SetSubscription(this->Visible());
     }
+
   }
 
   void PointCloud2Plugin::MinValueChanged(double value)
