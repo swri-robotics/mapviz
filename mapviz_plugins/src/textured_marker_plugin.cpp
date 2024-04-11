@@ -59,12 +59,14 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TexturedMarkerPlugin, mapviz::MapvizPlugi
 
 namespace mapviz_plugins
 {
-TexturedMarkerPlugin::TexturedMarkerPlugin()
-: MapvizPlugin()
-, ui_()
-, alphaVal_(1.0f)
-, config_widget_(new QWidget())
-, has_message_(false)
+TexturedMarkerPlugin::TexturedMarkerPlugin() :
+  MapvizPlugin(),
+  ui_(),
+  alphaVal_(1.0f),
+  config_widget_(new QWidget()),
+  has_message_(false),
+  topic_(""),
+  qos_(rmw_qos_profile_default)
 {
   ui_.setupUi(config_widget_);
 
@@ -123,23 +125,27 @@ void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
 
 void TexturedMarkerPlugin::SelectTopic()
 {
-  auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
+  auto [topic, qos] = SelectTopicDialog::selectTopic(
     node_,
     "marti_visualization_msgs/msg/TexturedMarker",
     "marti_visualization_msgs/msg/TexturedMarkerArray"
   );
-  // TODO: Set QoS profile
   if (!topic.empty()) {
-    ui_.topic->setText(QString::fromStdString(topic));
-
-    TopicEdited();
+    connectCallback(topic, qos);
   }
 }
 
 void TexturedMarkerPlugin::TopicEdited()
 {
   std::string topic = ui_.topic->text().trimmed().toStdString();
-  if (topic != topic_) {
+  connectCallback(topic, qos_);
+}
+
+void TexturedMarkerPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+{
+  ui_.topic->setText(QString::fromStdString(topic));
+
+  if ((topic != topic_) || !qosEqual(qos, qos_)) {
     initialized_ = false;
     markers_.clear();
     has_message_ = false;
@@ -149,22 +155,24 @@ void TexturedMarkerPlugin::TopicEdited()
     marker_arr_sub_.reset();
 
     topic_ = topic;
+    qos_ = qos;
     if (!topic.empty()) {
       marker_arr_sub_ =
         node_->create_subscription<marti_visualization_msgs::msg::TexturedMarkerArray>(
         topic_,
-        rclcpp::QoS(1000),
+        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
         std::bind(&TexturedMarkerPlugin::MarkerArrayCallback, this, std::placeholders::_1)
         );
       marker_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarker>(
         topic_,
-        rclcpp::QoS(1000),
+        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
         std::bind(&TexturedMarkerPlugin::MarkerCallback, this, std::placeholders::_1)
       );
 
       RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
     }
   }
+
 }
 
 void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::TexturedMarker marker)

@@ -59,20 +59,22 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DisparityPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  DisparityPlugin::DisparityPlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , anchor_(TOP_LEFT)
-  , units_(PIXELS)
-  , offset_x_(0)
-  , offset_y_(0)
-  , width_(320)
-  , height_(240)
-  , has_image_(false)
-  , last_width_(0)
-  , last_height_(0)
-  , has_message_(false)
+  DisparityPlugin::DisparityPlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    anchor_(TOP_LEFT),
+    units_(PIXELS),
+    offset_x_(0),
+    offset_y_(0),
+    width_(320),
+    height_(240),
+    has_image_(false),
+    last_width_(0),
+    last_height_(0),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -161,7 +163,7 @@ namespace mapviz_plugins
     } else {
       disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
         topic_,
-        rclcpp::QoS(1),
+        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos_)),
         std::bind(&DisparityPlugin::disparityCallback, this, std::placeholders::_1)
       );
 
@@ -170,21 +172,26 @@ namespace mapviz_plugins
   }
   void DisparityPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
       node_,
       "stereo_msgs/msg/DisparityImage"
     );
-    // TODO: Set QoS profile
+
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void DisparityPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
+    connectCallback(topic, qos_);
+  }
+
+  void DisparityPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
     if (!this->Visible())
     {
       PrintWarning("Topic is Hidden");
@@ -193,16 +200,18 @@ namespace mapviz_plugins
       if (!topic.empty())
       {
         topic_ = topic;
+        qos_ = qos;
       }
       disparity_sub_.reset();
       return;
     }
-    if (topic != topic_)
+    if ((topic != topic_) || qosEqual(qos, qos_))
     {
       PrintWarning("Topic is Hidden");
       initialized_ = false;
       has_message_ = false;
       topic_ = topic;
+      qos_ = qos;
       PrintWarning("No messages received.");
 
       disparity_sub_.reset();
@@ -211,7 +220,7 @@ namespace mapviz_plugins
       {
         disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
           topic_,
-          rclcpp::QoS(1),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
           std::bind(&DisparityPlugin::disparityCallback, this, std::placeholders::_1)
         );
 

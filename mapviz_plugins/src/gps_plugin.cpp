@@ -46,11 +46,13 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GpsPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  GpsPlugin::GpsPlugin()
-  : PointDrawingPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , has_message_(false)
+  GpsPlugin::GpsPlugin() :
+    PointDrawingPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -90,19 +92,23 @@ namespace mapviz_plugins
 
   void GpsPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(node_, "gps_msgs/msg/GPSFix");
-    // TODO: Set QoS profile
+    auto [topic, qos] = SelectTopicDialog::selectTopic(node_, "gps_msgs/msg/GPSFix");
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void GpsPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void GpsPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_) )
     {
       initialized_ = false;
       ClearPoints();
@@ -112,9 +118,12 @@ namespace mapviz_plugins
       gps_sub_.reset();
 
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
-        gps_sub_ = node_->create_subscription<gps_msgs::msg::GPSFix>(topic_, rclcpp::QoS(1),
+        gps_sub_ = node_->create_subscription<gps_msgs::msg::GPSFix>(
+          topic_,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
           std::bind(&GpsPlugin::GPSFixCallback, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());

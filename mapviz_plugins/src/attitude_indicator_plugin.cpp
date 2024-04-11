@@ -53,10 +53,12 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPl
 
 namespace mapviz_plugins
 {
-  AttitudeIndicatorPlugin::AttitudeIndicatorPlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
+  AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
+    topic_(""),
+    qos_(rmw_qos_profile_default),
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 
@@ -86,12 +88,11 @@ namespace mapviz_plugins
     auto [topic, qos] = SelectTopicDialog::selectTopic(
         node_,
         topics_);
-    if (topic.empty())
-    {
-      return;
-    }
 
-    connectCallback(topic, qos);
+    if (!topic.empty())
+    {
+      connectCallback(topic, qos);
+    }
   }
 
   void AttitudeIndicatorPlugin::TopicEdited()
