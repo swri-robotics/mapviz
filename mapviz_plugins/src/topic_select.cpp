@@ -182,9 +182,13 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectedTopic() con
 {
   auto [selection, qos] = selectedTopics();
   if (selection.empty()) {
-    return std::make_pair<std::string, rmw_qos_profile_t>(std::string(), std::move(qos));
+    return std::make_pair<std::string, rmw_qos_profile_t>(
+      std::string(),
+      std::move(qos));
   } else {
-    return std::make_pair<std::string, rmw_qos_profile_t>(std::move(selection.front()), std::move(qos));
+    return std::make_pair<std::string, rmw_qos_profile_t>(
+      std::move(selection.front()),
+      std::move(qos));
   }
 }
 
@@ -192,7 +196,6 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
 {
   QModelIndexList qt_selection = ui_->topicList->selectionModel()->selectedIndexes();
 
-  // TODO: Fill in QoS profile
   std::vector<std::string> selection;
   selection.resize(qt_selection.size());
   for (int i = 0; i < qt_selection.size(); i++) {
@@ -208,6 +211,28 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
     selection[i] = displayed_topics_[row];
   }
   rmw_qos_profile_t qos = rmw_qos_profile_default;
+  qos.depth = static_cast<int>(ui_->depthSpinBox->value());
+  if (ui_->historyKeepLastRadioButton->isChecked()) {
+    qos.history = RMW_QOS_POLICY_HISTORY_KEEP_LAST;
+  }
+  else {
+    qos.history = RMW_QOS_POLICY_HISTORY_KEEP_ALL;
+  }
+
+  if (ui_->reliabilityReliableRadioButton->isChecked()) {
+    qos.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  }
+  else {
+    qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
+  }
+
+  if (ui_->durabilityTransientRadioButton->isChecked()) {
+    qos.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+  }
+  else {
+    qos.durability = RMW_QOS_POLICY_DURABILITY_VOLATILE;
+  }
+
   auto ret_value = std::make_pair<std::vector<std::string>, rmw_qos_profile_t>(
     std::move(selection),
     std::move(qos));
