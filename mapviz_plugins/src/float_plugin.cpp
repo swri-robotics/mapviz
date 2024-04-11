@@ -312,7 +312,7 @@ namespace mapviz_plugins
     topics.emplace_back("marti_common_msgs/msg/Float32Stamped");
     topics.emplace_back("marti_common_msgs/msg/Float64Stamped");
     topics.emplace_back("marti_sensor_msgs/msg/Velocity");
-    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(node_, topics);
+    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(node_, topics);
     // TODO: Set QoS profile
     if (!topic.empty())
     {

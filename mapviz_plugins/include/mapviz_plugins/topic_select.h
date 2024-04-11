@@ -48,8 +48,16 @@ class QPushButton;
 class QSpinBox;
 QT_END_NAMESPACE
 
-namespace mapviz
+namespace mapviz_plugins
 {
+inline bool qosEqual(const rmw_qos_profile_t& lhs, const rmw_qos_profile_t& rhs)
+{
+  if (lhs.depth != rhs.depth) { return false; }
+  if (lhs.history != rhs.history) { return false; }
+  if (lhs.durability != rhs.durability) { return false; }
+  return true;
+}
+
 /**
  * Provides a dialog for the user to select one or more topics.
  * Several static functions are provided that can be used instead of

@@ -101,7 +101,7 @@ namespace mapviz_plugins
   void PosePlugin::SelectTopic()
   {
     auto [topic, qos_profile] =
-        mapviz::SelectTopicDialog::selectTopic(node_, "geometry_msgs/msg/PoseStamped");
+        SelectTopicDialog::selectTopic(node_, "geometry_msgs/msg/PoseStamped");
     // TODO: Set QoS profile
     if (!topic.empty())
     {

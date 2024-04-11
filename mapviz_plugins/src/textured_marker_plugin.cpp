@@ -123,7 +123,7 @@ void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
 
 void TexturedMarkerPlugin::SelectTopic()
 {
-  auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
+  auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
     node_,
     "marti_visualization_msgs/msg/TexturedMarker",
     "marti_visualization_msgs/msg/TexturedMarkerArray"

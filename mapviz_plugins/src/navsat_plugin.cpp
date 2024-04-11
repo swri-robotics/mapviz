@@ -82,7 +82,7 @@ namespace mapviz_plugins
   void NavSatPlugin::SelectTopic()
   {
     auto [topic, qos_profile] =
-        mapviz::SelectTopicDialog::selectTopic(node_, "sensor_msgs/msg/NavSatFix");
+        SelectTopicDialog::selectTopic(node_, "sensor_msgs/msg/NavSatFix");
 
     // TODO: Set QoS profile
     if (!topic.empty())

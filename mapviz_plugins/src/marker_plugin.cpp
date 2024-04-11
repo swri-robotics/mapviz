@@ -81,7 +81,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
       node_,
       "visualization_msgs/msg/Marker",
       "visualization_msgs/msg/MarkerArray");

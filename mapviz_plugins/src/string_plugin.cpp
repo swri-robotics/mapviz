@@ -321,7 +321,7 @@ namespace mapviz_plugins
 
   void StringPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(
       node_, "std_msgs/msg/String"
     );
 

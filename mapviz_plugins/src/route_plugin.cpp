@@ -135,7 +135,7 @@ namespace mapviz_plugins
   void RoutePlugin::SelectTopic()
   {
     auto [topic, qos_profile] =
-        mapviz::SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/Route");
+        SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/Route");
     // TODO: Set QoS Profile
     if (topic.empty())
     {
@@ -149,7 +149,7 @@ namespace mapviz_plugins
   void RoutePlugin::SelectPositionTopic()
   {
     auto [topic, qos_profile] =
-        mapviz::SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/RoutePosition");
+        SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/RoutePosition");
     // TODO: Set QoS Profile
     if (topic.empty())
     {

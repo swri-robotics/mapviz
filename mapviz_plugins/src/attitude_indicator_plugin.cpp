@@ -83,23 +83,28 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
         node_,
         topics_);
-    // TODO: Set QoS profile
     if (topic.empty())
     {
       return;
     }
 
-    ui_.topic->setText(QString::fromStdString(topic));
-    TopicEdited();
+    connectCallback(topic, qos);
   }
 
   void AttitudeIndicatorPlugin::TopicEdited()
   {
+    // Sanitize the user input before setting it
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void AttitudeIndicatorPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = true;
       PrintWarning("No messages received.");
@@ -109,19 +114,20 @@ namespace mapviz_plugins
       pose_sub_.reset();
 
       topic_ = topic;
+      qos_ = qos;
       if (!topic_.empty())
       {
         odom_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackOdom, this, std::placeholders::_1));
         imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackImu, this, std::placeholders::_1));
         pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackPose, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());

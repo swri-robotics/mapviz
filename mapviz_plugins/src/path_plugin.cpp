@@ -77,7 +77,7 @@ namespace mapviz_plugins
 
   void PathPlugin::SelectTopic()
   {
-    auto [topic, qos_profile] = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Path");
+    auto [topic, qos_profile] = SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Path");
     // TODO: Set QoS
     if (!topic.empty())
     {

@@ -45,7 +45,7 @@
 
 #include <mapviz_plugins/topic_select.h>
 
-namespace mapviz
+namespace mapviz_plugins
 {
 std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   const rclcpp::Node::SharedPtr& node,
@@ -348,4 +348,4 @@ void SelectTopicDialog::updateDisplayedTopics()
 
   displayed_topics_.swap(next_displayed_topics);
 }
-}  // namespace mapviz
+}  // namespace mapviz_plugins
