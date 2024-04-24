@@ -513,6 +513,7 @@ void TexturedMarkerPlugin::Transform()
 
 void TexturedMarkerPlugin::LoadConfig(const YAML::Node & node, const std::string & path)
 {
+  LoadQosConfig(node, qos_);
   if (node["topic"]) {
     std::string topic = node["topic"].as<std::string>();
     ui_.topic->setText(boost::trim_copy(topic).c_str());
@@ -525,5 +526,7 @@ void TexturedMarkerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string
 {
   emitter << YAML::Key << "topic" << YAML::Value <<
     boost::trim_copy(ui_.topic->text().toStdString());
+
+  SaveQosConfig(emitter, qos_);
 }
 }   // namespace mapviz_plugins

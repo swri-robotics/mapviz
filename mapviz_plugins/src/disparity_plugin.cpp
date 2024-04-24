@@ -473,6 +473,8 @@ namespace mapviz_plugins
       height_ = node["height"].as<double>();
       ui_.height->setValue(static_cast<int>(height_));
     }
+
+    LoadQosConfig(node, qos_);
   }
 
   void DisparityPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -484,6 +486,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
     emitter << YAML::Key << "width" << YAML::Value << width_;
     emitter << YAML::Key << "height" << YAML::Value << height_;
+    SaveQosConfig(emitter, qos_);
   }
 
   std::string DisparityPlugin::AnchorToString(Anchor anchor)

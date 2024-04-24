@@ -695,6 +695,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -710,6 +711,7 @@ namespace mapviz_plugins
       << "topic"
       << YAML::Value
       << boost::trim_copy(ui_.topic->text().toStdString());
+    SaveQosConfig(emitter, qos_);
   }
 
   void MarkerPlugin::timerEvent(QTimerEvent *event)

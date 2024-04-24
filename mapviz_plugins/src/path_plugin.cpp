@@ -189,6 +189,7 @@ namespace mapviz_plugins
 
   void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -212,5 +213,7 @@ namespace mapviz_plugins
 
     std::string color = ui_.path_color->color().name().toStdString();
     emitter << YAML::Key << "color" << YAML::Value << color;
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins

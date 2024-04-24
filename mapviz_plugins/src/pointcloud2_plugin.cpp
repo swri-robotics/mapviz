@@ -736,6 +736,8 @@ namespace mapviz_plugins
   void PointCloud2Plugin::LoadConfig(const YAML::Node& node,
                                      const std::string& path)
   {
+    LoadQosConfig(node, qos_);
+
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -887,5 +889,7 @@ namespace mapviz_plugins
       YAML::Value << ui_.use_automaxmin->isChecked();
     emitter << YAML::Key << "unpack_rgb" <<
       YAML::Value << ui_.unpack_rgb->isChecked();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins

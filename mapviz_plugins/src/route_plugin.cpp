@@ -372,6 +372,8 @@ namespace mapviz_plugins
 
   void RoutePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_, "route");
+    LoadQosConfig(node, position_qos_, "position");
     if (node["topic"])
     {
       std::string route_topic = node["topic"].as<std::string>();
@@ -427,5 +429,8 @@ namespace mapviz_plugins
 
     std::string draw_style = ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
+
+    SaveQosConfig(emitter, qos_, "route");
+    SaveQosConfig(emitter, position_qos_, "position");
   }
 }   // namespace mapviz_plugins

@@ -348,6 +348,8 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
+
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -396,5 +398,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "y" << YAML::Value << position.y();
     emitter << YAML::Key << "width" << YAML::Value << position.width();
     emitter << YAML::Key << "height" << YAML::Value << position.height();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins

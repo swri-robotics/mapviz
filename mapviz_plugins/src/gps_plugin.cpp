@@ -203,6 +203,7 @@ namespace mapviz_plugins
 
   void GpsPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -297,5 +298,7 @@ namespace mapviz_plugins
       << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins

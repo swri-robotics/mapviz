@@ -333,6 +333,7 @@ namespace mapviz_plugins
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
+    LoadQosConfig(node, qos_);
 
     if (node["show_covariance"])
     {
@@ -411,6 +412,8 @@ namespace mapviz_plugins
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
 
     emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins
 

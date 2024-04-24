@@ -476,6 +476,7 @@ namespace mapviz_plugins
 
   void ImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     // Note that image_transport should be loaded before the
     // topic to make sure the transport is set appropriately before we
     // subscribe.
@@ -559,6 +560,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "height" << YAML::Value << height_;
     emitter << YAML::Key << "keep_ratio" << YAML::Value << ui_.keep_ratio->isChecked();
     emitter << YAML::Key << "image_transport" << YAML::Value << transport_;
+    SaveQosConfig(emitter, qos_);
   }
 
   std::string ImagePlugin::AnchorToString(Anchor anchor)

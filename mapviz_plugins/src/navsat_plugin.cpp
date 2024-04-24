@@ -189,6 +189,7 @@ namespace mapviz_plugins
 
   void NavSatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -249,5 +250,7 @@ namespace mapviz_plugins
                YAML::Value << positionTolerance();
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins

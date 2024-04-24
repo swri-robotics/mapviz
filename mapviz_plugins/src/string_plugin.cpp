@@ -61,7 +61,8 @@ namespace mapviz_plugins
     has_message_(false),
     has_painted_(false),
     color_(Qt::black),
-    font_()
+    font_(),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
     // Set background white
@@ -201,6 +202,7 @@ namespace mapviz_plugins
 
   void StringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node[TOPIC_KEY])
     {
       ui_.topic->setText(QString(node[TOPIC_KEY].as<std::string>().c_str()));
@@ -274,6 +276,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << UNITS_KEY << YAML::Value << UnitsToString(units_);
     emitter << YAML::Key << OFFSET_X_KEY << YAML::Value << offset_x_;
     emitter << YAML::Key << OFFSET_Y_KEY << YAML::Value << offset_y_;
+    SaveQosConfig(emitter, qos_);
   }
 
   QWidget* StringPlugin::GetConfigWidget(QWidget* parent)

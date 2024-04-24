@@ -198,6 +198,7 @@ namespace mapviz_plugins
 
   void FloatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node[TOPIC_KEY])
     {
       ui_.topic->setText(QString(node[TOPIC_KEY].as<std::string>().c_str()));
@@ -260,6 +261,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << OFFSET_X_KEY << YAML::Value << offset_x_;
     emitter << YAML::Key << OFFSET_Y_KEY << YAML::Value << offset_y_;
     emitter << YAML::Key << POSTFIX_KEY << YAML::Value << postfix_;
+    SaveQosConfig(emitter, qos_);
   }
 
   QWidget* FloatPlugin::GetConfigWidget(QWidget* parent)

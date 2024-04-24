@@ -527,6 +527,7 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -568,6 +569,7 @@ namespace mapviz_plugins
       << "scheme"
       << YAML::Value
       << ui_.color_scheme->currentText().toStdString();
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins
 
