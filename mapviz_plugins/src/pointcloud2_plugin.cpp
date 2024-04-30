@@ -340,7 +340,8 @@ namespace mapviz_plugins
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
       node_,
-      "sensor_msgs/msg/PointCloud2");
+      "sensor_msgs/msg/PointCloud2",
+      qos_);
     if (!topic.empty())
     {
       connectCallback(topic, qos);

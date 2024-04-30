@@ -138,8 +138,11 @@ namespace mapviz_plugins
 
   void RoutePlugin::SelectTopic()
   {
-    auto [topic, qos] =
-        SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/Route");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "marti_nav_msgs/msg/Route",
+      qos_);
+
     if (!topic.empty())
     {
       connectRouteCallback(topic, qos);
@@ -148,8 +151,11 @@ namespace mapviz_plugins
   
   void RoutePlugin::SelectPositionTopic()
   {
-    auto [topic, qos] =
-        SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/RoutePosition");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "marti_nav_msgs/msg/RoutePosition",
+      position_qos_);
+
     if (!topic.empty())
     {
       connectPositionCallback(topic, qos);

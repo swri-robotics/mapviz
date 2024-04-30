@@ -87,7 +87,8 @@ namespace mapviz_plugins
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
         node_,
-        topics_);
+        topics_,
+        qos_);
 
     if (!topic.empty())
     {

@@ -98,7 +98,7 @@ namespace mapviz_plugins
 
   void FloatPlugin::Draw(double, double, double)
   {
-    // This plugin doesn't do any  OpenGL drawing.
+    // This plugin doesn't do any OpenGL drawing.
   }
 
   void FloatPlugin::Paint(QPainter* painter, double, double, double)
@@ -316,7 +316,10 @@ namespace mapviz_plugins
     topics.emplace_back("marti_common_msgs/msg/Float32Stamped");
     topics.emplace_back("marti_common_msgs/msg/Float64Stamped");
     topics.emplace_back("marti_sensor_msgs/msg/Velocity");
-    auto [topic, qos] = SelectTopicDialog::selectTopic(node_, topics);
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      topics,
+      qos_);
     if (!topic.empty())
     {
       connectCallback(topic, qos);

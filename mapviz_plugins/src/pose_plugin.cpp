@@ -102,8 +102,11 @@ namespace mapviz_plugins
 
   void PosePlugin::SelectTopic()
   {
-    auto [topic, qos] =
-        SelectTopicDialog::selectTopic(node_, "geometry_msgs/msg/PoseStamped");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "geometry_msgs/msg/PoseStamped",
+      qos_);
+  
     if (!topic.empty())
     {
       connectCallback(topic, qos);

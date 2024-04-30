@@ -174,8 +174,8 @@ namespace mapviz_plugins
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
       node_,
-      "stereo_msgs/msg/DisparityImage"
-    );
+      "stereo_msgs/msg/DisparityImage",
+      qos_);
 
     if (!topic.empty())
     {

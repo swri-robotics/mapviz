@@ -55,6 +55,7 @@ inline bool qosEqual(const rmw_qos_profile_t& lhs, const rmw_qos_profile_t& rhs)
   if (lhs.depth != rhs.depth) { return false; }
   if (lhs.history != rhs.history) { return false; }
   if (lhs.durability != rhs.durability) { return false; }
+  if (lhs.reliability != rhs.reliability) { return false; }
   return true;
 }
 
@@ -78,8 +79,9 @@ class SelectTopicDialog : public QDialog
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
     const rclcpp::Node::SharedPtr& node,
-    const std::string &datatype,
-    QWidget *parent = nullptr);
+    const std::string& datatype,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Present the user with a dialog to select a single topic and configure QoS
@@ -92,9 +94,10 @@ class SelectTopicDialog : public QDialog
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
     const rclcpp::Node::SharedPtr& node,
-    const std::string &datatype1,
-    const std::string &datatype2,
-    QWidget *parent = nullptr);
+    const std::string& datatype1,
+    const std::string& datatype2,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Present the user with a dialog to select a single topic and configure QoS
@@ -105,8 +108,9 @@ class SelectTopicDialog : public QDialog
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
     const rclcpp::Node::SharedPtr& node,
-    const std::vector<std::string> &datatypes,
-    QWidget *parent = nullptr);
+    const std::vector<std::string>& datatypes,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Present the user with a dialog to select a multiple topics and configure QoS
@@ -118,8 +122,9 @@ class SelectTopicDialog : public QDialog
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
     const rclcpp::Node::SharedPtr& node,
-    const std::string &datatype,
-    QWidget *parent = nullptr);
+    const std::string& datatype,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Present the user with a dialog to select a multiple topics and configure QoS.
@@ -132,9 +137,10 @@ class SelectTopicDialog : public QDialog
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
     const rclcpp::Node::SharedPtr& node,
-    const std::string &datatype1,
-    const std::string &datatype2,
-    QWidget *parent = nullptr);
+    const std::string& datatype1,
+    const std::string& datatype2,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Present the user with a dialog to select a multiple topics and configure
@@ -146,14 +152,17 @@ class SelectTopicDialog : public QDialog
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
     const rclcpp::Node::SharedPtr& node,
-    const std::vector<std::string> &datatypes,
-    QWidget *parent = nullptr);
+    const std::vector<std::string>& datatypes,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Constructor for the SelectTopicDialog.
    */
-  explicit SelectTopicDialog(const rclcpp::Node::SharedPtr& node,
-      QWidget *parent = nullptr);
+  explicit SelectTopicDialog(
+    const rclcpp::Node::SharedPtr& node,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Choose whether the user can select one (allow=false) or multiple

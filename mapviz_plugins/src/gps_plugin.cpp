@@ -92,7 +92,10 @@ namespace mapviz_plugins
 
   void GpsPlugin::SelectTopic()
   {
-    auto [topic, qos] = SelectTopicDialog::selectTopic(node_, "gps_msgs/msg/GPSFix");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "gps_msgs/msg/GPSFix",
+      qos_);
     if (!topic.empty())
     {
       connectCallback(topic, qos);

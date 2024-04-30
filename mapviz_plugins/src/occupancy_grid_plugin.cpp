@@ -232,7 +232,10 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::SelectTopicGrid()
   {
-    auto [topic, qos] = SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/OccupancyGrid");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "nav_msgs/msg/OccupancyGrid",
+      qos_);
     if (!topic.empty())
     {
       connectCallback(topic, qos);

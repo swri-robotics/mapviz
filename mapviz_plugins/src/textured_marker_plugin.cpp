@@ -128,8 +128,9 @@ void TexturedMarkerPlugin::SelectTopic()
   auto [topic, qos] = SelectTopicDialog::selectTopic(
     node_,
     "marti_visualization_msgs/msg/TexturedMarker",
-    "marti_visualization_msgs/msg/TexturedMarkerArray"
-  );
+    "marti_visualization_msgs/msg/TexturedMarkerArray",
+    qos_);
+
   if (!topic.empty()) {
     connectCallback(topic, qos);
   }

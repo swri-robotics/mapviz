@@ -79,7 +79,10 @@ namespace mapviz_plugins
 
   void PathPlugin::SelectTopic()
   {
-    auto [topic, qos] = SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Path");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "nav_msgs/msg/Path",
+      qos_);
     if (!topic.empty())
     {
       connectCallback(topic, qos);

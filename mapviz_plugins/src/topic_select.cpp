@@ -50,31 +50,34 @@ namespace mapviz_plugins
 std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   const rclcpp::Node::SharedPtr& node,
   const std::string &datatype,
-  QWidget *parent)
+  const rmw_qos_profile_t& qos,
+  QWidget* parent)
 {
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype);
-  return selectTopic(node, datatypes, parent);
+  return selectTopic(node, datatypes, qos, parent);
 }
 
 std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   const rclcpp::Node::SharedPtr& node,
-  const std::string &datatype1,
-  const std::string &datatype2,
-  QWidget *parent)
+  const std::string& datatype1,
+  const std::string& datatype2,
+  const rmw_qos_profile_t& qos,
+  QWidget* parent)
 {
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype1);
   datatypes.push_back(datatype2);
-  return selectTopic(node, datatypes, parent);
+  return selectTopic(node, datatypes, qos, parent);
 }
 
 std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   const rclcpp::Node::SharedPtr& node,
-  const std::vector<std::string> &datatypes,
-  QWidget *parent)
+  const std::vector<std::string>& datatypes,
+  const rmw_qos_profile_t& qos,
+  QWidget* parent)
 {
-  SelectTopicDialog dialog(node, parent);
+  SelectTopicDialog dialog(node, qos, parent);
   dialog.allowMultipleTopics(false);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
@@ -89,32 +92,35 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
 
 std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
   const rclcpp::Node::SharedPtr& node,
-  const std::string &datatype,
-  QWidget *parent)
+  const std::string& datatype,
+  const rmw_qos_profile_t& qos,
+  QWidget* parent)
 {
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype);
-  return selectTopics(node, datatypes, parent);
+  return selectTopics(node, datatypes, qos, parent);
 }
 
 std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
   const rclcpp::Node::SharedPtr& node,
-  const std::string &datatype1,
-  const std::string &datatype2,
-  QWidget *parent)
+  const std::string& datatype1,
+  const std::string& datatype2,
+  const rmw_qos_profile_t& qos,
+  QWidget* parent)
 {
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype1);
   datatypes.push_back(datatype2);
-  return selectTopics(node, datatypes, parent);
+  return selectTopics(node, datatypes, qos, parent);
 }
 
 std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
   const rclcpp::Node::SharedPtr& node,
-  const std::vector<std::string> &datatypes,
-  QWidget *parent)
+  const std::vector<std::string>& datatypes,
+  const rmw_qos_profile_t& qos,
+  QWidget* parent)
 {
-  SelectTopicDialog dialog(node, parent);
+  SelectTopicDialog dialog(node, qos, parent);
   dialog.allowMultipleTopics(true);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
@@ -128,13 +134,46 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
   }
 }
 
-SelectTopicDialog::SelectTopicDialog(const rclcpp::Node::SharedPtr& node, QWidget *parent)
+SelectTopicDialog::SelectTopicDialog(
+  const rclcpp::Node::SharedPtr& node,
+  const rmw_qos_profile_t& qos,
+  QWidget* parent)
   :
   QDialog(parent),
   ui_(new Ui::TopicSelect),
   nh_(node)
 {
   ui_->setupUi(this);
+
+  ui_->depthSpinBox->setValue(qos.depth);
+
+  if (qos.history == RMW_QOS_POLICY_HISTORY_KEEP_LAST)
+  {
+    ui_->historyKeepLastRadioButton->setChecked(true);
+  }
+  else
+  {
+    ui_->historyKeepAllRadioButton->setChecked(true);
+  }
+
+  if (qos.reliability == RMW_QOS_POLICY_RELIABILITY_RELIABLE)
+  {
+    ui_->reliabilityReliableRadioButton->setChecked(true);
+  }
+  else
+  {
+    ui_->reliabilityBestEffortRadioButton->setChecked(true);
+  }
+
+  if (qos.durability == RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
+  {
+    ui_->durabilityTransientRadioButton->setChecked(true);
+  }
+  else
+  {
+    ui_->durabilityVolatileRadioButton->isChecked();
+  }
+
   connect(ui_->filterLineEdit,
     SIGNAL(textChanged(const QString &)),
     this,
