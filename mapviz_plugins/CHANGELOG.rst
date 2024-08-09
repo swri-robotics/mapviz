@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.0 (2024-08-09)
+------------------
 * Configurable qos (`#818 <https://github.com/swri-robotics/mapviz/issues/818>`_)
   * Adding configurable QoS to UI
   * Changing lookup duration to reduce lag
