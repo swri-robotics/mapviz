@@ -63,38 +63,40 @@ class PosePlugin : public mapviz_plugins::PointDrawingPlugin
   Q_OBJECT
 
   public:
-  PosePlugin();
-  ~PosePlugin() override = default;
+    PosePlugin();
+    ~PosePlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas) override;
-  void Shutdown() override {}
+    bool Initialize(QGLWidget* canvas) override;
+    void Shutdown() override {}
 
-  void Draw(double x, double y, double scale) override;
+    void Draw(double x, double y, double scale) override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+    QWidget* GetConfigWidget(QWidget* parent) override;
 
   protected:
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+    void PrintError(const std::string& message) override;
+    void PrintInfo(const std::string& message) override;
+    void PrintWarning(const std::string& message) override;
 
   protected Q_SLOTS:
-  void SelectTopic();
-  void TopicEdited();
+    void SelectTopic();
+    void TopicEdited();
 
   private:
-  Ui::pose_config ui_;
-  QWidget* config_widget_;
+    Ui::pose_config ui_;
+    QWidget* config_widget_;
 
-  std::string topic_;
+    std::string topic_;
+    rmw_qos_profile_t qos_;
 
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
-  bool has_message_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
+    bool has_message_;
 
-  void PoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr pose);
+    void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+    void PoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr pose);
 };
 }   // namespace mapviz_plugins
 

@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/odometry_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -42,7 +43,6 @@
 
 #include <swri_image_util/geometry_util.h>
 #include <swri_transform_util/transform_util.h>
-#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -57,11 +57,13 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OdometryPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  OdometryPlugin::OdometryPlugin()
-  : PointDrawingPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , has_message_(false)
+  OdometryPlugin::OdometryPlugin() :
+    PointDrawingPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
     ui_.color->setColor(Qt::green);
@@ -104,18 +106,25 @@ namespace mapviz_plugins
 
   void OdometryPlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/Odometry");
-
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "nav_msgs/msg/Odometry",
+      qos_);
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void OdometryPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
+    connectCallback(topic, qos_);
+  }
+  
+  void OdometryPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
     if (topic != topic_)
     {
       initialized_ = false;
@@ -126,14 +135,18 @@ namespace mapviz_plugins
       odometry_sub_.reset();
 
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
-        odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(topic_, rclcpp::QoS(1),
+        odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
+          topic_,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
           std::bind(&OdometryPlugin::odometryCallback, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
       }
     }
+
   }
 
   void OdometryPlugin::odometryCallback(
@@ -323,6 +336,7 @@ namespace mapviz_plugins
       ui_.buffersize->setValue(buffer_size);
       BufferSizeChanged(buffer_size);
     }
+    LoadQosConfig(node, qos_);
 
     if (node["show_covariance"])
     {
@@ -401,6 +415,8 @@ namespace mapviz_plugins
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
 
     emitter << YAML::Key << "show_timestamps" << YAML::Value << ui_.show_timestamps->value();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins
 

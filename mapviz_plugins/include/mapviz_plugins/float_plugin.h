@@ -122,6 +122,7 @@ namespace mapviz_plugins
     QWidget* config_widget_;
 
     std::string topic_;
+    rmw_qos_profile_t qos_;
     std::string postfix_;
     Anchor anchor_;
     Units units_;
@@ -141,6 +142,7 @@ namespace mapviz_plugins
     QStaticText message_;
 
     void floatCallback(double value);
+    void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
 
     std::string AnchorToString(Anchor anchor);
     std::string UnitsToString(Units units);

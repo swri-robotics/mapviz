@@ -29,6 +29,7 @@
  **/ 
 
 #include <mapviz_plugins/pose_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -41,7 +42,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <swri_transform_util/transform_util.h>
-#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -56,11 +56,13 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PosePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PosePlugin::PosePlugin()
-  : PointDrawingPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , has_message_(false)
+  PosePlugin::PosePlugin() :
+    PointDrawingPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -100,20 +102,27 @@ namespace mapviz_plugins
 
   void PosePlugin::SelectTopic()
   {
-    std::string topic =
-        mapviz::SelectTopicDialog::selectTopic(node_, "geometry_msgs/msg/PoseStamped");
-
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "geometry_msgs/msg/PoseStamped",
+      qos_);
+  
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void PosePlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void PosePlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       ClearPoints();
@@ -201,6 +210,8 @@ namespace mapviz_plugins
 
   void PosePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
+
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -295,5 +306,7 @@ namespace mapviz_plugins
       << ui_.static_arrow_sizes->isChecked();
 
     emitter << YAML::Key << "arrow_size" << YAML::Value << ui_.arrow_size->value();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins

@@ -158,6 +158,7 @@ private:
   QWidget* config_widget_;
 
   std::string topic_;
+  rmw_qos_profile_t qos_;
 
   rclcpp::Subscription<visualization_msgs::msg::Marker>::SharedPtr marker_sub_;
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_sub_;
@@ -170,7 +171,7 @@ private:
   void handleMarker(visualization_msgs::msg::Marker::ConstSharedPtr marker);
   void handleMarkerArray(visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
   void processMarker(const visualization_msgs::msg::Marker& marker);
-  void subscribe();
+  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   void transformArrow(MarkerData& markerData,
                       const swri_transform_util::Transform& transform);
 };

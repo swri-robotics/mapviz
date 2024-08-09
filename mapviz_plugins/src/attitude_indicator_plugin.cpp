@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/attitude_indicator_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 #include <GL/glut.h>
 
 // QT libraries
@@ -38,7 +39,6 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
-#include <mapviz/select_topic_dialog.h>
 #include <mapviz/select_frame_dialog.h>
 
 // Declare plugin
@@ -53,10 +53,12 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPl
 
 namespace mapviz_plugins
 {
-  AttitudeIndicatorPlugin::AttitudeIndicatorPlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
+  AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
+    topic_(""),
+    qos_(rmw_qos_profile_default),
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget())
   {
     ui_.setupUi(config_widget_);
 
@@ -83,22 +85,28 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
         node_,
-        topics_);
-    if (topic.empty())
-    {
-      return;
-    }
+        topics_,
+        qos_);
 
-    ui_.topic->setText(QString::fromStdString(topic));
-    TopicEdited();
+    if (!topic.empty())
+    {
+      connectCallback(topic, qos);
+    }
   }
 
   void AttitudeIndicatorPlugin::TopicEdited()
   {
+    // Sanitize the user input before setting it
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void AttitudeIndicatorPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = true;
       PrintWarning("No messages received.");
@@ -108,19 +116,20 @@ namespace mapviz_plugins
       pose_sub_.reset();
 
       topic_ = topic;
+      qos_ = qos;
       if (!topic_.empty())
       {
         odom_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackOdom, this, std::placeholders::_1));
         imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackImu, this, std::placeholders::_1));
         pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackPose, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
@@ -340,6 +349,8 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
+
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -388,5 +399,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "y" << YAML::Value << position.y();
     emitter << YAML::Key << "width" << YAML::Value << position.width();
     emitter << YAML::Key << "height" << YAML::Value << position.height();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins

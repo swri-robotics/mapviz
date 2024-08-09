@@ -121,6 +121,7 @@ private:
   QWidget* config_widget_;
 
   std::string topic_;
+  rmw_qos_profile_t qos_;
   Anchor anchor_;
   Units units_;
   int offset_x_;
@@ -135,6 +136,7 @@ private:
   QFont font_;
   QStaticText message_;
 
+  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   std::string AnchorToString(Anchor anchor);
   std::string UnitsToString(Units units);
 

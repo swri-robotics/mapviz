@@ -318,7 +318,38 @@ protected:
     draw_order_(0)
   {}
 
-  private:
+  void LoadQosConfig(const YAML::Node& node, rmw_qos_profile_t& qos, const std::string prefix = "") const
+  {
+    if (node[prefix + "qos_dpeth"])
+    {
+      qos.depth = node[prefix + "qos_depth"].as<int>();
+    }
+
+    if (node[prefix + "qos_history"])
+    {
+      qos.history = static_cast<rmw_qos_history_policy_e>(node[prefix + "qos_history"].as<int>());
+    }
+
+    if (node[prefix + "qos_reliability"])
+    {
+      qos.reliability = static_cast<rmw_qos_reliability_policy_e>(node[prefix + "qos_reliability"].as<int>());
+    }
+
+    if (node[prefix + "qos_durability"])
+    {
+      qos.durability = static_cast<rmw_qos_durability_policy_e>(node[prefix + "qos_durability"].as<int>());
+    }
+  }
+
+  void SaveQosConfig(YAML::Emitter& emitter, const rmw_qos_profile_t& qos, const std::string prefix = "") const
+  {
+    emitter << YAML::Key << prefix + "qos_depth" << YAML::Value << qos.depth;
+    emitter << YAML::Key << prefix << "qos_history" << YAML::Value << qos.history;
+    emitter << YAML::Key << prefix << "qos_reliability" << YAML::Value << qos.reliability;
+    emitter << YAML::Key << prefix << "qos_durability" << YAML::Value << qos.durability;
+  }
+
+private:
   // Collect basic profiling info to know how much time each plugin
   // spends in Transform(), Paint(), and Draw().
   Stopwatch meas_transform_;

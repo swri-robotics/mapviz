@@ -30,12 +30,11 @@
 #include <GL/glew.h>
 
 #include <mapviz_plugins/occupancy_grid_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QGLWidget>
 #include <QPalette>
-
-#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -146,17 +145,19 @@ namespace mapviz_plugins
     return palette;
   }
 
-  OccupancyGridPlugin::OccupancyGridPlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , transformed_(false)
-  , texture_id_(0)
-  , texture_x_(0.0)
-  , texture_y_(0.0)
-  , texture_size_(0)
-  , map_palette_( makeMapPalette() )
-  , costmap_palette_( makeCostmapPalette() )
+  OccupancyGridPlugin::OccupancyGridPlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    transformed_(false),
+    texture_id_(0),
+    texture_x_(0.0),
+    texture_y_(0.0),
+    texture_size_(0),
+    map_palette_(makeMapPalette()),
+    costmap_palette_( makeCostmapPalette()),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -231,41 +232,51 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::SelectTopicGrid()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, "nav_msgs/msg/OccupancyGrid");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "nav_msgs/msg/OccupancyGrid",
+      qos_);
     if (!topic.empty())
     {
-      QString str = QString::fromStdString(topic);
-      ui_.topic_grid->setText( str);
-      TopicGridEdited();
+      connectCallback(topic, qos);
     }
   }
-
 
   void OccupancyGridPlugin::TopicGridEdited()
   {
     const std::string topic = ui_.topic_grid->text().trimmed().toStdString();
+    connectCallback(topic, qos_);
+  }
 
-    initialized_ = false;
-    grid_.reset();
-    raw_buffer_.clear();
-
-    grid_sub_.reset();
-    update_sub_.reset();
-
-    if (!topic.empty())
+  void OccupancyGridPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic_grid->setText(QString::fromStdString(topic));
+    if ((topic_ != topic) || !qosEqual(qos, qos_))
     {
-      grid_sub_ = node_->create_subscription<nav_msgs::msg::OccupancyGrid>(
-        topic,
-        rclcpp::QoS(10),
-        std::bind(&OccupancyGridPlugin::Callback, this, std::placeholders::_1));
-      if(ui_.checkbox_update->isChecked())
+      initialized_ = false;
+      grid_.reset();
+      raw_buffer_.clear();
+
+      grid_sub_.reset();
+      update_sub_.reset();
+      topic_ = topic;
+      qos_ = qos;
+
+      if (!topic.empty())
       {
-        update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
+        grid_sub_ = node_->create_subscription<nav_msgs::msg::OccupancyGrid>(
           topic,
-          rclcpp::QoS(10),
-          std::bind(&OccupancyGridPlugin::CallbackUpdate, this, std::placeholders::_1));
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          std::bind(&OccupancyGridPlugin::Callback, this, std::placeholders::_1));
+        if(ui_.checkbox_update->isChecked())
+        {
+          update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
+            topic,
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            std::bind(&OccupancyGridPlugin::CallbackUpdate, this, std::placeholders::_1));
+        }
+        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic.c_str());
       }
-      RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic.c_str());
     }
   }
 
@@ -519,6 +530,7 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -560,6 +572,7 @@ namespace mapviz_plugins
       << "scheme"
       << YAML::Value
       << ui_.color_scheme->currentText().toStdString();
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins
 

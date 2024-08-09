@@ -26,12 +26,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // *****************************************************************************
-#ifndef MAPVIZ__SELECT_TOPIC_DIALOG_H_
-#define MAPVIZ__SELECT_TOPIC_DIALOG_H_
-
-#include <rclcpp/rclcpp.hpp>
-
-#include <QDialog>
+#ifndef MAPVIZ_PLUGINS__TOPIC_SELECT_H_
+#define MAPVIZ_PLUGINS__TOPIC_SELECT_H_
 
 #include <map>
 #include <memory>
@@ -39,14 +35,30 @@
 #include <string>
 #include <vector>
 
+#include <QDialog>
+
+#include <rclcpp/rclcpp.hpp>
+#include <rmw/qos_profiles.h>
+#include "ui_topicselect.h"
+
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 class QListWidget;
 class QPushButton;
+class QSpinBox;
 QT_END_NAMESPACE
 
-namespace mapviz
+namespace mapviz_plugins
 {
+inline bool qosEqual(const rmw_qos_profile_t& lhs, const rmw_qos_profile_t& rhs)
+{
+  if (lhs.depth != rhs.depth) { return false; }
+  if (lhs.history != rhs.history) { return false; }
+  if (lhs.durability != rhs.durability) { return false; }
+  if (lhs.reliability != rhs.reliability) { return false; }
+  return true;
+}
+
 /**
  * Provides a dialog for the user to select one or more topics.
  * Several static functions are provided that can be used instead of
@@ -58,88 +70,99 @@ class SelectTopicDialog : public QDialog
 
  public:
   /**
-   * Present the user with a dialog to select a single topic.  This is
-   * convenience wrapper for the common case where only one datatype
-   * is allowed.
+   * Present the user with a dialog to select a single topic and configure
+   * QoS settings.  This is convenience wrapper for the common case where
+   * only one datatype is allowed.
+   *
+   * If the user cancels the selection or doesn't make a valid
+   * selection, the topic will be empty and the QoS will be the RMW default.
+   */
+  static std::pair<std::string, rmw_qos_profile_t> selectTopic(
+    const rclcpp::Node::SharedPtr& node,
+    const std::string& datatype,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
+
+  /**
+   * Present the user with a dialog to select a single topic and configure QoS
+   * settings. This is a convenience wrapper for the common case where two
+   * datatypes are allowed.
    *
    * If the user cancels the selection or doesn't make a valid
    * selection, the topic and datatype fields of the returned topic
-   * info will be empty.
+   * info will be empty, and the QoS will be the RMW defaults.
    */
-  static std::string selectTopic(
+  static std::pair<std::string, rmw_qos_profile_t> selectTopic(
     const rclcpp::Node::SharedPtr& node,
-    const std::string &datatype,
-    QWidget *parent = nullptr);
+    const std::string& datatype1,
+    const std::string& datatype2,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
-   * Present the user with a dialog to select a single topic This is a
-   * convenience wrapper for the common case where two datatypes are allowed.
+   * Present the user with a dialog to select a single topic and configure QoS
+   * settings.
    *
    * If the user cancels the selection or doesn't make a valid
-   * selection, the topic and datatype fields of the returned topic
-   * info will be empty.
+   * selection, the topic will be an empty string the QoS will be RMW defaults.
    */
-  static std::string selectTopic(
+  static std::pair<std::string, rmw_qos_profile_t> selectTopic(
     const rclcpp::Node::SharedPtr& node,
-    const std::string &datatype1,
-    const std::string &datatype2,
-    QWidget *parent = nullptr);
+    const std::vector<std::string>& datatypes,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
-   * Present the user with a dialog to select a single topic.
-   *
-   * If the user cancels the selection or doesn't make a valid
-   * selection, the topic and datatype fields of the returned topic
-   * info will be empty.
-   */
-  static std::string selectTopic(
-    const rclcpp::Node::SharedPtr& node,
-    const std::vector<std::string> &datatypes,
-    QWidget *parent = nullptr);
-
-  /**
-   * Present the user with a dialog to select a multiple topics.  This
-   * is a convenience wrapper for the common case where only one
+   * Present the user with a dialog to select a multiple topics and configure QoS
+   * settings.  This is a convenience wrapper for the common case where only one
    * datatype is allowed.
    *
-   * If the user cancels the selection or doesn't make a valid
-   * selection, the returned vector will be empty.
+   * If the user cancels the selection or doesn't make a valid selection, the 
+   * returned vector will be empty, and the QoS will be the RMW default.
    */
-  static std::vector<std::string> selectTopics(
+  static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
     const rclcpp::Node::SharedPtr& node,
-    const std::string &datatype,
-    QWidget *parent = nullptr);
+    const std::string& datatype,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
-   * Present the user with a dialog to select a multiple topics.  This
-   * is a convenience wrapper for the common case where two datatypes
-   * are allowed.
+   * Present the user with a dialog to select a multiple topics and configure QoS.
+   * This is a convenience wrapper for the common case where two datatypes are 
+   * allowed.
    *
    * If the user cancels the selection or doesn't make a valid
-   * selection, the returned vector will be empty.
+   * selection, the returned vector will be empty and the QoS will be
+   * the RMW default.
    */
-  static std::vector<std::string> selectTopics(
+  static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
     const rclcpp::Node::SharedPtr& node,
-    const std::string &datatype1,
-    const std::string &datatype2,
-    QWidget *parent = nullptr);
+    const std::string& datatype1,
+    const std::string& datatype2,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
-   * Present the user with a dialog to select a multiple topics.
+   * Present the user with a dialog to select a multiple topics and configure
+   * QoS settings..
    *
    * If the user cancels the selection or doesn't make a valid
-   * selection, the returned vector will be empty.
+   * selection, the returned vector will be empty and the QoS will be the
+   * RMW defaults.
    */
-  static std::vector<std::string> selectTopics(
+  static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
     const rclcpp::Node::SharedPtr& node,
-    const std::vector<std::string> &datatypes,
-    QWidget *parent = nullptr);
+    const std::vector<std::string>& datatypes,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Constructor for the SelectTopicDialog.
    */
-  explicit SelectTopicDialog(const rclcpp::Node::SharedPtr& node,
-      QWidget *parent = nullptr);
+  explicit SelectTopicDialog(
+    const rclcpp::Node::SharedPtr& node,
+    const rmw_qos_profile_t& qos,
+    QWidget* parent = nullptr);
 
   /**
    * Choose whether the user can select one (allow=false) or multiple
@@ -155,17 +178,18 @@ class SelectTopicDialog : public QDialog
   void setDatatypeFilter(const std::vector<std::string> &datatypes);
 
   /**
-   * Returns the currently selected topic.  If multiple topics are
-   * allowed, this will only return the first selected element.  If
-   * there is no selection, the returned info will have an empty topic
-   * name and datatype.
+   * Returns the currently selected topic and QoS profile. If multiple
+   * topics are allowed, this will only return the first selected element.
+   * If there is no selection, the returned info will have an empty topic
+   * name and default QoS profile.
    */
-  std::string selectedTopic() const;
+  std::pair<std::string, rmw_qos_profile_t> selectedTopic() const;
   /**
-   * Returns the currently selected topics.  If there is no selection,
-   * the returned vector will be empty.
+   * Returns the currently selected topics and QoS setting.  If there is no
+   * selection, the returned vector will be empty and the QoS will be the RMW
+   * default.
    */
-  std::vector<std::string> selectedTopics() const;
+  std::pair<std::vector<std::string>, rmw_qos_profile_t> selectedTopics() const;
 
  private:
   void timerEvent(QTimerEvent *) override;
@@ -184,14 +208,10 @@ class SelectTopicDialog : public QDialog
 
   std::vector<std::string> displayed_topics_;
   int fetch_topics_timer_id_;
+  Ui::TopicSelect *ui_;
 
   std::shared_ptr<rclcpp::Node> nh_;   // This may need to be a shared instance of Mapviz's node
-
-  QPushButton *ok_button_;
-  QPushButton *cancel_button_;
-  QListWidget *list_widget_;
-  QLineEdit *name_filter_;
 };  // class SelectTopicDialog
 }  // namespace mapviz
 
-#endif  // MAPVIZ__SELECT_TOPIC_DIALOG_H_
+#endif  // MAPVIZ_PLUGINS__TOPIC_SELECT_H_

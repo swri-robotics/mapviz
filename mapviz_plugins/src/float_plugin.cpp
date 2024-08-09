@@ -29,9 +29,9 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/float_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 #include <pluginlib/class_list_macros.hpp>
-#include <mapviz/select_topic_dialog.h>
 
 #include <QFontDialog>
 
@@ -48,17 +48,19 @@ namespace mapviz_plugins
   const char* FloatPlugin::OFFSET_Y_KEY = "offset_y";
   const char* FloatPlugin::POSTFIX_KEY = "postfix_text";
 
-  FloatPlugin::FloatPlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , anchor_(TOP_LEFT)
-  , units_(PIXELS)
-  , offset_x_(0)
-  , offset_y_(0)
-  , has_message_(false)
-  , has_painted_(false)
-  , color_(Qt::black)
+  FloatPlugin::FloatPlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    anchor_(TOP_LEFT),
+    units_(PIXELS),
+    offset_x_(0),
+    offset_y_(0),
+    has_message_(false),
+    has_painted_(false),
+    color_(Qt::black),
+    qos_(rmw_qos_profile_default),
+    topic_("")
   {
     ui_.setupUi(config_widget_);
     // Set background white
@@ -96,7 +98,7 @@ namespace mapviz_plugins
 
   void FloatPlugin::Draw(double, double, double)
   {
-    // This plugin doesn't do any  OpenGL drawing.
+    // This plugin doesn't do any OpenGL drawing.
   }
 
   void FloatPlugin::Paint(QPainter* painter, double, double, double)
@@ -196,6 +198,7 @@ namespace mapviz_plugins
 
   void FloatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node[TOPIC_KEY])
     {
       ui_.topic->setText(QString(node[TOPIC_KEY].as<std::string>().c_str()));
@@ -258,6 +261,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << OFFSET_X_KEY << YAML::Value << offset_x_;
     emitter << YAML::Key << OFFSET_Y_KEY << YAML::Value << offset_y_;
     emitter << YAML::Key << POSTFIX_KEY << YAML::Value << postfix_;
+    SaveQosConfig(emitter, qos_);
   }
 
   QWidget* FloatPlugin::GetConfigWidget(QWidget* parent)
@@ -312,19 +316,25 @@ namespace mapviz_plugins
     topics.emplace_back("marti_common_msgs/msg/Float32Stamped");
     topics.emplace_back("marti_common_msgs/msg/Float64Stamped");
     topics.emplace_back("marti_sensor_msgs/msg/Velocity");
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(node_, topics);
-
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      topics,
+      qos_);
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void FloatPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+  }
+
+  void FloatPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       has_message_ = false;
@@ -337,30 +347,42 @@ namespace mapviz_plugins
       velocity_sub_.reset();
 
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
-        float32_sub_ = node_->create_subscription<std_msgs::msg::Float32>(topic_, 1,
+        float32_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+          topic_,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             [this](const std_msgs::msg::Float32::ConstSharedPtr msg) {
           floatCallback(msg->data);
         });
-        float64_sub_ = node_->create_subscription<std_msgs::msg::Float64>(topic_, 1,
+        float64_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
+          topic_,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             [this](const std_msgs::msg::Float64::ConstSharedPtr msg) {
           floatCallback(msg->data);
         });
-        float32_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::Float32Stamped>(topic_, 1,
+        float32_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::Float32Stamped>(
+          topic_,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             [this](const marti_common_msgs::msg::Float32Stamped::ConstSharedPtr msg) {
           floatCallback(msg->value);
         });
-        float64_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::Float64Stamped>(topic_, 1,
+        float64_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::Float64Stamped>(
+          topic_,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             [this](const marti_common_msgs::msg::Float64Stamped::ConstSharedPtr msg) {
           floatCallback(msg->value);
         });
-        velocity_sub_ = node_->create_subscription<marti_sensor_msgs::msg::Velocity>(topic_, 1,
+        velocity_sub_ = node_->create_subscription<marti_sensor_msgs::msg::Velocity>(
+          topic_,
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             [this](const marti_sensor_msgs::msg::Velocity::ConstSharedPtr msg) {
           floatCallback(msg->velocity);
         });
       }
     }
+
   }
 
   void FloatPlugin::SetAnchor(QString anchor)

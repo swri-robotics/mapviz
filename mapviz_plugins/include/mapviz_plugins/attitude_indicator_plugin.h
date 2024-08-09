@@ -99,6 +99,7 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin
   void AttitudeCallbackOdom(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
   void AttitudeCallbackPose(geometry_msgs::msg::Pose::ConstSharedPtr pose);
   void applyAttitudeOrientation(const geometry_msgs::msg::Quaternion &orientation);
+  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
 
   double pitch_;
   double roll_;
@@ -109,6 +110,7 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;
   std::string topic_;
+  rmw_qos_profile_t qos_;
   std::vector<std::string> topics_;
   Ui::attitude_indicator_config ui_{};
 };  // class AttitudeIndicatorPlugin

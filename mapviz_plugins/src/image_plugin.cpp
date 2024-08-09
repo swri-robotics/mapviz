@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/image_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -36,8 +37,6 @@
 // ROS libraries
 #include <sensor_msgs/image_encodings.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
-#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -51,23 +50,25 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::ImagePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  ImagePlugin::ImagePlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , anchor_(TOP_LEFT)
-  , units_(PIXELS)
-  , offset_x_(0)
-  , offset_y_(0)
-  , width_(320)
-  , height_(240)
-  , transport_("default")
-  , force_resubscribe_(false)
-  , has_image_(false)
-  , last_width_(0)
-  , last_height_(0)
-  , original_aspect_ratio_(1.0)
-  , has_message_(false)
+  ImagePlugin::ImagePlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    anchor_(TOP_LEFT),
+    units_(PIXELS),
+    offset_x_(0),
+    offset_y_(0),
+    width_(320),
+    height_(240),
+    transport_("default"),
+    force_resubscribe_(false),
+    has_image_(false),
+    last_width_(0),
+    last_height_(0),
+    original_aspect_ratio_(1.0),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -215,19 +216,25 @@ namespace mapviz_plugins
 
   void ImagePlugin::SelectTopic()
   {
-    std::string topic = mapviz::SelectTopicDialog::selectTopic(
-      node_, "sensor_msgs/msg/Image");
-
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "sensor_msgs/msg/Image",
+      qos_);
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void ImagePlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
+    connectCallback(topic, qos_);
+  }
+
+  void ImagePlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
     if (!this->Visible())
     {
       PrintWarning("Topic is Hidden");
@@ -238,6 +245,7 @@ namespace mapviz_plugins
       if (!topic.empty())
       {
         topic_ = topic;
+        qos_ = qos;
       }
       image_sub_.shutdown();
       return;
@@ -245,13 +253,15 @@ namespace mapviz_plugins
     // Re-subscribe if either the topic or the image transport
     // have changed.
     if (force_resubscribe_ ||
-        topic != topic_ ||
-        image_sub_.getTransport() != transport_)
+        (topic != topic_) ||
+        (image_sub_.getTransport() != transport_) ||
+        !qosEqual(qos, qos_))
     {
       force_resubscribe_ = false;
       initialized_ = false;
       has_message_ = false;
       topic_ = topic;
+      qos_ = qos;
       PrintWarning("No messages received.");
 
       image_sub_.shutdown();
@@ -262,8 +272,10 @@ namespace mapviz_plugins
         {
           RCLCPP_DEBUG(node_->get_logger(), "Using default transport.");
           image_transport::ImageTransport it(node_);
-          image_sub_ = it.subscribe(topic_, 1,
-              std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1));
+          image_sub_ = it.subscribe(
+            topic_,
+            qos_.depth,
+            std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1));
         } else {
           RCLCPP_DEBUG(node_->get_logger(), "Setting transport to %s on %s.",
                    transport_.c_str(), node_->get_fully_qualified_name());
@@ -273,7 +285,7 @@ namespace mapviz_plugins
               topic_,
               std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1),
               transport_,
-              rclcpp::QoS(1).get_rmw_qos_profile());
+              qos);
         }
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
@@ -466,6 +478,7 @@ namespace mapviz_plugins
 
   void ImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     // Note that image_transport should be loaded before the
     // topic to make sure the transport is set appropriately before we
     // subscribe.
@@ -549,6 +562,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "height" << YAML::Value << height_;
     emitter << YAML::Key << "keep_ratio" << YAML::Value << ui_.keep_ratio->isChecked();
     emitter << YAML::Key << "image_transport" << YAML::Value << transport_;
+    SaveQosConfig(emitter, qos_);
   }
 
   std::string ImagePlugin::AnchorToString(Anchor anchor)

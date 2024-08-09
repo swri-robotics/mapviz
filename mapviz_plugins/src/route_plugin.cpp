@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/route_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -43,7 +44,6 @@
 #include <swri_image_util/geometry_util.h>
 #include <swri_route_util/util.h>
 #include <swri_transform_util/transform_util.h>
-#include <mapviz/select_topic_dialog.h>
 
 #include <marti_nav_msgs/msg/route.hpp>
 
@@ -62,10 +62,14 @@ namespace stu = swri_transform_util;
 
 namespace mapviz_plugins
 {
-  RoutePlugin::RoutePlugin()
-  : MapvizPlugin()
-  , ui_()
-  , config_widget_(new QWidget()), draw_style_(LINES)
+  RoutePlugin::RoutePlugin() :
+    MapvizPlugin(),
+    ui_(),
+    config_widget_(new QWidget()), draw_style_(LINES),
+    topic_(""),
+    position_topic_(""),
+    qos_(rmw_qos_profile_default),
+    position_qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -134,48 +138,50 @@ namespace mapviz_plugins
 
   void RoutePlugin::SelectTopic()
   {
-    std::string topic =
-        mapviz::SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/Route");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "marti_nav_msgs/msg/Route",
+      qos_);
 
-    if (topic.empty())
+    if (!topic.empty())
     {
-      return;
+      connectRouteCallback(topic, qos);
     }
-
-    ui_.topic->setText(QString::fromStdString(topic));
-    TopicEdited();
   }
-
+  
   void RoutePlugin::SelectPositionTopic()
   {
-    std::string topic =
-        mapviz::SelectTopicDialog::selectTopic(node_, "marti_nav_msgs/msg/RoutePosition");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "marti_nav_msgs/msg/RoutePosition",
+      position_qos_);
 
-    if (topic.empty())
+    if (!topic.empty())
     {
-      return;
+      connectPositionCallback(topic, qos);
     }
-
-    ui_.positiontopic->setText(QString::fromStdString(topic));
-    PositionTopicEdited();
   }
 
   void RoutePlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+  }
+
+  void RoutePlugin::connectRouteCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       src_route_ = sru::Route();
-
       route_sub_.reset();
-
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
         route_sub_ =
             node_->create_subscription<marti_nav_msgs::msg::Route>(
               topic_,
-              rclcpp::QoS(1),
+              rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
               std::bind(&RoutePlugin::RouteCallback, this, std::placeholders::_1)
             );
 
@@ -187,7 +193,13 @@ namespace mapviz_plugins
   void RoutePlugin::PositionTopicEdited()
   {
     std::string topic = ui_.positiontopic->text().trimmed().toStdString();
-    if (topic != position_topic_)
+    connectPositionCallback(topic, position_qos_);
+  }
+
+  void RoutePlugin::connectPositionCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.positiontopic->setText(QString::fromStdString(topic));
+    if ((topic != position_topic_) || !qosEqual(qos, position_qos_))
     {
       src_route_position_.reset();
       position_sub_.reset();
@@ -195,15 +207,17 @@ namespace mapviz_plugins
       if (!topic.empty())
       {
         position_topic_ = topic;
+        position_qos_ = qos;
         position_sub_ = node_->create_subscription<marti_nav_msgs::msg::RoutePosition>(
           topic_,
-          rclcpp::QoS(1),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
           std::bind(&RoutePlugin::PositionCallback, this, std::placeholders::_1)
         );
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", position_topic_.c_str());
       }
     }
+
   }
 
   void RoutePlugin::PositionCallback(
@@ -364,6 +378,8 @@ namespace mapviz_plugins
 
   void RoutePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_, "route");
+    LoadQosConfig(node, position_qos_, "position");
     if (node["topic"])
     {
       std::string route_topic = node["topic"].as<std::string>();
@@ -419,5 +435,8 @@ namespace mapviz_plugins
 
     std::string draw_style = ui_.drawstyle->currentText().toStdString();
     emitter << YAML::Key << "draw_style" << YAML::Value << draw_style;
+
+    SaveQosConfig(emitter, qos_, "route");
+    SaveQosConfig(emitter, position_qos_, "position");
   }
 }   // namespace mapviz_plugins

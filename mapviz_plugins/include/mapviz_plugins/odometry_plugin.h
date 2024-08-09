@@ -59,40 +59,42 @@ class OdometryPlugin : public mapviz_plugins::PointDrawingPlugin
   Q_OBJECT
 
   public:
-  OdometryPlugin();
-  ~OdometryPlugin() override = default;
+    OdometryPlugin();
+    ~OdometryPlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas) override;
-  void Shutdown() override {}
+    bool Initialize(QGLWidget* canvas) override;
+    void Shutdown() override {}
 
-  void Paint(QPainter* painter, double x, double y, double scale) override;
-  void Draw(double x, double y, double scale) override;
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+    void Paint(QPainter* painter, double x, double y, double scale) override;
+    void Draw(double x, double y, double scale) override;
+    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+    QWidget* GetConfigWidget(QWidget* parent) override;
 
-  bool SupportsPainting() override
-  {
-    return true;
-  }
+    bool SupportsPainting() override
+    {
+      return true;
+    }
 
   protected:
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+    void PrintError(const std::string& message) override;
+    void PrintInfo(const std::string& message) override;
+    void PrintWarning(const std::string& message) override;
 
   protected Q_SLOTS:
-  void SelectTopic();
-  void TopicEdited();
+    void SelectTopic();
+    void TopicEdited();
 
   private:
-  Ui::odometry_config ui_;
-  QWidget* config_widget_;
-  std::string topic_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
-  bool has_message_;
-  void odometryCallback(const nav_msgs::msg::Odometry::SharedPtr odometry);
+    Ui::odometry_config ui_;
+    QWidget* config_widget_;
+    std::string topic_;
+    rmw_qos_profile_t qos_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
+    bool has_message_;
+    void odometryCallback(const nav_msgs::msg::Odometry::SharedPtr odometry);
+    void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
 };
 }   // namespace mapviz_plugins
 

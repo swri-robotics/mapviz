@@ -18,6 +18,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/navsat_plugin.h>
+#include <mapviz_plugins/topic_select.h>
 
 // QT libraries
 #include <QDialog>
@@ -28,8 +29,6 @@
 
 // ROS libraries
 #include <swri_transform_util/transform_util.h>
-
-#include <mapviz/select_topic_dialog.h>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -44,11 +43,13 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::NavSatPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  NavSatPlugin::NavSatPlugin()
-  : PointDrawingPlugin()
-  , ui_()
-  , config_widget_(new QWidget())
-  , has_message_(false)
+  NavSatPlugin::NavSatPlugin() :
+    PointDrawingPlugin(),
+    ui_(),
+    config_widget_(new QWidget()),
+    has_message_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
 
@@ -82,20 +83,27 @@ namespace mapviz_plugins
 
   void NavSatPlugin::SelectTopic()
   {
-    std::string topic =
-        mapviz::SelectTopicDialog::selectTopic(node_, "sensor_msgs/msg/NavSatFix");
+    auto [topic, qos] = SelectTopicDialog::selectTopic(
+      node_,
+      "sensor_msgs/msg/NavSatFix",
+      qos_);
 
     if (!topic.empty())
     {
-      ui_.topic->setText(QString::fromStdString(topic));
-      TopicEdited();
+      connectCallback(topic, qos);
     }
   }
 
   void NavSatPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
-    if (topic != topic_)
+    connectCallback(topic, qos_);
+  }
+
+  void NavSatPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+  {
+    ui_.topic->setText(QString::fromStdString(topic));
+    if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
       ClearPoints();
@@ -104,11 +112,12 @@ namespace mapviz_plugins
 
       navsat_sub_.reset();
       topic_ = topic;
+      qos_ = qos;
       if (!topic.empty())
       {
         navsat_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
             topic_,
-            rclcpp::QoS(1),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
             std::bind(&NavSatPlugin::NavSatFixCallback, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
@@ -182,6 +191,7 @@ namespace mapviz_plugins
 
   void NavSatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
+    LoadQosConfig(node, qos_);
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
@@ -242,5 +252,7 @@ namespace mapviz_plugins
                YAML::Value << positionTolerance();
 
     emitter << YAML::Key << "buffer_size" << YAML::Value << bufferSize();
+
+    SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins

@@ -74,12 +74,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Qt UI files
 set(UI_FILES
-  src/configitem.ui
-  src/${PROJECT_NAME}.ui
-  src/pluginselect.ui
+  ui/configitem.ui
+  ui/mapviz.ui
+  ui/pluginselect.ui
 )
 # Headers containing QObject definitions
-set(QT_HEADERS
+set(HEADER_FILES
   include/${PROJECT_NAME}/color_button.h
   include/${PROJECT_NAME}/config_item.h
   include/${PROJECT_NAME}/map_canvas.h
@@ -88,7 +88,6 @@ set(QT_HEADERS
   include/${PROJECT_NAME}/rqt_${PROJECT_NAME}.h
   include/${PROJECT_NAME}/select_frame_dialog.h
   include/${PROJECT_NAME}/select_service_dialog.h
-  include/${PROJECT_NAME}/select_topic_dialog.h
   include/${PROJECT_NAME}/video_writer.h
   include/${PROJECT_NAME}/widgets.h
 )
@@ -102,18 +101,19 @@ set(SRC_FILES
   src/rqt_${PROJECT_NAME}.cpp
   src/select_frame_dialog.cpp
   src/select_service_dialog.cpp
-  src/select_topic_dialog.cpp
   src/video_writer.cpp
 )
 
 ### Qt5 on ROS2 ###
 qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
-qt5_wrap_ui(SRC_FILES ${UI_FILES})
-qt5_wrap_cpp(SRC_FILES ${QT_HEADERS})
+qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
+qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
 
 ### Build mapviz as an rqt plugin ###
 add_library(rqt_${PROJECT_NAME}
+  ${MOC_FILES}
   ${SRC_FILES}
+  ${UI_SRC_FILES}
   ${RCC_SRCS}
 )
 target_include_directories(rqt_${PROJECT_NAME} 
