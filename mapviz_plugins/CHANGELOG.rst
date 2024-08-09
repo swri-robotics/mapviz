@@ -2,6 +2,13 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Code cleanup (`#820 <https://github.com/swri-robotics/mapviz/issues/820>`_)
+  * Switching to plus sign for concatenation
+  * Applying code changes that should have gone in previous release
+* Contributors: David Anthony
+
 2.4.0 (2024-08-09)
 ------------------
 * Configurable qos (`#818 <https://github.com/swri-robotics/mapviz/issues/818>`_)
