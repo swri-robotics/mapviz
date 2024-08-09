@@ -2,6 +2,17 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Configurable qos (`#818 <https://github.com/swri-robotics/mapviz/issues/818>`_)
+  * Adding configurable QoS to UI
+  * Changing lookup duration to reduce lag
+  ---------
+  Co-authored-by: Robert Brothers <33141599+rjb0026@users.noreply.github.com>
+* Changing QoS settings on TF to reduce lag (`#815 <https://github.com/swri-robotics/mapviz/issues/815>`_)
+* Do not attempt to transform point if a target frame is not specified (`#793 <https://github.com/swri-robotics/mapviz/issues/793>`_)
+* Contributors: David Anthony
+
 2.3.0 (2023-08-24)
 ------------------
 * Updates for rolling and removing EOL distro support (`#785 <https://github.com/swri-robotics/mapviz/issues/785>`_)

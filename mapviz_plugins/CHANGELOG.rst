@@ -2,6 +2,16 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Configurable qos (`#818 <https://github.com/swri-robotics/mapviz/issues/818>`_)
+  * Adding configurable QoS to UI
+  * Changing lookup duration to reduce lag
+  ---------
+  Co-authored-by: Robert Brothers <33141599+rjb0026@users.noreply.github.com>
+* Improve Font Selection Error Handling (`#794 <https://github.com/swri-robotics/mapviz/issues/794>`_)
+* Contributors: David Anthony
+
 2.3.0 (2023-08-24)
 ------------------
 
