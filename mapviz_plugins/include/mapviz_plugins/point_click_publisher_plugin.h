@@ -58,7 +58,7 @@ namespace mapviz_plugins
 {
 class PointClickPublisherPlugin : public mapviz::MapvizPlugin
 {
-  Q_OBJECT;
+  Q_OBJECT
 public:
   PointClickPublisherPlugin();
   ~PointClickPublisherPlugin() override;

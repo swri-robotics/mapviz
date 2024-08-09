@@ -344,9 +344,9 @@ protected:
   void SaveQosConfig(YAML::Emitter& emitter, const rmw_qos_profile_t& qos, const std::string prefix = "") const
   {
     emitter << YAML::Key << prefix + "qos_depth" << YAML::Value << qos.depth;
-    emitter << YAML::Key << prefix << "qos_history" << YAML::Value << qos.history;
-    emitter << YAML::Key << prefix << "qos_reliability" << YAML::Value << qos.reliability;
-    emitter << YAML::Key << prefix << "qos_durability" << YAML::Value << qos.durability;
+    emitter << YAML::Key << prefix + "qos_history" << YAML::Value << qos.history;
+    emitter << YAML::Key << prefix + "qos_reliability" << YAML::Value << qos.reliability;
+    emitter << YAML::Key << prefix + "qos_durability" << YAML::Value << qos.durability;
   }
 
 private:

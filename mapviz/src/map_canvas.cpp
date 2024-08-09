@@ -508,8 +508,7 @@ void MapCanvas::TransformTarget(QPainter* painter)
     auto tfrm = tf_buf_->lookupTransform(
       fixed_frame_,
       target_frame_,
-      tf2::TimePointZero,
-      std::chrono::seconds(1));
+      tf2::TimePointZero);
 
     tf2::fromMsg(tfrm, transform_);
 
