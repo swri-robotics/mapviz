@@ -48,7 +48,7 @@ namespace mapviz
  */
 class ColorButton : public QPushButton
 {
-  Q_OBJECT;
+  Q_OBJECT
 
   QColor color_;
 

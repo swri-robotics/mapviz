@@ -66,7 +66,7 @@ inline bool qosEqual(const rmw_qos_profile_t& lhs, const rmw_qos_profile_t& rhs)
  */
 class SelectTopicDialog : public QDialog
 {
-  Q_OBJECT;
+  Q_OBJECT
 
  public:
   /**
