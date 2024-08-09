@@ -1,6 +1,8 @@
 name: CI
 
 on: [push, pull_request]
+env:
+  PIP_BREAK_SYSTEM_PACKAGES: 1
 
 jobs:
   industrial_ci:
@@ -11,6 +13,10 @@ jobs:
           - {ROS_DISTRO: humble, ROS_REPO: main}
           - {ROS_DISTRO: iron, ROS_REPO: testing}
           - {ROS_DISTRO: iron, ROS_REPO: main}
+          - {ROS_DISTRO: jazzy, ROS_REPO: testing}
+          - {ROS_DISTRO: jazzy, ROS_REPO: main}
+          - {ROS_DISTRO: rolling, ROS_REPO: testing}
+          - {ROS_DISTRO: rolling, ROS_REPO: main}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
