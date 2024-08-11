@@ -44,6 +44,7 @@
 #include <QWidget>
 #include <QStringList>
 #include <QMainWindow>
+#include <QShortcut>
 
 #include <swri_transform_util/transform_manager.h>
 #include <mapviz_interfaces/srv/add_mapviz_display.hpp>  // Service

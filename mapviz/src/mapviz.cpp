@@ -231,6 +231,12 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
   ui_.bg_color->setColor(background_);
   canvas_->SetBackground(background_);
+
+  // Keyboard shortcuts for the main window
+  /* QShortcut * edit_display_name_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_R), this); */
+  /* connect(edit_display_name_shortcut, SIGNAL(activated()), this, SLOT()); */
+  QShortcut * remove_display_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_X), this);
+  connect(remove_display_shortcut, SIGNAL(activated()), this, SLOT(RemoveDisplay()));
 }
 
 Mapviz::~Mapviz()
