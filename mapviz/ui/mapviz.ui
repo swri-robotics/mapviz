@@ -311,7 +311,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>Add a new display</string>
+           <string>Add a new display (Ctrl + N)</string>
           </property>
           <property name="text">
            <string>Add</string>
@@ -327,7 +327,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>Remove the selected display</string>
+           <string>Remove the selected display (Ctrl + X)</string>
           </property>
           <property name="text">
            <string>Remove</string>

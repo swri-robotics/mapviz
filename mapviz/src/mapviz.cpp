@@ -231,6 +231,14 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
   ui_.bg_color->setColor(background_);
   canvas_->SetBackground(background_);
+
+  // Keyboard shortcuts for the main window
+  QShortcut * remove_display_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_X), this);
+  connect(remove_display_shortcut, SIGNAL(activated()), this, SLOT(RemoveDisplay()));
+  QShortcut * rename_display_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_R), this);
+  connect(rename_display_shortcut, SIGNAL(activated()), this, SLOT(RenameDisplay()));
+  QShortcut * add_display_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_N), this);
+  connect(add_display_shortcut, SIGNAL(activated()), this, SLOT(SelectNewDisplay()));
 }
 
 Mapviz::~Mapviz()
@@ -1446,6 +1454,20 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
     plugins_.erase(item);
 
     delete item;
+  }
+}
+
+void Mapviz::RenameDisplay()
+{
+  QListWidgetItem* item = ui_.configs->currentItem();
+  RenameDisplay(item);
+}
+
+void Mapviz::RenameDisplay(QListWidgetItem* item)
+{
+  if (item) {
+    ConfigItem* config_item = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
+    config_item->EditName();
   }
 }
 
