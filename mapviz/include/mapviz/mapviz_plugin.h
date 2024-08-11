@@ -320,7 +320,7 @@ protected:
 
   void LoadQosConfig(const YAML::Node& node, rmw_qos_profile_t& qos, const std::string prefix = "") const
   {
-    if (node[prefix + "qos_dpeth"])
+    if (node[prefix + "qos_depth"])
     {
       qos.depth = node[prefix + "qos_depth"].as<int>();
     }
