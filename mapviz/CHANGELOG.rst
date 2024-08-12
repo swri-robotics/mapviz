@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.2 (2024-08-12)
+------------------
 * Plugin shortcuts (`#824 <https://github.com/swri-robotics/mapviz/issues/824>`_)
   * Added hotkey for plugin remove (Ctrl + X)
   * Added key shortcut for plugin rename (CTRL + R)
