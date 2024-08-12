@@ -2,6 +2,15 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Plugin shortcuts (`#824 <https://github.com/swri-robotics/mapviz/issues/824>`_)
+  * Added hotkey for plugin remove (Ctrl + X)
+  * Added key shortcut for plugin rename (CTRL + R)
+  * Added Ctrl + N shortcut for adding new plugin.
+* Fixed qos_dpeth to qos_depth in MapvizPlugin::LoadQosConfig (`#823 <https://github.com/swri-robotics/mapviz/issues/823>`_)
+* Contributors: Robert Brothers
+
 2.4.1 (2024-08-09)
 ------------------
 * Code cleanup (`#820 <https://github.com/swri-robotics/mapviz/issues/820>`_)
