@@ -140,7 +140,7 @@ namespace mapviz_plugins
       {
         odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
           std::bind(&OdometryPlugin::odometryCallback, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());

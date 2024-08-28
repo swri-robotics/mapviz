@@ -121,15 +121,15 @@ namespace mapviz_plugins
       {
         odom_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
             topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackOdom, this, std::placeholders::_1));
         imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
             topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackImu, this, std::placeholders::_1));
         pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
             topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackPose, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());

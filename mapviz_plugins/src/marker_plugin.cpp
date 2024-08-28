@@ -137,14 +137,14 @@ namespace mapviz_plugins
         {
           marker_sub_ = node_->create_subscription<visualization_msgs::msg::Marker>(
             topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             std::bind(&MarkerPlugin::handleMarker, this, std::placeholders::_1));
         }
         else if (topic_type == "visualization_msgs/msg/MarkerArray")
         {
           marker_array_sub_ = node_->create_subscription<visualization_msgs::msg::MarkerArray>(
             topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             std::bind(&MarkerPlugin::handleMarkerArray, this, std::placeholders::_1));
         }
         else

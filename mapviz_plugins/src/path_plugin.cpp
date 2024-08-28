@@ -113,7 +113,7 @@ namespace mapviz_plugins
       {
         path_sub_ = node_->create_subscription<nav_msgs::msg::Path>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
           std::bind(&PathPlugin::pathCallback, this, std::placeholders::_1)
         );
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());

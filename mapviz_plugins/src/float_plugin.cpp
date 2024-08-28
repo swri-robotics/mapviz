@@ -352,31 +352,31 @@ namespace mapviz_plugins
       {
         float32_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             [this](const std_msgs::msg::Float32::ConstSharedPtr msg) {
           floatCallback(msg->data);
         });
         float64_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             [this](const std_msgs::msg::Float64::ConstSharedPtr msg) {
           floatCallback(msg->data);
         });
         float32_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::Float32Stamped>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             [this](const marti_common_msgs::msg::Float32Stamped::ConstSharedPtr msg) {
           floatCallback(msg->value);
         });
         float64_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::Float64Stamped>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             [this](const marti_common_msgs::msg::Float64Stamped::ConstSharedPtr msg) {
           floatCallback(msg->value);
         });
         velocity_sub_ = node_->create_subscription<marti_sensor_msgs::msg::Velocity>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             [this](const marti_sensor_msgs::msg::Velocity::ConstSharedPtr msg) {
           floatCallback(msg->velocity);
         });

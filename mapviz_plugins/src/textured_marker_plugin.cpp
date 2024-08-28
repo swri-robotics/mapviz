@@ -161,12 +161,12 @@ void TexturedMarkerPlugin::connectCallback(const std::string& topic, const rmw_q
       marker_arr_sub_ =
         node_->create_subscription<marti_visualization_msgs::msg::TexturedMarkerArray>(
         topic_,
-        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
         std::bind(&TexturedMarkerPlugin::MarkerArrayCallback, this, std::placeholders::_1)
         );
       marker_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarker>(
         topic_,
-        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
         std::bind(&TexturedMarkerPlugin::MarkerCallback, this, std::placeholders::_1)
       );
 
