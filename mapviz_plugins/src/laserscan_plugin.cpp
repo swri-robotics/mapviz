@@ -288,7 +288,7 @@ namespace mapviz_plugins
       {
         laserscan_sub_ = node_->create_subscription<sensor_msgs::msg::LaserScan>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
           std::bind(&LaserScanPlugin::laserScanCallback, this, std::placeholders::_1)
         );
 

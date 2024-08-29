@@ -359,7 +359,7 @@ namespace mapviz_plugins
         try
         {
           string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
               [this](const std_msgs::msg::String::ConstSharedPtr str) {
             SetText(QString(str->data.c_str()));
           });
@@ -374,7 +374,7 @@ namespace mapviz_plugins
         try
         {
           string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
               [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
             SetText(QString(str->value.c_str()));
           });

@@ -181,7 +181,7 @@ namespace mapviz_plugins
         route_sub_ =
             node_->create_subscription<marti_nav_msgs::msg::Route>(
               topic_,
-              rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+              rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
               std::bind(&RoutePlugin::RouteCallback, this, std::placeholders::_1)
             );
 
@@ -210,7 +210,7 @@ namespace mapviz_plugins
         position_qos_ = qos;
         position_sub_ = node_->create_subscription<marti_nav_msgs::msg::RoutePosition>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
           std::bind(&RoutePlugin::PositionCallback, this, std::placeholders::_1)
         );
 

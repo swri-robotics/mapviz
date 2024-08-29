@@ -220,7 +220,7 @@ namespace mapviz_plugins
       {
         disparity_sub_ = node_->create_subscription<stereo_msgs::msg::DisparityImage>(
           topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
           std::bind(&DisparityPlugin::disparityCallback, this, std::placeholders::_1)
         );
 

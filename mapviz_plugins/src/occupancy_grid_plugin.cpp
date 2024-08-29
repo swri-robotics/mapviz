@@ -266,13 +266,13 @@ namespace mapviz_plugins
       {
         grid_sub_ = node_->create_subscription<nav_msgs::msg::OccupancyGrid>(
           topic,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
           std::bind(&OccupancyGridPlugin::Callback, this, std::placeholders::_1));
         if(ui_.checkbox_update->isChecked())
         {
           update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
             topic,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos)),
+            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
             std::bind(&OccupancyGridPlugin::CallbackUpdate, this, std::placeholders::_1));
         }
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic.c_str());
