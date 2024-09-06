@@ -2,6 +2,15 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Restore and refactor use_latest_transforms option for point drawing plugins like Odometry. (`#705 <https://github.com/swri-robotics/mapviz/issues/705>`_)
+* Avoid deprecated GLUT_LIBRARY variable (`#755 <https://github.com/swri-robotics/mapviz/issues/755>`_)
+  GLUT_LIBRARY is deprecated, and, more importantly, is not normally set
+  since CMake 3.22. This looks like a CMake bug, but it is good to not use
+  deprecated things anyway.
+* Contributors: Ben Wolsieffer, Marc Alban
+
 1.4.2 (2022-12-13)
 ------------------
 * Merge pull request `#721 <https://github.com/swri-robotics/mapviz/issues/721>`_ from rjb0026/720-allow-building-with-c++14-for-version-greater-than-kinetic

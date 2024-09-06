@@ -2,6 +2,12 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix unitialized bing source (`#799 <https://github.com/swri-robotics/mapviz/issues/799>`_)
+  Co-authored-by: Alex Youngs <alexyoungs@hatchbed.com>
+* Contributors: agyoungs
+
 1.4.2 (2022-12-13)
 ------------------
 * Merge pull request `#721 <https://github.com/swri-robotics/mapviz/issues/721>`_ from rjb0026/720-allow-building-with-c++14-for-version-greater-than-kinetic

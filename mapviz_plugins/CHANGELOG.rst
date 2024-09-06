@@ -2,6 +2,16 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding rotation to image_plugin (`#682 <https://github.com/swri-robotics/mapviz/issues/682>`_)
+  * Adding rotation to image_plugin
+  ---------
+  Co-authored-by: David Anthony <djanthony@gmail.com>
+* fixed button connect (`#807 <https://github.com/swri-robotics/mapviz/issues/807>`_)
+* Restore and refactor use_latest_transforms option for point drawing plugins like Odometry. (`#705 <https://github.com/swri-robotics/mapviz/issues/705>`_)
+* Contributors: Anthony Jiang, Marc Alban, TobinHall
+
 1.4.2 (2022-12-13)
 ------------------
 * Merge pull request `#716 <https://github.com/swri-robotics/mapviz/issues/716>`_ from swri-robotics/pose_publisher
