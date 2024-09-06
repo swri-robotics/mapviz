@@ -59,6 +59,7 @@ namespace mapviz_plugins
     width_(320),
     height_(240),
     transport_("default"),
+    rotation_(-1),
     has_image_(false),
     last_width_(0),
     last_height_(0),
@@ -88,6 +89,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.keep_ratio, SIGNAL(toggled(bool)), this, SLOT(KeepRatioChanged(bool)));
     QObject::connect(ui_.transport_combo_box, SIGNAL(activated(const QString&)),
                      this, SLOT(SetTransport(const QString&)));
+    QObject::connect(ui_.rotation, SIGNAL(activated(QString)), this, SLOT(SetRotation(QString)));
 
     ui_.width->setKeyboardTracking(false);
     ui_.height->setKeyboardTracking(false);
@@ -215,6 +217,26 @@ namespace mapviz_plugins
     transport_ = transport.toStdString();
     ROS_INFO("Changing image_transport to %s.", transport_.c_str());
     TopicEdited();
+  }
+
+  void ImagePlugin::SetRotation(QString rotation)
+  {
+
+    if ((rotation == "90°") || (rotation == "90"))
+    {
+      rotation_ = cv::ROTATE_90_CLOCKWISE;
+    }
+    else if ((rotation == "180°") || (rotation == "180"))
+    {
+      rotation_ = cv::ROTATE_180;
+    }
+    else if ((rotation == "270°") || (rotation == "270"))
+    {
+      rotation_ = cv::ROTATE_90_COUNTERCLOCKWISE;
+    }
+    else {
+      rotation_ = -1;
+    }
   }
 
   void ImagePlugin::KeepRatioChanged(bool checked)
@@ -446,6 +468,19 @@ namespace mapviz_plugins
       ScaleImage(width, height);
     }
 
+    // Rotate the source image if necessary
+    if(rotation_ >= cv::ROTATE_90_CLOCKWISE && rotation_ <= cv::ROTATE_90_COUNTERCLOCKWISE){
+      cv::rotate(scaled_image_, rotated_image_, rotation_);
+      //-- If we did not rotate 180, we have flipped width / height
+      if(rotation_ != cv::ROTATE_180){
+        height = width_;
+        width = height_;
+      }
+    }
+    else{
+      rotated_image_ = scaled_image_;
+    }
+
     // Calculate the correct render position
     double x_pos = 0;
     double y_pos = 0;
@@ -502,7 +537,7 @@ namespace mapviz_plugins
 
     glRasterPos2d(x_pos, y_pos);
 
-    DrawIplImage(&scaled_image_);
+    DrawIplImage(&rotated_image_);
 
     glPopMatrix();
 
@@ -544,6 +579,14 @@ namespace mapviz_plugins
       node["anchor"] >> anchor;
       ui_.anchor->setCurrentIndex(ui_.anchor->findText(anchor.c_str()));
       SetAnchor(anchor.c_str());
+    }
+
+    if (node["rotation"])
+    {
+      std::string rotation;
+      node["rotation"] >> rotation;
+      ui_.rotation->setCurrentIndex(ui_.rotation->findText(rotation.c_str()));
+      SetRotation(rotation.c_str());
     }
 
     if (node["units"])
@@ -597,6 +640,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "height" << YAML::Value << height_;
     emitter << YAML::Key << "keep_ratio" << YAML::Value << ui_.keep_ratio->isChecked();
     emitter << YAML::Key << "image_transport" << YAML::Value << transport_;
+    emitter << YAML::Key << "rotation" << YAML::Value << RotationToString(rotation_);
   }
 
   std::string ImagePlugin::AnchorToString(Anchor anchor)
@@ -657,6 +701,17 @@ namespace mapviz_plugins
     }
 
     return units_string;
+  }
+
+  std::string ImagePlugin::RotationToString(int rotation)
+  {
+    std::string rotation_string = "0°";
+
+    if (rotation == cv::ROTATE_90_CLOCKWISE) { rotation_string = "90°"; }
+    else if (rotation == cv::ROTATE_180) { rotation_string = "180°"; }
+    else if (rotation == cv::ROTATE_90_COUNTERCLOCKWISE) { rotation_string = "270°"; }
+    
+    return rotation_string;
   }
 
   void ImagePlugin::CreateLocalNode()
