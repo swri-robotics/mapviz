@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.3 (2024-09-06)
+------------------
 * Restore and refactor use_latest_transforms option for point drawing plugins like Odometry. (`#705 <https://github.com/swri-robotics/mapviz/issues/705>`_)
 * Avoid deprecated GLUT_LIBRARY variable (`#755 <https://github.com/swri-robotics/mapviz/issues/755>`_)
   GLUT_LIBRARY is deprecated, and, more importantly, is not normally set
