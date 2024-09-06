@@ -222,19 +222,19 @@ namespace mapviz_plugins
   void ImagePlugin::SetRotation(QString rotation)
   {
 
-    if (rotation == "90°")
+    if ((rotation == "90°") || (rotation == "90"))
     {
       rotation_ = cv::ROTATE_90_CLOCKWISE;
     }
-    else if (rotation == "180°")
+    else if ((rotation == "180°") || (rotation == "180"))
     {
       rotation_ = cv::ROTATE_180;
     }
-    else if (rotation == "270°")
+    else if ((rotation == "270°") || (rotation == "270"))
     {
       rotation_ = cv::ROTATE_90_COUNTERCLOCKWISE;
     }
-    else{
+    else {
       rotation_ = -1;
     }
   }
@@ -707,13 +707,10 @@ namespace mapviz_plugins
   {
     std::string rotation_string = "0°";
 
-    if (rotation == cv::ROTATE_90_CLOCKWISE)
-      rotation_string = "90°";
-    else if (rotation == cv::ROTATE_180)
-      rotation_string = "180°";
-    else if (rotation == cv::ROTATE_90_COUNTERCLOCKWISE)
-      rotation_string = "270°";
-
+    if (rotation == cv::ROTATE_90_CLOCKWISE) { rotation_string = "90°"; }
+    else if (rotation == cv::ROTATE_180) { rotation_string = "180°"; }
+    else if (rotation == cv::ROTATE_90_COUNTERCLOCKWISE) { rotation_string = "270°"; }
+    
     return rotation_string;
   }
 
