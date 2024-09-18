@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.3 (2024-09-18)
+------------------
 * update plugin subscribers to use all of qos (`#827 <https://github.com/swri-robotics/mapviz/issues/827>`_)
   Co-authored-by: Ben <benjamin.andrew@swri.org>
   Co-authored-by: David Anthony <djanthony@gmail.com>
