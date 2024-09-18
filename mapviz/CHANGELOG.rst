@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update launch params (`#830 <https://github.com/swri-robotics/mapviz/issues/830>`_)
+* Contributors: DangitBen
+
 2.4.2 (2024-08-12)
 ------------------
 * Plugin shortcuts (`#824 <https://github.com/swri-robotics/mapviz/issues/824>`_)

@@ -2,6 +2,14 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update plugin subscribers to use all of qos (`#827 <https://github.com/swri-robotics/mapviz/issues/827>`_)
+  Co-authored-by: Ben <benjamin.andrew@swri.org>
+  Co-authored-by: David Anthony <djanthony@gmail.com>
+* Added kludgy install for autogened TopicSelect header that is required if external plugin packages include topic_select.h (`#825 <https://github.com/swri-robotics/mapviz/issues/825>`_)
+* Contributors: DangitBen, Robert Brothers
+
 2.4.2 (2024-08-12)
 ------------------
 
