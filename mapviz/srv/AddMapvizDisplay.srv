@@ -1,5 +1,7 @@
 # Add or updates a mapviz display.
 
+string                        listName     # The name of the plugin panel:
+                                           # "config" or "action".
 string                        name         # The name of the display.
 string                        type         # The plugin type.
 

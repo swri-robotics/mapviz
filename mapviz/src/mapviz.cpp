@@ -173,7 +173,6 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   setCentralWidget(canvas_);
 
   connect(canvas_, SIGNAL(Hover(double,double,double)), this, SLOT(Hover(double,double,double)));
-  connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
   connect(ui_.actionClear, SIGNAL(triggered()), this, SLOT(ClearConfig()));
   connect(ui_.bg_color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectBackgroundColor(const QColor &)));
@@ -183,6 +182,13 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
   connect(screenshot_button_, SIGNAL(clicked()), this, SLOT(Screenshot()));
   connect(ui_.actionClear_History, SIGNAL(triggered()), this, SLOT(ClearHistory()));
+  
+  QSignalMapper* pclMapper = new QSignalMapper (this) ;;
+  connect (ui_.configs, SIGNAL(ItemsMoved()), pclMapper, SLOT(map())) ;
+  connect (ui_.actions, SIGNAL(ItemsMoved()), pclMapper, SLOT(map())) ;
+  pclMapper -> setMapping (ui_.configs, "config") ;
+  pclMapper -> setMapping (ui_.actions, "action") ;
+  connect (pclMapper, SIGNAL(mapped(std::string)), this, SLOT(ReorderDisplays(std::string))) ;
 
   // Use a separate thread for writing video files so that it won't cause
   // lag on the main thread.
@@ -604,6 +610,13 @@ void Mapviz::Open(const std::string& filename)
       ui_.actionConfig_Dock->setChecked(show_displays);
     }
 
+    if (swri_yaml_util::FindValue(doc, "show_actions"))
+    {
+      bool show_actions = false;
+      doc["show_actions"] >> show_actions;
+      ui_.actionAction_Dock->setChecked(show_actions);
+    }
+
     if (swri_yaml_util::FindValue(doc, "show_capture_tools"))
     {
       bool show_capture_tools = false;
@@ -704,7 +717,12 @@ void Mapviz::Open(const std::string& filename)
       const YAML::Node& displays = doc["displays"];
       for (uint32_t i = 0; i < displays.size(); i++)
       {
-        std::string type, name;
+        std::string listName, type, name;
+        if (displays[i]["listName"]) {
+          displays[i]["listName"] >> listName;
+        } else {
+          listName = "config";
+        }
         displays[i]["type"] >> type;
         displays[i]["name"] >> name;
 
@@ -719,7 +737,7 @@ void Mapviz::Open(const std::string& filename)
         try
         {
           MapvizPluginPtr plugin =
-              CreateNewDisplay(name, type, visible, collapsed);
+              CreateNewDisplay(listName, name, type, visible, collapsed);
           plugin->LoadConfig(config, config_path);
           plugin->DrawIcon();
         }
@@ -775,6 +793,7 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "rotate_90" << YAML::Value << ui_.actionRotate_90->isChecked();
   out << YAML::Key << "enable_antialiasing" << YAML::Value << ui_.actionEnable_Antialiasing->isChecked();
   out << YAML::Key << "show_displays" << YAML::Value << ui_.actionConfig_Dock->isChecked();
+  out << YAML::Key << "show_actions" << YAML::Value << ui_.actionAction_Dock->isChecked();
   out << YAML::Key << "show_status_bar" << YAML::Value << ui_.actionShow_Status_Bar->isChecked();
   out << YAML::Key << "show_capture_tools" << YAML::Value << ui_.actionShow_Capture_Tools->isChecked();
   out << YAML::Key << "window_width" << YAML::Value << width();
@@ -799,27 +818,11 @@ void Mapviz::Save(const std::string& filename)
     out << YAML::Key << "force_480p" << YAML::Value << force_480p_;
   }
 
-  if (ui_.configs->count() > 0)
+  if (ui_.configs->count() > 0 || ui_.actions->count() > 0)
   {
     out << YAML::Key << "displays"<< YAML::Value << YAML::BeginSeq;
-
-    for (int i = 0; i < ui_.configs->count(); i++)
-    {
-      out << YAML::BeginMap;
-      out << YAML::Key << "type" << YAML::Value << plugins_[ui_.configs->item(i)]->Type();
-      out << YAML::Key << "name" << YAML::Value << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Name().toStdString();
-      out << YAML::Key << "config" << YAML::Value;
-      out << YAML::BeginMap;
-
-      out << YAML::Key << "visible" << YAML::Value << plugins_[ui_.configs->item(i)]->Visible();
-      out << YAML::Key << "collapsed" << YAML::Value << (static_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Collapsed();
-
-      plugins_[ui_.configs->item(i)]->SaveConfig(out, config_path);
-
-      out << YAML::EndMap;
-      out << YAML::EndMap;
-    }
-
+    SavePluginList(out, "config", config_path);
+    SavePluginList(out, "action", config_path);
     out << YAML::EndSeq;
   }
 
@@ -827,6 +830,32 @@ void Mapviz::Save(const std::string& filename)
 
   fout << out.c_str();
   fout.close();
+}
+
+void Mapviz::SavePluginList(YAML::Emitter& emitter, const std::string& listName, const std::string& config_path)
+{
+  mapviz::PluginConfigList* list = GetPluginConfigListByName(listName);
+  if (list->count() <= 0)
+  {
+    return;
+  }
+  for (int i = 0; i < list->count(); i++)
+  {
+    emitter << YAML::BeginMap;
+    emitter << YAML::Key << "listName" << YAML::Value << listName;
+    emitter << YAML::Key << "type" << YAML::Value << plugins_[list->item(i)]->Type();
+    emitter << YAML::Key << "name" << YAML::Value << (static_cast<ConfigItem*>(list->itemWidget(list->item(i))))->Name().toStdString();
+    emitter << YAML::Key << "config" << YAML::Value;
+    emitter << YAML::BeginMap;
+
+    emitter << YAML::Key << "visible" << YAML::Value << plugins_[list->item(i)]->Visible();
+    emitter << YAML::Key << "collapsed" << YAML::Value << (static_cast<ConfigItem*>(list->itemWidget(list->item(i))))->Collapsed();
+
+    plugins_[list->item(i)]->SaveConfig(emitter, config_path);
+
+    emitter << YAML::EndMap;
+    emitter << YAML::EndMap;
+  }
 }
 
 void Mapviz::AutoSave()
@@ -945,6 +974,14 @@ void Mapviz::SelectNewDisplay()
   Ui::pluginselect ui;
   ui.setupUi(&dialog);
 
+  QPushButton* obj = qobject_cast<QPushButton * >( sender() );
+  QString senderName = obj -> objectName();
+  std::string listName;
+  if (senderName == "actionaddbutton")
+    listName = "action";
+  else
+    listName = "config";
+
   std::vector<std::string> plugins = loader_->getDeclaredClasses();
   std::map<std::string, std::string> plugin_types;
   for (size_t i = 0; i < plugins.size(); i++)
@@ -965,7 +1002,7 @@ void Mapviz::SelectNewDisplay()
     std::string name = "new display";
     try
     {
-      CreateNewDisplay(name, type, true, false);
+      CreateNewDisplay(listName, name, type, true, false);
     }
     catch (const pluginlib::LibraryLoadException& e)
     {
@@ -1006,20 +1043,19 @@ bool Mapviz::AddDisplay(
     {
       plugin->LoadConfig(config, "");
       plugin->SetVisible(req.visible);
+      mapviz::PluginConfigList* list = GetPluginConfigListByName(req.listName);
 
       if (req.draw_order > 0)
       {
         display.first->setData(Qt::UserRole, QVariant(req.draw_order - 1.1));
-        ui_.configs->sortItems();
-
-        ReorderDisplays();
+        list->sortItems();
+        ReorderDisplays(req.listName);
       }
       else if (req.draw_order < 0)
       {
-        display.first->setData(Qt::UserRole, QVariant(ui_.configs->count() + req.draw_order + 0.1));
-        ui_.configs->sortItems();
-
-        ReorderDisplays();
+        display.first->setData(Qt::UserRole, QVariant(list->count() + req.draw_order + 0.1));
+        list->sortItems();
+        ReorderDisplays(req.listName);
       }
 
       resp.success = true;
@@ -1031,7 +1067,7 @@ bool Mapviz::AddDisplay(
   try
   {
     MapvizPluginPtr plugin =
-      CreateNewDisplay(req.name, req.type, req.visible, false, req.draw_order);
+      CreateNewDisplay(req.listName, req.name, req.type, req.visible, false, req.draw_order);
     plugin->LoadConfig(config, "");
     plugin->DrawIcon();
     resp.success = true;
@@ -1126,12 +1162,14 @@ void Mapviz::Hover(double x, double y, double scale)
 }
 
 MapvizPluginPtr Mapviz::CreateNewDisplay(
+    const std::string& listName,
     const std::string& name,
     const std::string& type,
     bool visible,
     bool collapsed,
     int draw_order)
 {
+  mapviz::PluginConfigList* list = GetPluginConfigListByName(listName);
   ConfigItem* config_item = new ConfigItem();
 
   config_item->SetName(name.c_str());
@@ -1146,7 +1184,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   }
 
 
-  ROS_INFO("creating: %s", real_type.c_str());
+  ROS_INFO("creating: %s, in panel: %s.", real_type.c_str(), listName.c_str());
   MapvizPluginPtr plugin = loader_->createInstance(real_type.c_str());
 
   // Setup configure widget
@@ -1160,15 +1198,15 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   if (draw_order == 0)
   {
-    plugin->SetDrawOrder(ui_.configs->count());
+    plugin->SetDrawOrder(list->count());
   }
   else if (draw_order > 0)
   {
-    plugin->SetDrawOrder(std::min(ui_.configs->count(), draw_order - 1));
+    plugin->SetDrawOrder(std::min(list->count(), draw_order - 1));
   }
   else if (draw_order < 0)
   {
-    plugin->SetDrawOrder(std::max(0, ui_.configs->count() + draw_order + 1));
+    plugin->SetDrawOrder(std::max(0, list->count() + draw_order + 1));
   }
 
   QString pretty_type(real_type.c_str());
@@ -1195,15 +1233,15 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
 
   if (draw_order == 0)
   {
-    ui_.configs->addItem(item);
+    list->addItem(item);
   }
   else
   {
-    ui_.configs->insertItem(plugin->DrawOrder(), item);
+    list->insertItem(plugin->DrawOrder(), item);
   }
 
-  ui_.configs->setItemWidget(item, config_item);
-  ui_.configs->UpdateIndices();
+  list->setItemWidget(item, config_item);
+  list->UpdateIndices();
 
   // Add plugin to canvas
   plugin->SetTargetFrame(ui_.fixedframe->currentText().toStdString());
@@ -1215,9 +1253,17 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   if (collapsed)
     config_item->Hide();
 
-  ReorderDisplays();
+  ReorderDisplays(listName);
 
   return plugin;
+}
+
+mapviz::PluginConfigList* Mapviz::GetPluginConfigListByName(const std::string& name)
+{
+  if (name == "action")
+    return ui_.actions;
+  else
+    return ui_.configs;
 }
 
 void Mapviz::ToggleShowPlugin(QListWidgetItem* item, bool visible)
@@ -1280,6 +1326,20 @@ void Mapviz::ToggleConfigPanel(bool on)
   else
   {
     ui_.configdock->hide();
+  }
+
+  AdjustWindowSize();
+}
+
+void Mapviz::ToggleActionPanel(bool on)
+{
+  if (on)
+  {
+    ui_.actiondock->show();
+  }
+  else
+  {
+    ui_.actiondock->hide();
   }
 
   AdjustWindowSize();
@@ -1452,10 +1512,17 @@ void Mapviz::Screenshot()
 
 void Mapviz::UpdateSizeHints()
 {
-  for (int i = 0; i < ui_.configs->count(); i++)
+  UpdateHintSizesByList("action");
+  UpdateHintSizesByList("config");
+}
+
+void Mapviz::UpdateHintSizesByList(const std::string& listName)
+{
+  mapviz::PluginConfigList* list = GetPluginConfigListByName(listName);
+  for (int i = 0; i < list->count(); i++)
   {
-    QListWidgetItem* item = ui_.configs->item(i);
-    ConfigItem* widget = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
+    QListWidgetItem* item = list->item(i);
+    ConfigItem* widget = static_cast<ConfigItem*>(list->itemWidget(item));
     if (widget) {
       // Make sure the ConfigItem in the QListWidgetItem we're getting really
       // exists; if this method is called before it's been initialized, it would
@@ -1467,8 +1534,16 @@ void Mapviz::UpdateSizeHints()
 
 void Mapviz::RemoveDisplay()
 {
-  QListWidgetItem* item = ui_.configs->takeItem(ui_.configs->currentRow());
-  RemoveDisplay(item);
+  QPushButton* obj = qobject_cast<QPushButton * >( sender() );
+  QString senderName = obj -> objectName();
+  if (senderName == "actionremovebutton")
+  {
+    RemoveDisplay(ui_.actions->takeItem(ui_.actions->currentRow()));
+  }
+  else
+  {
+    RemoveDisplay(ui_.configs->takeItem(ui_.configs->currentRow()));
+  }
 }
 
 void Mapviz::RemoveDisplay(QListWidgetItem* item)
@@ -1497,14 +1572,27 @@ void Mapviz::ClearDisplays()
 
     delete item;
   }
+  while (ui_.actions->count() > 0)
+  {
+    ROS_INFO("Remove display ...");
+
+    QListWidgetItem* item = ui_.actions->takeItem(0);
+
+    canvas_->RemovePlugin(plugins_[item]);
+    plugins_.erase(item);
+
+    delete item;
+  }
 }
 
-void Mapviz::ReorderDisplays()
+void Mapviz::ReorderDisplays(std::string listName)
 {
+  mapviz::PluginConfigList* list = GetPluginConfigListByName(listName);
+
   ROS_INFO("Reorder displays");
-  for (int i = 0; i < ui_.configs->count(); i++)
+  for (int i = 0; i < list->count(); i++)
   {
-    plugins_[ui_.configs->item(i)]->SetDrawOrder(i);
+    plugins_[list->item(i)]->SetDrawOrder(i);
   }
   canvas_->ReorderDisplays();
 }
