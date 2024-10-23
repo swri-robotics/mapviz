@@ -11,12 +11,12 @@ jobs:
           - {ROS_DISTRO: humble, ROS_REPO: main}
           - {ROS_DISTRO: iron, ROS_REPO: testing}
           - {ROS_DISTRO: iron, ROS_REPO: main}
-          - {ROS_DISTRO: jazzy, ROS_REPO: testing}
-          - {ROS_DISTRO: jazzy, ROS_REPO: main}
-          - {ROS_DISTRO: rolling, ROS_REPO: testing}
-          - {ROS_DISTRO: rolling, ROS_REPO: main}
+          - {ROS_DISTRO: jazzy, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: jazzy, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: rolling, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: rolling, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: 'swri-robotics/industrial_ci@break_system_packages'
+      - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
