@@ -288,6 +288,8 @@ static bool topicSort(const std::string &info1,
 void SelectTopicDialog::fetchTopics()
 {
   known_topics_ = nh_->get_topic_names_and_types();
+  auto services = nh_->get_service_names_and_types();
+  known_topics_.insert(services.begin(), services.end());
   std::vector<std::string> map_keys;
   for (auto const& element : known_topics_)
   {
