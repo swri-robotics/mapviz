@@ -335,6 +335,7 @@ std::vector<std::string> SelectTopicDialog::filterTopics(
 void SelectTopicDialog::updateDisplayedTopics()
 {
   std::vector<std::string> next_displayed_topics = filterTopics(known_topics_);
+
   // It's a lot more work to keep track of the additions/removals like
   // this compared to resetting the QListWidget's items each time, but
   // it allows Qt to properly track the selection and current items
@@ -377,7 +378,6 @@ void SelectTopicDialog::updateDisplayedTopics()
   }
 
   // Now we can add the new items.
-
   for (size_t i = 0; i < next_displayed_topics.size(); i++) {
     if (added_names.count(next_displayed_topics[i]) == 0) {
       continue;
