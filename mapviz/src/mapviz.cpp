@@ -716,6 +716,25 @@ void Mapviz::Open(const std::string& filename)
           failed_plugins.push_back(type);
           RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
         }
+        catch (const YAML::ParserException& e)
+        {
+          failed_plugins.push_back(type);
+          RCLCPP_ERROR(node_->get_logger(), "%s (%s) plugin failed with YAML parser error: %s",
+              type.c_str(), name.c_str(), e.what());
+          // Try to continue parsing through plugins
+        }
+        catch (const YAML::Exception& e)
+        {
+          failed_plugins.push_back(type);
+          RCLCPP_ERROR(node_->get_logger(), "%s (%s) plugin failed with YAML error: %s",
+              type.c_str(), name.c_str(), e.what());
+          // Try to continue parsing through plugins
+        }
+        catch (const rclcpp::exceptions::RCLError& e)
+        {
+          RCLCPP_ERROR(node_->get_logger(), "%s (%s) plugin failed with RCLCPP error: %s",
+              type.c_str(), name.c_str(), e.what());
+        }
       }
     }
   }
