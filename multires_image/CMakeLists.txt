@@ -72,8 +72,7 @@ target_link_libraries(${PROJECT_NAME}
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
-)
-target_link_libraries(${PROJECT_NAME} PUBLIC
+  PUBLIC
   ament_cmake
   cv_bridge
   gps_msgs
@@ -115,8 +114,7 @@ target_link_libraries(multires_view_node
   multires_widget
   Boost::filesystem
   Boost::thread
-)
-target_link_libraries(multires_view_node PUBLIC
+  PUBLIC
   ament_cmake
   rclcpp
   swri_transform_util

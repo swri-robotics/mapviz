@@ -139,8 +139,7 @@ target_link_libraries(rqt_${PROJECT_NAME}
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
-)
-target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
+  PUBLIC
   ament_cmake
   cv_bridge
   geometry_msgs
@@ -169,8 +168,7 @@ target_link_libraries(${PROJECT_NAME}
   rqt_${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${GLU_LIBRARY}
-)
-target_link_libraries(${PROJECT_NAME} PUBLIC
+  PUBLIC
   swri_math_util
   swri_transform_util
 )

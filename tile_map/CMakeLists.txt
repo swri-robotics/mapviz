@@ -92,8 +92,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   swri_math_util
   swri_transform_util
   tf2
-)
-target_link_libraries(${PROJECT_NAME}
   ${GLU_LIBRARY}
   ${JSONCPP_LIBRARIES}
   ${YamlCpp_LIBRARIES}

@@ -206,8 +206,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tf2_geometry_msgs
     tf2_ros
     visualization_msgs
-)
-target_link_libraries(${PROJECT_NAME}
     Qt5::Core
     Qt5::Gui
     Qt5::OpenGL
