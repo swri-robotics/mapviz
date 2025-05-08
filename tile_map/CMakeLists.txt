@@ -84,7 +84,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM
     GLEW::GLEW
     ${JSONCPP_INCLUDE_DIRS}
     ${YamlCpp_INCLUDE_DIRS})
-ament_target_dependencies(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
   ament_cmake
   mapviz
   pluginlib

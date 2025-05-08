@@ -179,7 +179,7 @@ if ("$ENV{ROS_DISTRO}" STRLESS "iron")
   target_compile_definitions(${PROJECT_NAME} PRIVATE "-DUSE_CVBRIDGE_H_FILES")
 endif()
 
-ament_target_dependencies(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
     ament_cmake
     ament_index_cpp
     cv_bridge

@@ -73,15 +73,15 @@ target_link_libraries(${PROJECT_NAME}
   Qt5::OpenGL
   Qt5::Widgets
 )
-ament_target_dependencies(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
   ament_cmake
   cv_bridge
   gps_msgs
   mapviz
   pluginlib
-  rclcpp 
+  rclcpp
   tf2
-  swri_transform_util 
+  swri_transform_util
   swri_math_util
 )
 
@@ -116,7 +116,7 @@ target_link_libraries(multires_view_node
   Boost::filesystem
   Boost::thread
 )
-ament_target_dependencies(multires_view_node
+target_link_libraries(multires_view_node PUBLIC
   ament_cmake
   rclcpp
   swri_transform_util
