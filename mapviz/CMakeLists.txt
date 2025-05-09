@@ -124,7 +124,7 @@ target_include_directories(rqt_${PROJECT_NAME}
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_link_libraries(rqt_${PROJECT_NAME}
+target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   OpenGL::GL
   ${GLUT_LIBRARIES}
   GLEW::GLEW
@@ -139,22 +139,20 @@ target_link_libraries(rqt_${PROJECT_NAME}
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
-  PUBLIC
-  ament_cmake
-  cv_bridge
-  geometry_msgs
-  image_transport
-  mapviz_interfaces
-  marti_common_msgs
-  pluginlib
-  rclcpp
-  rqt_gui_cpp
-  std_srvs
-  swri_math_util
-  swri_transform_util
-  tf2
-  tf2_geometry_msgs
-  tf2_ros
+  ${geometry_msgs_TARGETS}
+  ${mapviz_interfaces_TARGETS}
+  ${marti_common_msgs_TARGETS}
+  ${std_srvs_TARGETS}
+  cv_bridge::cv_bridge
+  image_transport::image_transport
+  pluginlib::pluginlib
+  rclcpp::rclcpp
+  rqt_gui_cpp::rqt_gui_cpp
+  swri_math_util::swri_math_util
+  swri_transform_util::swri_transform_util
+  tf2::tf2
+  tf2_geometry_msgs::tf2_geometry_msgs
+  tf2_ros::tf2_ros
 )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
@@ -164,13 +162,12 @@ set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
 add_executable(${PROJECT_NAME}
   src/${PROJECT_NAME}_main.cpp
 )
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
   rqt_${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${GLU_LIBRARY}
-  PUBLIC
-  swri_math_util
-  swri_transform_util
+  swri_math_util::swri_math_util
+  swri_transform_util::swri_transform_util
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"

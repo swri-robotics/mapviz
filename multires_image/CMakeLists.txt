@@ -72,16 +72,12 @@ target_link_libraries(${PROJECT_NAME}
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
-  PUBLIC
-  ament_cmake
-  cv_bridge
-  gps_msgs
-  mapviz
-  pluginlib
-  rclcpp
-  tf2
-  swri_transform_util
-  swri_math_util
+PUBLIC
+  ${gps_msgs_TARGETS}
+  cv_bridge::cv_bridge
+  pluginlib::pluginlib
+  rclcpp::rclcpp
+  tf2::tf2
 )
 
 # Build libmultires_widget
@@ -114,10 +110,8 @@ target_link_libraries(multires_view_node
   multires_widget
   Boost::filesystem
   Boost::thread
-  PUBLIC
-  ament_cmake
-  rclcpp
-  swri_transform_util
+PUBLIC
+  rclcpp::rclcpp
 )
 
 # Build mapviz plugin
