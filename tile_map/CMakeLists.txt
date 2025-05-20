@@ -80,25 +80,26 @@ add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 target_include_directories(${PROJECT_NAME}
   PUBLIC
     include
-    ${swri_transform_util_INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} PUBLIC
     GLEW::GLEW
     ${JSONCPP_INCLUDE_DIRS}
+    ${mapviz_INCLUDE_DIRS}
+    ${swri_transform_util_INCLUDE_DIRS}
     ${YamlCpp_INCLUDE_DIRS})
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ${GLU_LIBRARY}
   ${JSONCPP_LIBRARIES}
-  ${YamlCpp_LIBRARIES}
   Qt5::Network
   Qt5::Core
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
+  ${mapviz_LIBRARIES}
   pluginlib::pluginlib
   rclcpp::rclcpp
   tf2::tf2
   tf2_ros::tf2_ros
-)
+  ${YamlCpp_LIBRARIES})
 
 set(PLUGIN_SRC_FILES
   src/${PROJECT_NAME}_plugin.cpp)
