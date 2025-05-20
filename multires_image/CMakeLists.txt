@@ -28,6 +28,7 @@ find_package(mapviz REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp  REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(swri_transform_util  REQUIRED)
 find_package(swri_math_util REQUIRED)
 
@@ -60,24 +61,29 @@ set(TILE_SRC_FILES
 qt5_wrap_cpp(TILE_SRC_FILES include/${PROJECT_NAME}/tile_cache.h)
 
 add_library(${PROJECT_NAME} 
-  ${TILE_SRC_FILES}
-)
+  ${TILE_SRC_FILES})
+
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-    include)
-target_link_libraries(${PROJECT_NAME}
+    include
+    ${swri_math_util_INCLUDE_DIRS}
+    ${swri_transform_util_INCLUDE_DIRS})
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
   ${Boost_LIBRARIES}
+  cv_bridge::cv_bridge
   OpenGL::GL
+  ${gps_msgs_TARGETS}
+  pluginlib::pluginlib
   Qt5::Core
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
-PUBLIC
-  ${gps_msgs_TARGETS}
-  cv_bridge::cv_bridge
-  pluginlib::pluginlib
   rclcpp::rclcpp
+  ${swri_math_util_LIBRARIES}
+  ${swri_transform_util_LIBRARIES}
   tf2::tf2
+  tf2_ros::tf2_ros
 )
 
 # Build libmultires_widget
@@ -106,11 +112,10 @@ target_link_libraries(multires_widget
 set(VIEW_NODE_SRC_FILES src/nodes/multires_view_node.cpp)
 qt5_wrap_cpp(VIEW_NODE_SRC_FILES include/${PROJECT_NAME}/multires_view_node.h)
 add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
-target_link_libraries(multires_view_node
+target_link_libraries(multires_view_node PUBLIC
   multires_widget
   Boost::filesystem
   Boost::thread
-PUBLIC
   rclcpp::rclcpp
 )
 

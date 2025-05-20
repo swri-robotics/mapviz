@@ -119,6 +119,7 @@ add_library(rqt_${PROJECT_NAME}
 target_include_directories(rqt_${PROJECT_NAME} 
   PUBLIC
     include
+    ${swri_transform_util_INCLUDE_DIRS}
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -148,30 +149,32 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   pluginlib::pluginlib
   rclcpp::rclcpp
   rqt_gui_cpp::rqt_gui_cpp
-  swri_math_util::swri_math_util
-  swri_transform_util::swri_transform_util
+  ${swri_math_util_LIBRARIES}
+  ${swri_transform_util_LIBRARIES}
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
-  tf2_ros::tf2_ros
-)
+  tf2_ros::tf2_ros)
+
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
-)
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
 
 ### Build mapviz as a standalone executable ###
 add_executable(${PROJECT_NAME}
-  src/${PROJECT_NAME}_main.cpp
-)
+  src/${PROJECT_NAME}_main.cpp)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${swri_math_util_INCLUDE_DIRS}
+  ${swri_transform_util_INCLUDE_DIRS})
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
   rqt_${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${GLU_LIBRARY}
-  swri_math_util::swri_math_util
-  swri_transform_util::swri_transform_util
-)
+  ${swri_math_util_LIBRARIES}
+  ${swri_transform_util_LIBRARIES})
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
-)
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
 
 ### Install mapviz ###
 install(DIRECTORY include/${PROJECT_NAME}/

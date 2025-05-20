@@ -28,6 +28,7 @@
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
   <depend>tf2</depend>
+  <depend>tf2_ros</depend>
   <depend>yaml-cpp</depend>
 
   <exec_depend>libjsoncpp</exec_depend>

@@ -168,7 +168,9 @@ add_library(${PROJECT_NAME} SHARED
 
 target_include_directories(${PROJECT_NAME} 
   PUBLIC
-    include)
+    include
+    ${mapviz_INCLUDE_DIRS}
+    ${swri_transform_util_INCLUDE_DIRS})
 
 target_compile_definitions(${PROJECT_NAME}
   PUBLIC
@@ -179,38 +181,38 @@ if ("$ENV{ROS_DISTRO}" STRLESS "iron")
   target_compile_definitions(${PROJECT_NAME} PRIVATE "-DUSE_CVBRIDGE_H_FILES")
 endif()
 
-target_link_libraries(${PROJECT_NAME}
-    Qt5::Core
-    Qt5::Gui
-    Qt5::OpenGL
-    Qt5::Widgets
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    ament_index_cpp::ament_index_cpp
+    cv_bridge::cv_bridge
     ${GLU_LIBRARY}
     ${GLUT_LIBRARY}
-    opencv_core
-    opencv_imgproc
-    opencv_highgui
-PUBLIC
     ${gps_msgs_TARGETS}
+    image_transport::image_transport
     ${map_msgs_TARGETS}
+    ${mapviz_TARGETS}
     ${marti_common_msgs_TARGETS}
     ${marti_nav_msgs_TARGETS}
     ${marti_sensor_msgs_TARGETS}
     ${marti_visualization_msgs_TARGETS}
     ${nav_msgs_TARGETS}
+    opencv_core
+    opencv_imgproc
+    opencv_highgui
+    pluginlib::pluginlib
+    Qt5::Core
+    Qt5::Gui
+    Qt5::OpenGL
+    Qt5::Widgets
+    rclcpp::rclcpp
     ${sensor_msgs_TARGETS}
+    sensor_msgs::sensor_msgs_library
     ${std_msgs_TARGETS}
     ${stereo_msgs_TARGETS}
-    ${visualization_msgs_TARGETS}
-    ament_index_cpp::ament_index_cpp
-    cv_bridge::cv_bridge
-    image_transport::image_transport
-    pluginlib::pluginlib
-    rclcpp::rclcpp
-    sensor_msgs::sensor_msgs_library
+    ${swri_transform_util_LIBRARIES}
     tf2::tf2
     tf2_geometry_msgs::tf2_geometry_msgs
     tf2_ros::tf2_ros
-)
+    ${visualization_msgs_TARGETS})
 
 ### Install the plugins ###
 

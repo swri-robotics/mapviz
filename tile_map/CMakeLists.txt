@@ -29,6 +29,7 @@ find_package(rclcpp REQUIRED)
 find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 # Qt 5
 find_package(Qt5Core REQUIRED)
@@ -78,13 +79,13 @@ qt5_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-    include)
-target_include_directories(${PROJECT_NAME} SYSTEM
-  PUBLIC
+    include
+    ${swri_transform_util_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC
     GLEW::GLEW
     ${JSONCPP_INCLUDE_DIRS}
     ${YamlCpp_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
   ${GLU_LIBRARY}
   ${JSONCPP_LIBRARIES}
   ${YamlCpp_LIBRARIES}
@@ -93,10 +94,10 @@ target_link_libraries(${PROJECT_NAME}
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
-PUBLIC
   pluginlib::pluginlib
   rclcpp::rclcpp
   tf2::tf2
+  tf2_ros::tf2_ros
 )
 
 set(PLUGIN_SRC_FILES
