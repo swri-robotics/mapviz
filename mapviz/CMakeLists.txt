@@ -92,9 +92,11 @@ set(SRC_FILES
 )
 
 ### Qt5 on ROS2 ###
+message(WARNING "DJA: 95")
 qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
 qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
 qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
+message(WARNING "DJA: 99")
 
 ### Build mapviz as an rqt plugin ###
 add_library(rqt_${PROJECT_NAME}
@@ -103,15 +105,20 @@ add_library(rqt_${PROJECT_NAME}
   ${UI_SRC_FILES}
   ${RCC_SRCS}
 )
-target_include_directories(rqt_${PROJECT_NAME} 
+target_include_directories(rqt_${PROJECT_NAME}
   PUBLIC
-    include
-    ${swri_transform_util_INCLUDE_DIRS}
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
-
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    ${swri_transform_util_INCLUDE_DIRS})
+#target_include_directories(rqt_${PROJECT_NAME} 
+#  PUBLIC
+#    include
+#    ${swri_transform_util_INCLUDE_DIRS}
+#  PRIVATE
+#    ${CMAKE_CURRENT_SOURCE_DIR}
+#    ${CMAKE_CURRENT_BINARY_DIR}
+#)
+message(WARNING "${swri_transform_util_INCLUDE_DIRS}")
 target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   cv_bridge::cv_bridge
   OpenGL::GL
@@ -137,7 +144,7 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   ${std_srvs_TARGETS}
   ${swri_math_util_TARGETS}
   ${swri_route_util_TARGETS}
-  ${swri_transform_util_TARGETS}
+  ${swri_transform_util_LIBRARIES}
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
   tf2_ros::tf2_ros
@@ -150,15 +157,11 @@ set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
 add_executable(${PROJECT_NAME}
   src/${PROJECT_NAME}_main.cpp)
 
-target_include_directories(${PROJECT_NAME} PUBLIC
-  ${swri_math_util_INCLUDE_DIRS}
-  ${swri_transform_util_INCLUDE_DIRS})
-
 target_link_libraries(${PROJECT_NAME} PUBLIC
   rqt_${PROJECT_NAME}
   ${GLU_LIBRARY}
-  ${swri_math_util_LIBRARIES}
-  ${swri_transform_util_LIBRARIES})
+  ${swri_math_util_TARGETS}
+  ${swri_transform_util_TARGETS})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
@@ -169,7 +172,8 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS ${PROJECT_NAME} rqt_${PROJECT_NAME}
+install(TARGETS rqt_${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
   RUNTIME DESTINATION lib/${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
@@ -183,13 +187,15 @@ install(FILES plugin.xml
   DESTINATION share/${PROJECT_NAME} 
 )
 
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(${RUNTIME_DEPS}
+  GLEW
   Qt5Concurrent
   Qt5Core
   Qt5Gui
   Qt5OpenGL
   Qt5Widgets
+  mapviz_interfaces
+  rqt_gui_cpp
 )
-ament_export_include_directories(include)
-ament_export_libraries(rqt_${PROJECT_NAME} ${YamlCpp_LIBRARIES})
 ament_package()

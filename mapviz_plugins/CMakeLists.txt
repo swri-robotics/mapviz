@@ -38,6 +38,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(stereo_msgs REQUIRED)
 find_package(swri_image_util REQUIRED)
 find_package(swri_math_util REQUIRED)
@@ -63,7 +64,7 @@ find_package(GLUT REQUIRED)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
+message(WARNING "DJA: 67")
 set(UI_FILES
   ui/attitude_indicator_config.ui
   ui/coordinate_picker_config.ui
@@ -150,18 +151,23 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/textured_marker_plugin.h
   include/${PROJECT_NAME}/tf_frame_plugin.h
   include/${PROJECT_NAME}/topic_select.h)
-    
+
+message(WARNING "DJA: 154")
 qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
+message(WARNING "DJA: 156")
 qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
+message(WARNING "DJA: 158")
 
 add_library(${PROJECT_NAME} SHARED
     ${MOC_FILES}
     ${SRC_FILES}
     ${UI_SRC_FILES})
 
+message(WARNING "DJA: ${mapviz_INCLUDE_DIRS}")
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:include>
+  ${mapviz_INCLUDE_DIRS})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ament_index_cpp::ament_index_cpp
@@ -172,7 +178,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   ${gps_msgs_TARGETS}
   image_transport::image_transport
   ${map_msgs_TARGETS}
-  ${mapviz_TARGETS}
+  ${mapviz_LIBRARIES}
   ${marti_common_msgs_TARGETS}
   ${marti_nav_msgs_TARGETS}
   ${marti_sensor_msgs_TARGETS}
@@ -190,6 +196,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   rclcpp::rclcpp
   ${sensor_msgs_TARGETS}
   ${std_msgs_TARGETS}
+  ${std_srvs_TARGETS}
   ${stereo_msgs_TARGETS}
   ${swri_route_util_TARGETS}
   ${swri_transform_util_TARGETS}

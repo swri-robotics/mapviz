@@ -38,6 +38,7 @@
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
   <depend>stereo_msgs</depend>
   <depend>swri_image_util</depend>
   <depend>swri_math_util</depend>
