@@ -271,9 +271,8 @@ namespace mapviz_plugins
     transformed_ = true;
   }
 
-  boost::filesystem::path MultiresImagePlugin::MakePathRelative(boost::filesystem::path path, boost::filesystem::path base)
+  std::filesystem::path MultiresImagePlugin::MakePathRelative(const std::filesystem::path& path, const std::filesystem::path& base)
   {
-    // Borrowed from: https://svn.boost.org/trac/boost/ticket/1976#comment:2
     if (path.has_root_path())
     {
       if (path.root_path() != base.root_path())
@@ -294,7 +293,7 @@ namespace mapviz_plugins
       }
       else
       {
-        typedef boost::filesystem::path::const_iterator path_iterator;
+        typedef std::filesystem::path::const_iterator path_iterator;
         path_iterator path_it = path.begin();
         path_iterator base_it = base.begin();
         while (path_it != path.end() && base_it != base.end())
@@ -304,7 +303,7 @@ namespace mapviz_plugins
           ++path_it;
           ++base_it;
         }
-        boost::filesystem::path result;
+        std::filesystem::path result;
         for (; base_it != base.end(); ++base_it)
         {
           result /= "..";
@@ -324,10 +323,10 @@ namespace mapviz_plugins
     {
       std::string path_string = node["path"].as<std::string>();
 
-      boost::filesystem::path image_path(path_string);
+      std::filesystem::path image_path(path_string);
       if (!image_path.is_complete())
       {
-        boost::filesystem::path base_path(path);
+        std::filesystem::path base_path(path);
         path_string =
           (path / image_path.relative_path()).normalize().string();
       }
@@ -351,9 +350,9 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    boost::filesystem::path abs_path(ui_.path->text().toStdString());
-    boost::filesystem::path base_path(path);
-    boost::filesystem::path rel_path = MakePathRelative(abs_path, base_path);
+    std::filesystem::path abs_path(ui_.path->text().toStdString());
+    std::filesystem::path base_path(path);
+    std::filesystem::path rel_path = MakePathRelative(abs_path, base_path);
 
     emitter << YAML::Key << "path" << YAML::Value << rel_path.string();
     emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;

@@ -34,10 +34,6 @@
 #include <string>
 #include <map>
 
-// Boost libraries
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/string/trim.hpp>
-
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries

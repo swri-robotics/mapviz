@@ -6,7 +6,7 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
 endif()
 
 if (NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
@@ -37,8 +37,6 @@ find_package(Qt5Gui REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-# Still useful?
-# add_definitions(-DWFlags=WindowFlags)
 
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
@@ -54,9 +52,6 @@ pkg_check_modules(YamlCpp yaml-cpp)
 
 ### Use PkgConfig to find jsoncpp ###
 pkg_check_modules(JSONCPP REQUIRED jsoncpp)
-
-# Fix conflict between Boost signals used by tf and QT signals used by mapviz
-add_definitions(-DQT_NO_KEYWORDS)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -110,7 +105,6 @@ qt5_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
 qt5_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
 
 add_library(${PROJECT_NAME}_plugin SHARED ${PLUGIN_SRC_FILES})
-target_compile_definitions(${PROJECT_NAME}_plugin PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
 install(DIRECTORY include/${PROJECT_NAME}/

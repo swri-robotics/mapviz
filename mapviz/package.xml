@@ -2,9 +2,7 @@
   <name>mapviz</name>
   <version>2.4.9</version>
   <description>
-
-     mapviz
-
+    2D mapping display with extensible data overlays 
   </description>
   <author>Marc Alban</author>
   <author>P. J. Reed</author>
@@ -35,6 +33,7 @@
   <depend>rqt_gui</depend>
   <depend>std_srvs</depend>
   <depend>swri_math_util</depend>
+  <depend>swri_route_util</depend>
   <depend>swri_transform_util</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>

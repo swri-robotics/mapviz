@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2015, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2015-2025, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,6 @@
 #include <tile_map/tile_map_view.h>
 
 #include <cmath>
-
-#include <boost/make_shared.hpp>
 
 #include <GL/glew.h>
 #include <GL/gl.h>

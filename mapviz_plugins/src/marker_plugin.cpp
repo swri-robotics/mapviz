@@ -32,8 +32,6 @@
 
 #include <swri_math_util/constants.h>
 
-#include <boost/algorithm/string.hpp>
-
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
 
@@ -700,7 +698,7 @@ namespace mapviz_plugins
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
-      ui_.topic->setText(boost::trim_copy(topic).c_str());
+      ui_.topic->setText(TrimString(topic));
 
       TopicEdited();
     }
@@ -711,7 +709,7 @@ namespace mapviz_plugins
     emitter << YAML::Key
       << "topic"
       << YAML::Value
-      << boost::trim_copy(ui_.topic->text().toStdString());
+      << TrimString(ui_.topic->text().toStdString());
     SaveQosConfig(emitter, qos_);
   }
 

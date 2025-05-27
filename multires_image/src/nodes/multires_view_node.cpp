@@ -53,7 +53,7 @@ namespace multires_image
   , argc_(argc)
   , argv_(argv)
   , node_(nullptr)
-  , thread_(nullptr)
+  , thread_{}
   , initialized_(false)
   , tile_set_(nullptr)
   {
@@ -65,7 +65,7 @@ namespace multires_image
   {
     if (!thread_)
     {
-      thread_ = new boost::thread(&MultiresViewNode::SpinLoop, this);
+      thread_ = std::thread(&MultiresViewNode::SpinLoop, this);
     }
   }
 

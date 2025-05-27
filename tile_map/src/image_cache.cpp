@@ -29,8 +29,6 @@
 
 #include <tile_map/image_cache.h>
 
-#include <boost/make_shared.hpp>
-
 #include <QtAlgorithms>
 #include <QByteArray>
 #include <QList>

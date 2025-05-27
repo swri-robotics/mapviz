@@ -30,9 +30,6 @@
 #include <mapviz_plugins/laserscan_plugin.h>
 #include <mapviz_plugins/topic_select.h>
 
-// Boost libraries
-#include <boost/algorithm/string.hpp>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -542,8 +539,8 @@ namespace mapviz_plugins
     LoadQosConfig(node, qos_);
     if (node["topic"])
     {
-      std::string topic = node["topic"].as<std::string>();
-      ui_.topic->setText(boost::trim_copy(topic).c_str());
+      std::string topic = TrimString(node["topic"].as<std::string>());
+      ui_.topic->setText(topic);
       TopicEdited();
     }
 
@@ -666,8 +663,9 @@ namespace mapviz_plugins
   void LaserScanPlugin::SaveConfig(YAML::Emitter& emitter,
       const std::string& path)
   {
-    emitter << YAML::Key << "topic" <<
-               YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
+    std::string trimmed_key = TrimString(ui_.topic->text().toStdString());
+
+    emitter << YAML::Key << "topic" << YAML::Value << trimmed_key;
     emitter << YAML::Key << "size" <<
                YAML::Value << ui_.pointSize->value();
     emitter << YAML::Key << "buffer_size" <<

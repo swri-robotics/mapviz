@@ -29,11 +29,11 @@
 // *****************************************************************************
 
 #include <tile_map/bing_source.h>
-#include <boost/lexical_cast.hpp>
-#include <boost/random.hpp>
 
 #include <QRegExp>
 #include <QString>
+
+#include <random>
 
 #include <json/json.h>
 
@@ -73,7 +73,7 @@ namespace tile_map
     QString url = tile_url_;
     if (!subdomains_.empty())
     {
-      boost::random::uniform_int_distribution<> random(0, (int) subdomains_.size() - 1);
+      std::uniform_int_distribution<int> random(0, static_cast<int>(subdomains_.size()) - 1);
       url.replace(QString::fromStdString("{subdomain}"), subdomains_[random(rng_)]);
     }
     url.replace(QString::fromStdString("{quadkey}"), GenerateQuadKey(level, x, y));

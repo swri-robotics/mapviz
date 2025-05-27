@@ -33,9 +33,6 @@
 // C++ standard libraries
 #include <string>
 
-// Boost libraries
-#include <boost/filesystem.hpp>
-
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
@@ -104,9 +101,9 @@ namespace mapviz_plugins
 
     void GetCenterPoint(double x, double y);
 
-    boost::filesystem::path MakePathRelative(
-      boost::filesystem::path path,
-      boost::filesystem::path base);
+    std::filesystem::path MakePathRelative(
+      const std::filesystem::path& path,
+      const std::filesystem::path& base);
   };
 }
 

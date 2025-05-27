@@ -21,6 +21,7 @@
 
   <depend>ament_index_cpp</depend>
   <depend>cv_bridge</depend>
+  <depend>geometry_msgs</depend>
   <depend>gps_msgs</depend>
   <depend>image_transport</depend>
   <depend>map_msgs</depend>

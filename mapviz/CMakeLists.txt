@@ -6,7 +6,7 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
 endif()
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
@@ -22,52 +22,39 @@ project(mapviz
   DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
   LANGUAGES CXX)
 
-### ROS Packages ###
 find_package(ament_cmake REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(GLUT REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
 find_package(marti_common_msgs REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rqt_gui_cpp REQUIRED)
-find_package(std_srvs REQUIRED)
-find_package(swri_math_util REQUIRED)
-find_package(swri_transform_util REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_ros REQUIRED)
-
-find_package(tf2_geometry_msgs REQUIRED)
-
-### PkgConfig ###
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(YamlCpp yaml-cpp)
-
-### Boost ###
-find_package(Boost REQUIRED date_time system filesystem)
-
-### OpenCV 3/4 on ROS2 ###
 find_package(OpenCV COMPONENTS core imgproc imgcodecs videoio REQUIRED)
-
-# ### Qt5 on ROS2 ###
+find_package(OpenGL REQUIRED)
+find_package(pluginlib REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rqt_gui_cpp REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(swri_math_util REQUIRED)
+find_package(swri_route_util REQUIRED)
+find_package(swri_transform_util REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+
+### PkgConfig ###
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YamlCpp yaml-cpp)
+
+# ### Qt5 on ROS2 ###
 add_definitions(-DWFlags=WindowFlags)
 set(QT_USE_QTOPENGL TRUE)
-
-### OpenGL ###
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-
-### GLEW ###
-find_package(GLEW REQUIRED)
-
-# Fix conflict between Boost signals used by tf and QT signals used by mapviz
-add_definitions(-DQT_NO_KEYWORDS)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -126,34 +113,35 @@ target_include_directories(rqt_${PROJECT_NAME}
 )
 
 target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
+  cv_bridge::cv_bridge
   OpenGL::GL
-  ${GLUT_LIBRARIES}
+  ${geometry_msgs_TARGETS}
   GLEW::GLEW
+  ${GLUT_LIBRARIES}
+  image_transport::image_transport
   opencv_core
   opencv_highgui
   opencv_imgproc
   opencv_imgcodecs
   opencv_videoio
-  ${YamlCpp_LIBRARIES}
+  ${mapviz_interfaces_TARGETS}
+  ${marti_common_msgs_TARGETS}
+  pluginlib::pluginlib
   Qt5::Concurrent
   Qt5::Core
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
-  ${geometry_msgs_TARGETS}
-  ${mapviz_interfaces_TARGETS}
-  ${marti_common_msgs_TARGETS}
-  ${std_srvs_TARGETS}
-  cv_bridge::cv_bridge
-  image_transport::image_transport
-  pluginlib::pluginlib
   rclcpp::rclcpp
   rqt_gui_cpp::rqt_gui_cpp
-  ${swri_math_util_LIBRARIES}
-  ${swri_transform_util_LIBRARIES}
+  ${std_srvs_TARGETS}
+  ${swri_math_util_TARGETS}
+  ${swri_route_util_TARGETS}
+  ${swri_transform_util_TARGETS}
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
-  tf2_ros::tf2_ros)
+  tf2_ros::tf2_ros
+  ${YamlCpp_LIBRARIES})
 
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
@@ -168,7 +156,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   rqt_${PROJECT_NAME}
-  ${Boost_LIBRARIES}
   ${GLU_LIBRARY}
   ${swri_math_util_LIBRARIES}
   ${swri_transform_util_LIBRARIES})

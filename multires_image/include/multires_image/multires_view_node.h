@@ -32,9 +32,7 @@
 
 // C++ standard libraries
 #include <string>
-
-// Boost libraries
-#include <boost/thread.hpp>
+#include <thread>
 
 // QT libraries
 #include <QMainWindow>
@@ -71,7 +69,7 @@ namespace multires_image
     char** argv_;
 
     rclcpp::Node::SharedPtr node_;
-    boost::thread*  thread_;
+    std::thread thread_;
 
     bool initialized_;
 

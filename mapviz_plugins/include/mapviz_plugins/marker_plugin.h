@@ -41,11 +41,10 @@
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <boost/functional/hash.hpp>
-
 #include <mapviz/map_canvas.h>
 
 // C++ standard libraries
+#include <functional>
 #include <string>
 #include <utility>
 #include <unordered_map>
@@ -61,8 +60,8 @@ using MarkerId = std::pair<std::string, int>;
 struct MarkerIdHash {
   std::size_t operator () (const MarkerId &p) const {
     std::size_t seed = 0;
-    boost::hash_combine(seed, p.first);
-    boost::hash_combine(seed, p.second);
+    std::hash_combine(seed, p.first);
+    std::hash_combine(seed, p.second);
     return seed;
   }
 };
@@ -70,7 +69,7 @@ struct MarkerIdHash {
 struct MarkerNsHash {
   std::size_t operator () (const std::string &p) const {
     std::size_t seed = 0;
-    boost::hash_combine(seed, p);
+    std::hash_combine(seed, p);
     return seed;
   }
 };

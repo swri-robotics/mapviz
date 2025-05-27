@@ -34,8 +34,10 @@
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
+#include <filesystem>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -72,13 +74,6 @@
 
 // YAML libraries
 #include <yaml-cpp/yaml.h>
-
-// Boost libraries
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/filesystem.hpp>
 
 // OpenCV libraries
 #include <opencv2/core/core.hpp>
@@ -577,7 +572,7 @@ void Mapviz::Open(const std::string& filename)
 
   try
   {
-    boost::filesystem::path filepath(filename);
+    std::filesystem::path filepath(filename);
     std::string config_path = filepath.parent_path().string();
 
     ClearDisplays();
@@ -752,7 +747,15 @@ void Mapviz::Open(const std::string& filename)
   if (!failed_plugins.empty()) {
     std::stringstream message;
     message << "The following plugin(s) failed to load:" << std::endl;
-    std::string failures = boost::algorithm::join(failed_plugins, "\n");
+
+    std::string failures = std::accumulate(
+      std::next(failed_plugins.begin()),
+      failed_plugins.end(),
+      failed_plugins[0],
+      [](const std::string& a, const std::string& b) {
+        return a + "\n" + b;
+      }
+    );
     message << failures << std::endl << std::endl << "Check the ROS log for more details.";
 
     QMessageBox::warning(this, "Failed to load plugins", QString::fromStdString(message.str()));
@@ -767,7 +770,7 @@ void Mapviz::Save(const std::string& filename)
     return;
   }
 
-  boost::filesystem::path filepath(filename);
+  std::filesystem::path filepath(filename);
   std::string config_path = filepath.parent_path().string();
 
   YAML::Emitter out;
@@ -1317,13 +1320,20 @@ void Mapviz::ToggleRecord(bool on)
       AdjustWindowSize();
 
       canvas_->CaptureFrames(true);
+    
+      auto now = std::chrono::system_clock::now();
+      std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+      std::tm local_tm = *std::localtime(&now_time);
+      std::ostringstream formatting_stream;
+      formatting_stream << std::put_time(&local_tm, "%Y%m%dT%H%M%S");
+      std::string posix_time = formatting_stream.str();
 
-      std::string posix_time = boost::posix_time::to_iso_string(
-                                boost::posix_time::second_clock::local_time());
-      boost::replace_all(posix_time, ".", "_");
       std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".avi";
-      boost::replace_all(filename, "~", getenv("HOME"));
-
+      if (filename.at(0) == '~')
+      {
+        filename.erase(0, 1);
+        filename = std::string(getenv("HOME")) + filename;
+      }
 
       if (!vid_writer_->initializeWriter(filename, canvas_->width(), canvas_->height())) {
         RCLCPP_ERROR(node_->get_logger(), "Failed to open video file for writing");
@@ -1429,11 +1439,19 @@ void Mapviz::Screenshot()
 
     cv::flip(screenshot, screenshot, 0);
 
-    std::string posix_time = boost::posix_time::to_iso_string(
-                              boost::posix_time::second_clock::local_time());
-    boost::replace_all(posix_time, ".", "_");
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    std::tm local_tm = *std::localtime(&now_time);
+    std::ostringstream formatting_stream;
+    formatting_stream << std::put_time(&local_tm, "%Y%m%dT%H%M%S");
+    std::string posix_time = formatting_stream.str();
+
     std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
-    boost::replace_all(filename, "~", getenv("HOME"));
+    if (filename.at(0) == '~')
+    {
+      filename.erase(0, 1);
+      filename = std::string(getenv("HOME")) + filename;
+    }
 
     RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Writing screenshot to: %s", filename.c_str());
     ui_.statusbar->showMessage("Saved image to " + QString::fromStdString(filename));

@@ -30,9 +30,6 @@
 #include <mapviz_plugins/textured_marker_plugin.h>
 #include <mapviz_plugins/topic_select.h>
 
-// Boost libraries
-#include <boost/algorithm/string.hpp>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -534,8 +531,8 @@ void TexturedMarkerPlugin::LoadConfig(const YAML::Node & node, const std::string
 {
   LoadQosConfig(node, qos_);
   if (node["topic"]) {
-    std::string topic = node["topic"].as<std::string>();
-    ui_.topic->setText(boost::trim_copy(topic).c_str());
+    std::string topic = TrimString(node["topic"].as<std::string>());
+    ui_.topic->setText(topic);
   }
 
   TopicEdited();
@@ -544,7 +541,7 @@ void TexturedMarkerPlugin::LoadConfig(const YAML::Node & node, const std::string
 void TexturedMarkerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & path)
 {
   emitter << YAML::Key << "topic" << YAML::Value <<
-    boost::trim_copy(ui_.topic->text().toStdString());
+    TrimString(ui_.topic->text().toStdString());
 
   SaveQosConfig(emitter, qos_);
 }

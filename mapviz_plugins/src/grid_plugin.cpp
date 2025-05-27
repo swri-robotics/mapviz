@@ -29,8 +29,6 @@
 
 #include <mapviz_plugins/grid_plugin.h>
 
-#include <boost/lexical_cast.hpp>
-
 // QT libraries
 #include <QGLWidget>
 #include <QPalette>

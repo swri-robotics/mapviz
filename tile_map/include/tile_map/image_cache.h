@@ -33,8 +33,6 @@
 #include <string>
 #include <limits>
 
-#include <boost/cstdint.hpp>
-
 #include <rclcpp/logger.hpp>
 
 #include <QCache>

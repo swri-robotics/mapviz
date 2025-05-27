@@ -31,9 +31,6 @@
 #include <mapviz_plugins/pointcloud2_plugin.h>
 #include <mapviz_plugins/topic_select.h>
 
-// Boost libraries
-#include <boost/algorithm/string.hpp>
-
 // QT libraries
 #include <QDialog>
 #include <QGLWidget>
@@ -741,8 +738,8 @@ namespace mapviz_plugins
 
     if (node["topic"])
     {
-      std::string topic = node["topic"].as<std::string>();
-      ui_.topic->setText(boost::trim_copy(topic).c_str());
+      std::string topic = TrimString(node["topic"].as<std::string>());
+      ui_.topic->setText(topic);
       TopicEdited();
     }
 
@@ -867,7 +864,7 @@ namespace mapviz_plugins
                                      const std::string& path)
   {
     emitter << YAML::Key << "topic" <<
-      YAML::Value << boost::trim_copy(ui_.topic->text().toStdString());
+      YAML::Value << TrimString(ui_.topic->text().toStdString());
     emitter << YAML::Key << "size" <<
       YAML::Value << ui_.pointSize->value();
     emitter << YAML::Key << "buffer_size" <<

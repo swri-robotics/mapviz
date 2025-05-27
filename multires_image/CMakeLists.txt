@@ -6,7 +6,7 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
 endif()
 
 if (NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
@@ -25,28 +25,19 @@ find_package(ament_cmake REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(gps_msgs REQUIRED)
 find_package(mapviz REQUIRED)
+find_package(OpenGL REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 find_package(rclcpp  REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(swri_transform_util  REQUIRED)
 find_package(swri_math_util REQUIRED)
 
-### Boost ###
-find_package(Boost REQUIRED filesystem thread)
-
-### OpenGL ###
-find_package(OpenGL REQUIRED)
-
 ### OpenCV ###
-# multires_image doesn't directly use OpenCV, but it uses swri_transform_util, and
-# we need to include OpenCV to make one of its headers compile.
-find_package(OpenCV COMPONENTS core imgproc REQUIRED)
-
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
 add_definitions(-DWFlags=WindowFlags)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -70,7 +61,6 @@ target_include_directories(${PROJECT_NAME}
     ${swri_transform_util_INCLUDE_DIRS})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ${Boost_LIBRARIES}
   cv_bridge::cv_bridge
   OpenGL::GL
   ${gps_msgs_TARGETS}
@@ -114,8 +104,6 @@ qt5_wrap_cpp(VIEW_NODE_SRC_FILES include/${PROJECT_NAME}/multires_view_node.h)
 add_executable(multires_view_node ${VIEW_NODE_SRC_FILES})
 target_link_libraries(multires_view_node PUBLIC
   multires_widget
-  Boost::filesystem
-  Boost::thread
   rclcpp::rclcpp
 )
 
@@ -129,7 +117,7 @@ qt5_wrap_cpp(MAPVIZ_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
 add_library(${PROJECT_NAME}_plugin SHARED
   ${MAPVIZ_SRC_FILES}
 )
-target_compile_definitions(${PROJECT_NAME}_plugin PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+
 target_link_libraries(${PROJECT_NAME}_plugin
   ${PROJECT_NAME}
 )

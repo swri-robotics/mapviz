@@ -33,9 +33,8 @@
 
 #include "tile_source.h"
 
-#include <boost/functional/hash.hpp>
-#include <boost/random.hpp>
-
+#include <random>
+#include <string>
 #include <vector>
 
 #include <QNetworkAccessManager>
@@ -124,9 +123,9 @@ namespace tile_map
     QString GenerateQuadKey(int32_t level, int64_t x, int64_t y) const;
 
     QString api_key_;
-    boost::hash<std::string> hash_;
+    std::hash<std::string> hash_;
     QNetworkAccessManager network_manager_;
-    boost::random::mt19937 rng_;
+    std::mt19937 rng_;
     std::vector<QString> subdomains_;
     QString tile_url_;
 
