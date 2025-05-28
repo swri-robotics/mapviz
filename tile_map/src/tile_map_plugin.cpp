@@ -418,12 +418,14 @@ namespace tile_map
     }
     emitter << YAML::EndSeq;
 
-    std::string bing_key = TrimString(bing_source->GetApiKey().toStdString());
-
+    
     BingSource* bing_source = dynamic_cast<BingSource*>(tile_sources_[BING_NAME].get());
+    std::string bing_key = bing_source->GetApiKey().toStdString();
+    bing_key.erase(std::remove_if(bing_key.begin(), bing_key.end(), ::isspace), bing_key.end());
     emitter << YAML::Key << BING_API_KEY << YAML::Value << bing_key;
 
-    std::string combo_str = TrimString(ui_.source_combo->currentText().toStdString());
+    std::string combo_str = ui_.source_combo->currentText().toStdString();
+    combo_str.erase(std::remove_if(combo_str.begin(), combo_str.end(), ::isspace), combo_str.end());
     emitter << YAML::Key << SOURCE_KEY << YAML::Value << combo_str; 
   }
 

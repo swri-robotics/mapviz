@@ -699,7 +699,8 @@ namespace mapviz_plugins
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
-      ui_.topic->setText(TrimString(topic));
+      topic.erase(std::remove_if(topic.begin(), topic.end(), ::isspace), topic.end());
+      ui_.topic->setText(topic.c_str());
 
       TopicEdited();
     }
@@ -712,7 +713,7 @@ namespace mapviz_plugins
     emitter << YAML::Key
       << "topic"
       << YAML::Value
-      << TrimString(ui_.topic->text().toStdString());
+      << trimmed;
     SaveQosConfig(emitter, qos_);
   }
 

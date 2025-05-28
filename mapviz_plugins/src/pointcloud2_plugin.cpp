@@ -738,8 +738,9 @@ namespace mapviz_plugins
 
     if (node["topic"])
     {
-      std::string topic = TrimString(node["topic"].as<std::string>());
-      ui_.topic->setText(topic);
+      std::string topic = node["topic"].as<std::string>();
+      topic.erase(std::remove_if(topic.begin(), topic.end(), ::isspace), topic.end());
+      ui_.topic->setText(topic.c_str());
       TopicEdited();
     }
 
@@ -866,7 +867,7 @@ namespace mapviz_plugins
     std::string topic = ui_.topic->text().toStdString();
     topic.erase(std::remove_if(topic.begin(), topic.end(), ::isspace), topic.end());
     emitter << YAML::Key << "topic" <<
-      YAML::Value << TrimString(ui_.topic->text().toStdString());
+      YAML::Value << topic;
     emitter << YAML::Key << "size" <<
       YAML::Value << ui_.pointSize->value();
     emitter << YAML::Key << "buffer_size" <<

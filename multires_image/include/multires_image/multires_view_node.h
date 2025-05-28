@@ -69,7 +69,7 @@ namespace multires_image
     char** argv_;
 
     rclcpp::Node::SharedPtr node_;
-    std::thread thread_;
+    std::thread*  thread_;
 
     bool initialized_;
 

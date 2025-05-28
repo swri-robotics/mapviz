@@ -66,7 +66,7 @@ namespace multires_image
   {
     if (!thread_)
     {
-      thread_ = std::thread(&MultiresViewNode::SpinLoop, this);
+      thread_ = new std::thread(&MultiresViewNode::SpinLoop, this);
     }
   }
 
