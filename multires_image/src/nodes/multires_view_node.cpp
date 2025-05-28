@@ -36,6 +36,7 @@
  */
 
 #include <string>
+#include <filesystem>
 
 // QT libraries
 #include <QString>

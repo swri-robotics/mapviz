@@ -27,6 +27,7 @@
 //
 // *****************************************************************************
 
+#include <chrono>
 #include <mapviz/mapviz.hpp>
 
 // C++ standard libraries

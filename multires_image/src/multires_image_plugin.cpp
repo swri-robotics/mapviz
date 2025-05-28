@@ -328,7 +328,7 @@ namespace mapviz_plugins
       {
         std::filesystem::path base_path(path);
         path_string =
-          (path / image_path.relative_path()).normalize().string();
+          (path / image_path.relative_path()).lexically_normal().string();
       }
 
       ui_.path->setText(path_string.c_str());

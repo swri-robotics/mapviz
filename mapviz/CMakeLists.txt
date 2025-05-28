@@ -92,11 +92,9 @@ set(SRC_FILES
 )
 
 ### Qt5 on ROS2 ###
-message(WARNING "DJA: 95")
 qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
 qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
 qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
-message(WARNING "DJA: 99")
 
 ### Build mapviz as an rqt plugin ###
 add_library(rqt_${PROJECT_NAME}
@@ -108,17 +106,9 @@ add_library(rqt_${PROJECT_NAME}
 target_include_directories(rqt_${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-    ${swri_transform_util_INCLUDE_DIRS})
-#target_include_directories(rqt_${PROJECT_NAME} 
-#  PUBLIC
-#    include
-#    ${swri_transform_util_INCLUDE_DIRS}
-#  PRIVATE
-#    ${CMAKE_CURRENT_SOURCE_DIR}
-#    ${CMAKE_CURRENT_BINARY_DIR}
-#)
-message(WARNING "${swri_transform_util_INCLUDE_DIRS}")
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+)
+
 target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   cv_bridge::cv_bridge
   OpenGL::GL
@@ -144,7 +134,7 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   ${std_srvs_TARGETS}
   ${swri_math_util_TARGETS}
   ${swri_route_util_TARGETS}
-  ${swri_transform_util_LIBRARIES}
+  ${swri_transform_util_TARGETS}
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
   tf2_ros::tf2_ros
@@ -167,7 +157,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
 
 ### Install mapviz ###
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )

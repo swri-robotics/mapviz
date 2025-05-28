@@ -161,52 +161,64 @@ message(WARNING "DJA: 158")
 add_library(${PROJECT_NAME} SHARED
     ${MOC_FILES}
     ${SRC_FILES}
-    ${UI_SRC_FILES})
+    ${UI_SRC_FILES}
+)
 
-message(WARNING "DJA: ${mapviz_INCLUDE_DIRS}")
-target_include_directories(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  ${mapviz_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} 
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PACKAGE_NAME}>)
+
+target_compile_definitions(${PROJECT_NAME}
+  PUBLIC
+    "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+
+# Iron and later switched some cv_bridge files to .hpp from .h
+if ("$ENV{ROS_DISTRO}" STRLESS "iron")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE "-DUSE_CVBRIDGE_H_FILES")
+endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ament_index_cpp::ament_index_cpp
-  cv_bridge::cv_bridge
-  ${geometry_msgs_TARGETS}
-  ${GLU_LIBRARY}
-  ${GLUT_LIBRARY}
-  ${gps_msgs_TARGETS}
-  image_transport::image_transport
-  ${map_msgs_TARGETS}
-  ${mapviz_LIBRARIES}
-  ${marti_common_msgs_TARGETS}
-  ${marti_nav_msgs_TARGETS}
-  ${marti_sensor_msgs_TARGETS}
-  ${marti_visualization_msgs_TARGETS}
-  ${move_base_msgs_TARGETS}
-  ${nav_msgs_TARGETS}
-  opencv_core
-  opencv_imgproc
-  opencv_highgui
-  pluginlib::pluginlib
-  Qt5::Core
-  Qt5::Gui
-  Qt5::OpenGL
-  Qt5::Widgets
-  rclcpp::rclcpp
-  ${sensor_msgs_TARGETS}
-  ${std_msgs_TARGETS}
-  ${std_srvs_TARGETS}
-  ${stereo_msgs_TARGETS}
-  ${swri_route_util_TARGETS}
-  ${swri_transform_util_TARGETS}
-  tf2::tf2
-  tf2_geometry_msgs::tf2_geometry_msgs
-  tf2_ros::tf2_ros
-  ${visualization_msgs_TARGETS})
+    ament_index_cpp::ament_index_cpp
+    cv_bridge::cv_bridge
+    ${GLU_LIBRARY}
+    ${GLUT_LIBRARY}
+    ${gps_msgs_TARGETS}
+    image_transport::image_transport
+    ${map_msgs_TARGETS}
+    ${mapviz_TARGETS}
+    ${marti_common_msgs_TARGETS}
+    ${marti_nav_msgs_TARGETS}
+    ${marti_sensor_msgs_TARGETS}
+    ${marti_visualization_msgs_TARGETS}
+    ${nav_msgs_TARGETS}
+    opencv_core
+    opencv_imgproc
+    opencv_highgui
+    pluginlib::pluginlib
+    Qt5::Core
+    Qt5::Gui
+    Qt5::OpenGL
+    Qt5::Widgets
+    rclcpp::rclcpp
+    ${sensor_msgs_TARGETS}
+    sensor_msgs::sensor_msgs_library
+    ${std_msgs_TARGETS}
+    ${std_srvs_TARGETS}
+    ${stereo_msgs_TARGETS}
+    ${swri_image_util_TARGETS}
+    ${swri_transform_util_TARGETS}
+    ${swri_route_util_TARGETS}
+    tf2::tf2
+    tf2_geometry_msgs::tf2_geometry_msgs
+    tf2_ros::tf2_ros
+    ${visualization_msgs_TARGETS})
+target_include_directories(${PROJECT_NAME} INTERFACE 
+  ${swri_roscpp_TARGETS}
+)
 
 ### Install the plugins ###
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h")
 

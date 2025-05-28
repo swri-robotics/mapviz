@@ -42,6 +42,7 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <deque>

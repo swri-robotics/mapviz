@@ -56,9 +56,7 @@ add_library(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-    include
-    ${swri_math_util_INCLUDE_DIRS}
-    ${swri_transform_util_INCLUDE_DIRS})
+    include)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   cv_bridge::cv_bridge
@@ -70,8 +68,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   Qt5::OpenGL
   Qt5::Widgets
   rclcpp::rclcpp
-  ${swri_math_util_LIBRARIES}
-  ${swri_transform_util_LIBRARIES}
+  ${swri_math_util_TARGETS}
+  ${swri_transform_util_TARGETS}
   tf2::tf2
   tf2_ros::tf2_ros
 )

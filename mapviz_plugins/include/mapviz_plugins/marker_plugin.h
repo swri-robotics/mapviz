@@ -55,6 +55,7 @@
 
 namespace mapviz_plugins
 {
+
 using MarkerId = std::pair<std::string, int>;
 
 struct MarkerIdHash {
