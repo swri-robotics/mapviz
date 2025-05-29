@@ -138,8 +138,8 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
   tf2_ros::tf2_ros
-  ${YamlCpp_LIBRARIES})
-
+  ${YamlCpp_LIBRARIES}
+)
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
 
@@ -162,9 +162,13 @@ install(DIRECTORY include
   FILES_MATCHING PATTERN "*.h"
 )
 
+install(TARGETS ${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(TARGETS rqt_${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
@@ -180,6 +184,7 @@ install(FILES plugin.xml
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(${RUNTIME_DEPS}
   GLEW
+  image_transport
   Qt5Concurrent
   Qt5Core
   Qt5Gui
@@ -187,5 +192,7 @@ ament_export_dependencies(${RUNTIME_DEPS}
   Qt5Widgets
   mapviz_interfaces
   rqt_gui_cpp
+  std_srvs
+  swri_route_util
 )
 ament_package()

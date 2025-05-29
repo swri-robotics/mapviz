@@ -74,24 +74,24 @@ qt5_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-    include
-    GLEW::GLEW
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
     ${JSONCPP_INCLUDE_DIRS}
-    ${mapviz_INCLUDE_DIRS}
-    ${swri_transform_util_INCLUDE_DIRS}
     ${YamlCpp_INCLUDE_DIRS})
-
+    
 target_link_libraries(${PROJECT_NAME} PUBLIC
   ${GLU_LIBRARY}
+  GLEW::GLEW
   ${JSONCPP_LIBRARIES}
+  ${mapviz_TARGETS}
   Qt5::Network
   Qt5::Core
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
-  ${mapviz_LIBRARIES}
   pluginlib::pluginlib
   rclcpp::rclcpp
+  ${swri_transform_util_TARGETS}
   tf2::tf2
   tf2_ros::tf2_ros
   ${YamlCpp_LIBRARIES})
@@ -107,19 +107,21 @@ qt5_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
 add_library(${PROJECT_NAME}_plugin SHARED ${PLUGIN_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
+ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(${RUNTIME_DEPS}
   Qt5::Network
   Qt5::Core
@@ -127,6 +129,4 @@ ament_export_dependencies(${RUNTIME_DEPS}
   Qt5::OpenGL
   Qt5::Widgets
 )
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
 ament_package()

@@ -64,7 +64,6 @@ find_package(GLUT REQUIRED)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-message(WARNING "DJA: 67")
 set(UI_FILES
   ui/attitude_indicator_config.ui
   ui/coordinate_picker_config.ui
@@ -152,11 +151,8 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/tf_frame_plugin.h
   include/${PROJECT_NAME}/topic_select.h)
 
-message(WARNING "DJA: 154")
 qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
-message(WARNING "DJA: 156")
 qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
-message(WARNING "DJA: 158")
 
 add_library(${PROJECT_NAME} SHARED
     ${MOC_FILES}
@@ -227,7 +223,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ui_topicselect.h
 
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
 
