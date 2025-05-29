@@ -31,6 +31,7 @@
 #define TILE_MAP_TILE_MAP_PLUGIN_H_
 
 // C++ standard libraries
+#include <filesystem>
 #include <string>
 #include <map>
 

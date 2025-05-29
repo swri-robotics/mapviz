@@ -55,13 +55,22 @@
 
 namespace mapviz_plugins
 {
+
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v)
+{
+    constexpr int LARGE_PRIME = 0x9e3779b9;
+    std::hash<T> hasher;
+    seed ^= hasher(v) + LARGE_PRIME + (seed<<6) + (seed>>2);
+}
+
 using MarkerId = std::pair<std::string, int>;
 
 struct MarkerIdHash {
   std::size_t operator () (const MarkerId &p) const {
     std::size_t seed = 0;
-    std::hash_combine(seed, p.first);
-    std::hash_combine(seed, p.second);
+    hash_combine(seed, p.first);
+    hash_combine(seed, p.second);
     return seed;
   }
 };
@@ -69,7 +78,7 @@ struct MarkerIdHash {
 struct MarkerNsHash {
   std::size_t operator () (const std::string &p) const {
     std::size_t seed = 0;
-    std::hash_combine(seed, p);
+    hash_combine(seed, p);
     return seed;
   }
 };

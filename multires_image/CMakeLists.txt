@@ -56,22 +56,23 @@ add_library(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-    include
-    ${swri_math_util_INCLUDE_DIRS}
-    ${swri_transform_util_INCLUDE_DIRS})
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   cv_bridge::cv_bridge
   OpenGL::GL
   ${gps_msgs_TARGETS}
+  ${mapviz_TARGETS}
   pluginlib::pluginlib
   Qt5::Core
   Qt5::Gui
   Qt5::OpenGL
   Qt5::Widgets
   rclcpp::rclcpp
-  ${swri_math_util_LIBRARIES}
-  ${swri_transform_util_LIBRARIES}
+  ${swri_math_util_TARGETS}
+  ${swri_transform_util_TARGETS}
   tf2::tf2
   tf2_ros::tf2_ros
 )
@@ -118,21 +119,29 @@ add_library(${PROJECT_NAME}_plugin SHARED
   ${MAPVIZ_SRC_FILES}
 )
 
-target_link_libraries(${PROJECT_NAME}_plugin
+target_link_libraries(${PROJECT_NAME}_plugin PUBLIC
   ${PROJECT_NAME}
+  multires_widget
+  ${mapviz_TARGETS}
 )
 
 ### Install ${PROJECT_NAME} plugin ###
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )
 
+# Install executables/nodes
+install(TARGETS multires_view_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# Install and export libraries
 install(TARGETS ${PROJECT_NAME}
-  multires_view_node
   multires_widget
   ${PROJECT_NAME}_plugin
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
@@ -148,7 +157,17 @@ install(DIRECTORY launch
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
-ament_export_dependencies(${RUNTIME_DEPS} Qt)
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
+ament_export_targets(export_${PROJECT_NAME})
+ament_export_dependencies(${RUNTIME_DEPS} 
+  Qt5Core
+  Qt5Gui
+  Qt5OpenGL
+  Qt5Widgets
+)
+ament_export_include_directories(
+  include/${PROJECT_NAME}
+)
+ament_export_libraries(
+  ${PROJECT_NAME}
+)
 ament_package()

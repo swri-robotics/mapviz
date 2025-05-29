@@ -32,6 +32,7 @@
 
 // C++ standard libraries
 #include <string>
+#include <filesystem>
 
 #include <mapviz/mapviz_plugin.h>
 

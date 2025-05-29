@@ -27,6 +27,7 @@
 //
 // *****************************************************************************
 
+#include <chrono>
 #include <mapviz/mapviz.hpp>
 
 // C++ standard libraries
@@ -1320,20 +1321,16 @@ void Mapviz::ToggleRecord(bool on)
       AdjustWindowSize();
 
       canvas_->CaptureFrames(true);
-    
-      auto now = std::chrono::system_clock::now();
-      std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-      std::tm local_tm = *std::localtime(&now_time);
-      std::ostringstream formatting_stream;
-      formatting_stream << std::put_time(&local_tm, "%Y%m%dT%H%M%S");
-      std::string posix_time = formatting_stream.str();
-
+      auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+      std::stringstream time_stream;
+      time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S"); 
+      std::string posix_time = time_stream.str();
       std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".avi";
-      if (filename.at(0) == '~')
+      if (filename.front() == '~')
       {
-        filename.erase(0, 1);
-        filename = std::string(getenv("HOME")) + filename;
+        filename = getenv("HOME") + filename.substr(1);
       }
+
 
       if (!vid_writer_->initializeWriter(filename, canvas_->width(), canvas_->height())) {
         RCLCPP_ERROR(node_->get_logger(), "Failed to open video file for writing");
@@ -1439,18 +1436,14 @@ void Mapviz::Screenshot()
 
     cv::flip(screenshot, screenshot, 0);
 
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    std::tm local_tm = *std::localtime(&now_time);
-    std::ostringstream formatting_stream;
-    formatting_stream << std::put_time(&local_tm, "%Y%m%dT%H%M%S");
-    std::string posix_time = formatting_stream.str();
-
+    auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::stringstream time_stream;
+    time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S"); 
+    std::string posix_time = time_stream.str();
     std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
-    if (filename.at(0) == '~')
+    if (filename.front() == '~')
     {
-      filename.erase(0, 1);
-      filename = std::string(getenv("HOME")) + filename;
+      filename = getenv("HOME") + filename.substr(1);
     }
 
     RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Writing screenshot to: %s", filename.c_str());

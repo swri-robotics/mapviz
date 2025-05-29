@@ -324,11 +324,11 @@ namespace mapviz_plugins
       std::string path_string = node["path"].as<std::string>();
 
       std::filesystem::path image_path(path_string);
-      if (!image_path.is_complete())
+      if (!image_path.is_absolute())
       {
         std::filesystem::path base_path(path);
         path_string =
-          (path / image_path.relative_path()).normalize().string();
+          (path / image_path.relative_path()).lexically_normal().string();
       }
 
       ui_.path->setText(path_string.c_str());

@@ -27,6 +27,7 @@
 //
 // *****************************************************************************
 
+#include <algorithm>
 #include <mapviz_plugins/marker_plugin.h>
 #include <mapviz_plugins/topic_select.h>
 
@@ -698,7 +699,8 @@ namespace mapviz_plugins
     if (node["topic"])
     {
       std::string topic = node["topic"].as<std::string>();
-      ui_.topic->setText(TrimString(topic));
+      topic.erase(std::remove_if(topic.begin(), topic.end(), ::isspace), topic.end());
+      ui_.topic->setText(topic.c_str());
 
       TopicEdited();
     }
@@ -706,10 +708,12 @@ namespace mapviz_plugins
 
   void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
+    std::string trimmed = ui_.topic->text().toStdString();
+    trimmed.erase(std::remove_if(trimmed.begin(), trimmed.end(), ::isspace), trimmed.end());
     emitter << YAML::Key
       << "topic"
       << YAML::Value
-      << TrimString(ui_.topic->text().toStdString());
+      << trimmed;
     SaveQosConfig(emitter, qos_);
   }
 
