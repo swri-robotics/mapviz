@@ -103,10 +103,10 @@ set(SRC_FILES
   src/image_plugin.cpp
   src/laserscan_plugin.cpp
   src/marker_plugin.cpp
-  src/measuring_plugin.cpp 
+  src/measuring_plugin.cpp
   src/navsat_plugin.cpp
   src/occupancy_grid_plugin.cpp
-  src/odometry_plugin.cpp 
+  src/odometry_plugin.cpp
   src/path_plugin.cpp
   src/placeable_window_proxy.cpp
   src/plan_route_plugin.cpp
@@ -160,7 +160,7 @@ add_library(${PROJECT_NAME} SHARED
     ${UI_SRC_FILES}
 )
 
-target_include_directories(${PROJECT_NAME} 
+target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PACKAGE_NAME}>)
@@ -209,13 +209,13 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tf2_geometry_msgs::tf2_geometry_msgs
     tf2_ros::tf2_ros
     ${visualization_msgs_TARGETS})
-target_include_directories(${PROJECT_NAME} INTERFACE 
+target_include_directories(${PROJECT_NAME} INTERFACE
   ${swri_roscpp_TARGETS}
 )
 
 ### Install the plugins ###
 install(DIRECTORY include/
-  DESTINATION include/${PROJECT_NAME}
+  DESTINATION include/
   FILES_MATCHING PATTERN "*.h")
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ui_topicselect.h
@@ -234,12 +234,12 @@ ament_export_dependencies(
   cv_bridge
   geometry_msgs
   gps_msgs
+  image_transport
   map_msgs
   mapviz
   marti_common_msgs
   marti_sensor_msgs
   marti_visualization_msgs
-  move_base_msgs
   nav_msgs
   OpenCV
   Qt
@@ -247,6 +247,8 @@ ament_export_dependencies(
   sensor_msgs
   std_msgs
   stereo_msgs
+  swri_image_util
+  swri_math_util
   swri_route_util
   swri_transform_util
   visualization_msgs
