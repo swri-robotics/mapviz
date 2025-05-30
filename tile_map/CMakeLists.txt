@@ -107,7 +107,7 @@ qt5_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
 add_library(${PROJECT_NAME}_plugin SHARED ${PLUGIN_SRC_FILES})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
-install(DIRECTORY include
+install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )

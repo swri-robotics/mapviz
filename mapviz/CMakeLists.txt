@@ -157,7 +157,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
 
 ### Install mapviz ###
-install(DIRECTORY include
+install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
 )

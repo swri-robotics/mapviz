@@ -214,7 +214,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 )
 
 ### Install the plugins ###
-install(DIRECTORY include
+install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h")
 
