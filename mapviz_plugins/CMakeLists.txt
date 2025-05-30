@@ -215,7 +215,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 
 ### Install the plugins ###
 install(DIRECTORY include/
-  DESTINATION include/
+  DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h")
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ui_topicselect.h
