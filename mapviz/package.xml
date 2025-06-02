@@ -25,7 +25,6 @@
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
   <depend>mapviz_interfaces</depend>
-  <depend>marti_common_msgs</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rqt_gui_cpp</depend>

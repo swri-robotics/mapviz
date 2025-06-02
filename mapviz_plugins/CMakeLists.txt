@@ -44,7 +44,6 @@ find_package(swri_image_util REQUIRED)
 find_package(swri_math_util REQUIRED)
 find_package(swri_route_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
@@ -177,7 +176,6 @@ endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC
     ament_index_cpp::ament_index_cpp
     cv_bridge::cv_bridge
-    ${GLU_LIBRARY}
     ${GLUT_LIBRARY}
     ${gps_msgs_TARGETS}
     image_transport::image_transport
@@ -206,7 +204,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     ${swri_transform_util_TARGETS}
     ${swri_route_util_TARGETS}
     tf2::tf2
-    tf2_geometry_msgs::tf2_geometry_msgs
     tf2_ros::tf2_ros
     ${visualization_msgs_TARGETS})
 target_include_directories(${PROJECT_NAME} INTERFACE
@@ -253,6 +250,5 @@ ament_export_dependencies(
   swri_transform_util
   visualization_msgs
   tf2
-  tf2_geometry_msgs
   tf2_ros)
 ament_package()
