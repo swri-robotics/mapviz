@@ -184,6 +184,7 @@ ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   GLEW
   image_transport
+  OpenGL
   Qt5Concurrent
   Qt5Core
   Qt5Gui
