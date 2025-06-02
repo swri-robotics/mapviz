@@ -29,7 +29,6 @@ find_package(rclcpp REQUIRED)
 find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
-find_package(tf2_ros REQUIRED)
 
 # Qt 5
 find_package(Qt5Core REQUIRED)
@@ -93,7 +92,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   rclcpp::rclcpp
   ${swri_transform_util_TARGETS}
   tf2::tf2
-  tf2_ros::tf2_ros
   ${YamlCpp_LIBRARIES})
 
 set(PLUGIN_SRC_FILES
