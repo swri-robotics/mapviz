@@ -18,16 +18,13 @@
   <depend>libqt5-core</depend>
   <build_depend>libqt5-opengl-dev</build_depend>
 
-  <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
-  <depend>gps_msgs</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
   <depend>tf2</depend>
-  <depend>tf2_ros</depend>
 
   <exec_depend>libqt5-opengl</exec_depend>
   <exec_depend>rclpy</exec_depend>

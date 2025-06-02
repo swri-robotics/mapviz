@@ -22,10 +22,7 @@ project(multires_image
   LANGUAGES CXX)
 
 find_package(ament_cmake REQUIRED)
-find_package(cv_bridge REQUIRED)
-find_package(gps_msgs REQUIRED)
 find_package(mapviz REQUIRED)
-find_package(OpenGL REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
@@ -33,7 +30,6 @@ find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(rclcpp  REQUIRED)
 find_package(tf2 REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(swri_transform_util  REQUIRED)
 find_package(swri_math_util REQUIRED)
 
@@ -61,9 +57,6 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  cv_bridge::cv_bridge
-  OpenGL::GL
-  ${gps_msgs_TARGETS}
   ${mapviz_TARGETS}
   pluginlib::pluginlib
   Qt5::Core
@@ -74,7 +67,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   ${swri_math_util_TARGETS}
   ${swri_transform_util_TARGETS}
   tf2::tf2
-  tf2_ros::tf2_ros
 )
 
 # Build libmultires_widget
@@ -92,7 +84,6 @@ add_library(multires_widget
 )
 target_link_libraries(multires_widget
   ${PROJECT_NAME}
-  OpenGL::GL
   Qt5::Core
   Qt5::Gui
   Qt5::OpenGL
@@ -157,9 +148,8 @@ install(DIRECTORY launch
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
-ament_export_targets(export_${PROJECT_NAME})
-ament_export_dependencies(${RUNTIME_DEPS} 
-  Qt5Core
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(Qt5Core
   Qt5Gui
   Qt5OpenGL
   Qt5Widgets
