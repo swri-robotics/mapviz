@@ -18,7 +18,6 @@
   <build_depend>libqt5-opengl-dev</build_depend>
   <build_depend>ros_environment</build_depend>
 
-  <depend>cv_bridge</depend>
   <depend>geometry_msgs</depend>
   <depend>glut</depend>
   <depend>image_transport</depend>
@@ -33,7 +32,6 @@
   <depend>rqt_gui</depend>
   <depend>std_srvs</depend>
   <depend>swri_math_util</depend>
-  <depend>swri_route_util</depend>
   <depend>swri_transform_util</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>

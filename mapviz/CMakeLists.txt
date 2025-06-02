@@ -23,13 +23,11 @@ project(mapviz
   LANGUAGES CXX)
 
 find_package(ament_cmake REQUIRED)
-find_package(cv_bridge REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
-find_package(marti_common_msgs REQUIRED)
 find_package(OpenCV COMPONENTS core imgproc imgcodecs videoio REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -42,7 +40,6 @@ find_package(rclcpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(swri_math_util REQUIRED)
-find_package(swri_route_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -110,19 +107,10 @@ target_include_directories(rqt_${PROJECT_NAME}
 )
 
 target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
-  cv_bridge::cv_bridge
-  OpenGL::GL
   ${geometry_msgs_TARGETS}
-  GLEW::GLEW
-  ${GLUT_LIBRARIES}
-  image_transport::image_transport
   opencv_core
   opencv_highgui
-  opencv_imgproc
-  opencv_imgcodecs
-  opencv_videoio
   ${mapviz_interfaces_TARGETS}
-  ${marti_common_msgs_TARGETS}
   pluginlib::pluginlib
   Qt5::Concurrent
   Qt5::Core
@@ -132,14 +120,23 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   rclcpp::rclcpp
   rqt_gui_cpp::rqt_gui_cpp
   ${std_srvs_TARGETS}
-  ${swri_math_util_TARGETS}
-  ${swri_route_util_TARGETS}
   ${swri_transform_util_TARGETS}
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
   tf2_ros::tf2_ros
   ${YamlCpp_LIBRARIES}
 )
+target_link_libraries(rqt_${PROJECT_NAME} PRIVATE
+  GLEW::GLEW
+  ${GLUT_LIBRARIES}
+  image_transport::image_transport
+  opencv_imgcodecs
+  opencv_imgproc
+  opencv_videoio
+  OpenGL::GL
+  ${swri_math_util_TARGETS}
+)
+
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
 
@@ -150,9 +147,11 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} PUBLIC
   rqt_${PROJECT_NAME}
   ${GLU_LIBRARY}
-  ${swri_math_util_TARGETS}
   ${swri_transform_util_TARGETS})
-
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  image_transport::image_transport
+  ${swri_math_util_TARGETS}
+)
 set_target_properties(${PROJECT_NAME} PROPERTIES
   COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
 
@@ -182,7 +181,7 @@ install(FILES plugin.xml
 )
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(${RUNTIME_DEPS}
+ament_export_dependencies(
   GLEW
   image_transport
   Qt5Concurrent
@@ -193,6 +192,5 @@ ament_export_dependencies(${RUNTIME_DEPS}
   mapviz_interfaces
   rqt_gui_cpp
   std_srvs
-  swri_route_util
 )
 ament_package()
