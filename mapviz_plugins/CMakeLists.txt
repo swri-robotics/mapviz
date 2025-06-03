@@ -239,7 +239,10 @@ ament_export_dependencies(
   marti_visualization_msgs
   nav_msgs
   OpenCV
-  Qt
+  Qt5Core
+  Qt5Gui
+  Qt5OpenGL
+  Qt5Widgets
   rclcpp
   sensor_msgs
   std_msgs
