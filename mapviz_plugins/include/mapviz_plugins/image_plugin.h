@@ -40,7 +40,7 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <opencv2/highgui.hpp>
 #ifdef USE_CVBRIDGE_H_FILES

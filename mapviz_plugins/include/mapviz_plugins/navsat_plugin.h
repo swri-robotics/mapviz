@@ -31,7 +31,7 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <swri_transform_util/local_xy_util.h>
 

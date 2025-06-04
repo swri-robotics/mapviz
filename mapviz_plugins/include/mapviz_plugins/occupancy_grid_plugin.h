@@ -40,7 +40,7 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 
 #include <mapviz/map_canvas.h>
 #include <nav_msgs/msg/occupancy_grid.hpp>

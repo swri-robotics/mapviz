@@ -39,7 +39,7 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 
 #include <mapviz/map_canvas.h>

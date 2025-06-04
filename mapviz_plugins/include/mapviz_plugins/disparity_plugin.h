@@ -48,7 +48,7 @@
 #include <opencv2/highgui.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <stereo_msgs/msg/disparity_image.hpp>
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 
 #include <mapviz/map_canvas.h>
 

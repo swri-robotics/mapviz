@@ -44,7 +44,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 
 #include <mapviz/map_canvas.h>
 #include <mapviz_plugins/placeable_window_proxy.h>

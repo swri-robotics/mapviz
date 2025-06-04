@@ -42,7 +42,7 @@
 
 // ROS libraries
 #include <ros/ros.h>
-#include <tf/transform_datatypes.h>
+#include <tf/transform_datatypes.hpp>
 
 // Mapviz libraries
 #include <mapviz/map_canvas.h>

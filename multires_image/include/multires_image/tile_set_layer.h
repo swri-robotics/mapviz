@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 
 #include <swri_transform_util/georeference.h>
 

@@ -37,7 +37,7 @@
 #include <QImage>
 #include <QMutex>
 
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 
 #include <swri_transform_util/transform.h>
 

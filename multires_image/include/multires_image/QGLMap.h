@@ -38,7 +38,7 @@
 // QT auto-generated headers
 #include "ui_QGLMap.h"
 
-#include <tf2/transform_datatypes.h>
+#include <tf2/transform_datatypes.hpp>
 
 #include <multires_image/tile.h>
 #include <multires_image/tile_view.h>
