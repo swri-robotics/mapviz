@@ -24,6 +24,7 @@
   <depend>geometry_msgs</depend>
   <depend>gps_msgs</depend>
   <depend>image_transport</depend>
+  <depend>libopencv-dev</depend>
   <depend>map_msgs</depend>
   <depend>mapviz</depend>
   <depend>marti_common_msgs</depend>
