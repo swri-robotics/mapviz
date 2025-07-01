@@ -30,9 +30,9 @@
 #ifndef MAPVIZ__VIDEO_WRITER_H_
 #define MAPVIZ__VIDEO_WRITER_H_
 
-#include <QObject>
-#include <QMutex>
 #include <QImage>
+#include <QObject>
+#include <QRecursiveMutex>
 
 #include <memory>
 #include <string>
@@ -49,7 +49,8 @@ class VideoWriter : public QObject
 
 public:
   VideoWriter() :
-      video_mutex_(QMutex::Recursive)
+    height_(0),
+    width_(0)
   {}
 
   bool initializeWriter(const std::string& directory, int width, int height);
@@ -62,7 +63,7 @@ public Q_SLOTS:
 private:
   int height_;
   int width_;
-  QMutex video_mutex_;
+  QRecursiveMutex video_mutex_;
   std::shared_ptr<cv::VideoWriter> video_writer_;
 };
 }  // namespace mapviz
