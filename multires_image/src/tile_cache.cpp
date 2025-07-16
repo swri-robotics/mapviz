@@ -53,11 +53,6 @@ namespace multires_image
   , m_memorySize(0)
   , m_cacheThread(this)
   , m_freeThread(this)
-  , m_renderRequestsLock(QMutex::Recursive)
-  , m_renderRequestSetLock(QMutex::Recursive)
-  , m_precacheRequestsLock(QMutex::Recursive)
-  , m_precacheRequestSetLock(QMutex::Recursive)
-  , m_textureLoadedLock(QMutex::Recursive)
   {
     connect(this, SIGNAL(SignalLoadTexture(Tile*)),
       SLOT(LoadTextureSlot(Tile*)), Qt::BlockingQueuedConnection);

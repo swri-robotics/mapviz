@@ -39,7 +39,7 @@
 // QT libraries
 #include <QObject>
 #include <QThread>
-#include <QMutex>
+#include <QRecursiveMutex>
 #include <QGLWidget>
 
 #include <tf2/transform_datatypes.hpp>
@@ -117,11 +117,11 @@ namespace multires_image
     CacheThread m_cacheThread;
     FreeThread  m_freeThread;
 
-    QMutex      m_renderRequestsLock;
-    QMutex      m_renderRequestSetLock;
-    QMutex      m_precacheRequestsLock;
-    QMutex      m_precacheRequestSetLock;
-    QMutex      m_textureLoadedLock;
+    QRecursiveMutex      m_renderRequestsLock;
+    QRecursiveMutex      m_renderRequestSetLock;
+    QRecursiveMutex      m_precacheRequestsLock;
+    QRecursiveMutex      m_precacheRequestSetLock;
+    QRecursiveMutex      m_textureLoadedLock;
   };
 }
 
