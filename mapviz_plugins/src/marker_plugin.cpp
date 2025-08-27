@@ -698,8 +698,7 @@ namespace mapviz_plugins
     LoadQosConfig(node, qos_);
     if (node["topic"])
     {
-      std::string topic = node["topic"].as<std::string>();
-      topic.erase(std::remove_if(topic.begin(), topic.end(), ::isspace), topic.end());
+      std::string topic = TrimString(node["topic"].as<std::string>());
       ui_.topic->setText(topic.c_str());
 
       TopicEdited();
@@ -708,8 +707,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
   {
-    std::string trimmed = ui_.topic->text().toStdString();
-    trimmed.erase(std::remove_if(trimmed.begin(), trimmed.end(), ::isspace), trimmed.end());
+    std::string trimmed = TrimString(ui_.topic->text().toStdString());
     emitter << YAML::Key
       << "topic"
       << YAML::Value

@@ -27,6 +27,7 @@
 //
 // *****************************************************************************
 
+#include <mapviz/mapviz_plugin.h>
 #include <tile_map/tile_map_plugin.h>
 #include <tile_map/tile_source.h>
 #include <tile_map/bing_source.h>
@@ -399,6 +400,19 @@ namespace tile_map
     }
   }
 
+  std::string trim_whitespace(const std::string& in)
+  {
+    std::string out;
+    const char* whitespace = " \t";
+    auto begin = in.find_first_not_of(whitespace);
+    if (begin == std::string::npos)
+    {
+      return in;
+    }
+    auto end = in.find_last_not_of(whitespace);
+    return in.substr(begin, (end - begin + 1));
+  }
+
   void TileMapPlugin::SaveConfig(YAML::Emitter& emitter, const std::string&)
   {
     emitter << YAML::Key << CUSTOM_SOURCES_KEY << YAML::Value << YAML::BeginSeq;
@@ -417,15 +431,12 @@ namespace tile_map
       }
     }
     emitter << YAML::EndSeq;
-
     
     BingSource* bing_source = dynamic_cast<BingSource*>(tile_sources_[BING_NAME].get());
-    std::string bing_key = bing_source->GetApiKey().toStdString();
-    bing_key.erase(std::remove_if(bing_key.begin(), bing_key.end(), ::isspace), bing_key.end());
+    std::string bing_key = TrimString(bing_source->GetApiKey().toStdString());
     emitter << YAML::Key << BING_API_KEY << YAML::Value << bing_key;
 
-    std::string combo_str = ui_.source_combo->currentText().toStdString();
-    combo_str.erase(std::remove_if(combo_str.begin(), combo_str.end(), ::isspace), combo_str.end());
+    std::string combo_str = TrimString(ui_.source_combo->currentText().toStdString());
     emitter << YAML::Key << SOURCE_KEY << YAML::Value << combo_str; 
   }
 
