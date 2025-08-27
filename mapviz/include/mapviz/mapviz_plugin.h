@@ -349,6 +349,31 @@ protected:
     emitter << YAML::Key << prefix + "qos_durability" << YAML::Value << qos.durability;
   }
 
+  // Dealing with YAML frequently requires trimming whitespace from strings
+  inline std::string TrimString(const std::string& str)
+  {
+    auto begin = str.begin();
+    auto end = str.end();
+
+    // Trim leading whitespace
+    while (begin != end && std::isspace(*begin))
+    {
+      ++begin;
+    }
+
+    // Trim trailing whitespace
+    if (begin != end)
+    {
+      do
+      {
+        --end;
+      } while (std::isspace(*end));
+      ++end;
+    }
+
+    return std::string(begin, end);
+  }
+
 private:
   // Collect basic profiling info to know how much time each plugin
   // spends in Transform(), Paint(), and Draw().
@@ -357,31 +382,6 @@ private:
   Stopwatch meas_draw_;
 };
 typedef std::shared_ptr<MapvizPlugin> MapvizPluginPtr;
-
-// Dealing with YAML frequently requires trimming whitespace from strings
-inline std::string TrimString(const std::string& str)
-{
-  auto begin = str.begin();
-  auto end = str.end();
-
-  // Trim leading whitespace
-  while (begin != end && std::isspace(*begin))
-  {
-    ++begin;
-  }
-
-  // Trim trailing whitespace
-  if (begin != end)
-  {
-    do
-    {
-      --end;
-    } while (std::isspace(*end));
-    ++end;
-  }
-
-  return std::string(begin, end);
-}
 
 // Implementation
 inline void MapvizPlugin::PrintErrorHelper(QLabel *status_label, const std::string &message,

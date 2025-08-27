@@ -531,8 +531,7 @@ void TexturedMarkerPlugin::LoadConfig(const YAML::Node & node, const std::string
 {
   LoadQosConfig(node, qos_);
   if (node["topic"]) {
-    std::string topic = node["topic"].as<std::string>();
-    topic.erase(std::remove_if(topic.begin(), topic.end(), ::isspace), topic.end());
+    std::string topic = TrimString(node["topic"].as<std::string>());
     ui_.topic->setText(topic.c_str());
   }
 
@@ -541,8 +540,7 @@ void TexturedMarkerPlugin::LoadConfig(const YAML::Node & node, const std::string
 
 void TexturedMarkerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & path)
 {
-  std::string topic = ui_.topic->text().toStdString();
-    topic.erase(std::remove_if(topic.begin(), topic.end(), ::isspace), topic.end());
+  std::string topic = TrimString(ui_.topic->text().toStdString());
   emitter << YAML::Key << "topic" << YAML::Value << topic;
 
   SaveQosConfig(emitter, qos_);
