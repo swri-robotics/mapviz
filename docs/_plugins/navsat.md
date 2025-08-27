@@ -1,6 +1,6 @@
 ---
 title: "NavSat"
-description: "Projects [sensor_msgs::NavSatFix](https://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene."
+description: "Projects [sensor_msgs::NavSatFix](https://docs.ros.org/jade/api/sensor_msgs/html/msg/NavSatFix.html) message data into the scene. Requires an initialized local_xy_origin."
 image: ""
 parameters:
   - name: "Topic"
