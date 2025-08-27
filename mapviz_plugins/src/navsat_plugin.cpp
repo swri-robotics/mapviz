@@ -130,6 +130,7 @@ namespace mapviz_plugins
   {
     if (!tf_manager_->LocalXyUtil()->Initialized())
     {
+      PrintError("No origin initalized; dropping messages");
       return;
     }
     if (!has_message_)
