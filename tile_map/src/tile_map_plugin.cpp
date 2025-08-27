@@ -400,19 +400,6 @@ namespace tile_map
     }
   }
 
-  std::string trim_whitespace(const std::string& in)
-  {
-    std::string out;
-    const char* whitespace = " \t";
-    auto begin = in.find_first_not_of(whitespace);
-    if (begin == std::string::npos)
-    {
-      return in;
-    }
-    auto end = in.find_last_not_of(whitespace);
-    return in.substr(begin, (end - begin + 1));
-  }
-
   void TileMapPlugin::SaveConfig(YAML::Emitter& emitter, const std::string&)
   {
     emitter << YAML::Key << CUSTOM_SOURCES_KEY << YAML::Value << YAML::BeginSeq;
