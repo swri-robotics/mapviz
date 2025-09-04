@@ -146,7 +146,7 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
   rqt_${PROJECT_NAME}
-  ${GLUT_LIBRARY}
+  ${GLUT_LIBRARIES}
   ${swri_transform_util_TARGETS})
 target_link_libraries(${PROJECT_NAME} PRIVATE
   image_transport::image_transport
