@@ -75,6 +75,18 @@ namespace tile_map
   {
     tile_source_ = tile_source;
     level_ = -1;
+    // Clear existing tiles to avoid using stale textures from the old source
+    // which can cause segfaults when switching tile sources
+    for (auto & tile : tiles_)
+    {
+      tile_cache_->AddTexture(tile.texture);
+    }
+    tiles_.clear();
+    for (auto & tile : precache_)
+    {
+      tile_cache_->AddTexture(tile.texture);
+    }
+    precache_.clear();
   }
 
   void TileMapView::SetTransform(const swri_transform_util::Transform& transform)

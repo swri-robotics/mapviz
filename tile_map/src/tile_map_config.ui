@@ -101,6 +101,11 @@
      </property>
      <item>
       <property name="text">
+       <string>Carto</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Stamen (terrain)</string>
       </property>
      </item>
@@ -112,6 +117,16 @@
      <item>
       <property name="text">
        <string>Stamen (toner)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>OpenStreetMap</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>USGS Satellite</string>
       </property>
      </item>
      <item>

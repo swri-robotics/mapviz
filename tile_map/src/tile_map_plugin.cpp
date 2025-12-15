@@ -31,14 +31,11 @@
 #include <tile_map/tile_map_plugin.h>
 #include <tile_map/tile_source.h>
 #include <tile_map/bing_source.h>
-#include <tile_map/wmts_source.h>
-
-#include <tile_map/tile_source.h>
-#include <tile_map/bing_source.h>
+#include <tile_map/stadia_source.h>
 #include <tile_map/wmts_source.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPalette>
@@ -57,15 +54,19 @@ namespace tile_map
 {
   std::string TileMapPlugin::BASE_URL_KEY = "base_url";
   std::string TileMapPlugin::BING_API_KEY = "bing_api_key";
+  std::string TileMapPlugin::STADIA_API_KEY = "stadia_api_key";
   std::string TileMapPlugin::CUSTOM_SOURCES_KEY = "custom_sources";
   std::string TileMapPlugin::MAX_ZOOM_KEY = "max_zoom";
   std::string TileMapPlugin::NAME_KEY = "name";
   std::string TileMapPlugin::SOURCE_KEY = "source";
   std::string TileMapPlugin::TYPE_KEY = "type";
   QString TileMapPlugin::BING_NAME = "Bing Maps (terrain)";
+  QString TileMapPlugin::CARTO_NAME = "Carto";
   QString TileMapPlugin::STAMEN_TERRAIN_NAME = "Stamen (terrain)";
   QString TileMapPlugin::STAMEN_TONER_NAME = "Stamen (toner)";
   QString TileMapPlugin::STAMEN_WATERCOLOR_NAME = "Stamen (watercolor)";
+  QString TileMapPlugin::OSM_NAME = "OpenStreetMap";
+  QString TileMapPlugin::USGS_NAME = "USGS Satellite";
 
   TileMapPlugin::TileMapPlugin()
   : MapvizPlugin()
@@ -80,19 +81,37 @@ namespace tile_map
   {
     ui_.setupUi(config_widget_);
 
-    tile_sources_[STAMEN_TERRAIN_NAME] =
-        std::make_shared<WmtsSource>(STAMEN_TERRAIN_NAME,
-                                       "http://tile.stamen.com/terrain/{level}/{x}/{y}.png",
-                                       false,
-                                       15);
-    tile_sources_[STAMEN_TONER_NAME] =
-        std::make_shared<WmtsSource>(STAMEN_TONER_NAME,
-                                       "http://tile.stamen.com/toner/{level}/{x}/{y}.png",
+    tile_sources_[CARTO_NAME] =
+        std::make_shared<WmtsSource>(CARTO_NAME,
+                                       "https://basemaps.cartocdn.com/rastertiles/voyager/{level}/{x}/{y}.png",
                                        false,
                                        19);
-    tile_sources_[STAMEN_WATERCOLOR_NAME] =
-        std::make_shared<WmtsSource>(STAMEN_WATERCOLOR_NAME,
-                                       "http://tile.stamen.com/watercolor/{level}/{x}/{y}.jpg",
+    std::shared_ptr<StadiaSource> stamen_terrain = std::make_shared<StadiaSource>(
+        STAMEN_TERRAIN_NAME,
+        "https://tiles.stadiamaps.com/tiles/stamen_terrain/{level}/{x}/{y}.png",
+        false,
+        19);
+    tile_sources_[STAMEN_TERRAIN_NAME] = stamen_terrain;
+    std::shared_ptr<StadiaSource> stamen_toner = std::make_shared<StadiaSource>(
+        STAMEN_TONER_NAME,
+        "https://tiles.stadiamaps.com/tiles/stamen_toner/{level}/{x}/{y}.png",
+        false,
+        19);
+    tile_sources_[STAMEN_TONER_NAME] = stamen_toner;
+    std::shared_ptr<StadiaSource> stamen_watercolor = std::make_shared<StadiaSource>(
+        STAMEN_WATERCOLOR_NAME,
+        "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{level}/{x}/{y}.jpg",
+        false,
+        19);
+    tile_sources_[STAMEN_WATERCOLOR_NAME] = stamen_watercolor;
+    tile_sources_[OSM_NAME] =
+        std::make_shared<WmtsSource>(OSM_NAME,
+                                       "https://tile.openstreetmap.org/{level}/{x}/{y}.png",
+                                       false,
+                                       19);
+    tile_sources_[USGS_NAME] =
+        std::make_shared<WmtsSource>(USGS_NAME,
+                                       "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/tile/1.0.0/USGSImageryOnly/default/default028mm/{level}/{y}/{x}.png",
                                        false,
                                        19);
     std::shared_ptr<BingSource> bing = std::make_shared<BingSource>(BING_NAME);
@@ -141,9 +160,12 @@ namespace tile_map
 
   void TileMapPlugin::SelectSource(const QString& source)
   {
-    if (source == STAMEN_TERRAIN_NAME ||
-        source == STAMEN_WATERCOLOR_NAME ||
+    if (source == CARTO_NAME ||
+        source == STAMEN_TERRAIN_NAME ||
         source == STAMEN_TONER_NAME ||
+        source == STAMEN_WATERCOLOR_NAME ||
+        source == OSM_NAME ||
+        source == USGS_NAME ||
         source == BING_NAME)
     {
       stopCustomEditing();
@@ -155,7 +177,7 @@ namespace tile_map
 
     std::map<QString, std::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(source);
 
-    // If the previously selected source was Bing, these will have been changed, so
+    // If the previously selected source was Bing or Stadia, these will have been changed, so
     // they should be changed back.  There's not an easy way to know here what the
     // previously selected item was, so just always change them.
     ui_.url_label->setText("Base URL:");
@@ -164,12 +186,19 @@ namespace tile_map
     {
       selectTileSource(iter->second);
       initialized_ = true;
-      // For the Bing map type, change a couple of the fields to have more appropriate
+      // For the Bing and Stadia map types, change a couple of the fields to have more appropriate
       // labels.  There should probably be a cleaner way to do this if we end up adding
       // more tile source types....
       if (iter->second->GetType() == BingSource::BING_TYPE)
       {
-        ui_.url_label->setText("API Key:");
+        ui_.url_label->setText("Bing API Key:");
+        ui_.save_button->setText("Save");
+        ui_.base_url_text->setEnabled(true);
+        ui_.save_button->setEnabled(true);
+      }
+      else if (iter->second->GetType() == StadiaSource::STADIA_TYPE)
+      {
+        ui_.url_label->setText("Stadia API Key:");
         ui_.save_button->setText("Save");
         ui_.base_url_text->setEnabled(true);
         ui_.save_button->setEnabled(true);
@@ -199,10 +228,25 @@ namespace tile_map
       }
       else if (iter->second->GetType() == BingSource::BING_TYPE)
       {
-        // If the user has picked Bing as they're source, we're not actually
+        // If the user has picked Bing as their source, we're not actually
         // saving a custom map source, just updating the API key
         BingSource* bing_source = dynamic_cast<BingSource*>(iter->second.get());
         bing_source->SetApiKey(ui_.base_url_text->text());
+        return;
+      }
+      else if (iter->second->GetType() == StadiaSource::STADIA_TYPE)
+      {
+        // If the user has picked a Stadia source (Stamen), we're not actually
+        // saving a custom map source, just updating the API key for all Stadia sources
+        QString api_key = ui_.base_url_text->text();
+        for (auto& source_pair : tile_sources_)
+        {
+          if (source_pair.second->GetType() == StadiaSource::STADIA_TYPE)
+          {
+            StadiaSource* stadia_source = dynamic_cast<StadiaSource*>(source_pair.second.get());
+            stadia_source->SetApiKey(api_key);
+          }
+        }
         return;
       }
     }
@@ -286,7 +330,7 @@ namespace tile_map
   {
     canvas_ = canvas;
 
-    SelectSource(STAMEN_TERRAIN_NAME);
+    SelectSource(CARTO_NAME);
 
     return true;
   }
@@ -384,7 +428,20 @@ namespace tile_map
       BingSource* source = dynamic_cast<BingSource*>(tile_sources_[BING_NAME].get());
       source->SetApiKey(QString::fromStdString(key));
     }
-    
+
+    if (node[STADIA_API_KEY])
+    {
+      std::string key = node[STADIA_API_KEY].as<std::string>();
+      for (auto& source_pair : tile_sources_)
+      {
+        if (source_pair.second->GetType() == StadiaSource::STADIA_TYPE)
+        {
+          StadiaSource* stadia_source = dynamic_cast<StadiaSource*>(source_pair.second.get());
+          stadia_source->SetApiKey(QString::fromStdString(key));
+        }
+      }
+    }
+
     if (node[SOURCE_KEY])
     {
       std::string source = node[SOURCE_KEY].as<std::string>();
@@ -423,8 +480,13 @@ namespace tile_map
     std::string bing_key = TrimString(bing_source->GetApiKey().toStdString());
     emitter << YAML::Key << BING_API_KEY << YAML::Value << bing_key;
 
+    // Save Stadia API key (all Stadia sources share the same key, so just get it from one)
+    StadiaSource* stadia_source = dynamic_cast<StadiaSource*>(tile_sources_[STAMEN_TERRAIN_NAME].get());
+    std::string stadia_key = TrimString(stadia_source->GetApiKey().toStdString());
+    emitter << YAML::Key << STADIA_API_KEY << YAML::Value << stadia_key;
+
     std::string combo_str = TrimString(ui_.source_combo->currentText().toStdString());
-    emitter << YAML::Key << SOURCE_KEY << YAML::Value << combo_str; 
+    emitter << YAML::Key << SOURCE_KEY << YAML::Value << combo_str;
   }
 
   void TileMapPlugin::selectTileSource(const std::shared_ptr<TileSource>& tile_source)
@@ -435,6 +497,11 @@ namespace tile_map
     {
       BingSource* bing_source = dynamic_cast<BingSource*>(tile_source.get());
       ui_.base_url_text->setText(bing_source->GetApiKey());
+    }
+    else if (tile_source->GetType() == StadiaSource::STADIA_TYPE)
+    {
+      StadiaSource* stadia_source = dynamic_cast<StadiaSource*>(tile_source.get());
+      ui_.base_url_text->setText(stadia_source->GetApiKey());
     }
     else
     {

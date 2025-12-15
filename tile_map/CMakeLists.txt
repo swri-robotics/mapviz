@@ -59,6 +59,7 @@ set(TILE_SRC_FILES
   src/image_cache.cpp
   src/texture_cache.cpp
   src/bing_source.cpp
+  src/stadia_source.cpp
   src/tile_source.cpp
   src/wmts_source.cpp
   src/${PROJECT_NAME}_view.cpp
@@ -68,6 +69,7 @@ set(QT_HEADERS
   include/${PROJECT_NAME}/tile_source.h
   include/${PROJECT_NAME}/wmts_source.h
   include/${PROJECT_NAME}/bing_source.h
+  include/${PROJECT_NAME}/stadia_source.h
 )
 qt5_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
