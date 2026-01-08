@@ -117,6 +117,7 @@ protected Q_SLOTS:
   void SetSubscription(bool visible);
   void SetTransport(const QString& transport);
   void KeepRatioChanged(bool checked);
+  void SetRotation(QString rotation);
 
 private:
   Ui::image_config ui_;
@@ -131,6 +132,7 @@ private:
   double width_;
   double height_;
   std::string transport_;
+  int rotation_;
 
   bool force_resubscribe_;
   bool has_image_;

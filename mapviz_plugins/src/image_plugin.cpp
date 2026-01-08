@@ -61,6 +61,7 @@ namespace mapviz_plugins
     width_(320),
     height_(240),
     transport_("default"),
+    rotation_(0),
     force_resubscribe_(false),
     has_image_(false),
     last_width_(0),
@@ -94,6 +95,7 @@ namespace mapviz_plugins
     QObject::connect(ui_.keep_ratio, SIGNAL(toggled(bool)), this, SLOT(KeepRatioChanged(bool)));
     QObject::connect(ui_.transport_combo_box, SIGNAL(activated(const QString&)),
                      this, SLOT(SetTransport(const QString&)));
+    QObject::connect(ui_.rotation, SIGNAL(activated(QString)), this, SLOT(SetRotation(QString)));
 
     ui_.width->setKeyboardTracking(false);
     ui_.height->setKeyboardTracking(false);
@@ -205,6 +207,11 @@ namespace mapviz_plugins
     }
   }
 
+  void ImagePlugin::SetRotation(QString rotation)
+  {
+    rotation_ = rotation.toInt();
+  }
+
   void ImagePlugin::Resubscribe()
   {
     if (transport_ == "default")
@@ -311,9 +318,24 @@ namespace mapviz_plugins
       return;
     }
 
+    // Apply rotation if needed
+    if (rotation_ == 90)
+    {
+      cv::rotate(cv_image_->image, cv_image_->image, cv::ROTATE_90_CLOCKWISE);
+    }
+    else if (rotation_ == 180)
+    {
+      cv::rotate(cv_image_->image, cv_image_->image, cv::ROTATE_180);
+    }
+    else if (rotation_ == 270)
+    {
+      cv::rotate(cv_image_->image, cv_image_->image, cv::ROTATE_90_COUNTERCLOCKWISE);
+    }
+
     last_width_ = 0;
     last_height_ = 0;
-    original_aspect_ratio_ = static_cast<double>(image->height) / static_cast<double>(image->width);
+    // Calculate aspect ratio after rotation
+    original_aspect_ratio_ = static_cast<double>(cv_image_->image.rows) / static_cast<double>(cv_image_->image.cols);
 
     if( ui_.keep_ratio->isChecked() )
     {
@@ -549,6 +571,16 @@ namespace mapviz_plugins
       keep = node["keep_ratio"].as<bool>();
       ui_.keep_ratio->setChecked( keep );
     }
+
+    if (node["rotation"])
+    {
+      rotation_ = node["rotation"].as<int>();
+      int index = ui_.rotation->findText(QString::number(rotation_));
+      if (index != -1)
+      {
+        ui_.rotation->setCurrentIndex(index);
+      }
+    }
   }
 
   void ImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
@@ -561,6 +593,7 @@ namespace mapviz_plugins
     emitter << YAML::Key << "width" << YAML::Value << width_;
     emitter << YAML::Key << "height" << YAML::Value << height_;
     emitter << YAML::Key << "keep_ratio" << YAML::Value << ui_.keep_ratio->isChecked();
+    emitter << YAML::Key << "rotation" << YAML::Value << rotation_;
     emitter << YAML::Key << "image_transport" << YAML::Value << transport_;
     SaveQosConfig(emitter, qos_);
   }
@@ -622,4 +655,3 @@ namespace mapviz_plugins
     }
   }
 }   // namespace mapviz_plugins
-
