@@ -2,6 +2,9 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.6.0 (2025-12-18)
 ------------------
 

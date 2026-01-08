@@ -2,6 +2,11 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added image rotation option for image_plugin (`#865 <https://github.com/swri-robotics/mapviz/issues/865>`_)
+* Contributors: Alex Youngs
+
 2.6.0 (2025-12-18)
 ------------------
 

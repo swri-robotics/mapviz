@@ -2,6 +2,9 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.6.0 (2025-12-18)
 ------------------
 * HiDPI Scaling (`#863 <https://github.com/swri-robotics/mapviz/issues/863>`_)
