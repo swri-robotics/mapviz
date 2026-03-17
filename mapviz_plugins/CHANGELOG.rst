@@ -2,6 +2,11 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed bad yaml read for doubles (`#866 <https://github.com/swri-robotics/mapviz/issues/866>`_)
+* Contributors: Alex Youngs
+
 2.6.1 (2026-01-07)
 ------------------
 * Added image rotation option for image_plugin (`#865 <https://github.com/swri-robotics/mapviz/issues/865>`_)
