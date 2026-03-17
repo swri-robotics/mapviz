@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.6.2 (2026-03-16)
+------------------
 * Fixed bad yaml read for doubles (`#866 <https://github.com/swri-robotics/mapviz/issues/866>`_)
 * Contributors: Alex Youngs
 
