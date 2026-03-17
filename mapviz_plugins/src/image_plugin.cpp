@@ -42,6 +42,7 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
+#include <cmath>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -113,12 +114,28 @@ namespace mapviz_plugins
 
   void ImagePlugin::SetWidth(double width)
   {
-    width_ = width;
+    // Round based on units: 2 decimal places for percent, nearest whole number for pixels
+    if (units_ == PERCENT)
+    {
+      width_ = std::round(width * 100.0) / 100.0;
+    }
+    else
+    {
+      width_ = std::round(width);
+    }
   }
 
   void ImagePlugin::SetHeight(double height)
   {
-    height_ = height;
+    // Round based on units: 2 decimal places for percent, nearest whole number for pixels
+    if (units_ == PERCENT)
+    {
+      height_ = std::round(height * 100.0) / 100.0;
+    }
+    else
+    {
+      height_ = std::round(height);
+    }
   }
 
   void ImagePlugin::SetAnchor(QString anchor)
@@ -178,6 +195,7 @@ namespace mapviz_plugins
       ui_.height->setMaximum(100);
     }
   }
+
   void ImagePlugin::SetSubscription(bool visible)
   {
     if(topic_.empty())
@@ -203,7 +221,19 @@ namespace mapviz_plugins
     ui_.height->setEnabled( !checked );
     if( checked )
     {
-      ui_.height->setValue( width_ * original_aspect_ratio_ );
+      double height = width_ * original_aspect_ratio_;
+      if (units_ == PERCENT)
+      {
+        height *= static_cast<double>(canvas_->width()) / static_cast<double>(canvas_->height());
+        // Round to 2 decimal places for percent
+        height = std::round(height * 100.0) / 100.0;
+      }
+      else
+      {
+        // Round to nearest whole number for pixels
+        height = std::round(height);
+      }
+      ui_.height->setValue(height);
     }
   }
 
@@ -343,6 +373,13 @@ namespace mapviz_plugins
       if (units_ == PERCENT)
       {
         height *= static_cast<double>(canvas_->width()) / static_cast<double>(canvas_->height());
+        // Round to 2 decimal places for percent
+        height = std::round(height * 100.0) / 100.0;
+      }
+      else
+      {
+        // Round to nearest whole number for pixels
+        height = std::round(height);
       }
       ui_.height->setValue(height);
     }
@@ -555,13 +592,13 @@ namespace mapviz_plugins
 
     if (node["width"])
     {
-      width_ = node["width"].as<int>();
+      width_ = node["width"].as<double>();
       ui_.width->setValue(width_);
     }
 
     if (node["height"])
     {
-      height_ = node["height"].as<int>();
+      height_ = node["height"].as<double>();
       ui_.height->setValue(height_);
     }
 
