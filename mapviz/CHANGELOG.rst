@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding conditional include (`#869 <https://github.com/swri-robotics/mapviz/issues/869>`_)
+* Contributors: David Anthony
+
 2.6.2 (2026-03-16)
 ------------------
 
