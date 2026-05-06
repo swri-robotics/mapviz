@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <multires_image/multires_image_plugin.h>
+#include <multires_image/multires_image_plugin.hpp>
 
 // C++ standard libraries
 #include <cstdio>

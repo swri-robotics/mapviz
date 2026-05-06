@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <multires_image/tile.h>
+#include <multires_image/tile.hpp>
 
 // C++ standard libraries
 #include <cmath>

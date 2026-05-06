@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <multires_image/QGLMap.h>
+#include <multires_image/QGLMap.hpp>
 
 // C++ standard libraries
 #include <cmath>

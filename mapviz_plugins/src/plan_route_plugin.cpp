@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/plan_route_plugin.h>
+#include <mapviz_plugins/plan_route_plugin.hpp>
 
 // QT libraries
 #include <QDateTime>

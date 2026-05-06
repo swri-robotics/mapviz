@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <multires_image/multires_view.h>
+#include <multires_image/multires_view.hpp>
 
 // C++ standard libraries
 #include <cmath>

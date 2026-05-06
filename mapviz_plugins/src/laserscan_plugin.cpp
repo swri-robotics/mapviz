@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/laserscan_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/laserscan_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>

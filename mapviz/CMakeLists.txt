@@ -105,16 +105,16 @@ set(UI_FILES
 )
 # Headers containing QObject definitions
 set(HEADER_FILES
-  include/${PROJECT_NAME}/color_button.h
-  include/${PROJECT_NAME}/config_item.h
-  include/${PROJECT_NAME}/map_canvas.h
+  include/${PROJECT_NAME}/color_button.hpp
+  include/${PROJECT_NAME}/config_item.hpp
+  include/${PROJECT_NAME}/map_canvas.hpp
   include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
-  include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h
-  include/${PROJECT_NAME}/rqt_${PROJECT_NAME}.h
-  include/${PROJECT_NAME}/select_frame_dialog.h
-  include/${PROJECT_NAME}/select_service_dialog.h
-  include/${PROJECT_NAME}/video_writer.h
-  include/${PROJECT_NAME}/widgets.h
+  include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.hpp
+  include/${PROJECT_NAME}/rqt_${PROJECT_NAME}.hpp
+  include/${PROJECT_NAME}/select_frame_dialog.hpp
+  include/${PROJECT_NAME}/select_service_dialog.hpp
+  include/${PROJECT_NAME}/video_writer.hpp
+  include/${PROJECT_NAME}/widgets.hpp
 )
 # Source files for mapviz
 set(SRC_FILES
@@ -228,13 +228,13 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 ### Install mapviz ###
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+  FILES_MATCHING PATTERN "*.hpp"
 )
 
 install(FILES
-  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui_configitem.h
-  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui_mapviz.h
-  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui_pluginselect.h
+  ${MAPVIZ_AUTOGEN_UI_INCLUDE_DIR}/ui_configitem.h
+  ${MAPVIZ_AUTOGEN_UI_INCLUDE_DIR}/ui_mapviz.h
+  ${MAPVIZ_AUTOGEN_UI_INCLUDE_DIR}/ui_pluginselect.h
   DESTINATION include/${PROJECT_NAME}
 )
 

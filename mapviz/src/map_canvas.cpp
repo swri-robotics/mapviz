@@ -32,7 +32,7 @@
 #include <QPainter>
 #include <QSurfaceFormat>
 
-#include <mapviz/map_canvas.h>
+#include <mapviz/map_canvas.hpp>
 
 #include <geometry_msgs/msg/point.h>
 #include <swri_math_util/constants.h>

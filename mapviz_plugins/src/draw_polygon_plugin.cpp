@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/draw_polygon_plugin.h>
+#include <mapviz_plugins/draw_polygon_plugin.hpp>
 
 // QT libraries
 #include <QDateTime>
@@ -38,7 +38,7 @@
 
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
-#include <mapviz/select_frame_dialog.h>
+#include <mapviz/select_frame_dialog.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

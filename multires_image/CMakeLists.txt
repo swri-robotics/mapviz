@@ -74,7 +74,7 @@ set(TILE_SRC_FILES
   src/tile_set_layer.cpp
 )
 set(TILE_HEADER_FILES
-  include/${PROJECT_NAME}/tile_cache.h
+  include/${PROJECT_NAME}/tile_cache.hpp
 )
 
 add_library(${PROJECT_NAME} 
@@ -115,7 +115,7 @@ set(WIDGET_SRC_FILES
   src/QGLMap.cpp
 )
 set(WIDGET_HEADER_FILES
-  include/${PROJECT_NAME}/QGLMap.h
+  include/${PROJECT_NAME}/QGLMap.hpp
 )
 
 add_library(multires_widget
@@ -147,7 +147,7 @@ set(VIEW_NODE_SRC_FILES
   src/nodes/multires_view_node.cpp
 )
 set(VIEW_NODE_HEADER_FILES
-  include/${PROJECT_NAME}/multires_view_node.h
+  include/${PROJECT_NAME}/multires_view_node.hpp
 )
 add_executable(multires_view_node
   ${VIEW_NODE_SRC_FILES}
@@ -171,7 +171,7 @@ set(MAPVIZ_SRC_FILES
   src/multires_view.cpp
 )
 set(MAPVIZ_HEADER_FILES
-  include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h
+  include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.hpp
 )
 
 add_library(${PROJECT_NAME}_plugin SHARED
@@ -204,7 +204,7 @@ target_compile_definitions(${PROJECT_NAME}_plugin PRIVATE
 ### Install ${PROJECT_NAME} plugin ###
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+  FILES_MATCHING PATTERN "*.hpp"
 )
 
 install(FILES

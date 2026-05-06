@@ -68,7 +68,7 @@
 #include <swri_math_util/constants.h>
 #include <swri_transform_util/frames.h>
 
-#include <mapviz/config_item.h>
+#include <mapviz/config_item.hpp>
 #include <QtGui/QtGui>
 
 #include <image_transport/image_transport.hpp>

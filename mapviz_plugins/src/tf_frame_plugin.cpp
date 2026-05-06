@@ -27,13 +27,13 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/tf_frame_plugin.h>
+#include <mapviz_plugins/tf_frame_plugin.hpp>
 
 // QT libraries
 #include <QOpenGLWidget>
 #include <QPalette>
 
-#include <mapviz/select_frame_dialog.h>
+#include <mapviz/select_frame_dialog.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

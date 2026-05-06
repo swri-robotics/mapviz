@@ -28,8 +28,8 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/float_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/float_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 

@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/measuring_plugin.h>
-#include <mapviz/mapviz_plugin.h>
+#include <mapviz_plugins/measuring_plugin.hpp>
+#include <mapviz/mapviz_plugin.hpp>
 
 // QT libraries
 #include <QDateTime>
@@ -42,7 +42,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
-#include <mapviz/select_frame_dialog.h>
+#include <mapviz/select_frame_dialog.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 

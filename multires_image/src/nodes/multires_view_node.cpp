@@ -45,7 +45,7 @@
 #include <QImage>
 #include <QFileInfo>
 
-#include <multires_image/multires_view_node.h>
+#include <multires_image/multires_view_node.hpp>
 
 namespace multires_image
 {

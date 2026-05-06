@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz/config_item.h>
+#include <mapviz/config_item.hpp>
 #include <QMenu>
 #include <QAction>
 #include <QInputDialog>

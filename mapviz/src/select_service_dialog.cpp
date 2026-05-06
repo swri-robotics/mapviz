@@ -28,7 +28,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz/select_service_dialog.h>
+#include <mapviz/select_service_dialog.hpp>
 
 #include <QCloseEvent>
 #include <QHBoxLayout>

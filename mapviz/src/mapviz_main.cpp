@@ -28,7 +28,7 @@
 // *****************************************************************************
 
 #include "mapviz/mapviz.hpp"
-#include "mapviz/mapviz_application.h"
+#include "mapviz/mapviz_application.hpp"
 
 int main(int argc, char **argv)
 {

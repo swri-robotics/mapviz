@@ -27,7 +27,7 @@
 // DAMAGE.
 //
 // *****************************************************************************
-#include <mapviz/color_button.h>
+#include <mapviz/color_button.hpp>
 
 #include <QColorDialog>
 

@@ -158,34 +158,34 @@ set(SRC_FILES
   src/topic_select.cpp)
 
 set(HEADER_FILES
-  include/${PROJECT_NAME}/attitude_indicator_plugin.h
-  include/${PROJECT_NAME}/canvas_click_filter.h
-  include/${PROJECT_NAME}/coordinate_picker_plugin.h
-  include/${PROJECT_NAME}/disparity_plugin.h
-  include/${PROJECT_NAME}/draw_polygon_plugin.h
-  include/${PROJECT_NAME}/float_plugin.h
-  include/${PROJECT_NAME}/gps_plugin.h
-  include/${PROJECT_NAME}/grid_plugin.h
-  include/${PROJECT_NAME}/image_plugin.h
-  include/${PROJECT_NAME}/laserscan_plugin.h
-  include/${PROJECT_NAME}/marker_plugin.h
-  include/${PROJECT_NAME}/measuring_plugin.h
-  include/${PROJECT_NAME}/navsat_plugin.h
-  include/${PROJECT_NAME}/occupancy_grid_plugin.h
-  include/${PROJECT_NAME}/odometry_plugin.h
-  include/${PROJECT_NAME}/path_plugin.h
-  include/${PROJECT_NAME}/placeable_window_proxy.h
-  include/${PROJECT_NAME}/plan_route_plugin.h
-  include/${PROJECT_NAME}/point_click_publisher_plugin.h
-  include/${PROJECT_NAME}/pointcloud2_plugin.h
-  include/${PROJECT_NAME}/point_drawing_plugin.h
-  include/${PROJECT_NAME}/pose_plugin.h
-  include/${PROJECT_NAME}/robot_image_plugin.h
-  include/${PROJECT_NAME}/route_plugin.h
-  include/${PROJECT_NAME}/string_plugin.h
-  include/${PROJECT_NAME}/textured_marker_plugin.h
-  include/${PROJECT_NAME}/tf_frame_plugin.h
-  include/${PROJECT_NAME}/topic_select.h)
+  include/${PROJECT_NAME}/attitude_indicator_plugin.hpp
+  include/${PROJECT_NAME}/canvas_click_filter.hpp
+  include/${PROJECT_NAME}/coordinate_picker_plugin.hpp
+  include/${PROJECT_NAME}/disparity_plugin.hpp
+  include/${PROJECT_NAME}/draw_polygon_plugin.hpp
+  include/${PROJECT_NAME}/float_plugin.hpp
+  include/${PROJECT_NAME}/gps_plugin.hpp
+  include/${PROJECT_NAME}/grid_plugin.hpp
+  include/${PROJECT_NAME}/image_plugin.hpp
+  include/${PROJECT_NAME}/laserscan_plugin.hpp
+  include/${PROJECT_NAME}/marker_plugin.hpp
+  include/${PROJECT_NAME}/measuring_plugin.hpp
+  include/${PROJECT_NAME}/navsat_plugin.hpp
+  include/${PROJECT_NAME}/occupancy_grid_plugin.hpp
+  include/${PROJECT_NAME}/odometry_plugin.hpp
+  include/${PROJECT_NAME}/path_plugin.hpp
+  include/${PROJECT_NAME}/placeable_window_proxy.hpp
+  include/${PROJECT_NAME}/plan_route_plugin.hpp
+  include/${PROJECT_NAME}/point_click_publisher_plugin.hpp
+  include/${PROJECT_NAME}/pointcloud2_plugin.hpp
+  include/${PROJECT_NAME}/point_drawing_plugin.hpp
+  include/${PROJECT_NAME}/pose_plugin.hpp
+  include/${PROJECT_NAME}/robot_image_plugin.hpp
+  include/${PROJECT_NAME}/route_plugin.hpp
+  include/${PROJECT_NAME}/string_plugin.hpp
+  include/${PROJECT_NAME}/textured_marker_plugin.hpp
+  include/${PROJECT_NAME}/tf_frame_plugin.hpp
+  include/${PROJECT_NAME}/topic_select.hpp)
 
 set(MAPVIZ_PLUGINS_QT_LIBRARIES
   Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Core
@@ -271,7 +271,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 ### Install the plugins ###
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+  FILES_MATCHING PATTERN "*.hpp")
 
 install(DIRECTORY ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR}/
   DESTINATION include/${PROJECT_NAME}

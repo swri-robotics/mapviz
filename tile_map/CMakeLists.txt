@@ -81,11 +81,11 @@ set(TILE_SRC_FILES
   src/${PROJECT_NAME}_view.cpp
 )
 set(QT_HEADERS
-  include/${PROJECT_NAME}/image_cache.h
-  include/${PROJECT_NAME}/tile_source.h
-  include/${PROJECT_NAME}/wmts_source.h
-  include/${PROJECT_NAME}/bing_source.h
-  include/${PROJECT_NAME}/stadia_source.h
+  include/${PROJECT_NAME}/image_cache.hpp
+  include/${PROJECT_NAME}/tile_source.hpp
+  include/${PROJECT_NAME}/wmts_source.hpp
+  include/${PROJECT_NAME}/bing_source.hpp
+  include/${PROJECT_NAME}/stadia_source.hpp
 )
 
 set(TILE_MAP_QT_LIBRARIES
@@ -140,7 +140,7 @@ set(PLUGIN_SRC_FILES
 set(PLUGIN_UI_FILES
   src/${PROJECT_NAME}_config.ui)
 
-list(APPEND PLUGIN_SRC_FILES ${PLUGIN_UI_FILES} include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
+list(APPEND PLUGIN_SRC_FILES ${PLUGIN_UI_FILES} include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.hpp)
 
 add_library(${PROJECT_NAME}_plugin SHARED ${PLUGIN_SRC_FILES})
 set_target_properties(${PROJECT_NAME}_plugin PROPERTIES
@@ -152,7 +152,7 @@ target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+  FILES_MATCHING PATTERN "*.hpp"
 )
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin

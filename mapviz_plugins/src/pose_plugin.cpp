@@ -28,8 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  **/ 
 
-#include <mapviz_plugins/pose_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/pose_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>

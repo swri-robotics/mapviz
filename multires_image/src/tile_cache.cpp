@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <multires_image/tile_cache.h>
+#include <multires_image/tile_cache.hpp>
 
 // C++ standard libraries
 #include <cstdlib>
@@ -39,7 +39,7 @@
 #include <QApplication>
 #include <QEvent>
 
-#include <multires_image/tile_set_layer.h>
+#include <multires_image/tile_set_layer.hpp>
 
 namespace multires_image
 {

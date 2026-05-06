@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/move_base_plugin.h>
+#include <mapviz_plugins/move_base_plugin.hpp>
 
 // C++ standard libraries
 #include <cstdio>

@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include "mapviz/rqt_mapviz.h"
+#include "mapviz/rqt_mapviz.hpp"
 #include <pluginlib/class_list_macros.hpp>
 
 namespace mapviz

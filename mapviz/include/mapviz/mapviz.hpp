@@ -48,9 +48,9 @@
 
 #include <swri_transform_util/transform_manager.h>
 #include <mapviz_interfaces/srv/add_mapviz_display.hpp>  // Service
-#include <mapviz/mapviz_plugin.h>
-#include <mapviz/map_canvas.h>
-#include <mapviz/video_writer.h>
+#include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/map_canvas.hpp>
+#include <mapviz/video_writer.hpp>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -71,7 +71,7 @@
 #include "ui/ui_pluginselect.h"
 
 
-#include "mapviz/stopwatch.h"
+#include "mapviz/stopwatch.hpp"
 
 namespace mapviz
 {

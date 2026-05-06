@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <tile_map/tile_map_view.h>
+#include <tile_map/tile_map_view.hpp>
 
 #include <cmath>
 
@@ -37,7 +37,7 @@
 #include <swri_math_util/trig_util.h>
 #include <swri_transform_util/earth_constants.h>
 
-#include <tile_map/image_cache.h>
+#include <tile_map/image_cache.hpp>
 
 namespace tile_map
 {

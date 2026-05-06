@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <tile_map/texture_cache.h>
+#include <tile_map/texture_cache.hpp>
 
 #include <cmath>
 
