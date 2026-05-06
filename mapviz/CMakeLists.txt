@@ -51,7 +51,6 @@ find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
-find_package(OpenGL REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
@@ -191,7 +190,6 @@ target_link_libraries(rqt_${PROJECT_NAME} PRIVATE
   opencv_imgcodecs
   opencv_imgproc
   opencv_videoio
-  OpenGL::GL
   ${swri_math_util_TARGETS}
 )
 target_compile_definitions(rqt_${PROJECT_NAME} PRIVATE
@@ -261,7 +259,6 @@ ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   geometry_msgs
   image_transport
-  OpenGL
   pluginlib
   ${MAPVIZ_QT_EXPORT_DEPENDENCIES}
   mapviz_interfaces

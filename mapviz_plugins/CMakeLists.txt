@@ -92,9 +92,6 @@ foreach(component IN ITEMS core imgproc highgui)
   mapviz_plugins_ensure_opencv_component(${component})
 endforeach()
 
-### OpenGL ###
-find_package(OpenGL REQUIRED)
-
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)

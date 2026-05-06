@@ -44,9 +44,6 @@ if(TILE_MAP_QT_VERSION_MAJOR EQUAL 6)
   find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 endif()
 
-### OpenGL ###
-find_package(OpenGL REQUIRED)
-
 find_package(jsoncpp QUIET CONFIG)
 if(NOT TARGET jsoncpp_lib)
   if(TARGET JsonCpp::JsonCpp)
