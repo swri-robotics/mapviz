@@ -43,7 +43,7 @@ function(mapviz_ensure_opencv_component component)
 endfunction()
 
 set(MAPVIZ_AUTOGEN_INCLUDE_DIR
-  ${CMAKE_CURRENT_BINARY_DIR}/rqt_${PROJECT_NAME}_autogen/include)
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_core_autogen/include)
 set(MAPVIZ_AUTOGEN_UI_INCLUDE_DIR
   ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui)
 
@@ -102,27 +102,25 @@ set(UI_FILES
   ui/mapviz.ui
   ui/pluginselect.ui
 )
-# Headers containing QObject definitions
+# Headers containing QObject definitions (core library)
 set(HEADER_FILES
   include/${PROJECT_NAME}/color_button.hpp
   include/${PROJECT_NAME}/config_item.hpp
   include/${PROJECT_NAME}/map_canvas.hpp
   include/${PROJECT_NAME}/${PROJECT_NAME}.hpp
   include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.hpp
-  include/${PROJECT_NAME}/rqt_${PROJECT_NAME}.hpp
   include/${PROJECT_NAME}/select_frame_dialog.hpp
   include/${PROJECT_NAME}/select_service_dialog.hpp
   include/${PROJECT_NAME}/video_writer.hpp
   include/${PROJECT_NAME}/widgets.hpp
 )
-# Source files for mapviz
+# Source files for mapviz core library
 set(SRC_FILES
   src/${PROJECT_NAME}.cpp
   src/color_button.cpp
   src/config_item.cpp
   src/${PROJECT_NAME}_application.cpp
   src/map_canvas.cpp
-  src/rqt_${PROJECT_NAME}.cpp
   src/select_frame_dialog.cpp
   src/select_service_dialog.cpp
   src/video_writer.cpp
@@ -155,13 +153,13 @@ else()
     Qt5Widgets)
 endif()
 
-### Build mapviz as an rqt plugin ###
-add_library(rqt_${PROJECT_NAME}
+### Build mapviz core library ###
+add_library(${PROJECT_NAME}_core SHARED
   ${HEADER_FILES}
   ${SRC_FILES}
   ${UI_FILES}
 )
-target_include_directories(rqt_${PROJECT_NAME}
+target_include_directories(${PROJECT_NAME}_core
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${MAPVIZ_AUTOGEN_INCLUDE_DIR}>
@@ -169,7 +167,7 @@ target_include_directories(rqt_${PROJECT_NAME}
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
-target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
+target_link_libraries(${PROJECT_NAME}_core PUBLIC
   ${geometry_msgs_TARGETS}
   opencv_core
   opencv_highgui
@@ -177,7 +175,6 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   pluginlib::pluginlib
   ${MAPVIZ_QT_LIBRARIES}
   rclcpp::rclcpp
-  rqt_gui_cpp::rqt_gui_cpp
   ${std_srvs_TARGETS}
   ${swri_transform_util_TARGETS}
   tf2::tf2
@@ -185,39 +182,44 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   tf2_ros::tf2_ros
   yaml-cpp
 )
-target_link_libraries(rqt_${PROJECT_NAME} PRIVATE
+target_link_libraries(${PROJECT_NAME}_core PRIVATE
   image_transport::image_transport
   opencv_imgcodecs
   opencv_imgproc
   opencv_videoio
   ${swri_math_util_TARGETS}
 )
-target_compile_definitions(rqt_${PROJECT_NAME} PRIVATE
+target_compile_definitions(${PROJECT_NAME}_core PRIVATE
   WFlags=WindowFlags
   __STDC_FORMAT_MACROS
 )
 
-set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
+set_target_properties(${PROJECT_NAME}_core PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTORCC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
   QT_MAJOR_VERSION ${MAPVIZ_QT_VERSION_MAJOR})
 
+### Build rqt plugin (thin wrapper, loaded dynamically by rqt) ###
+add_library(rqt_${PROJECT_NAME} SHARED
+  include/${PROJECT_NAME}/rqt_${PROJECT_NAME}.hpp
+  src/rqt_${PROJECT_NAME}.cpp
+)
+target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
+  ${PROJECT_NAME}_core
+  rqt_gui_cpp::rqt_gui_cpp
+)
+set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
+  AUTOMOC ON
+  QT_MAJOR_VERSION ${MAPVIZ_QT_VERSION_MAJOR})
+
 ### Build mapviz as a standalone executable ###
 add_executable(${PROJECT_NAME}
   src/${PROJECT_NAME}_main.cpp)
 
-target_include_directories(${PROJECT_NAME} PRIVATE
-  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}
-  ${MAPVIZ_AUTOGEN_UI_INCLUDE_DIR})
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-  rqt_${PROJECT_NAME}
-  ${swri_transform_util_TARGETS})
 target_link_libraries(${PROJECT_NAME} PRIVATE
-  image_transport::image_transport
-  ${swri_math_util_TARGETS}
+  ${PROJECT_NAME}_core
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE
   __STDC_FORMAT_MACROS
@@ -240,9 +242,14 @@ install(TARGETS ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(TARGETS rqt_${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME}_core
   EXPORT export_${PROJECT_NAME}
   RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+install(TARGETS rqt_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
@@ -263,7 +270,6 @@ ament_export_dependencies(
   ${MAPVIZ_QT_EXPORT_DEPENDENCIES}
   mapviz_interfaces
   rclcpp
-  rqt_gui_cpp
   std_srvs
   swri_transform_util
   tf2
