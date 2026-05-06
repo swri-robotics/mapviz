@@ -1,22 +1,14 @@
-### SET CMAKE POLICIES ###
 cmake_minimum_required(VERSION 3.10...3.17)
-
-if(${CMAKE_VERSION} VERSION_LESS 3.12)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-endif()
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
-
-if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  cmake_policy(SET CMP0072 NEW)
-endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-### END CMAKE POLICIES ###
 
 project(tile_map
   LANGUAGES CXX)
@@ -143,7 +135,7 @@ target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.h"
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin
@@ -155,8 +147,13 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
-ament_export_targets(export_${PROJECT_NAME})
-ament_export_dependencies(${RUNTIME_DEPS}
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(
+  mapviz
+  pluginlib
+  rclcpp
+  swri_transform_util
+  tf2
   ${TILE_MAP_QT_EXPORT_DEPENDENCIES}
 )
 ament_package()

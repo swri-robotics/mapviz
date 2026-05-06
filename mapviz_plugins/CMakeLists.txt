@@ -1,22 +1,14 @@
-### SET CMAKE POLICIES ###
 cmake_minimum_required(VERSION 3.10...3.17)
-
-if(${CMAKE_VERSION} VERSION_LESS 3.12)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-endif()
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
-
-if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  cmake_policy(SET CMP0072 NEW)
-endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-### END CMAKE POLICIES ###
 
 project(mapviz_plugins
   LANGUAGES CXX)
@@ -59,8 +51,6 @@ else()
   find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Widgets)
   set(MAPVIZ_PLUGINS_QT_VERSION_MAJOR 6)
 endif()
-add_definitions(-DWFlags=WindowFlags)
-
 if(MAPVIZ_PLUGINS_QT_VERSION_MAJOR EQUAL 6)
   find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 endif()
@@ -204,10 +194,13 @@ target_include_directories(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME}
   PUBLIC
     "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE
+    WFlags=WindowFlags)
 
 # Iron and later switched some cv_bridge files to .hpp from .h
 if ("$ENV{ROS_DISTRO}" STRLESS "iron")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE "-DUSE_CVBRIDGE_H_FILES")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CVBRIDGE_H_FILES)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -239,14 +232,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tf2::tf2
     tf2_ros::tf2_ros
     ${visualization_msgs_TARGETS})
-target_include_directories(${PROJECT_NAME} INTERFACE
-  ${swri_roscpp_TARGETS}
-)
 
 ### Install the plugins ###
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.h")
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
 install(DIRECTORY ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR}/
   DESTINATION include/${PROJECT_NAME}
@@ -260,8 +250,9 @@ install(TARGETS ${PROJECT_NAME}
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
-ament_export_targets(export_${PROJECT_NAME})
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
+  ament_index_cpp
   cv_bridge
   geometry_msgs
   gps_msgs
@@ -269,20 +260,22 @@ ament_export_dependencies(
   map_msgs
   mapviz
   marti_common_msgs
+  marti_nav_msgs
   marti_sensor_msgs
   marti_visualization_msgs
   nav_msgs
   OpenCV
+  pluginlib
   ${MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES}
   rclcpp
   sensor_msgs
   std_msgs
+  std_srvs
   stereo_msgs
   swri_image_util
-  swri_math_util
   swri_route_util
   swri_transform_util
-  visualization_msgs
   tf2
-  tf2_ros)
+  tf2_ros
+  visualization_msgs)
 ament_package()

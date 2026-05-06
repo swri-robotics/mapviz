@@ -1,22 +1,14 @@
-### SET CMAKE POLICIES ###
 cmake_minimum_required(VERSION 3.10...3.17)
-
-if(${CMAKE_VERSION} VERSION_LESS 3.12)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-endif()
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
-
-if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  cmake_policy(SET CMP0072 NEW)
-endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-### END CMAKE POLICIES ###
 
 project(mapviz 
   DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
@@ -58,8 +50,6 @@ endif()
 ### PkgConfig ###
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(YamlCpp yaml-cpp)
-
-add_definitions(-DWFlags=WindowFlags)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -165,9 +155,12 @@ target_link_libraries(rqt_${PROJECT_NAME} PRIVATE
   OpenGL::GL
   ${swri_math_util_TARGETS}
 )
+target_compile_definitions(rqt_${PROJECT_NAME} PRIVATE
+  WFlags=WindowFlags
+  __STDC_FORMAT_MACROS
+)
 
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
   AUTOMOC ON
   AUTOUIC ON
   AUTORCC ON
@@ -189,13 +182,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   image_transport::image_transport
   ${swri_math_util_TARGETS}
 )
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+  __STDC_FORMAT_MACROS
+)
 
 ### Install mapviz ###
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.h"
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
 
 install(FILES
@@ -226,11 +220,19 @@ install(FILES plugin.xml
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
+  geometry_msgs
   image_transport
+  OpenCV
   OpenGL
+  pluginlib
   ${MAPVIZ_QT_EXPORT_DEPENDENCIES}
   mapviz_interfaces
+  rclcpp
   rqt_gui_cpp
   std_srvs
+  swri_transform_util
+  tf2
+  tf2_geometry_msgs
+  tf2_ros
 )
 ament_package()
