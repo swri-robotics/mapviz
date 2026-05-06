@@ -222,6 +222,8 @@ protected:
 
   // Config dock pin/auto-hide
   QToolButton* pin_button_;
+  QLabel* title_label_;
+  QWidget* collapsed_label_;
   bool config_panel_pinned_;
 
   Stopwatch meas_spin_;

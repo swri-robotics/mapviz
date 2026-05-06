@@ -65,6 +65,8 @@
 #include <QMutexLocker>
 #include <QEvent>
 #include <QHBoxLayout>
+#include <QPainter>
+#include <QVBoxLayout>
 
 // Other Project libraries
 #include <swri_math_util/constants.h>
@@ -84,6 +86,35 @@
 
 namespace mapviz
 {
+
+// A label that paints its text rotated 90° clockwise (reads top-to-bottom)
+class VerticalLabel : public QWidget
+{
+public:
+  explicit VerticalLabel(const QString& text, QWidget* parent = nullptr)
+    : QWidget(parent), text_(text) {
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+  }
+  QSize sizeHint() const override {
+    QFontMetrics fm(font());
+    return QSize(fm.height() + 4, fm.horizontalAdvance(text_) + 8);
+  }
+  QSize minimumSizeHint() const override { return sizeHint(); }
+protected:
+  void paintEvent(QPaintEvent*) override {
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+    QFont f = font();
+    f.setBold(true);
+    p.setFont(f);
+    p.translate(width(), 0);
+    p.rotate(90);
+    p.drawText(QRect(4, 0, height(), width()), Qt::AlignVCenter | Qt::AlignLeft, text_);
+  }
+private:
+  QString text_;
+};
+
 const QString Mapviz::ROS_WORKSPACE_VAR = "ROS_WORKSPACE";
 const QString Mapviz::MAPVIZ_CONFIG_FILE = "/.mapviz_config";
 const char Mapviz::IMAGE_TRANSPORT_PARAM[] = "image_transport";
@@ -106,6 +137,8 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     node_(nullptr),
     canvas_(nullptr),
     pin_button_(nullptr),
+    title_label_(nullptr),
+    collapsed_label_(nullptr),
     config_panel_pinned_(true)
 {
   // Multiple users could be using mapviz, so its name needs to be anonymous,
@@ -133,9 +166,9 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     title_layout->setContentsMargins(4, 0, 4, 0);
     title_layout->setSpacing(4);
 
-    QLabel* title_label = new QLabel("Config", title_bar);
-    title_label->setStyleSheet("font-weight: bold;");
-    title_layout->addWidget(title_label);
+    title_label_ = new QLabel("Config", title_bar);
+    title_label_->setStyleSheet("font-weight: bold;");
+    title_layout->addWidget(title_label_);
     title_layout->addStretch();
 
     pin_button_ = new QToolButton(title_bar);
@@ -158,6 +191,11 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     connect(pin_button_, SIGNAL(toggled(bool)), this, SLOT(TogglePinConfigPanel(bool)));
     ui_.configdock->installEventFilter(this);
   }
+
+  // Add vertical label to dock contents for collapsed state
+  collapsed_label_ = new VerticalLabel("Config", ui_.dockWidgetContents);
+  collapsed_label_->setVisible(false);
+  ui_.verticalLayout->insertWidget(0, collapsed_label_);
 
   xy_pos_label_->setVisible(false);
   lat_lon_pos_label_->setVisible(false);
@@ -1337,13 +1375,21 @@ void Mapviz::TogglePinConfigPanel(bool pinned)
   if (pinned) {
     pin_button_->setToolTip("Panel pinned (click to auto-hide)");
     // Restore full dock
+    title_label_->setText("Config");
     ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
     ui_.configdock->setMinimumWidth(332);
-    ui_.dockWidgetContents->show();
+    collapsed_label_->setVisible(false);
+    ui_.widget_2->show();
+    ui_.configs->show();
+    ui_.widget->show();
   } else {
     pin_button_->setToolTip("Panel unpinned (click to pin)");
-    // Collapse to narrow strip
-    ui_.dockWidgetContents->hide();
+    // Collapse to narrow strip with vertical label
+    title_label_->setText("");
+    ui_.widget_2->hide();
+    ui_.configs->hide();
+    ui_.widget->hide();
+    collapsed_label_->setVisible(true);
     ui_.configdock->setMinimumWidth(28);
     ui_.configdock->setMaximumWidth(28);
   }
@@ -1680,12 +1726,20 @@ bool Mapviz::eventFilter(QObject* object, QEvent* event)
   if (object == ui_.configdock && !config_panel_pinned_) {
     if (event->type() == QEvent::Enter) {
       // Expand on mouse enter
+      title_label_->setText("Config");
       ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
       ui_.configdock->setMinimumWidth(332);
-      ui_.dockWidgetContents->show();
+      collapsed_label_->setVisible(false);
+      ui_.widget_2->show();
+      ui_.configs->show();
+      ui_.widget->show();
     } else if (event->type() == QEvent::Leave) {
       // Collapse on mouse leave
-      ui_.dockWidgetContents->hide();
+      title_label_->setText("");
+      ui_.widget_2->hide();
+      ui_.configs->hide();
+      ui_.widget->hide();
+      collapsed_label_->setVisible(true);
       ui_.configdock->setMinimumWidth(28);
       ui_.configdock->setMaximumWidth(28);
     }
