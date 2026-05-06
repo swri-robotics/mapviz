@@ -41,6 +41,7 @@
 #include <QListWidgetItem>
 #include <QModelIndex>
 #include <QColor>
+#include <QToolButton>
 #include <QWidget>
 #include <QStringList>
 #include <QMainWindow>
@@ -111,6 +112,7 @@ public Q_SLOTS:
   void SpinOnce();
   void UpdateSizeHints();
   void ToggleConfigPanel(bool on);
+  void TogglePinConfigPanel(bool pinned);
   void ToggleStatusBar(bool on);
   void ToggleCaptureTools(bool on);
   void ToggleFixOrientation(bool on);
@@ -165,6 +167,7 @@ protected:
 
   virtual void showEvent(QShowEvent* event);
   virtual void closeEvent(QCloseEvent* event);
+  bool eventFilter(QObject* object, QEvent* event) override;
 
   static const QString ROS_WORKSPACE_VAR;
   static const QString MAPVIZ_CONFIG_FILE;
@@ -216,6 +219,10 @@ protected:
   pluginlib::ClassLoader<MapvizPlugin>* loader_;
   MapCanvas* canvas_;
   std::map<QListWidgetItem*, MapvizPluginPtr> plugins_;
+
+  // Config dock pin/auto-hide
+  QToolButton* pin_button_;
+  bool config_panel_pinned_;
 
   Stopwatch meas_spin_;
 };

@@ -63,6 +63,8 @@
 #include <QFileInfo>
 #include <QListWidgetItem>
 #include <QMutexLocker>
+#include <QEvent>
+#include <QHBoxLayout>
 
 // Other Project libraries
 #include <swri_math_util/constants.h>
@@ -102,7 +104,9 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     vid_writer_(nullptr),
     updating_frames_(false),
     node_(nullptr),
-    canvas_(nullptr)
+    canvas_(nullptr),
+    pin_button_(nullptr),
+    config_panel_pinned_(true)
 {
   // Multiple users could be using mapviz, so its name needs to be anonymous,
   // but ROS 2 Dashing doesn't have a way to set that through node options;
@@ -121,6 +125,39 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   node_->declare_parameter(IMAGE_TRANSPORT_PARAM, "raw");
 
   ui_.setupUi(this);
+
+  // Set up custom title bar for configdock with pin button
+  {
+    QWidget* title_bar = new QWidget(ui_.configdock);
+    QHBoxLayout* title_layout = new QHBoxLayout(title_bar);
+    title_layout->setContentsMargins(4, 0, 4, 0);
+    title_layout->setSpacing(4);
+
+    QLabel* title_label = new QLabel("Config", title_bar);
+    title_label->setStyleSheet("font-weight: bold;");
+    title_layout->addWidget(title_label);
+    title_layout->addStretch();
+
+    pin_button_ = new QToolButton(title_bar);
+    pin_button_->setCheckable(true);
+    pin_button_->setChecked(true);
+    pin_button_->setToolTip("Pin panel (unpin to auto-hide)");
+    pin_button_->setIcon(QIcon::fromTheme("window-pin",
+      QIcon::fromTheme("object-locked")));
+    pin_button_->setAutoRaise(true);
+    pin_button_->setFixedSize(20, 20);
+    // Use text fallback if no icon theme available
+    if (pin_button_->icon().isNull()) {
+      pin_button_->setText("\xF0\x9F\x93\x8C");  // pin emoji as fallback
+    }
+    title_layout->addWidget(pin_button_);
+
+    title_bar->setLayout(title_layout);
+    ui_.configdock->setTitleBarWidget(title_bar);
+
+    connect(pin_button_, SIGNAL(toggled(bool)), this, SLOT(TogglePinConfigPanel(bool)));
+    ui_.configdock->installEventFilter(this);
+  }
 
   xy_pos_label_->setVisible(false);
   lat_lon_pos_label_->setVisible(false);
@@ -1294,6 +1331,25 @@ void Mapviz::ToggleConfigPanel(bool on)
   AdjustWindowSize();
 }
 
+void Mapviz::TogglePinConfigPanel(bool pinned)
+{
+  config_panel_pinned_ = pinned;
+  if (pinned) {
+    pin_button_->setToolTip("Panel pinned (click to auto-hide)");
+    // Restore full dock
+    ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
+    ui_.configdock->setMinimumWidth(332);
+    ui_.dockWidgetContents->show();
+  } else {
+    pin_button_->setToolTip("Panel unpinned (click to pin)");
+    // Collapse to narrow strip
+    ui_.dockWidgetContents->hide();
+    ui_.configdock->setMinimumWidth(28);
+    ui_.configdock->setMaximumWidth(28);
+  }
+  AdjustWindowSize();
+}
+
 void Mapviz::ToggleStatusBar(bool on)
 {
   ui_.statusbar->setVisible(on);
@@ -1617,5 +1673,23 @@ void Mapviz::HandleProfileTimer()
       plugin->PrintMeasurements();
     }
   }
+}
+
+bool Mapviz::eventFilter(QObject* object, QEvent* event)
+{
+  if (object == ui_.configdock && !config_panel_pinned_) {
+    if (event->type() == QEvent::Enter) {
+      // Expand on mouse enter
+      ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
+      ui_.configdock->setMinimumWidth(332);
+      ui_.dockWidgetContents->show();
+    } else if (event->type() == QEvent::Leave) {
+      // Collapse on mouse leave
+      ui_.dockWidgetContents->hide();
+      ui_.configdock->setMinimumWidth(28);
+      ui_.configdock->setMaximumWidth(28);
+    }
+  }
+  return QMainWindow::eventFilter(object, event);
 }
 }   // namespace mapviz
