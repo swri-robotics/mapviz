@@ -13,6 +13,34 @@ endif()
 project(mapviz_plugins
   LANGUAGES CXX)
 
+function(mapviz_plugins_ensure_interface_alias alias_target dependency_target)
+  if(TARGET ${alias_target})
+    return()
+  endif()
+
+  add_library(${alias_target} INTERFACE IMPORTED)
+  set_target_properties(${alias_target} PROPERTIES
+    INTERFACE_LINK_LIBRARIES ${dependency_target})
+endfunction()
+
+function(mapviz_plugins_ensure_opencv_component component)
+  if(TARGET opencv_${component})
+    return()
+  endif()
+
+  if(TARGET OpenCV::opencv_${component})
+    mapviz_plugins_ensure_interface_alias(opencv_${component} OpenCV::opencv_${component})
+    return()
+  endif()
+
+  if(TARGET PkgConfig::OpenCV)
+    mapviz_plugins_ensure_interface_alias(opencv_${component} PkgConfig::OpenCV)
+    return()
+  endif()
+
+  message(FATAL_ERROR "Unable to resolve OpenCV component target opencv_${component}")
+endfunction()
+
 set(MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_autogen/include)
 
@@ -55,7 +83,14 @@ if(MAPVIZ_PLUGINS_QT_VERSION_MAJOR EQUAL 6)
   find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 endif()
 
-find_package(OpenCV COMPONENTS core imgproc REQUIRED)
+find_package(OpenCV QUIET CONFIG COMPONENTS core imgproc highgui)
+if(NOT OpenCV_FOUND)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(OpenCV REQUIRED IMPORTED_TARGET opencv4)
+endif()
+foreach(component IN ITEMS core imgproc highgui)
+  mapviz_plugins_ensure_opencv_component(${component})
+endforeach()
 
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
@@ -264,7 +299,6 @@ ament_export_dependencies(
   marti_sensor_msgs
   marti_visualization_msgs
   nav_msgs
-  OpenCV
   pluginlib
   ${MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES}
   rclcpp
@@ -278,4 +312,4 @@ ament_export_dependencies(
   tf2
   tf2_ros
   visualization_msgs)
-ament_package()
+ament_package(CONFIG_EXTRAS cmake/mapviz_plugins-extras.cmake)

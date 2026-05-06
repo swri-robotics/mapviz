@@ -386,7 +386,10 @@ namespace mapviz_plugins
     texture_->setMinificationFilter(QOpenGLTexture::Nearest);
     texture_->setMagnificationFilter(QOpenGLTexture::Nearest);
     texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
-    texture_->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, color_buffer_.data());
+    texture_->setData(
+      QOpenGLTexture::RGBA,
+      QOpenGLTexture::UInt8,
+      static_cast<const void*>(color_buffer_.data()));
 
     gl->glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     canvas_->doneCurrent();

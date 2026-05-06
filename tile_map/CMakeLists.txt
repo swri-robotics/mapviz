@@ -13,6 +13,16 @@ endif()
 project(tile_map
   LANGUAGES CXX)
 
+function(tile_map_ensure_interface_alias alias_target dependency_target)
+  if(TARGET ${alias_target})
+    return()
+  endif()
+
+  add_library(${alias_target} INTERFACE IMPORTED)
+  set_target_properties(${alias_target} PROPERTIES
+    INTERFACE_LINK_LIBRARIES ${dependency_target})
+endfunction()
+
 # ROS packages
 find_package(ament_cmake REQUIRED)
 find_package(mapviz REQUIRED)
@@ -37,14 +47,23 @@ endif()
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
 
-### PkgConfig ###
-find_package(PkgConfig REQUIRED)
+find_package(jsoncpp QUIET CONFIG)
+if(NOT TARGET jsoncpp_lib)
+  if(TARGET JsonCpp::JsonCpp)
+    tile_map_ensure_interface_alias(jsoncpp_lib JsonCpp::JsonCpp)
+  else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(JSONCPP REQUIRED IMPORTED_TARGET jsoncpp)
+    tile_map_ensure_interface_alias(jsoncpp_lib PkgConfig::JSONCPP)
+  endif()
+endif()
 
-### yaml-cpp ###
-pkg_check_modules(YamlCpp yaml-cpp)
-
-### Use PkgConfig to find jsoncpp ###
-pkg_check_modules(JSONCPP REQUIRED jsoncpp)
+find_package(yaml-cpp QUIET CONFIG)
+if(NOT TARGET yaml-cpp)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(YamlCpp REQUIRED IMPORTED_TARGET yaml-cpp)
+  tile_map_ensure_interface_alias(yaml-cpp PkgConfig::YamlCpp)
+endif()
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -104,19 +123,17 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
-    ${JSONCPP_INCLUDE_DIRS}
-    ${YamlCpp_INCLUDE_DIRS})
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
     
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ${JSONCPP_LIBRARIES}
+  jsoncpp_lib
   ${mapviz_TARGETS}
   ${TILE_MAP_QT_LIBRARIES}
   pluginlib::pluginlib
   rclcpp::rclcpp
   ${swri_transform_util_TARGETS}
   tf2::tf2
-  ${YamlCpp_LIBRARIES})
+  yaml-cpp)
 
 set(PLUGIN_SRC_FILES
   src/${PROJECT_NAME}_plugin.cpp)
@@ -156,4 +173,4 @@ ament_export_dependencies(
   tf2
   ${TILE_MAP_QT_EXPORT_DEPENDENCIES}
 )
-ament_package()
+ament_package(CONFIG_EXTRAS cmake/tile_map-extras.cmake)

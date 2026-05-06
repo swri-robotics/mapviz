@@ -14,6 +14,34 @@ project(mapviz
   DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
   LANGUAGES CXX)
 
+function(mapviz_ensure_interface_alias alias_target dependency_target)
+  if(TARGET ${alias_target})
+    return()
+  endif()
+
+  add_library(${alias_target} INTERFACE IMPORTED)
+  set_target_properties(${alias_target} PROPERTIES
+    INTERFACE_LINK_LIBRARIES ${dependency_target})
+endfunction()
+
+function(mapviz_ensure_opencv_component component)
+  if(TARGET opencv_${component})
+    return()
+  endif()
+
+  if(TARGET OpenCV::opencv_${component})
+    mapviz_ensure_interface_alias(opencv_${component} OpenCV::opencv_${component})
+    return()
+  endif()
+
+  if(TARGET PkgConfig::OpenCV)
+    mapviz_ensure_interface_alias(opencv_${component} PkgConfig::OpenCV)
+    return()
+  endif()
+
+  message(FATAL_ERROR "Unable to resolve OpenCV component target opencv_${component}")
+endfunction()
+
 set(MAPVIZ_AUTOGEN_INCLUDE_DIR
   ${CMAKE_CURRENT_BINARY_DIR}/rqt_${PROJECT_NAME}_autogen/include)
 set(MAPVIZ_AUTOGEN_UI_INCLUDE_DIR
@@ -23,7 +51,6 @@ find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
-find_package(OpenCV COMPONENTS core imgproc imgcodecs videoio REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -47,9 +74,21 @@ if(MAPVIZ_QT_VERSION_MAJOR EQUAL 6)
   find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 endif()
 
-### PkgConfig ###
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(YamlCpp yaml-cpp)
+find_package(OpenCV QUIET CONFIG COMPONENTS core highgui imgcodecs imgproc videoio)
+if(NOT OpenCV_FOUND)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(OpenCV REQUIRED IMPORTED_TARGET opencv4)
+endif()
+foreach(component IN ITEMS core highgui imgcodecs imgproc videoio)
+  mapviz_ensure_opencv_component(${component})
+endforeach()
+
+find_package(yaml-cpp QUIET CONFIG)
+if(NOT TARGET yaml-cpp)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(YamlCpp REQUIRED IMPORTED_TARGET yaml-cpp)
+  mapviz_ensure_interface_alias(yaml-cpp PkgConfig::YamlCpp)
+endif()
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -145,7 +184,7 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
   tf2_ros::tf2_ros
-  ${YamlCpp_LIBRARIES}
+  yaml-cpp
 )
 target_link_libraries(rqt_${PROJECT_NAME} PRIVATE
   image_transport::image_transport
@@ -222,7 +261,6 @@ ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   geometry_msgs
   image_transport
-  OpenCV
   OpenGL
   pluginlib
   ${MAPVIZ_QT_EXPORT_DEPENDENCIES}
@@ -235,4 +273,4 @@ ament_export_dependencies(
   tf2_geometry_msgs
   tf2_ros
 )
-ament_package()
+ament_package(CONFIG_EXTRAS cmake/mapviz-extras.cmake)
