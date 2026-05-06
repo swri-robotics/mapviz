@@ -90,7 +90,7 @@ namespace mapviz_plugins
     ui_.color->setColor(color_);
   }
 
-  bool FloatPlugin::Initialize(QGLWidget* canvas)
+  bool FloatPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
     return true;

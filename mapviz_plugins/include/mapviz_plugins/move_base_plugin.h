@@ -36,7 +36,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 
@@ -66,7 +66,7 @@ namespace mapviz_plugins
     MoveBasePlugin();
     virtual ~MoveBasePlugin();
 
-    bool Initialize(QGLWidget* canvas);
+    bool Initialize(QOpenGLWidget* canvas);
     void Shutdown() {}
 
     void Draw(double x, double y, double scale);

@@ -37,7 +37,7 @@
 
 namespace mapviz_plugins
 {
-  MultiresView::MultiresView(multires_image::TileSet* tiles, QGLWidget* widget) :
+  MultiresView::MultiresView(multires_image::TileSet* tiles, QOpenGLWidget* widget) :
       m_tiles(tiles),
       m_cache(tiles, widget),
       m_currentLayer(tiles->LayerCount() - 1),

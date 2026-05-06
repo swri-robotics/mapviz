@@ -31,7 +31,7 @@
 #define MULTIRES_IMAGE_TILE_VIEW_H_
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 #include <multires_image/tile_set.h>
 #include <multires_image/tile_cache.h>
@@ -41,7 +41,7 @@ namespace multires_image
   class TileView
   {
   public:
-    TileView(TileSet* tiles, QGLWidget* widget);
+    TileView(TileSet* tiles, QOpenGLWidget* widget);
     ~TileView() = default;
 
     const TileCache* Cache() { return &m_cache; }

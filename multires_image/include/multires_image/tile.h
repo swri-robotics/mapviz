@@ -31,19 +31,17 @@
 #define MULTIRES_IMAGE_TILE_H_
 
 // C++ standard libraries
+#include <memory>
 #include <string>
 
 // QT libraries
 #include <QImage>
 #include <QMutex>
+#include <QOpenGLTexture>
 
 #include <tf2/transform_datatypes.hpp>
 
 #include <swri_transform_util/transform.h>
-
-#ifndef GL_CLAMP_TO_EDGE
-#define GL_CLAMP_TO_EDGE 0x812F
-#endif
 
 namespace multires_image
 {
@@ -98,11 +96,11 @@ namespace multires_image
     bool                m_failed;
     bool                m_textureLoaded;
     int                 m_dimension;
-    int                 m_textureId;
     int64_t             m_tileId;
     int                 m_memorySize;
     QImage              m_image;
     QMutex              m_mutex;
+    std::unique_ptr<QOpenGLTexture> m_texture;
   };
 }
 

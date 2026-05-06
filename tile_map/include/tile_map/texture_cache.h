@@ -31,6 +31,7 @@
 #define TILE_MAP_TEXTURE_CACHE_H_
 
 #include <QCache>
+#include <QOpenGLTexture>
 
 #include <rclcpp/logger.hpp>
 
@@ -41,13 +42,16 @@ namespace tile_map
   class Texture
   {
   public:
-    Texture(int32_t texture_id, size_t hash);
+    Texture(std::unique_ptr<QOpenGLTexture> texture, size_t hash);
     ~Texture();
 
-    const int32_t id;
+    QOpenGLTexture* GetTexture() const { return texture_.get(); }
     const size_t url_hash;
 
     bool failed;
+
+  private:
+    std::unique_ptr<QOpenGLTexture> texture_;
   };
   typedef std::shared_ptr<Texture> TexturePtr;
 

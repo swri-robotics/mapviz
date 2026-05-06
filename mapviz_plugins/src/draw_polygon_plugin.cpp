@@ -32,7 +32,7 @@
 // QT libraries
 #include <QDateTime>
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QPalette>
 
@@ -172,7 +172,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool DrawPolygonPlugin::Initialize(QGLWidget* canvas)
+  bool DrawPolygonPlugin::Initialize(QOpenGLWidget* canvas)
   {
     map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);

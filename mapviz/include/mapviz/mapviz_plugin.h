@@ -43,8 +43,8 @@
 
 // QT libraries
 #include <QWidget>
-#include <QGLWidget>
 #include <QObject>
+#include <QOpenGLWidget>
 
 // C++ standard libraries
 #include <memory>
@@ -65,7 +65,7 @@ public:
       std::shared_ptr<tf2_ros::Buffer> tf_buffer,
       std::shared_ptr<tf2_ros::TransformListener> tf_listener,
       swri_transform_util::TransformManagerPtr tf_manager,
-      QGLWidget* canvas)
+      QOpenGLWidget* canvas)
   {
     tf_buf_ = tf_buffer;
     tf_ = tf_listener;
@@ -285,7 +285,7 @@ protected:
   bool initialized_;
   bool visible_;
 
-  QGLWidget* canvas_;
+  QOpenGLWidget* canvas_;
   IconWidget* icon_;
 
   std::shared_ptr<rclcpp::Node> node_;
@@ -303,7 +303,7 @@ protected:
 
   int draw_order_;
 
-  virtual bool Initialize(QGLWidget* canvas) = 0;
+  virtual bool Initialize(QOpenGLWidget* canvas) = 0;
 
   MapvizPlugin() :
     initialized_(false),

@@ -33,7 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 #include <mapviz_plugins/point_drawing_plugin.h>
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 
@@ -62,7 +62,7 @@ class OdometryPlugin : public mapviz_plugins::PointDrawingPlugin
     OdometryPlugin();
     ~OdometryPlugin() override = default;
 
-    bool Initialize(QGLWidget* canvas) override;
+    bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override {}
 
     void Paint(QPainter* painter, double x, double y, double scale) override;

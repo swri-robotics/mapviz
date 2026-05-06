@@ -113,7 +113,7 @@ QWidget* MeasuringPlugin::GetConfigWidget(QWidget* parent)
   return config_widget_;
 }
 
-bool MeasuringPlugin::Initialize(QGLWidget* canvas)
+bool MeasuringPlugin::Initialize(QOpenGLWidget* canvas)
 {
   map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
   map_canvas_->installEventFilter(this);

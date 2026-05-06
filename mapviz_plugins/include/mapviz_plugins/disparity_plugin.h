@@ -35,7 +35,7 @@
 
 // QT libraries
 #include <QColor>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 
@@ -82,7 +82,7 @@ public:
   DisparityPlugin();
   ~DisparityPlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
   void Draw(double x, double y, double scale) override;

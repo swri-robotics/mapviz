@@ -1347,7 +1347,7 @@ void Mapviz::ToggleRecord(bool on)
       RCLCPP_INFO(node_->get_logger(), "Writing video to: %s", filename.c_str());
       ui_.statusbar->showMessage("Recording video to " + QString::fromStdString(filename));
 
-      canvas_->updateGL();
+      canvas_->update();
     }
 
     record_timer_.start(1000.0 / 30.0);

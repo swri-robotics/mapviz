@@ -30,7 +30,7 @@
 #include <mapviz_plugins/grid_plugin.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPalette>
 
 #include <mapviz/select_frame_dialog.h>
@@ -192,7 +192,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool GridPlugin::Initialize(QGLWidget* canvas)
+  bool GridPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
 

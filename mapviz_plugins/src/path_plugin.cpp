@@ -32,7 +32,7 @@
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -165,7 +165,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool PathPlugin::Initialize(QGLWidget* canvas)
+  bool PathPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
     DrawIcon();

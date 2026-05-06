@@ -21,6 +21,9 @@ endif()
 project(mapviz_plugins
   LANGUAGES CXX)
 
+set(MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_autogen/include)
+
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -49,20 +52,29 @@ find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
 ### QT ###
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5 QUIET COMPONENTS Core Gui OpenGL Widgets)
+if(Qt5_FOUND)
+  set(MAPVIZ_PLUGINS_QT_VERSION_MAJOR 5)
+else()
+  find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Widgets)
+  set(MAPVIZ_PLUGINS_QT_VERSION_MAJOR 6)
+endif()
 add_definitions(-DWFlags=WindowFlags)
+
+if(MAPVIZ_PLUGINS_QT_VERSION_MAJOR EQUAL 6)
+  find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
+endif()
 
 find_package(OpenCV COMPONENTS core imgproc REQUIRED)
 
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/ui)
 set(UI_FILES
   ui/attitude_indicator_config.ui
   ui/coordinate_picker_config.ui
@@ -150,14 +162,39 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/tf_frame_plugin.h
   include/${PROJECT_NAME}/topic_select.h)
 
-qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
-qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
+set(MAPVIZ_PLUGINS_QT_LIBRARIES
+  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Core
+  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Gui
+  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::OpenGL
+  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Widgets
+)
+
+if(MAPVIZ_PLUGINS_QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_PLUGINS_QT_LIBRARIES Qt6::OpenGLWidgets)
+  set(MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES
+    Qt6Core
+    Qt6Gui
+    Qt6OpenGL
+    Qt6OpenGLWidgets
+    Qt6Widgets)
+else()
+  set(MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES
+    Qt5Core
+    Qt5Gui
+    Qt5OpenGL
+    Qt5Widgets)
+endif()
 
 add_library(${PROJECT_NAME} SHARED
-    ${MOC_FILES}
+    ${HEADER_FILES}
     ${SRC_FILES}
-    ${UI_SRC_FILES}
+    ${UI_FILES}
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  AUTOMOC ON
+  AUTOUIC ON
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+  QT_MAJOR_VERSION ${MAPVIZ_PLUGINS_QT_VERSION_MAJOR})
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
@@ -176,7 +213,6 @@ endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC
     ament_index_cpp::ament_index_cpp
     cv_bridge::cv_bridge
-    ${GLUT_LIBRARY}
     ${gps_msgs_TARGETS}
     image_transport::image_transport
     ${map_msgs_TARGETS}
@@ -190,10 +226,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     opencv_imgproc
     opencv_highgui
     pluginlib::pluginlib
-    Qt5::Core
-    Qt5::Gui
-    Qt5::OpenGL
-    Qt5::Widgets
+    ${MAPVIZ_PLUGINS_QT_LIBRARIES}
     rclcpp::rclcpp
     ${sensor_msgs_TARGETS}
     sensor_msgs::sensor_msgs_library
@@ -215,8 +248,9 @@ install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h")
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ui_topicselect.h
-  DESTINATION include/${PROJECT_NAME})
+install(DIRECTORY ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR}/
+  DESTINATION include/${PROJECT_NAME}
+  FILES_MATCHING PATTERN "ui_*.h")
 
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
@@ -239,10 +273,7 @@ ament_export_dependencies(
   marti_visualization_msgs
   nav_msgs
   OpenCV
-  Qt5Core
-  Qt5Gui
-  Qt5OpenGL
-  Qt5Widgets
+  ${MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES}
   rclcpp
   sensor_msgs
   std_msgs

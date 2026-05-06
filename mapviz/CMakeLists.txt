@@ -22,20 +22,18 @@ project(mapviz
   DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
   LANGUAGES CXX)
 
+set(MAPVIZ_AUTOGEN_INCLUDE_DIR
+  ${CMAKE_CURRENT_BINARY_DIR}/rqt_${PROJECT_NAME}_autogen/include)
+set(MAPVIZ_AUTOGEN_UI_INCLUDE_DIR
+  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui)
+
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(GLUT REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
 find_package(OpenCV COMPONENTS core imgproc imgcodecs videoio REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(std_srvs REQUIRED)
@@ -45,16 +43,30 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
+find_package(Qt5 QUIET COMPONENTS Concurrent Core Gui OpenGL Widgets)
+if(Qt5_FOUND)
+  set(MAPVIZ_QT_VERSION_MAJOR 5)
+else()
+  find_package(Qt6 REQUIRED COMPONENTS Concurrent Core Gui OpenGL Widgets)
+  set(MAPVIZ_QT_VERSION_MAJOR 6)
+endif()
+
+if(MAPVIZ_QT_VERSION_MAJOR EQUAL 6)
+  find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
+endif()
+
 ### PkgConfig ###
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(YamlCpp yaml-cpp)
 
-# ### Qt5 on ROS2 ###
 add_definitions(-DWFlags=WindowFlags)
-set(QT_USE_QTOPENGL TRUE)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/ui)
 
 # Qt UI files
 set(UI_FILES
@@ -86,23 +98,46 @@ set(SRC_FILES
   src/select_frame_dialog.cpp
   src/select_service_dialog.cpp
   src/video_writer.cpp
+  src/resources/icons.qrc
 )
 
-### Qt5 on ROS2 ###
-qt5_add_resources(RCC_SRCS src/resources/icons.qrc)
-qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
-qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
+set(MAPVIZ_QT_LIBRARIES
+  Qt${MAPVIZ_QT_VERSION_MAJOR}::Concurrent
+  Qt${MAPVIZ_QT_VERSION_MAJOR}::Core
+  Qt${MAPVIZ_QT_VERSION_MAJOR}::Gui
+  Qt${MAPVIZ_QT_VERSION_MAJOR}::OpenGL
+  Qt${MAPVIZ_QT_VERSION_MAJOR}::Widgets
+)
+
+if(MAPVIZ_QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_QT_LIBRARIES Qt6::OpenGLWidgets)
+  set(MAPVIZ_QT_EXPORT_DEPENDENCIES
+    Qt6Concurrent
+    Qt6Core
+    Qt6Gui
+    Qt6OpenGL
+    Qt6OpenGLWidgets
+    Qt6Widgets)
+else()
+  set(MAPVIZ_QT_EXPORT_DEPENDENCIES
+    Qt5Concurrent
+    Qt5Core
+    Qt5Gui
+    Qt5OpenGL
+    Qt5Widgets)
+endif()
 
 ### Build mapviz as an rqt plugin ###
 add_library(rqt_${PROJECT_NAME}
-  ${MOC_FILES}
+  ${HEADER_FILES}
   ${SRC_FILES}
-  ${UI_SRC_FILES}
-  ${RCC_SRCS}
+  ${UI_FILES}
 )
 target_include_directories(rqt_${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${MAPVIZ_AUTOGEN_INCLUDE_DIR}>
+    $<BUILD_INTERFACE:${MAPVIZ_AUTOGEN_UI_INCLUDE_DIR}>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
@@ -112,11 +147,7 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   opencv_highgui
   ${mapviz_interfaces_TARGETS}
   pluginlib::pluginlib
-  Qt5::Concurrent
-  Qt5::Core
-  Qt5::Gui
-  Qt5::OpenGL
-  Qt5::Widgets
+  ${MAPVIZ_QT_LIBRARIES}
   rclcpp::rclcpp
   rqt_gui_cpp::rqt_gui_cpp
   ${std_srvs_TARGETS}
@@ -127,8 +158,6 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   ${YamlCpp_LIBRARIES}
 )
 target_link_libraries(rqt_${PROJECT_NAME} PRIVATE
-  GLEW::GLEW
-  ${GLUT_LIBRARIES}
   image_transport::image_transport
   opencv_imgcodecs
   opencv_imgproc
@@ -138,15 +167,23 @@ target_link_libraries(rqt_${PROJECT_NAME} PRIVATE
 )
 
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
-  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS")
+  COMPILE_FLAGS "-D__STDC_FORMAT_MACROS"
+  AUTOMOC ON
+  AUTOUIC ON
+  AUTORCC ON
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+  QT_MAJOR_VERSION ${MAPVIZ_QT_VERSION_MAJOR})
 
 ### Build mapviz as a standalone executable ###
 add_executable(${PROJECT_NAME}
   src/${PROJECT_NAME}_main.cpp)
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}
+  ${MAPVIZ_AUTOGEN_UI_INCLUDE_DIR})
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
   rqt_${PROJECT_NAME}
-  ${GLUT_LIBRARIES}
   ${swri_transform_util_TARGETS})
 target_link_libraries(${PROJECT_NAME} PRIVATE
   image_transport::image_transport
@@ -159,6 +196,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
+)
+
+install(FILES
+  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui_configitem.h
+  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui_mapviz.h
+  ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui_pluginselect.h
+  DESTINATION include/${PROJECT_NAME}
 )
 
 install(TARGETS ${PROJECT_NAME}
@@ -182,14 +226,9 @@ install(FILES plugin.xml
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
-  GLEW
   image_transport
   OpenGL
-  Qt5Concurrent
-  Qt5Core
-  Qt5Gui
-  Qt5OpenGL
-  Qt5Widgets
+  ${MAPVIZ_QT_EXPORT_DEPENDENCIES}
   mapviz_interfaces
   rqt_gui_cpp
   std_srvs

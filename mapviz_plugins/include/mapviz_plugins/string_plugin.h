@@ -38,7 +38,7 @@
 #include <QString>
 #include <QColor>
 #include <QWidget>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPainter>
 #include <QFont>
 #include <QStaticText>
@@ -80,7 +80,7 @@ public:
   StringPlugin();
   ~StringPlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
   void Draw(double x, double y, double scale) override;

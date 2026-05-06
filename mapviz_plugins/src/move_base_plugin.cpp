@@ -36,7 +36,7 @@
 // QT libraries
 #include <QDateTime>
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPalette>
@@ -121,7 +121,7 @@ QWidget* MoveBasePlugin::GetConfigWidget(QWidget* parent)
     return config_widget_;
 }
 
-bool MoveBasePlugin::Initialize(QGLWidget* canvas)
+bool MoveBasePlugin::Initialize(QOpenGLWidget* canvas)
 {
     map_canvas_ = static_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);

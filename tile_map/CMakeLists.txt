@@ -30,18 +30,20 @@ find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 
-# Qt 5
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Network REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5 QUIET COMPONENTS Core Gui Network OpenGL Widgets)
+if(Qt5_FOUND)
+  set(TILE_MAP_QT_VERSION_MAJOR 5)
+else()
+  find_package(Qt6 REQUIRED COMPONENTS Core Gui Network OpenGL Widgets)
+  set(TILE_MAP_QT_VERSION_MAJOR 6)
+endif()
+
+if(TILE_MAP_QT_VERSION_MAJOR EQUAL 6)
+  find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
+endif()
 
 ### OpenGL ###
 find_package(OpenGL REQUIRED)
-
-### GLEW ###
-find_package(GLEW REQUIRED)
 
 ### PkgConfig ###
 find_package(PkgConfig REQUIRED)
@@ -54,6 +56,9 @@ pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(TILE_SRC_FILES
   src/image_cache.cpp
@@ -71,8 +76,39 @@ set(QT_HEADERS
   include/${PROJECT_NAME}/bing_source.h
   include/${PROJECT_NAME}/stadia_source.h
 )
-qt5_wrap_cpp(TILE_SRC_FILES ${QT_HEADERS})
+
+set(TILE_MAP_QT_LIBRARIES
+  Qt${TILE_MAP_QT_VERSION_MAJOR}::Network
+  Qt${TILE_MAP_QT_VERSION_MAJOR}::Core
+  Qt${TILE_MAP_QT_VERSION_MAJOR}::Gui
+  Qt${TILE_MAP_QT_VERSION_MAJOR}::OpenGL
+  Qt${TILE_MAP_QT_VERSION_MAJOR}::Widgets
+)
+
+if(TILE_MAP_QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND TILE_MAP_QT_LIBRARIES Qt6::OpenGLWidgets)
+  set(TILE_MAP_QT_EXPORT_DEPENDENCIES
+    Qt6Network
+    Qt6Core
+    Qt6Gui
+    Qt6OpenGL
+    Qt6OpenGLWidgets
+    Qt6Widgets)
+else()
+  set(TILE_MAP_QT_EXPORT_DEPENDENCIES
+    Qt5Network
+    Qt5Core
+    Qt5Gui
+    Qt5OpenGL
+    Qt5Widgets)
+endif()
+
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  AUTOMOC ON
+  AUTOUIC ON
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
+  QT_MAJOR_VERSION ${TILE_MAP_QT_VERSION_MAJOR})
 target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -81,15 +117,9 @@ target_include_directories(${PROJECT_NAME}
     ${YamlCpp_INCLUDE_DIRS})
     
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ${GLU_LIBRARY}
-  GLEW::GLEW
   ${JSONCPP_LIBRARIES}
   ${mapviz_TARGETS}
-  Qt5::Network
-  Qt5::Core
-  Qt5::Gui
-  Qt5::OpenGL
-  Qt5::Widgets
+  ${TILE_MAP_QT_LIBRARIES}
   pluginlib::pluginlib
   rclcpp::rclcpp
   ${swri_transform_util_TARGETS}
@@ -101,10 +131,14 @@ set(PLUGIN_SRC_FILES
 set(PLUGIN_UI_FILES
   src/${PROJECT_NAME}_config.ui)
 
-qt5_wrap_ui(PLUGIN_SRC_FILES ${PLUGIN_UI_FILES})
-qt5_wrap_cpp(PLUGIN_SRC_FILES include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
+list(APPEND PLUGIN_SRC_FILES ${PLUGIN_UI_FILES} include/${PROJECT_NAME}/${PROJECT_NAME}_plugin.h)
 
 add_library(${PROJECT_NAME}_plugin SHARED ${PLUGIN_SRC_FILES})
+set_target_properties(${PROJECT_NAME}_plugin PROPERTIES
+  AUTOMOC ON
+  AUTOUIC ON
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
+  QT_MAJOR_VERSION ${TILE_MAP_QT_VERSION_MAJOR})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
 install(DIRECTORY include/
@@ -123,10 +157,6 @@ pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
 ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(${RUNTIME_DEPS}
-  Qt5::Network
-  Qt5::Core
-  Qt5::Gui
-  Qt5::OpenGL
-  Qt5::Widgets
+  ${TILE_MAP_QT_EXPORT_DEPENDENCIES}
 )
 ament_package()

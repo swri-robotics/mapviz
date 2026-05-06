@@ -34,7 +34,7 @@
 #include <mapviz/map_canvas.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 

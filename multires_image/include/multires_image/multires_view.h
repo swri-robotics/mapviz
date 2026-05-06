@@ -31,7 +31,7 @@
 #define MAPVIZ_PLUGINS_MULTIRES_VIEW_H_
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 #include <multires_image/tile_set.h>
 #include <multires_image/tile_cache.h>
@@ -41,7 +41,7 @@ namespace mapviz_plugins
 class MultiresView
 {
   public:
-    MultiresView(multires_image::TileSet* tiles, QGLWidget* widget);
+    MultiresView(multires_image::TileSet* tiles, QOpenGLWidget* widget);
     ~MultiresView() = default;
 
     const multires_image::TileCache* Cache() { return &m_cache; }

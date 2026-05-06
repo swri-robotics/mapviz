@@ -33,7 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 
@@ -62,7 +62,7 @@ class PathPlugin : public mapviz_plugins::PointDrawingPlugin
     PathPlugin();
     ~PathPlugin() override = default;
 
-    bool Initialize(QGLWidget* canvas) override;
+    bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override {}
 
     void Draw(double x, double y, double scale) override;

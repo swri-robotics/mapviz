@@ -33,7 +33,8 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLBuffer>
+#include <QOpenGLWidget>
 #include <QColor>
 #include <QMutex>
 
@@ -72,7 +73,7 @@ public:
   PointCloud2Plugin();
   ~PointCloud2Plugin() override = default;
 
-  bool Initialize(QGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
   void ClearHistory() override;
@@ -126,8 +127,6 @@ private:
 
     std::vector<float> gl_point;
     std::vector<uint8_t> gl_color;
-    GLuint point_vbo;
-    GLuint color_vbo;
   };
 
   float PointFeature(const uint8_t*, const FieldInfo&);
@@ -159,6 +158,9 @@ private:
   // decay time (evenator)
   std::deque<Scan> scans_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pc2_sub_;
+
+  QOpenGLBuffer point_buffer_;
+  QOpenGLBuffer color_buffer_;
 
   QMutex scan_mutex_;
 };

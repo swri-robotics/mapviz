@@ -442,7 +442,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool MarkerPlugin::Initialize(QGLWidget* canvas)
+  bool MarkerPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
 

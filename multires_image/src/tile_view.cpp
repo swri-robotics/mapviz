@@ -35,7 +35,7 @@
 
 namespace multires_image
 {
-  TileView::TileView(TileSet* tiles, QGLWidget* widget) :
+  TileView::TileView(TileSet* tiles, QOpenGLWidget* widget) :
       m_tiles(tiles),
       m_cache(tiles, widget),
       m_currentLayer(tiles->LayerCount() - 1),

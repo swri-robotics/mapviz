@@ -31,7 +31,8 @@
 #define MAPVIZ__MAP_CANVAS_H_
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLFunctions_1_5>
+#include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QColor>
@@ -54,7 +55,7 @@
 
 namespace mapviz
 {
-class MapCanvas : public QGLWidget
+class MapCanvas : public QOpenGLWidget, protected QOpenGLFunctions_1_5
 {
   Q_OBJECT
 
@@ -169,10 +170,11 @@ public Q_SLOTS:
 protected:
   void initializeGL() override;
   void initGlBlending();
+  void applyAntialiasingState();
   void pushGlMatrices();
   void popGlMatrices();
   void resizeGL(int w, int h) override;
-  void paintEvent(QPaintEvent* event) override;
+  void paintGL() override;
   void wheelEvent(QWheelEvent* e) override;
   void mousePressEvent(QMouseEvent* e) override;
   void mouseReleaseEvent(QMouseEvent* e) override;

@@ -68,7 +68,7 @@ namespace mapviz_plugins
     }
   }
 
-  bool PointClickPublisherPlugin::Initialize(QGLWidget* canvas)
+  bool PointClickPublisherPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     canvas_->installEventFilter(&click_filter_);

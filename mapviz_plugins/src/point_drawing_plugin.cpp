@@ -29,7 +29,7 @@
 
 #include <mapviz_plugins/point_drawing_plugin.h>
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPalette>
 #include <QPainter>
 

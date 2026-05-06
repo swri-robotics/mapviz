@@ -31,9 +31,7 @@
 
 #include <cmath>
 
-#include <GL/glew.h>
 #include <GL/gl.h>
-#include <GL/glu.h>
 
 #include <rclcpp/logging.hpp>
 
@@ -239,7 +237,7 @@ namespace tile_map
 
       if (texture)
       {
-        glBindTexture(GL_TEXTURE_2D, texture->id);
+        texture->GetTexture()->bind();
 
         glBegin(GL_TRIANGLES);
 
@@ -273,7 +271,7 @@ namespace tile_map
 
         glEnd();
 
-        glBindTexture(GL_TEXTURE_2D, 0);
+        texture->GetTexture()->release();
       }
     }
   }

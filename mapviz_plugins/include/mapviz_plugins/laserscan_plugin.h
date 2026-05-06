@@ -33,7 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QColor>
 
 // ROS libraries
@@ -67,7 +67,7 @@ class LaserScanPlugin : public mapviz::MapvizPlugin
     LaserScanPlugin();
     ~LaserScanPlugin() override = default;
 
-    bool Initialize(QGLWidget* canvas) override;
+    bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override {}
 
     void ClearHistory() override;

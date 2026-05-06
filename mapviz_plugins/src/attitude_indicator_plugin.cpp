@@ -29,12 +29,13 @@
 
 #include <mapviz_plugins/attitude_indicator_plugin.h>
 #include <mapviz_plugins/topic_select.h>
-#include <GL/glut.h>
 
 // QT libraries
 #include <QDebug>
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions_1_1>
+#include <QOpenGLWidget>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -45,6 +46,7 @@
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
+#include <cmath>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -53,6 +55,78 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPl
 
 namespace mapviz_plugins
 {
+  namespace
+  {
+    QOpenGLFunctions_1_1* CurrentOpenGLFunctions()
+    {
+      auto* context = QOpenGLContext::currentContext();
+      if (context == nullptr) {
+        return nullptr;
+      }
+
+      auto* functions = context->versionFunctions<QOpenGLFunctions_1_1>();
+      if (functions != nullptr) {
+        functions->initializeOpenGLFunctions();
+      }
+
+      return functions;
+    }
+
+    void DrawSolidSphere(QOpenGLFunctions_1_1& gl, double radius, int slices, int stacks)
+    {
+      for (int stack = 0; stack < stacks; ++stack) {
+        const double phi0 = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+        const double phi1 = M_PI * (static_cast<double>(stack + 1) / stacks - 0.5);
+        const double z0 = radius * std::sin(phi0);
+        const double z1 = radius * std::sin(phi1);
+        const double zr0 = radius * std::cos(phi0);
+        const double zr1 = radius * std::cos(phi1);
+
+        gl.glBegin(GL_QUAD_STRIP);
+        for (int slice = 0; slice <= slices; ++slice) {
+          const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
+          const double cos_theta = std::cos(theta);
+          const double sin_theta = std::sin(theta);
+
+          gl.glNormal3d(cos_theta * zr0 / radius, sin_theta * zr0 / radius, z0 / radius);
+          gl.glVertex3d(cos_theta * zr0, sin_theta * zr0, z0);
+          gl.glNormal3d(cos_theta * zr1 / radius, sin_theta * zr1 / radius, z1 / radius);
+          gl.glVertex3d(cos_theta * zr1, sin_theta * zr1, z1);
+        }
+        gl.glEnd();
+      }
+    }
+
+    void DrawWireSphere(QOpenGLFunctions_1_1& gl, double radius, int slices, int stacks)
+    {
+      for (int stack = 1; stack < stacks; ++stack) {
+        const double phi = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+        const double z = radius * std::sin(phi);
+        const double zr = radius * std::cos(phi);
+
+        gl.glBegin(GL_LINE_LOOP);
+        for (int slice = 0; slice < slices; ++slice) {
+          const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
+          gl.glVertex3d(std::cos(theta) * zr, std::sin(theta) * zr, z);
+        }
+        gl.glEnd();
+      }
+
+      for (int slice = 0; slice < slices; ++slice) {
+        const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
+
+        gl.glBegin(GL_LINE_STRIP);
+        for (int stack = 0; stack <= stacks; ++stack) {
+          const double phi = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+          const double z = radius * std::sin(phi);
+          const double zr = radius * std::cos(phi);
+          gl.glVertex3d(std::cos(theta) * zr, std::sin(theta) * zr, z);
+        }
+        gl.glEnd();
+      }
+    }
+  }  // namespace
+
   AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
     topic_(""),
     qos_(rmw_qos_profile_default),
@@ -192,7 +266,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool AttitudeIndicatorPlugin::Initialize(QGLWidget* canvas)
+  bool AttitudeIndicatorPlugin::Initialize(QOpenGLWidget* canvas)
   {
     initialized_ = true;
     canvas_ = canvas;
@@ -213,66 +287,76 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::drawBall()
   {
+    auto* gl = CurrentOpenGLFunctions();
+    if (gl == nullptr) {
+      return;
+    }
+
     GLdouble eqn[4] = {0.0, 0.0, 1.0, 0.0};
     GLdouble eqn2[4] = {0.0, 0.0, -1.0, 0.0};
     GLdouble eqn4[4] = {0.0, 0.0, 1.0, 0.05};
     GLdouble eqn3[4] = {0.0, 0.0, -1.0, 0.05};
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    gl->glEnable(GL_DEPTH_TEST);
+    gl->glDepthFunc(GL_LESS);
 
-    glPushMatrix();
+    gl->glPushMatrix();
 
-    glColor3f(0.392156863f, 0.584313725f, 0.929411765f);
-    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+    gl->glColor3f(0.392156863f, 0.584313725f, 0.929411765f);
+    gl->glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
 
-    glRotated(roll_, 0.0, 1.0, 0.0);
-    glRotated(yaw_, 0.0, 0.0, 1.0);
-    glClipPlane(GL_CLIP_PLANE1, eqn2);
-    glEnable(GL_CLIP_PLANE1);
-    glutSolidSphere(.8, 20, 16);
-    glDisable(GL_CLIP_PLANE1);
-    glPopMatrix();
+    gl->glRotated(roll_, 0.0, 1.0, 0.0);
+    gl->glRotated(yaw_, 0.0, 0.0, 1.0);
+    gl->glClipPlane(GL_CLIP_PLANE1, eqn2);
+    gl->glEnable(GL_CLIP_PLANE1);
+    DrawSolidSphere(*gl, .8, 20, 16);
+    gl->glDisable(GL_CLIP_PLANE1);
+    gl->glPopMatrix();
 
-    glPushMatrix();
+    gl->glPushMatrix();
 
-    glLineWidth(2);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
-    glRotated(roll_, 0.0, 1.0, 0.0);
-    glRotated(yaw_, 0.0, 0.0, 1.0);
-    glClipPlane(GL_CLIP_PLANE3, eqn4);
-    glClipPlane(GL_CLIP_PLANE2, eqn3);
-    glEnable(GL_CLIP_PLANE2);
-    glEnable(GL_CLIP_PLANE3);
-    glutWireSphere(.801, 10, 16);
-    glDisable(GL_CLIP_PLANE2);
-    glDisable(GL_CLIP_PLANE3);
-    glPopMatrix();
+    gl->glLineWidth(2);
+    gl->glColor3f(1.0f, 1.0f, 1.0f);
+    gl->glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+    gl->glRotated(roll_, 0.0, 1.0, 0.0);
+    gl->glRotated(yaw_, 0.0, 0.0, 1.0);
+    gl->glClipPlane(GL_CLIP_PLANE3, eqn4);
+    gl->glClipPlane(GL_CLIP_PLANE2, eqn3);
+    gl->glEnable(GL_CLIP_PLANE2);
+    gl->glEnable(GL_CLIP_PLANE3);
+    DrawWireSphere(*gl, .801, 10, 16);
+    gl->glDisable(GL_CLIP_PLANE2);
+    gl->glDisable(GL_CLIP_PLANE3);
+    gl->glPopMatrix();
 
-    glPushMatrix();
-    glColor3f(0.62745098f, 0.321568627f, 0.176470588f);
-    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);  // x
-    glRotated(roll_, 0.0, 1.0, 0.0);  // y
-    glRotated(yaw_, 0.0, 0.0, 1.0);   // z
-    glClipPlane(GL_CLIP_PLANE0, eqn);
-    glEnable(GL_CLIP_PLANE0);
-    glutSolidSphere(.8, 20, 16);
-    glDisable(GL_CLIP_PLANE0);
-    glPopMatrix();
-    glDisable(GL_DEPTH_TEST);
+    gl->glPushMatrix();
+    gl->glColor3f(0.62745098f, 0.321568627f, 0.176470588f);
+    gl->glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+    gl->glRotated(roll_, 0.0, 1.0, 0.0);
+    gl->glRotated(yaw_, 0.0, 0.0, 1.0);
+    gl->glClipPlane(GL_CLIP_PLANE0, eqn);
+    gl->glEnable(GL_CLIP_PLANE0);
+    DrawSolidSphere(*gl, .8, 20, 16);
+    gl->glDisable(GL_CLIP_PLANE0);
+    gl->glPopMatrix();
+    gl->glDisable(GL_DEPTH_TEST);
   }
 
   void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
   {
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, canvas_->width(), canvas_->height(), 0, -1.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
+    auto* gl = CurrentOpenGLFunctions();
+    if (gl == nullptr) {
+      return;
+    }
+
+    gl->glPushAttrib(GL_ALL_ATTRIB_BITS);
+    gl->glMatrixMode(GL_PROJECTION);
+    gl->glPushMatrix();
+    gl->glLoadIdentity();
+    gl->glOrtho(0, canvas_->width(), canvas_->height(), 0, -1.0f, 1.0f);
+    gl->glMatrixMode(GL_MODELVIEW);
+    gl->glPushMatrix();
+    gl->glLoadIdentity();
     // Setup coordinate system so that we have a [-1,1]x[1,1] cube on
     // the screen.
     QRect rect = placer_.rect();
@@ -286,7 +370,7 @@ namespace mapviz_plugins
         0, s_y, 0, 0,
         0, 0, 1.0, 0,
         t_x, t_y, 0, 1.0};
-    glMultMatrixd(m);
+    gl->glMultMatrixd(m);
 
     // Placed in a separate function so that we don't forget to pop the
     // GL state back.
@@ -296,55 +380,65 @@ namespace mapviz_plugins
 
     drawPanel();
 
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopAttrib();
+    gl->glPopMatrix();
+    gl->glMatrixMode(GL_PROJECTION);
+    gl->glPopMatrix();
+    gl->glMatrixMode(GL_MODELVIEW);
+    gl->glPopAttrib();
     PrintInfo("OK!");
   }
 
   void AttitudeIndicatorPlugin::drawBackground()
   {
-    glBegin(GL_TRIANGLES);
-    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    auto* gl = CurrentOpenGLFunctions();
+    if (gl == nullptr) {
+      return;
+    }
 
-    glVertex2d(-1.0, -1.0);
-    glVertex2d(-1.0, 1.0);
-    glVertex2d(1.0, 1.0);
+    gl->glBegin(GL_TRIANGLES);
+    gl->glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 
-    glVertex2d(-1.0, -1.0);
-    glVertex2d(1.0, 1.0);
-    glVertex2d(1.0, -1.0);
+    gl->glVertex2d(-1.0, -1.0);
+    gl->glVertex2d(-1.0, 1.0);
+    gl->glVertex2d(1.0, 1.0);
 
-    glEnd();
+    gl->glVertex2d(-1.0, -1.0);
+    gl->glVertex2d(1.0, 1.0);
+    gl->glVertex2d(1.0, -1.0);
+
+    gl->glEnd();
   }
 
   void AttitudeIndicatorPlugin::drawPanel()
   {
-    glLineWidth(2);
+    auto* gl = CurrentOpenGLFunctions();
+    if (gl == nullptr) {
+      return;
+    }
 
-    glBegin(GL_LINE_STRIP);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    gl->glLineWidth(2);
 
-    glVertex2d(-0.9, 0.0);
-    glVertex2d(-0.2, 0.0);
+    gl->glBegin(GL_LINE_STRIP);
+    gl->glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+    gl->glVertex2d(-0.9, 0.0);
+    gl->glVertex2d(-0.2, 0.0);
 
     int divisions = 20;
     for (int i = 1; i < divisions; i++)
     {
-      glVertex2d(-0.2 * std::cos(M_PI * i / divisions),
-                 -0.2 * std::sin(M_PI * i / divisions));
+      gl->glVertex2d(-0.2 * std::cos(M_PI * i / divisions),
+                     -0.2 * std::sin(M_PI * i / divisions));
     }
 
-    glVertex2f(0.2, 0.0);
-    glVertex2f(0.9, 0.0);
-    glEnd();
+    gl->glVertex2f(0.2, 0.0);
+    gl->glVertex2f(0.9, 0.0);
+    gl->glEnd();
 
-    glBegin(GL_LINES);
-    glVertex2f(0.0, -0.2f);
-    glVertex2f(0.0, -0.9f);
-    glEnd();
+    gl->glBegin(GL_LINES);
+    gl->glVertex2f(0.0, -0.2f);
+    gl->glVertex2f(0.0, -0.9f);
+    gl->glEnd();
   }
 
   void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& path)

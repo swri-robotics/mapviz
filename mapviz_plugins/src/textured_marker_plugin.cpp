@@ -32,7 +32,7 @@
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -450,7 +450,7 @@ QWidget * TexturedMarkerPlugin::GetConfigWidget(QWidget * parent)
   return config_widget_;
 }
 
-bool TexturedMarkerPlugin::Initialize(QGLWidget * canvas)
+bool TexturedMarkerPlugin::Initialize(QOpenGLWidget * canvas)
 {
   canvas_ = canvas;
 

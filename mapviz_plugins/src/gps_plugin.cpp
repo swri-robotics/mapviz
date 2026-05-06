@@ -22,7 +22,7 @@
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPalette>
 
 #include <opencv2/core/core.hpp>
@@ -188,7 +188,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool GpsPlugin::Initialize(QGLWidget* canvas)
+  bool GpsPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
     SetColor(ui_.color->color());

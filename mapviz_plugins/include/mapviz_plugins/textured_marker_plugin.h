@@ -33,7 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 #include <QColor>
@@ -69,7 +69,7 @@ public:
   TexturedMarkerPlugin();
   ~TexturedMarkerPlugin() override = default;
 
-  bool Initialize(QGLWidget * canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
   void Draw(double x, double y, double scale) override;

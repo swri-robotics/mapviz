@@ -43,7 +43,7 @@
 
 namespace multires_image
 {
-  TileCache::TileCache(TileSet* tileSet, QGLWidget* widget)
+  TileCache::TileCache(TileSet* tileSet, QOpenGLWidget* widget)
   : QObject()
   , m_tileSet(tileSet)
   , m_widget(widget)

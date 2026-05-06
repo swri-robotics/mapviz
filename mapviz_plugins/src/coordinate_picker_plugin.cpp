@@ -95,7 +95,7 @@ QWidget* CoordinatePickerPlugin::GetConfigWidget(QWidget* parent)
   return config_widget_;
 }
 
-bool CoordinatePickerPlugin::Initialize(QGLWidget* canvas)
+bool CoordinatePickerPlugin::Initialize(QOpenGLWidget* canvas)
 {
   map_canvas_ = dynamic_cast< mapviz::MapCanvas* >(canvas);
   map_canvas_->installEventFilter(this);

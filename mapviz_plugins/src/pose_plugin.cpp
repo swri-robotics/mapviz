@@ -33,7 +33,7 @@
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPalette>
 
 #include <opencv2/core/core.hpp>
@@ -192,7 +192,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool PosePlugin::Initialize(QGLWidget* canvas)
+  bool PosePlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
     SetColor(ui_.color->color());

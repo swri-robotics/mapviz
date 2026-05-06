@@ -37,6 +37,18 @@
  * Since we can't edit the ROS source code, though, we need to define those macros before
  * we include the ROS headers and then undefine them afterwards.
  */
+#ifdef slots
+#pragma push_macro("slots")
+#undef slots
+#define MAPVIZ_RESTORE_SLOTS_MACRO
+#endif
+
+#ifdef signals
+#pragma push_macro("signals")
+#undef signals
+#define MAPVIZ_RESTORE_SIGNALS_MACRO
+#endif
+
 #define slots
 #define signals
 #if __has_include(<rqt_gui_cpp/plugin.h>)
@@ -46,6 +58,16 @@
 #endif
 #undef slots
 #undef signals
+
+#ifdef MAPVIZ_RESTORE_SLOTS_MACRO
+#pragma pop_macro("slots")
+#undef MAPVIZ_RESTORE_SLOTS_MACRO
+#endif
+
+#ifdef MAPVIZ_RESTORE_SIGNALS_MACRO
+#pragma pop_macro("signals")
+#undef MAPVIZ_RESTORE_SIGNALS_MACRO
+#endif
 
 #include "mapviz.hpp"
 

@@ -32,7 +32,7 @@
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPainter>
 #include <QPalette>
 
@@ -253,7 +253,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool RoutePlugin::Initialize(QGLWidget* canvas)
+  bool RoutePlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
 

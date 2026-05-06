@@ -27,13 +27,13 @@
 //
 // *****************************************************************************
 
-#include <GL/glew.h>
-
 #include <mapviz_plugins/occupancy_grid_plugin.h>
 #include <mapviz_plugins/topic_select.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions_1_1>
+#include <QOpenGLWidget>
 #include <QPalette>
 
 // Declare plugin
@@ -48,6 +48,24 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OccupancyGridPlugin, mapviz::MapvizPlugin
 
 namespace mapviz_plugins
 {
+  namespace
+  {
+    QOpenGLFunctions_1_1* CurrentOpenGLFunctions()
+    {
+      auto* context = QOpenGLContext::currentContext();
+      if (context == nullptr) {
+        return nullptr;
+      }
+
+      auto* functions = context->versionFunctions<QOpenGLFunctions_1_1>();
+      if (functions != nullptr) {
+        functions->initializeOpenGLFunctions();
+      }
+
+      return functions;
+    }
+  }  // namespace
+
   const int CHANNELS = 4;
 
   typedef std::array<uchar, 256*4> Palette;
@@ -150,7 +168,7 @@ namespace mapviz_plugins
     ui_(),
     config_widget_(new QWidget()),
     transformed_(false),
-    texture_id_(0),
+    texture_(nullptr),
     texture_x_(0.0),
     texture_y_(0.0),
     texture_size_(0),
@@ -338,7 +356,7 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool OccupancyGridPlugin::Initialize(QGLWidget* canvas)
+  bool OccupancyGridPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
     DrawIcon();
@@ -347,41 +365,32 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::updateTexture()
   {
-    if (texture_id_ != -1)
-    {
-      glDeleteTextures(1, &texture_id_);
+    if (canvas_ == nullptr) {
+      return;
     }
 
-    // Get a new texture id.
-    glGenTextures(1, &texture_id_);
+    canvas_->makeCurrent();
 
-    // Bind the texture with the correct size and null memory.
-    glBindTexture(GL_TEXTURE_2D, texture_id_);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    auto* gl = CurrentOpenGLFunctions();
+    if (gl == nullptr) {
+      canvas_->doneCurrent();
+      return;
+    }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    texture_.reset();
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    texture_ = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
+    texture_->setFormat(QOpenGLTexture::RGBA8_UNorm);
+    texture_->setSize(static_cast<int>(texture_size_), static_cast<int>(texture_size_));
+    texture_->allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
+    texture_->setMinificationFilter(QOpenGLTexture::Nearest);
+    texture_->setMagnificationFilter(QOpenGLTexture::Nearest);
+    texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
+    texture_->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, color_buffer_.data());
 
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-    glTexImage2D(
-          GL_TEXTURE_2D,
-          0,
-          GL_RGBA,
-          texture_size_,
-          texture_size_,
-          0,
-          GL_RGBA,
-          GL_UNSIGNED_BYTE,
-          color_buffer_.data());
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    gl->glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    canvas_->doneCurrent();
   }
-
 
   void OccupancyGridPlugin::Callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
   {
@@ -454,14 +463,19 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::Draw(double x, double y, double scale)
   {
-    glPushMatrix();
+    auto* gl = CurrentOpenGLFunctions();
+    if (gl == nullptr) {
+      return;
+    }
+
+    gl->glPushMatrix();
 
     if( grid_ && transformed_)
     {
       double resolution = grid_->info.resolution;
-      glTranslatef( transform_.GetOrigin().getX(),
-                    transform_.GetOrigin().getY(),
-                    0.0);
+      gl->glTranslatef( transform_.GetOrigin().getX(),
+                        transform_.GetOrigin().getY(),
+                        0.0);
 
       const double RAD_TO_DEG = 180.0 / M_PI;
 
@@ -469,45 +483,49 @@ namespace mapviz_plugins
       tf2::Matrix3x3 mat( transform_.GetOrientation() );
       mat.getEulerYPR(yaw, pitch, roll);
 
-      glRotatef(pitch * RAD_TO_DEG, 0, 1, 0);
-      glRotatef(roll  * RAD_TO_DEG, 1, 0, 0);
-      glRotatef(yaw   * RAD_TO_DEG, 0, 0, 1);
+      gl->glRotatef(pitch * RAD_TO_DEG, 0, 1, 0);
+      gl->glRotatef(roll  * RAD_TO_DEG, 1, 0, 0);
+      gl->glRotatef(yaw   * RAD_TO_DEG, 0, 0, 1);
 
-      glTranslatef( grid_->info.origin.position.x,
-                    grid_->info.origin.position.y,
-                    0.0);
+      gl->glTranslatef( grid_->info.origin.position.x,
+            grid_->info.origin.position.y,
+            0.0);
 
-      glScalef( resolution, resolution, 1.0);
+      gl->glScalef( resolution, resolution, 1.0);
 
       float width  = static_cast<float>(grid_->info.width);
       float height = static_cast<float>(grid_->info.height);
 
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, texture_id_);
-      glBegin(GL_TRIANGLES);
+      gl->glEnable(GL_TEXTURE_2D);
+      if (texture_) {
+        texture_->bind();
+      }
+      gl->glBegin(GL_TRIANGLES);
 
-      glColor4f(1.0f, 1.0f, 1.0f, ui_.alpha->value() );
+      gl->glColor4f(1.0f, 1.0f, 1.0f, ui_.alpha->value() );
 
-      glTexCoord2d(0, 0);
-      glVertex2d(0, 0);
-      glTexCoord2d(texture_x_, 0);
-      glVertex2d(width, 0);
-      glTexCoord2d(texture_x_, texture_y_);
-      glVertex2d(width, height);
+      gl->glTexCoord2d(0, 0);
+      gl->glVertex2d(0, 0);
+      gl->glTexCoord2d(texture_x_, 0);
+      gl->glVertex2d(width, 0);
+      gl->glTexCoord2d(texture_x_, texture_y_);
+      gl->glVertex2d(width, height);
 
-      glTexCoord2d(0, 0);
-      glVertex2d(0, 0);
-      glTexCoord2d(texture_x_, texture_y_);
-      glVertex2d(width, height);
-      glTexCoord2d(0, texture_y_);
-      glVertex2d(0, height);
+      gl->glTexCoord2d(0, 0);
+      gl->glVertex2d(0, 0);
+      gl->glTexCoord2d(texture_x_, texture_y_);
+      gl->glVertex2d(width, height);
+      gl->glTexCoord2d(0, texture_y_);
+      gl->glVertex2d(0, height);
 
-      glEnd();
+      gl->glEnd();
 
-      glBindTexture(GL_TEXTURE_2D, 0);
-      glDisable(GL_TEXTURE_2D);
+      if (texture_) {
+        texture_->release();
+      }
+      gl->glDisable(GL_TEXTURE_2D);
     }
-    glPopMatrix();
+    gl->glPopMatrix();
   }
 
   void OccupancyGridPlugin::Transform()

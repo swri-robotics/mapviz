@@ -35,7 +35,7 @@
 namespace multires_image
 {
 QGLMap::QGLMap(QWidget *parent)
-  : QGLWidget(parent)
+  : QOpenGLWidget(parent)
   , ui()
   , m_initialized(false)
   , m_scale(1.0)

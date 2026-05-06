@@ -31,14 +31,13 @@
 #define TILE_MAP_TILE_MAP_PLUGIN_H_
 
 // C++ standard libraries
-#include <filesystem>
 #include <string>
 #include <map>
 
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 
@@ -60,7 +59,7 @@ namespace tile_map
     TileMapPlugin();
     ~TileMapPlugin() override = default;
 
-    bool Initialize(QGLWidget* canvas) override;
+    bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override {}
 
     void Draw(double x, double y, double scale) override;

@@ -92,7 +92,7 @@ namespace mapviz_plugins
     ui_.color->setColor(color_);
   }
 
-  bool StringPlugin::Initialize(QGLWidget* canvas)
+  bool StringPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
     return true;

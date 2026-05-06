@@ -33,7 +33,8 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLTexture>
+#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 #include <QTimer>
@@ -48,6 +49,7 @@
 
 // C++ standard libraries
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -66,7 +68,7 @@ public:
   OccupancyGridPlugin();
   ~OccupancyGridPlugin() override = default;
 
-  bool Initialize(QGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
   void Draw(double x, double y, double scale) override;
@@ -108,7 +110,7 @@ private:
   rmw_qos_profile_t qos_;
   swri_transform_util::Transform transform_;
 
-  GLuint texture_id_;
+  std::unique_ptr<QOpenGLTexture> texture_;
 
   QPointF map_origin_;
   float texture_x_, texture_y_;

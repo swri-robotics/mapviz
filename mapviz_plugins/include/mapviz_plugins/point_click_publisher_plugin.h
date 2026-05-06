@@ -33,7 +33,7 @@
 // Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.h>
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QTimer>
 #include <mapviz/map_canvas.h>
 
@@ -63,7 +63,7 @@ public:
   PointClickPublisherPlugin();
   ~PointClickPublisherPlugin() override;
 
-  bool Initialize(QGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
   void SetNode(rclcpp::Node& node) override;

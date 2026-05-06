@@ -21,7 +21,6 @@
   <depend>libqt5-core</depend>
   <build_depend>libqt5-opengl-dev</build_depend>
 
-  <depend>libglew-dev</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>

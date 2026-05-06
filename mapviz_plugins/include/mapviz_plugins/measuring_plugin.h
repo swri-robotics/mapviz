@@ -55,7 +55,7 @@ class MeasuringPlugin : public mapviz::MapvizPlugin
     MeasuringPlugin();
     ~MeasuringPlugin() override;
 
-    bool Initialize(QGLWidget* canvas) override;
+    bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override { }
 
     void Paint(QPainter* painter, double x, double y, double scale) override;

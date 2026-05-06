@@ -54,7 +54,7 @@ class CoordinatePickerPlugin : public mapviz::MapvizPlugin
     CoordinatePickerPlugin();
     ~CoordinatePickerPlugin() override;
 
-    bool Initialize(QGLWidget* canvas) override;
+    bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override { }
 
     void Draw(double x, double y, double scale) override;
