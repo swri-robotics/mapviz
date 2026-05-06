@@ -31,8 +31,6 @@
 
 #include <cmath>
 
-#include <GL/gl.h>
-
 #include <rclcpp/logging.hpp>
 
 #include <swri_math_util/constants.h>
@@ -278,6 +276,7 @@ namespace tile_map
 
   void TileMapView::Draw()
   {
+    initializeOpenGLFunctions();
     if (!tile_source_)
     {
       return;

@@ -31,6 +31,7 @@
 #define MAPVIZ_PLUGINS_MULTIRES_VIEW_H_
 
 // QT libraries
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 
 #include <multires_image/tile_set.h>
@@ -38,7 +39,7 @@
 
 namespace mapviz_plugins
 {
-class MultiresView
+class MultiresView : protected QOpenGLFunctions_1_1
 {
   public:
     MultiresView(multires_image::TileSet* tiles, QOpenGLWidget* widget);

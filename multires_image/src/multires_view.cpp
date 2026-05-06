@@ -134,6 +134,7 @@ namespace mapviz_plugins
 
   void MultiresView::Draw()
   {
+    initializeOpenGLFunctions();
     glEnable(GL_TEXTURE_2D);
 
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

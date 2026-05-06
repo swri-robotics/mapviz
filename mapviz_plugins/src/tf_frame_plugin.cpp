@@ -159,6 +159,7 @@ namespace mapviz_plugins
 
   void TfFramePlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     if (DrawPoints(scale))
     {
       PrintInfo("OK");

@@ -462,6 +462,7 @@ namespace mapviz_plugins
 
   void ImagePlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     // Calculate the correct offsets and dimensions
     double x_offset = offset_x_;
     double y_offset = offset_y_;

@@ -383,6 +383,7 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     stu::Transform transform;
     if (tf_manager_->GetTransform(target_frame_, stu::_wgs84_frame, transform))
     {

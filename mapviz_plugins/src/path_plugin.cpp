@@ -174,6 +174,7 @@ namespace mapviz_plugins
 
   void PathPlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     bool lines;
     bool points;
     QColor old_color = ui_.path_color->color();

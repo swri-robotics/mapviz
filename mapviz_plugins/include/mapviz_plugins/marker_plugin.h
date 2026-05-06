@@ -33,6 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QListWidgetItem>
 
@@ -83,7 +84,7 @@ struct MarkerNsHash {
   }
 };
 
-class MarkerPlugin : public mapviz::MapvizPlugin
+class MarkerPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 

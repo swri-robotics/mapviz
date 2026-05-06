@@ -33,8 +33,6 @@
 // QT libraries
 #include <QDebug>
 #include <QDialog>
-#include <QOpenGLContext>
-#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 
 // ROS libraries
@@ -57,20 +55,6 @@ namespace mapviz_plugins
 {
   namespace
   {
-    QOpenGLFunctions_1_1* CurrentOpenGLFunctions()
-    {
-      auto* context = QOpenGLContext::currentContext();
-      if (context == nullptr) {
-        return nullptr;
-      }
-
-      auto* functions = context->versionFunctions<QOpenGLFunctions_1_1>();
-      if (functions != nullptr) {
-        functions->initializeOpenGLFunctions();
-      }
-
-      return functions;
-    }
 
     void DrawSolidSphere(QOpenGLFunctions_1_1& gl, double radius, int slices, int stacks)
     {
@@ -287,76 +271,68 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::drawBall()
   {
-    auto* gl = CurrentOpenGLFunctions();
-    if (gl == nullptr) {
-      return;
-    }
-
     GLdouble eqn[4] = {0.0, 0.0, 1.0, 0.0};
     GLdouble eqn2[4] = {0.0, 0.0, -1.0, 0.0};
     GLdouble eqn4[4] = {0.0, 0.0, 1.0, 0.05};
     GLdouble eqn3[4] = {0.0, 0.0, -1.0, 0.05};
 
-    gl->glEnable(GL_DEPTH_TEST);
-    gl->glDepthFunc(GL_LESS);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
-    gl->glPushMatrix();
+    glPushMatrix();
 
-    gl->glColor3f(0.392156863f, 0.584313725f, 0.929411765f);
-    gl->glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+    glColor3f(0.392156863f, 0.584313725f, 0.929411765f);
+    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
 
-    gl->glRotated(roll_, 0.0, 1.0, 0.0);
-    gl->glRotated(yaw_, 0.0, 0.0, 1.0);
-    gl->glClipPlane(GL_CLIP_PLANE1, eqn2);
-    gl->glEnable(GL_CLIP_PLANE1);
-    DrawSolidSphere(*gl, .8, 20, 16);
-    gl->glDisable(GL_CLIP_PLANE1);
-    gl->glPopMatrix();
+    glRotated(roll_, 0.0, 1.0, 0.0);
+    glRotated(yaw_, 0.0, 0.0, 1.0);
+    glClipPlane(GL_CLIP_PLANE1, eqn2);
+    glEnable(GL_CLIP_PLANE1);
+    DrawSolidSphere(*this, .8, 20, 16);
+    glDisable(GL_CLIP_PLANE1);
+    glPopMatrix();
 
-    gl->glPushMatrix();
+    glPushMatrix();
 
-    gl->glLineWidth(2);
-    gl->glColor3f(1.0f, 1.0f, 1.0f);
-    gl->glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
-    gl->glRotated(roll_, 0.0, 1.0, 0.0);
-    gl->glRotated(yaw_, 0.0, 0.0, 1.0);
-    gl->glClipPlane(GL_CLIP_PLANE3, eqn4);
-    gl->glClipPlane(GL_CLIP_PLANE2, eqn3);
-    gl->glEnable(GL_CLIP_PLANE2);
-    gl->glEnable(GL_CLIP_PLANE3);
-    DrawWireSphere(*gl, .801, 10, 16);
-    gl->glDisable(GL_CLIP_PLANE2);
-    gl->glDisable(GL_CLIP_PLANE3);
-    gl->glPopMatrix();
+    glLineWidth(2);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+    glRotated(roll_, 0.0, 1.0, 0.0);
+    glRotated(yaw_, 0.0, 0.0, 1.0);
+    glClipPlane(GL_CLIP_PLANE3, eqn4);
+    glClipPlane(GL_CLIP_PLANE2, eqn3);
+    glEnable(GL_CLIP_PLANE2);
+    glEnable(GL_CLIP_PLANE3);
+    DrawWireSphere(*this, .801, 10, 16);
+    glDisable(GL_CLIP_PLANE2);
+    glDisable(GL_CLIP_PLANE3);
+    glPopMatrix();
 
-    gl->glPushMatrix();
-    gl->glColor3f(0.62745098f, 0.321568627f, 0.176470588f);
-    gl->glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
-    gl->glRotated(roll_, 0.0, 1.0, 0.0);
-    gl->glRotated(yaw_, 0.0, 0.0, 1.0);
-    gl->glClipPlane(GL_CLIP_PLANE0, eqn);
-    gl->glEnable(GL_CLIP_PLANE0);
-    DrawSolidSphere(*gl, .8, 20, 16);
-    gl->glDisable(GL_CLIP_PLANE0);
-    gl->glPopMatrix();
-    gl->glDisable(GL_DEPTH_TEST);
+    glPushMatrix();
+    glColor3f(0.62745098f, 0.321568627f, 0.176470588f);
+    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+    glRotated(roll_, 0.0, 1.0, 0.0);
+    glRotated(yaw_, 0.0, 0.0, 1.0);
+    glClipPlane(GL_CLIP_PLANE0, eqn);
+    glEnable(GL_CLIP_PLANE0);
+    DrawSolidSphere(*this, .8, 20, 16);
+    glDisable(GL_CLIP_PLANE0);
+    glPopMatrix();
+    glDisable(GL_DEPTH_TEST);
   }
 
   void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
   {
-    auto* gl = CurrentOpenGLFunctions();
-    if (gl == nullptr) {
-      return;
-    }
+    initializeOpenGLFunctions();
 
-    gl->glPushAttrib(GL_ALL_ATTRIB_BITS);
-    gl->glMatrixMode(GL_PROJECTION);
-    gl->glPushMatrix();
-    gl->glLoadIdentity();
-    gl->glOrtho(0, canvas_->width(), canvas_->height(), 0, -1.0f, 1.0f);
-    gl->glMatrixMode(GL_MODELVIEW);
-    gl->glPushMatrix();
-    gl->glLoadIdentity();
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, canvas_->width(), canvas_->height(), 0, -1.0f, 1.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
     // Setup coordinate system so that we have a [-1,1]x[1,1] cube on
     // the screen.
     QRect rect = placer_.rect();
@@ -370,7 +346,7 @@ namespace mapviz_plugins
         0, s_y, 0, 0,
         0, 0, 1.0, 0,
         t_x, t_y, 0, 1.0};
-    gl->glMultMatrixd(m);
+    glMultMatrixd(m);
 
     // Placed in a separate function so that we don't forget to pop the
     // GL state back.
@@ -380,65 +356,55 @@ namespace mapviz_plugins
 
     drawPanel();
 
-    gl->glPopMatrix();
-    gl->glMatrixMode(GL_PROJECTION);
-    gl->glPopMatrix();
-    gl->glMatrixMode(GL_MODELVIEW);
-    gl->glPopAttrib();
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopAttrib();
     PrintInfo("OK!");
   }
 
   void AttitudeIndicatorPlugin::drawBackground()
   {
-    auto* gl = CurrentOpenGLFunctions();
-    if (gl == nullptr) {
-      return;
-    }
+    glBegin(GL_TRIANGLES);
+    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 
-    gl->glBegin(GL_TRIANGLES);
-    gl->glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+    glVertex2d(-1.0, -1.0);
+    glVertex2d(-1.0, 1.0);
+    glVertex2d(1.0, 1.0);
 
-    gl->glVertex2d(-1.0, -1.0);
-    gl->glVertex2d(-1.0, 1.0);
-    gl->glVertex2d(1.0, 1.0);
+    glVertex2d(-1.0, -1.0);
+    glVertex2d(1.0, 1.0);
+    glVertex2d(1.0, -1.0);
 
-    gl->glVertex2d(-1.0, -1.0);
-    gl->glVertex2d(1.0, 1.0);
-    gl->glVertex2d(1.0, -1.0);
-
-    gl->glEnd();
+    glEnd();
   }
 
   void AttitudeIndicatorPlugin::drawPanel()
   {
-    auto* gl = CurrentOpenGLFunctions();
-    if (gl == nullptr) {
-      return;
-    }
+    glLineWidth(2);
 
-    gl->glLineWidth(2);
+    glBegin(GL_LINE_STRIP);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-    gl->glBegin(GL_LINE_STRIP);
-    gl->glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-    gl->glVertex2d(-0.9, 0.0);
-    gl->glVertex2d(-0.2, 0.0);
+    glVertex2d(-0.9, 0.0);
+    glVertex2d(-0.2, 0.0);
 
     int divisions = 20;
     for (int i = 1; i < divisions; i++)
     {
-      gl->glVertex2d(-0.2 * std::cos(M_PI * i / divisions),
+      glVertex2d(-0.2 * std::cos(M_PI * i / divisions),
                      -0.2 * std::sin(M_PI * i / divisions));
     }
 
-    gl->glVertex2f(0.2, 0.0);
-    gl->glVertex2f(0.9, 0.0);
-    gl->glEnd();
+    glVertex2f(0.2, 0.0);
+    glVertex2f(0.9, 0.0);
+    glEnd();
 
-    gl->glBegin(GL_LINES);
-    gl->glVertex2f(0.0, -0.2f);
-    gl->glVertex2f(0.0, -0.9f);
-    gl->glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(0.0, -0.2f);
+    glVertex2f(0.0, -0.9f);
+    glEnd();
   }
 
   void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& path)

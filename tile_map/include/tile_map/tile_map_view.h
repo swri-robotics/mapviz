@@ -32,6 +32,8 @@
 
 #include <string>
 
+#include <QOpenGLFunctions_1_1>
+
 #include <tile_map/tile_source.h>
 #include <tile_map/texture_cache.h>
 
@@ -58,7 +60,7 @@ namespace tile_map
     std::vector<tf2::Vector3> points_t;
   };
 
-  class TileMapView
+  class TileMapView : protected QOpenGLFunctions_1_1
   {
   public:
     explicit TileMapView(rclcpp::Logger logger = rclcpp::get_logger("tile_map::TileMapView"));

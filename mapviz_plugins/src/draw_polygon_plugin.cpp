@@ -338,6 +338,7 @@ namespace mapviz_plugins
 
   void DrawPolygonPlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     stu::Transform transform;
     std::string frame = ui_.frame->text().toStdString();
     if (!tf_manager_->GetTransform(target_frame_, frame, transform))

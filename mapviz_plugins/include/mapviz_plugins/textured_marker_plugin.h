@@ -33,6 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
@@ -61,7 +62,7 @@ Q_DECLARE_METATYPE(marti_visualization_msgs::msg::TexturedMarker)
 
 namespace mapviz_plugins
 {
-class TexturedMarkerPlugin : public mapviz::MapvizPlugin
+class TexturedMarkerPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 

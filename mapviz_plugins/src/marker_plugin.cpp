@@ -451,6 +451,7 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     for (size_t i = 0; i < ui_.nsList->count(); i++)
     {
       if (ui_.nsList->item(i)->checkState() == Qt::Checked)

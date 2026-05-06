@@ -265,6 +265,7 @@ namespace mapviz_plugins
 
   void RoutePlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     if (!src_route_.valid())
     {
       PrintError("No valid route received.");

@@ -460,6 +460,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     glPointSize(point_size_);
     glBegin(GL_POINTS);
 

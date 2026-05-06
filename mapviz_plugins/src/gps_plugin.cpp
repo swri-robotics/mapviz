@@ -198,6 +198,7 @@ namespace mapviz_plugins
 
   void GpsPlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     if (DrawPoints(scale))
     {
       PrintInfo("OK");

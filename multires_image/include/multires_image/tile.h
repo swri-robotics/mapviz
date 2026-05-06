@@ -37,6 +37,7 @@
 // QT libraries
 #include <QImage>
 #include <QMutex>
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLTexture>
 
 #include <tf2/transform_datatypes.hpp>
@@ -45,7 +46,7 @@
 
 namespace multires_image
 {
-  class Tile
+  class Tile : protected QOpenGLFunctions_1_1
   {
   public:
     Tile(

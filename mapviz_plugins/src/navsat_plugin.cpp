@@ -184,6 +184,7 @@ namespace mapviz_plugins
 
   void NavSatPlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     if (DrawPoints(scale))
     {
       PrintInfo("OK");

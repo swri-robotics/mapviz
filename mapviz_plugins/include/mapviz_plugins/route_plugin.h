@@ -33,6 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
@@ -54,7 +55,7 @@
 
 namespace mapviz_plugins
 {
-class RoutePlugin : public mapviz::MapvizPlugin
+class RoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 

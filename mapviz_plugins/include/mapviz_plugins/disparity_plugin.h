@@ -35,6 +35,7 @@
 
 // QT libraries
 #include <QColor>
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
@@ -61,7 +62,7 @@
 
 namespace mapviz_plugins
 {
-class DisparityPlugin : public mapviz::MapvizPlugin
+class DisparityPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 

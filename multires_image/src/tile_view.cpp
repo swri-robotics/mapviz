@@ -110,6 +110,7 @@ namespace multires_image
 
   void TileView::Draw()
   {
+    initializeOpenGLFunctions();
     glEnable(GL_TEXTURE_2D);
 
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

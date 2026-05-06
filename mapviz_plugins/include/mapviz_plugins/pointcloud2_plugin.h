@@ -34,6 +34,7 @@
 
 // QT libraries
 #include <QOpenGLBuffer>
+#include <QOpenGLFunctions_1_5>
 #include <QOpenGLWidget>
 #include <QColor>
 #include <QMutex>
@@ -53,7 +54,8 @@
 
 namespace mapviz_plugins
 {
-class PointCloud2Plugin : public mapviz::MapvizPlugin
+class PointCloud2Plugin : public mapviz::MapvizPlugin,
+                          protected QOpenGLFunctions_1_5
 {
 Q_OBJECT
 

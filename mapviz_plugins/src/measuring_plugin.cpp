@@ -288,6 +288,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 
 void MeasuringPlugin::Draw(double x, double y, double scale)
 {
+  initializeOpenGLFunctions();
   glLineWidth(1);
   const QColor color = ui_.main_color->color();
   glColor4d(color.redF(), color.greenF(), color.blueF(), ui_.alpha->value()/2.0);

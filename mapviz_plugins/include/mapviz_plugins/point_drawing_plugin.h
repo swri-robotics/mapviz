@@ -34,6 +34,7 @@
 #include <mapviz/map_canvas.h>
 
 // QT libraries
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
@@ -50,7 +51,7 @@
 
 namespace mapviz_plugins
 {
-class PointDrawingPlugin : public mapviz::MapvizPlugin
+class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 

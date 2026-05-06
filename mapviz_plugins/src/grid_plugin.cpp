@@ -203,6 +203,7 @@ namespace mapviz_plugins
 
   void GridPlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     if (transformed_) {
       QColor color = ui_.color->color();
 

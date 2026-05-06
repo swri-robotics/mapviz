@@ -33,6 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QColor>
 
@@ -50,7 +51,7 @@
 
 namespace mapviz_plugins
 {
-class LaserScanPlugin : public mapviz::MapvizPlugin
+class LaserScanPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 

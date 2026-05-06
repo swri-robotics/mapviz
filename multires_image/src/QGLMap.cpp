@@ -153,6 +153,7 @@ void QGLMap::ChangeCenter(double x, double y)
 
 void QGLMap::initializeGL()
 {
+  initializeOpenGLFunctions();
   glClearColor(0.58f, 0.56f, 0.5f, 1);
   glEnable(GL_POINT_SMOOTH);
   glEnable(GL_LINE_SMOOTH);

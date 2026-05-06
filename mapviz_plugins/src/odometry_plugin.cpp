@@ -241,6 +241,7 @@ namespace mapviz_plugins
 
   void OdometryPlugin::Draw(double x, double y, double scale)
   {
+    initializeOpenGLFunctions();
     if (ui_.show_covariance->isChecked())
     {
       DrawCovariance();

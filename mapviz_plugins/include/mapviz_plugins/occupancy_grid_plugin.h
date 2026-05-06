@@ -33,6 +33,7 @@
 #include <mapviz/mapviz_plugin.h>
 
 // QT libraries
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLTexture>
 #include <QOpenGLWidget>
 #include <QObject>
@@ -58,7 +59,8 @@
 
 namespace mapviz_plugins
 {
-class OccupancyGridPlugin : public mapviz::MapvizPlugin
+class OccupancyGridPlugin : public mapviz::MapvizPlugin,
+                            protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 

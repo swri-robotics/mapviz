@@ -31,8 +31,6 @@
 #include <mapviz_plugins/topic_select.h>
 
 // QT libraries
-#include <QOpenGLContext>
-#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QPalette>
 
@@ -48,24 +46,6 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OccupancyGridPlugin, mapviz::MapvizPlugin
 
 namespace mapviz_plugins
 {
-  namespace
-  {
-    QOpenGLFunctions_1_1* CurrentOpenGLFunctions()
-    {
-      auto* context = QOpenGLContext::currentContext();
-      if (context == nullptr) {
-        return nullptr;
-      }
-
-      auto* functions = context->versionFunctions<QOpenGLFunctions_1_1>();
-      if (functions != nullptr) {
-        functions->initializeOpenGLFunctions();
-      }
-
-      return functions;
-    }
-  }  // namespace
-
   const int CHANNELS = 4;
 
   typedef std::array<uchar, 256*4> Palette;
@@ -371,11 +351,7 @@ namespace mapviz_plugins
 
     canvas_->makeCurrent();
 
-    auto* gl = CurrentOpenGLFunctions();
-    if (gl == nullptr) {
-      canvas_->doneCurrent();
-      return;
-    }
+    initializeOpenGLFunctions();
 
     texture_.reset();
 
@@ -391,7 +367,7 @@ namespace mapviz_plugins
       QOpenGLTexture::UInt8,
       static_cast<const void*>(color_buffer_.data()));
 
-    gl->glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     canvas_->doneCurrent();
   }
 
@@ -466,17 +442,14 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::Draw(double x, double y, double scale)
   {
-    auto* gl = CurrentOpenGLFunctions();
-    if (gl == nullptr) {
-      return;
-    }
+    initializeOpenGLFunctions();
 
-    gl->glPushMatrix();
+    glPushMatrix();
 
     if( grid_ && transformed_)
     {
       double resolution = grid_->info.resolution;
-      gl->glTranslatef( transform_.GetOrigin().getX(),
+      glTranslatef( transform_.GetOrigin().getX(),
                         transform_.GetOrigin().getY(),
                         0.0);
 
@@ -486,49 +459,49 @@ namespace mapviz_plugins
       tf2::Matrix3x3 mat( transform_.GetOrientation() );
       mat.getEulerYPR(yaw, pitch, roll);
 
-      gl->glRotatef(pitch * RAD_TO_DEG, 0, 1, 0);
-      gl->glRotatef(roll  * RAD_TO_DEG, 1, 0, 0);
-      gl->glRotatef(yaw   * RAD_TO_DEG, 0, 0, 1);
+      glRotatef(pitch * RAD_TO_DEG, 0, 1, 0);
+      glRotatef(roll  * RAD_TO_DEG, 1, 0, 0);
+      glRotatef(yaw   * RAD_TO_DEG, 0, 0, 1);
 
-      gl->glTranslatef( grid_->info.origin.position.x,
+      glTranslatef( grid_->info.origin.position.x,
             grid_->info.origin.position.y,
             0.0);
 
-      gl->glScalef( resolution, resolution, 1.0);
+      glScalef( resolution, resolution, 1.0);
 
       float width  = static_cast<float>(grid_->info.width);
       float height = static_cast<float>(grid_->info.height);
 
-      gl->glEnable(GL_TEXTURE_2D);
+      glEnable(GL_TEXTURE_2D);
       if (texture_) {
         texture_->bind();
       }
-      gl->glBegin(GL_TRIANGLES);
+      glBegin(GL_TRIANGLES);
 
-      gl->glColor4f(1.0f, 1.0f, 1.0f, ui_.alpha->value() );
+      glColor4f(1.0f, 1.0f, 1.0f, ui_.alpha->value() );
 
-      gl->glTexCoord2d(0, 0);
-      gl->glVertex2d(0, 0);
-      gl->glTexCoord2d(texture_x_, 0);
-      gl->glVertex2d(width, 0);
-      gl->glTexCoord2d(texture_x_, texture_y_);
-      gl->glVertex2d(width, height);
+      glTexCoord2d(0, 0);
+      glVertex2d(0, 0);
+      glTexCoord2d(texture_x_, 0);
+      glVertex2d(width, 0);
+      glTexCoord2d(texture_x_, texture_y_);
+      glVertex2d(width, height);
 
-      gl->glTexCoord2d(0, 0);
-      gl->glVertex2d(0, 0);
-      gl->glTexCoord2d(texture_x_, texture_y_);
-      gl->glVertex2d(width, height);
-      gl->glTexCoord2d(0, texture_y_);
-      gl->glVertex2d(0, height);
+      glTexCoord2d(0, 0);
+      glVertex2d(0, 0);
+      glTexCoord2d(texture_x_, texture_y_);
+      glVertex2d(width, height);
+      glTexCoord2d(0, texture_y_);
+      glVertex2d(0, height);
 
-      gl->glEnd();
+      glEnd();
 
       if (texture_) {
         texture_->release();
       }
-      gl->glDisable(GL_TEXTURE_2D);
+      glDisable(GL_TEXTURE_2D);
     }
-    gl->glPopMatrix();
+    glPopMatrix();
   }
 
   void OccupancyGridPlugin::Transform()

@@ -32,8 +32,6 @@
 
 // QT libraries
 #include <QDialog>
-#include <QOpenGLContext>
-#include <QOpenGLFunctions_1_5>
 #include <QOpenGLWidget>
 
 // ROS libraries
@@ -54,24 +52,6 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointCloud2Plugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  namespace
-  {
-    QOpenGLFunctions_1_5* CurrentOpenGLFunctions()
-    {
-      auto* context = QOpenGLContext::currentContext();
-      if (context == nullptr) {
-        return nullptr;
-      }
-
-      auto* functions = context->versionFunctions<QOpenGLFunctions_1_5>();
-      if (functions != nullptr) {
-        functions->initializeOpenGLFunctions();
-      }
-
-      return functions;
-    }
-  }  // namespace
-
   PointCloud2Plugin::PointCloud2Plugin() :
     MapvizPlugin(),
     ui_(),
@@ -651,10 +631,7 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::Draw(double x, double y, double scale)
   {
-    auto* gl = CurrentOpenGLFunctions();
-    if (gl == nullptr) {
-      return;
-    }
+    initializeOpenGLFunctions();
 
     if (!point_buffer_.isCreated()) {
       point_buffer_.create();
@@ -663,10 +640,10 @@ namespace mapviz_plugins
       color_buffer_.create();
     }
 
-    gl->glPointSize(point_size_);
+    glPointSize(point_size_);
 
-    gl->glEnableClientState(GL_VERTEX_ARRAY);
-    gl->glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
 
     {
       QMutexLocker locker(&scan_mutex_);
@@ -679,23 +656,23 @@ namespace mapviz_plugins
           point_buffer_.allocate(
             scan.gl_point.data(),
             scan.gl_point.size() * sizeof(float));
-          gl->glVertexPointer( 2, GL_FLOAT, 0, nullptr);
+          glVertexPointer( 2, GL_FLOAT, 0, nullptr);
 
           color_buffer_.bind();
           color_buffer_.allocate(
             scan.gl_color.data(),
             scan.gl_color.size() * sizeof(uint8_t));
-          gl->glColorPointer( 4, GL_UNSIGNED_BYTE, 0, nullptr);
+          glColorPointer( 4, GL_UNSIGNED_BYTE, 0, nullptr);
 
-          gl->glDrawArrays(GL_POINTS, 0, scan.gl_point.size() / 2 );
+          glDrawArrays(GL_POINTS, 0, scan.gl_point.size() / 2 );
         }
       }
     }
     point_buffer_.release();
     color_buffer_.release();
-    gl->glDisableClientState(GL_VERTEX_ARRAY);
-    gl->glDisableClientState(GL_COLOR_ARRAY);
-    gl->glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     PrintInfo("OK");
   }

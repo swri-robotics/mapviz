@@ -38,31 +38,12 @@
 // QT libraries
 #include <QImage>
 #include <QFile>
-#include <QOpenGLContext>
-#include <QOpenGLFunctions_1_1>
 #include <QOpenGLTexture>
 
 #include <swri_math_util/math_util.h>
 
 namespace multires_image
 {
-  namespace
-  {
-    QOpenGLFunctions_1_1* CurrentOpenGLFunctions()
-    {
-      auto* context = QOpenGLContext::currentContext();
-      if (context == nullptr) {
-        return nullptr;
-      }
-
-      auto* functions = context->versionFunctions<QOpenGLFunctions_1_1>();
-      if (functions != nullptr) {
-        functions->initializeOpenGLFunctions();
-      }
-
-      return functions;
-    }
-  }
 
   Tile::Tile(
          const std::string& path, int column, int row, int level,
@@ -208,25 +189,22 @@ namespace multires_image
     {
       if (m_textureLoaded && m_texture)
       {
-        auto* gl = CurrentOpenGLFunctions();
-        if (gl == nullptr) {
-          return;
-        }
+        initializeOpenGLFunctions();
 
         m_texture->bind();
 
-        gl->glBegin(GL_QUADS);
+        glBegin(GL_QUADS);
 
-        gl->glTexCoord2f(0.0f, 1.0f);
-        gl->glVertex2d(m_transformed_top_left.x(), m_transformed_top_left.y());
-        gl->glTexCoord2f(1.0f, 1.0f);
-        gl->glVertex2d(m_transformed_top_right.x(), m_transformed_top_right.y());
-        gl->glTexCoord2f(1.0f, 0.0f);
-        gl->glVertex2d(m_transformed_bottom_right.x(), m_transformed_bottom_right.y());
-        gl->glTexCoord2f(0.0f, 0.0f);
-        gl->glVertex2d(m_transformed_bottom_left.x(), m_transformed_bottom_left.y());
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2d(m_transformed_top_left.x(), m_transformed_top_left.y());
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2d(m_transformed_top_right.x(), m_transformed_top_right.y());
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2d(m_transformed_bottom_right.x(), m_transformed_bottom_right.y());
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2d(m_transformed_bottom_left.x(), m_transformed_bottom_left.y());
 
-        gl->glEnd();
+        glEnd();
         m_texture->release();
       }
     }

@@ -31,6 +31,7 @@
 #define MULTIRES_IMAGE_TILE_VIEW_H_
 
 // QT libraries
+#include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 
 #include <multires_image/tile_set.h>
@@ -38,7 +39,7 @@
 
 namespace multires_image
 {
-  class TileView
+  class TileView : protected QOpenGLFunctions_1_1
   {
   public:
     TileView(TileSet* tiles, QOpenGLWidget* widget);
