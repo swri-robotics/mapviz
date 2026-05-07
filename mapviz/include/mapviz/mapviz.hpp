@@ -221,10 +221,10 @@ protected:
   std::map<QListWidgetItem*, MapvizPluginPtr> plugins_;
 
   // Config dock pin/auto-hide
-  QToolButton* pin_button_;
-  QLabel* title_label_;
-  QWidget* collapsed_label_;
-  bool config_panel_pinned_;
+  QToolButton* pin_button_ = nullptr;
+  QLabel* title_label_ = nullptr;
+  QWidget* collapsed_label_ = nullptr;
+  bool config_panel_pinned_ = false;
 
   Stopwatch meas_spin_;
 };
