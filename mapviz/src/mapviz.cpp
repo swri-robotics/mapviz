@@ -87,6 +87,18 @@
 namespace mapviz
 {
 
+// Constants for VerticalLabel padding. Arbitrarily chosen to look good with
+// the default font and size
+constexpr int VERTICAL_LABEL_PADDING_VERTICAL = 4;
+constexpr int VERTICAL_LABEL_PADDING_HORIZONTAL = 8;
+
+// Minimum width for config panel when pinned. Set to 332 pixels to accommodate
+// the UI layout including labels, spinboxes, and buttons while maintaining
+// usability with reasonable display resolutions and DPI scaling
+constexpr int CONFIG_PANEL_PINNED_WIDTH = 332;
+// Minimum width for collapsed state, set to accommodate the vertical label 
+constexpr int CONFIG_PANEL_COLLAPSED_WIDTH = 28;  
+
 // A label that paints its text rotated 90° clockwise (reads top-to-bottom)
 class VerticalLabel : public QWidget
 {
@@ -97,7 +109,7 @@ public:
   }
   QSize sizeHint() const override {
     QFontMetrics fm(font());
-    return QSize(fm.height() + 4, fm.horizontalAdvance(text_) + 8);
+    return QSize(fm.height() + VERTICAL_LABEL_PADDING_VERTICAL, fm.horizontalAdvance(text_) + VERTICAL_LABEL_PADDING_HORIZONTAL);
   }
   QSize minimumSizeHint() const override { return sizeHint(); }
 protected:
@@ -1377,7 +1389,7 @@ void Mapviz::TogglePinConfigPanel(bool pinned)
     // Restore full dock
     title_label_->setText("Config");
     ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
-    ui_.configdock->setMinimumWidth(332);
+    ui_.configdock->setMinimumWidth(CONFIG_PANEL_PINNED_WIDTH);
     collapsed_label_->setVisible(false);
     ui_.widget_2->show();
     ui_.configs->show();
@@ -1728,7 +1740,7 @@ bool Mapviz::eventFilter(QObject* object, QEvent* event)
       // Expand on mouse enter
       title_label_->setText("Config");
       ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
-      ui_.configdock->setMinimumWidth(332);
+      ui_.configdock->setMinimumWidth(CONFIG_PANEL_PINNED_WIDTH);
       collapsed_label_->setVisible(false);
       ui_.widget_2->show();
       ui_.configs->show();
@@ -1740,8 +1752,8 @@ bool Mapviz::eventFilter(QObject* object, QEvent* event)
       ui_.configs->hide();
       ui_.widget->hide();
       collapsed_label_->setVisible(true);
-      ui_.configdock->setMinimumWidth(28);
-      ui_.configdock->setMaximumWidth(28);
+      ui_.configdock->setMinimumWidth(CONFIG_PANEL_COLLAPSED_WIDTH);
+      ui_.configdock->setMaximumWidth(CONFIG_PANEL_COLLAPSED_WIDTH);
     }
   }
   return QMainWindow::eventFilter(object, event);
