@@ -38,9 +38,6 @@ if(Qt5_FOUND)
 else()
   find_package(Qt6 REQUIRED COMPONENTS Core Gui Network OpenGL Widgets)
   set(TILE_MAP_QT_VERSION_MAJOR 6)
-endif()
-
-if(TILE_MAP_QT_VERSION_MAJOR EQUAL 6)
   find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 endif()
 
