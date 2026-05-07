@@ -54,9 +54,10 @@ QSurfaceFormat CreateMapCanvasFormat(bool enable_antialiasing)
   QSurfaceFormat format;
   format.setRenderableType(QSurfaceFormat::OpenGL);
   format.setProfile(QSurfaceFormat::CompatibilityProfile);
+  // Currently targets OpenGL 2.1
   format.setVersion(2, 1);
   format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-  format.setSwapInterval(1);
+  // If antialiasing is used, use 4 samples per pixel
   format.setSamples(enable_antialiasing ? 4 : 0);
   return format;
 }
