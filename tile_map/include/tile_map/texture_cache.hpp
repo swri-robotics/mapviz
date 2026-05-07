@@ -45,7 +45,7 @@ namespace tile_map
     Texture(std::unique_ptr<QOpenGLTexture> texture, size_t hash);
     ~Texture();
 
-    QOpenGLTexture* GetTexture() const { return texture_.get(); }
+    const std::unique_ptr<QOpenGLTexture>& GetTexture() const { return texture_; }
     const size_t url_hash;
 
     bool failed;
