@@ -24,6 +24,8 @@ function(mapviz_ensure_interface_alias alias_target dependency_target)
     INTERFACE_LINK_LIBRARIES ${dependency_target})
 endfunction()
 
+# Ensures that the OpenCV component target exists by finding it from various sources
+# (direct target, OpenCV namespace target, or pkg-config) and creating an alias if needed
 function(mapviz_ensure_opencv_component component)
   if(TARGET opencv_${component})
     return()
