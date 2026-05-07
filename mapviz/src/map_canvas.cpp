@@ -236,13 +236,11 @@ void MapCanvas::CaptureFrame(bool force)
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[pixel_buffer_index_]);
     glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[next_index]);
-    GLubyte* data = reinterpret_cast<GLubyte*>(
+    GLubyte* data = static_cast<GLubyte*>(
       glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
     if (data) {
       capture_buffer_.resize(pixel_buffer_size_);
-
       memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
-
       glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     }
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -250,7 +248,6 @@ void MapCanvas::CaptureFrame(bool force)
     int32_t buffer_size = width() * height() * 4;
     capture_buffer_.clear();
     capture_buffer_.resize(buffer_size);
-
     glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, &capture_buffer_[0]);
   }
 }
