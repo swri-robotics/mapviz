@@ -30,12 +30,15 @@ find_package(Qt5 QUIET COMPONENTS Core Gui OpenGL Widgets)
 if(Qt5_FOUND)
   set(MULTIRES_IMAGE_QT_VERSION_MAJOR 5)
 else()
-  find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Widgets)
+  find_package(Qt6
+    REQUIRED
+    COMPONENTS
+      Core
+      Gui
+      OpenGL
+      OpenGLWidgets
+      Widgets)
   set(MULTIRES_IMAGE_QT_VERSION_MAJOR 6)
-endif()
-
-if(MULTIRES_IMAGE_QT_VERSION_MAJOR EQUAL 6)
-  find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
