@@ -217,7 +217,8 @@ namespace mapviz_plugins
     tf2::Quaternion attitude_orientation(
       orientation.x,
       orientation.y,
-      orientation.z,
+      orientation.z
+,
       orientation.w);
 
     tf2::Matrix3x3 m(attitude_orientation);
@@ -237,7 +238,8 @@ namespace mapviz_plugins
   void AttitudeIndicatorPlugin::PrintInfo(const std::string& message)
   {
     PrintInfoHelper(ui_.status, message);
-  }
+  
+}
 
   void AttitudeIndicatorPlugin::PrintWarning(const std::string& message)
   {
@@ -395,7 +397,7 @@ namespace mapviz_plugins
     for (int i = 1; i < divisions; i++)
     {
       glVertex2d(-0.2 * std::cos(M_PI * i / divisions),
-                     -0.2 * std::sin(M_PI * i / divisions));
+                 -0.2 * std::sin(M_PI * i / divisions));
     }
 
     glVertex2f(0.2, 0.0);
