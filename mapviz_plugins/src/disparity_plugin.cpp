@@ -309,6 +309,9 @@ namespace mapviz_plugins
   bool DisparityPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     return true;
   }
@@ -360,7 +363,6 @@ namespace mapviz_plugins
 
   void DisparityPlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     // Calculate the correct offsets and dimensions
     double x_offset = offset_x_;
     double y_offset = offset_y_;

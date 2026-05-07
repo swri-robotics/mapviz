@@ -234,6 +234,9 @@ namespace mapviz_plugins
   bool OdometryPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     SetColor(ui_.color->color());
 
     return true;
@@ -241,7 +244,6 @@ namespace mapviz_plugins
 
   void OdometryPlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     if (ui_.show_covariance->isChecked())
     {
       DrawCovariance();

@@ -117,6 +117,9 @@ bool MeasuringPlugin::Initialize(QOpenGLWidget* canvas)
 {
   map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
   map_canvas_->installEventFilter(this);
+  canvas->makeCurrent();
+  initializeOpenGLFunctions();
+  canvas->doneCurrent();
 
   initialized_ = true;
   PrintInfo("OK");
@@ -288,7 +291,6 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 
 void MeasuringPlugin::Draw(double x, double y, double scale)
 {
-  initializeOpenGLFunctions();
   glLineWidth(1);
   const QColor color = ui_.main_color->color();
   glColor4d(color.redF(), color.greenF(), color.blueF(), ui_.alpha->value()/2.0);

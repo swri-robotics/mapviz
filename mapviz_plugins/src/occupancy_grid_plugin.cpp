@@ -339,6 +339,9 @@ namespace mapviz_plugins
   bool OccupancyGridPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     DrawIcon();
     return true;
   }
@@ -350,8 +353,6 @@ namespace mapviz_plugins
     }
 
     canvas_->makeCurrent();
-
-    initializeOpenGLFunctions();
 
     texture_.reset();
 
@@ -442,8 +443,6 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
-
     glPushMatrix();
 
     if( grid_ && transformed_)

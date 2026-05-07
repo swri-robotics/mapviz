@@ -445,13 +445,15 @@ namespace mapviz_plugins
   bool MarkerPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     return true;
   }
 
   void MarkerPlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     for (size_t i = 0; i < ui_.nsList->count(); i++)
     {
       if (ui_.nsList->item(i)->checkState() == Qt::Checked)

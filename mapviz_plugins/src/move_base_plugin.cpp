@@ -125,6 +125,9 @@ bool MoveBasePlugin::Initialize(QOpenGLWidget* canvas)
 {
     map_canvas_ = static_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     initialized_ = true;
     return true;
 }
@@ -284,7 +287,6 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* event)
 
 void MoveBasePlugin::Draw(double x, double y, double scale)
 {
-    initializeOpenGLFunctions();
     std::array<QPointF, 7> arrow_points;
     arrow_points[0] = QPointF(10, 0);
     arrow_points[1] = QPointF(6, -2.5);

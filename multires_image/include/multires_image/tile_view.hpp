@@ -62,6 +62,7 @@ namespace multires_image
     int        m_endRow;
     int        m_endColumn;
     double     min_scale_;
+    bool       gl_initialized_ = false;
   };
 }
 

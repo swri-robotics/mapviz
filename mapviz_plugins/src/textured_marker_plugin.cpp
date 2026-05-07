@@ -453,13 +453,15 @@ QWidget * TexturedMarkerPlugin::GetConfigWidget(QWidget * parent)
 bool TexturedMarkerPlugin::Initialize(QOpenGLWidget * canvas)
 {
   canvas_ = canvas;
+  canvas->makeCurrent();
+  initializeOpenGLFunctions();
+  canvas->doneCurrent();
 
   return true;
 }
 
 void TexturedMarkerPlugin::Draw(double x, double y, double scale)
 {
-  initializeOpenGLFunctions();
   rclcpp::Time now = rclcpp::Time();
 
   float alphaVal = alphaVal_;   // Set all markers to same alpha value

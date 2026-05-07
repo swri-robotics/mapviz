@@ -168,13 +168,15 @@ namespace mapviz_plugins
   bool PathPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     DrawIcon();
     return true;
   }
 
   void PathPlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     bool lines;
     bool points;
     QColor old_color = ui_.path_color->color();

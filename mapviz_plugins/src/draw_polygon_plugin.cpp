@@ -176,6 +176,9 @@ namespace mapviz_plugins
   {
     map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     initialized_ = true;
     return true;
@@ -338,7 +341,6 @@ namespace mapviz_plugins
 
   void DrawPolygonPlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     stu::Transform transform;
     std::string frame = ui_.frame->text().toStdString();
     if (!tf_manager_->GetTransform(target_frame_, frame, transform))

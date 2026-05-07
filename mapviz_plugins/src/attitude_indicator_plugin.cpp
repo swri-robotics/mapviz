@@ -254,6 +254,9 @@ namespace mapviz_plugins
   {
     initialized_ = true;
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     placer_.setContainer(canvas_);
     startTimer(50);
     return true;
@@ -323,8 +326,6 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
-
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();

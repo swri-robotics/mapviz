@@ -256,6 +256,9 @@ namespace mapviz_plugins
   bool RoutePlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     DrawIcon();
 
@@ -265,7 +268,6 @@ namespace mapviz_plugins
 
   void RoutePlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     if (!src_route_.valid())
     {
       PrintError("No valid route received.");

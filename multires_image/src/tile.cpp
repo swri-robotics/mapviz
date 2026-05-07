@@ -140,6 +140,8 @@ namespace multires_image
     {
       m_mutex.lock();
 
+      initializeOpenGLFunctions();
+
       try
       {
         auto texture = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
@@ -189,8 +191,6 @@ namespace multires_image
     {
       if (m_textureLoaded && m_texture)
       {
-        initializeOpenGLFunctions();
-
         m_texture->bind();
 
         glBegin(GL_QUADS);

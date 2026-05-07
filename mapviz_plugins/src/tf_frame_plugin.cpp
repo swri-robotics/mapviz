@@ -148,6 +148,9 @@ namespace mapviz_plugins
   bool TfFramePlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     timer_ = node_->create_wall_timer(std::chrono::milliseconds(100),
         std::bind(&TfFramePlugin::TimerCallback, this));
@@ -159,7 +162,6 @@ namespace mapviz_plugins
 
   void TfFramePlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     if (DrawPoints(scale))
     {
       PrintInfo("OK");

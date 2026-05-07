@@ -234,6 +234,9 @@ namespace mapviz_plugins
   {
     map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     retry_timer_ = node_->create_wall_timer(1000ms, [this](){Retry();});
 
@@ -383,7 +386,6 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     stu::Transform transform;
     if (tf_manager_->GetTransform(target_frame_, stu::_wgs84_frame, transform))
     {

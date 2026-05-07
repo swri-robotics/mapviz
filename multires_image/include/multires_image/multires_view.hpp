@@ -63,6 +63,7 @@ class MultiresView : protected QOpenGLFunctions_1_1
     int        m_endColumn;
 
     double min_scale_;
+    bool gl_initialized_ = false;
   };
 }
 

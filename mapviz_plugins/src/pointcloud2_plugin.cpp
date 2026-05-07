@@ -623,6 +623,9 @@ namespace mapviz_plugins
   bool PointCloud2Plugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     DrawIcon();
 
@@ -631,8 +634,6 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
-
     if (!point_buffer_.isCreated()) {
       point_buffer_.create();
     }

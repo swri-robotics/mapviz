@@ -243,13 +243,15 @@ namespace mapviz_plugins
   bool RobotImagePlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     return true;
   }
 
   void RobotImagePlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     if (texture_loaded_ && transformed_)
     {
       glColor3f(1.0f, 1.0f, 1.0f);

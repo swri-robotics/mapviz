@@ -106,6 +106,8 @@ namespace tile_map
 
     TextureCachePtr tile_cache_;
 
+    bool gl_initialized_ = false;
+
     rclcpp::Logger logger_;
 
     void ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude);

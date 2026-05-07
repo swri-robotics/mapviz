@@ -276,7 +276,10 @@ namespace tile_map
 
   void TileMapView::Draw()
   {
-    initializeOpenGLFunctions();
+    if (!gl_initialized_) {
+      initializeOpenGLFunctions();
+      gl_initialized_ = true;
+    }
     if (!tile_source_)
     {
       return;

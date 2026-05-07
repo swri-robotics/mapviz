@@ -195,6 +195,9 @@ namespace mapviz_plugins
   bool GridPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     DrawIcon();
 
@@ -203,7 +206,6 @@ namespace mapviz_plugins
 
   void GridPlugin::Draw(double x, double y, double scale)
   {
-    initializeOpenGLFunctions();
     if (transformed_) {
       QColor color = ui_.color->color();
 
