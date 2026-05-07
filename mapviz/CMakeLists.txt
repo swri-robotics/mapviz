@@ -67,12 +67,16 @@ find_package(Qt5 QUIET COMPONENTS Concurrent Core Gui OpenGL Widgets)
 if(Qt5_FOUND)
   set(MAPVIZ_QT_VERSION_MAJOR 5)
 else()
-  find_package(Qt6 REQUIRED COMPONENTS Concurrent Core Gui OpenGL Widgets)
+  find_package(Qt6
+    REQUIRED
+    COMPONENTS
+      Concurrent
+      Core
+      Gui
+      OpenGL
+      OpenGLWidgets
+      Widgets)
   set(MAPVIZ_QT_VERSION_MAJOR 6)
-endif()
-
-if(MAPVIZ_QT_VERSION_MAJOR EQUAL 6)
-  find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 endif()
 
 find_package(OpenCV QUIET CONFIG COMPONENTS core highgui imgcodecs imgproc videoio)
