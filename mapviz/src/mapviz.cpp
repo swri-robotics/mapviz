@@ -995,7 +995,6 @@ void Mapviz::AddDisplay(
   }
 
   if (!config) {
-    // ROS_ERROR("Failed to parse properties into YAML.");
     RCLCPP_ERROR(node_->get_logger(), "Failed to parse properties into YAML.");
     resp->success = false;
     throw std::runtime_error("Failed to parse properties into YAML.");
@@ -1519,11 +1518,11 @@ void Mapviz::DuplicateDisplay()
 
 void Mapviz::DuplicateDisplay(QListWidgetItem* item)
 {
-  ROS_INFO("Duplicating active display... ");
+  RCLCPP_INFO(node_->get_logger(), "Duplicating active display... ");
   // - Get plugin associated with QListWidgetItem
   if (plugins_.count(item) != 1)
   {
-    ROS_ERROR("Item attempted to duplicate is not a plugin.");
+    RCLCPP_ERROR(node_->get_logger(), "Item attempted to duplicate is not a plugin.");
     return;
   }
   MapvizPluginPtr target_plugin = plugins_[item];
@@ -1543,12 +1542,11 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
   out << YAML::EndMap;
 
   // - Create the new display via existing MapvizPlugin::LoadConfig interface
-  YAML::Node temp_node;
-  swri_yaml_util::LoadString(out.c_str(), temp_node);
+  YAML::Node temp_node(out.c_str());
   YAML::Node temp_config_node = temp_node["config"];
   if (!temp_config_node)
   {
-    ROS_ERROR("Cannot duplicate plugin of type %s. Invalid config.",
+    RCLCPP_ERROR(node_->get_logger(), "Cannot duplicate plugin of type %s. Invalid config.",
         target_plugin->Type().c_str());
     return;
   }
@@ -1564,7 +1562,7 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
   }
   catch (const pluginlib::LibraryLoadException& e)
   {
-    ROS_ERROR("%s", e.what());
+    RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
   }
 }
 
