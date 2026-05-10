@@ -2,6 +2,12 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added duplicate option (`#872 <https://github.com/swri-robotics/mapviz/issues/872>`_)
+  * Added duplicate option to plugin right-click and ctrl+d hotkey for duplicating selected plugins
+* Contributors: Robert Brothers
+
 2.6.3 (2026-04-27)
 ------------------
 * Adding conditional include (`#869 <https://github.com/swri-robotics/mapviz/issues/869>`_)
