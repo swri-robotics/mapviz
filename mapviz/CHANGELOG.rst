@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.6.4 (2026-05-10)
+------------------
 * Added duplicate option (`#872 <https://github.com/swri-robotics/mapviz/issues/872>`_)
   * Added duplicate option to plugin right-click and ctrl+d hotkey for duplicating selected plugins
 * Contributors: Robert Brothers
