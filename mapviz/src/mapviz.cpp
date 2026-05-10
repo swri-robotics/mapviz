@@ -235,6 +235,8 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   connect(rename_display_shortcut, SIGNAL(activated()), this, SLOT(RenameDisplay()));
   QShortcut * add_display_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_N), this);
   connect(add_display_shortcut, SIGNAL(activated()), this, SLOT(SelectNewDisplay()));
+  QShortcut *duplicate_display_shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_D), this);
+  connect(duplicate_display_shortcut, SIGNAL(activated()), this, SLOT(DuplicateDisplay()));
 }
 
 Mapviz::~Mapviz()
@@ -993,7 +995,6 @@ void Mapviz::AddDisplay(
   }
 
   if (!config) {
-    // ROS_ERROR("Failed to parse properties into YAML.");
     RCLCPP_ERROR(node_->get_logger(), "Failed to parse properties into YAML.");
     resp->success = false;
     throw std::runtime_error("Failed to parse properties into YAML.");
@@ -1182,6 +1183,11 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
     SIGNAL(RemoveRequest(QListWidgetItem*)),
     this,
     SLOT(RemoveDisplay(QListWidgetItem*)));
+  connect(
+    config_item,
+    SIGNAL(DuplicateRequest(QListWidgetItem*)),
+    this,
+    SLOT(DuplicateDisplay(QListWidgetItem*)));
   connect(plugin.get(), SIGNAL(VisibleChanged(bool)), config_item, SLOT(ToggleDraw(bool)));
   connect(plugin.get(), SIGNAL(SizeChanged()), this, SLOT(UpdateSizeHints()));
 
@@ -1498,6 +1504,65 @@ void Mapviz::RenameDisplay(QListWidgetItem* item)
   if (item) {
     ConfigItem* config_item = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
     config_item->EditName();
+  }
+}
+
+void Mapviz::DuplicateDisplay()
+{
+  QListWidgetItem* item = ui_.configs->item(ui_.configs->currentRow());
+  if (item != nullptr)
+  {
+    DuplicateDisplay(item);
+  }
+}
+
+void Mapviz::DuplicateDisplay(QListWidgetItem* item)
+{
+  RCLCPP_INFO(node_->get_logger(), "Duplicating active display... ");
+  // - Get plugin associated with QListWidgetItem
+  if (plugins_.count(item) != 1)
+  {
+    RCLCPP_ERROR(node_->get_logger(), "Item attempted to duplicate is not a plugin.");
+    return;
+  }
+  MapvizPluginPtr target_plugin = plugins_[item];
+  ConfigItem* target_config_item = static_cast<ConfigItem*>(ui_.configs->itemWidget(item));
+
+  // - Save plugin config to a temporary string via an emitter
+  YAML::Emitter out;
+  out << YAML::BeginMap;
+  out << YAML::Key << "type" << YAML::Value << target_plugin->Type();
+  out << YAML::Key << "name" << YAML::Value << target_config_item->Name().toStdString();
+  out << YAML::Key << "config" << YAML::Value;
+  out << YAML::BeginMap;
+  out << YAML::Key << "visible" << YAML::Value << target_plugin->Visible();
+  out << YAML::Key << "collapsed" << YAML::Value << target_config_item->Collapsed();
+  target_plugin->SaveConfig(out, "");
+  out << YAML::EndMap;
+  out << YAML::EndMap;
+
+  // - Create the new display via existing MapvizPlugin::LoadConfig interface
+  YAML::Node temp_node(out.c_str());
+  YAML::Node temp_config_node = temp_node["config"];
+  if (!temp_config_node)
+  {
+    RCLCPP_ERROR(node_->get_logger(), "Cannot duplicate plugin of type %s. Invalid config.",
+        target_plugin->Type().c_str());
+    return;
+  }
+  try
+  {
+    MapvizPluginPtr duplicate_plugin = CreateNewDisplay(
+        target_config_item->Name().toStdString(),
+        target_plugin->Type(),
+        target_plugin->Visible(),
+        target_config_item->Collapsed());
+    duplicate_plugin->LoadConfig(temp_config_node, "");
+    duplicate_plugin->DrawIcon();
+  }
+  catch (const pluginlib::LibraryLoadException& e)
+  {
+    RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
   }
 }
 

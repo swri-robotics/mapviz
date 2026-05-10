@@ -30,6 +30,10 @@
 #ifndef MAPVIZ__CONFIG_ITEM_H_
 #define MAPVIZ__CONFIG_ITEM_H_
 
+// C++ standard libraries
+#include <string>
+#include <vector>
+
 // QT libraries
 #include <QWidget>
 #include <QLabel>
@@ -66,11 +70,13 @@ public:
 Q_SIGNALS:
   void UpdateSizeHint();
   void ToggledDraw(QListWidgetItem* plugin, bool visible);
+  void DuplicateRequest(QListWidgetItem* plugin);
   void RemoveRequest(QListWidgetItem* plugin);
 
 public Q_SLOTS:
   void Hide();
   void EditName();
+  void Duplicate();
   void Remove();
   void ToggleDraw(bool toggled);
 
@@ -82,6 +88,7 @@ protected:
   QString name_;
   QString type_;
   QAction* edit_name_action_;
+  QAction* duplicate_item_action_;
   QAction* remove_item_action_;
   bool visible_;
 };

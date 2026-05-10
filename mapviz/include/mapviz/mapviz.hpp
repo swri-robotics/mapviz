@@ -99,6 +99,8 @@ public Q_SLOTS:
   void SelectNewDisplay();
   void RemoveDisplay();
   void RemoveDisplay(QListWidgetItem* item);
+  void DuplicateDisplay();
+  void DuplicateDisplay(QListWidgetItem *item);
   void RenameDisplay();
   void RenameDisplay(QListWidgetItem* item);
   void ReorderDisplays();
