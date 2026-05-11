@@ -2,6 +2,14 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Refactor OpenGL Interface (`#871 <https://github.com/swri-robotics/mapviz/issues/871>`_)
+  * Refactoring to use Qt's OpenGL interfaces rather than raw GLEW and GLUT.
+  ---------
+  Co-authored-by: DangitBen <30333928+DangitBen@users.noreply.github.com>
+* Contributors: David Anthony
+
 2.6.4 (2026-05-10)
 ------------------
 * Added duplicate option (`#872 <https://github.com/swri-robotics/mapviz/issues/872>`_)
