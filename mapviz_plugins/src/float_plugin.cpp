@@ -28,8 +28,8 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/float_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/float_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -90,7 +90,7 @@ namespace mapviz_plugins
     ui_.color->setColor(color_);
   }
 
-  bool FloatPlugin::Initialize(QGLWidget* canvas)
+  bool FloatPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
     return true;

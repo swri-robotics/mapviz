@@ -27,12 +27,12 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/odometry_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/odometry_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPainter>
 #include <QPalette>
 
@@ -231,9 +231,12 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool OdometryPlugin::Initialize(QGLWidget* canvas)
+  bool OdometryPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     SetColor(ui_.color->color());
 
     return true;

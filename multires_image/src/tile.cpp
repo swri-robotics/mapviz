@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <multires_image/tile.h>
+#include <multires_image/tile.hpp>
 
 // C++ standard libraries
 #include <cmath>
@@ -36,13 +36,15 @@
 #include <iostream>
 
 // QT libraries
-#include <QGLWidget>
+#include <QImage>
 #include <QFile>
+#include <QOpenGLTexture>
 
 #include <swri_math_util/math_util.h>
 
 namespace multires_image
 {
+
   Tile::Tile(
          const std::string& path, int column, int row, int level,
          const tf2::Vector3& topLeft, const tf2::Vector3& topRight,
@@ -62,9 +64,9 @@ namespace multires_image
     m_failed(false),
     m_textureLoaded(false),
     m_dimension(0),
-    m_textureId(0),
     m_tileId(1000000 * level + 1000 * column + row),
-    m_memorySize(0)
+    m_memorySize(0),
+    m_texture(nullptr)
   {
   }
 
@@ -102,7 +104,7 @@ namespace multires_image
 
             m_memorySize = m_dimension * m_dimension * 4;
 
-            m_image = QGLWidget::convertToGLFormat(m_image);
+            m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
           }
         }
         else
@@ -138,24 +140,25 @@ namespace multires_image
     {
       m_mutex.lock();
 
+      initializeOpenGLFunctions();
+
       try
       {
-        GLuint ids[1];
-        glGenTextures(1, &ids[0]);
-        m_textureId = ids[0];
+        auto texture = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
+        texture->setFormat(QOpenGLTexture::RGBA8_UNorm);
+        texture->setSize(m_dimension, m_dimension);
+        texture->allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
+        texture->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, m_image.constBits());
+        texture->setMinificationFilter(QOpenGLTexture::Linear);
+        texture->setMagnificationFilter(QOpenGLTexture::Linear);
+        texture->setWrapMode(QOpenGLTexture::ClampToEdge);
 
-        glBindTexture(GL_TEXTURE_2D, m_textureId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_dimension, m_dimension, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
-
-        // TODO(malban): check for GL error
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        m_textureLoaded = true;
+        m_textureLoaded = texture->isCreated();
+        if (m_textureLoaded) {
+          m_texture = std::move(texture);
+        } else {
+          m_failed = true;
+        }
       }
       catch (const std::exception& e)
       {
@@ -176,9 +179,7 @@ namespace multires_image
     if (m_textureLoaded)
     {
       m_textureLoaded = false;
-      GLuint ids[1];
-      ids[0] = m_textureId;
-      glDeleteTextures(1, &ids[0]);
+      m_texture.reset();
     }
 
     m_mutex.unlock();
@@ -188,18 +189,23 @@ namespace multires_image
   {
     if (!m_failed)
     {
-      if (m_textureLoaded)
+      if (m_textureLoaded && m_texture)
       {
-        glBindTexture(GL_TEXTURE_2D, m_textureId);
+        m_texture->bind();
 
         glBegin(GL_QUADS);
 
-        glTexCoord2f(0, 1); glVertex2f(m_transformed_top_left.x(), m_transformed_top_left.y());
-        glTexCoord2f(1, 1); glVertex2f(m_transformed_top_right.x(), m_transformed_top_right.y());
-        glTexCoord2f(1, 0); glVertex2f(m_transformed_bottom_right.x(), m_transformed_bottom_right.y());
-        glTexCoord2f(0, 0); glVertex2f(m_transformed_bottom_left.x(), m_transformed_bottom_left.y());
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2d(m_transformed_top_left.x(), m_transformed_top_left.y());
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2d(m_transformed_top_right.x(), m_transformed_top_right.y());
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2d(m_transformed_bottom_right.x(), m_transformed_bottom_right.y());
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2d(m_transformed_bottom_left.x(), m_transformed_bottom_left.y());
 
         glEnd();
+        m_texture->release();
       }
     }
   }

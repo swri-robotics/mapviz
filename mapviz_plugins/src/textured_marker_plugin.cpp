@@ -27,12 +27,12 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/textured_marker_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/textured_marker_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -450,9 +450,12 @@ QWidget * TexturedMarkerPlugin::GetConfigWidget(QWidget * parent)
   return config_widget_;
 }
 
-bool TexturedMarkerPlugin::Initialize(QGLWidget * canvas)
+bool TexturedMarkerPlugin::Initialize(QOpenGLWidget * canvas)
 {
   canvas_ = canvas;
+  canvas->makeCurrent();
+  initializeOpenGLFunctions();
+  canvas->doneCurrent();
 
   return true;
 }

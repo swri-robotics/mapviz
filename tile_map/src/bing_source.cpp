@@ -28,7 +28,7 @@
 //
 // *****************************************************************************
 
-#include <tile_map/bing_source.h>
+#include <tile_map/bing_source.hpp>
 
 #include <QRegExp>
 #include <QString>

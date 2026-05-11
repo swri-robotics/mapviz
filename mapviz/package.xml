@@ -19,9 +19,7 @@
   <build_depend>ros_environment</build_depend>
 
   <depend>geometry_msgs</depend>
-  <depend>glut</depend>
   <depend>image_transport</depend>
-  <depend>libglew-dev</depend>
   <depend>libopencv-dev</depend>
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>

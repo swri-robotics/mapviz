@@ -27,13 +27,13 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/tf_frame_plugin.h>
+#include <mapviz_plugins/tf_frame_plugin.hpp>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPalette>
 
-#include <mapviz/select_frame_dialog.h>
+#include <mapviz/select_frame_dialog.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -145,9 +145,12 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool TfFramePlugin::Initialize(QGLWidget* canvas)
+  bool TfFramePlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     timer_ = node_->create_wall_timer(std::chrono::milliseconds(100),
         std::bind(&TfFramePlugin::TimerCallback, this));

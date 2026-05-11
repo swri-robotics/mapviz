@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/coordinate_picker_plugin.h>
-#include <mapviz/mapviz_plugin.h>
+#include <mapviz_plugins/coordinate_picker_plugin.hpp>
+#include <mapviz/mapviz_plugin.hpp>
 
 #include <QClipboard>
 #include <QMouseEvent>
@@ -44,7 +44,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
-#include <mapviz/select_frame_dialog.h>
+#include <mapviz/select_frame_dialog.hpp>
 
 //
 #include <swri_transform_util/frames.h>
@@ -95,7 +95,7 @@ QWidget* CoordinatePickerPlugin::GetConfigWidget(QWidget* parent)
   return config_widget_;
 }
 
-bool CoordinatePickerPlugin::Initialize(QGLWidget* canvas)
+bool CoordinatePickerPlugin::Initialize(QOpenGLWidget* canvas)
 {
   map_canvas_ = dynamic_cast< mapviz::MapCanvas* >(canvas);
   map_canvas_->installEventFilter(this);

@@ -17,12 +17,12 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/navsat_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/navsat_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPalette>
 
 #include <opencv2/core/core.hpp>
@@ -175,9 +175,12 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool NavSatPlugin::Initialize(QGLWidget* canvas)
+  bool NavSatPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     SetColor(ui_.color->color());
     return true;
   }

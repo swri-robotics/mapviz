@@ -28,12 +28,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  **/ 
 
-#include <mapviz_plugins/pose_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/pose_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPalette>
 
 #include <opencv2/core/core.hpp>
@@ -192,9 +192,12 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool PosePlugin::Initialize(QGLWidget* canvas)
+  bool PosePlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     SetColor(ui_.color->color());
 
     return true;

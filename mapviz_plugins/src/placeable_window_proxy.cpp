@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/placeable_window_proxy.h>
+#include <mapviz_plugins/placeable_window_proxy.hpp>
 
 #include <QApplication>
 #include <QCursor>

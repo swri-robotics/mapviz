@@ -27,10 +27,10 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/robot_image_plugin.h>
+#include <mapviz_plugins/robot_image_plugin.hpp>
 
 // QT libraries
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QPalette>
 #include <QImage>
 #include <QFileDialog>
@@ -40,7 +40,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
-#include <mapviz/select_frame_dialog.h>
+#include <mapviz/select_frame_dialog.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -240,9 +240,12 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool RobotImagePlugin::Initialize(QGLWidget* canvas)
+  bool RobotImagePlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     return true;
   }
@@ -338,7 +341,7 @@ namespace mapviz_plugins
             Qt::FastTransformation);
         }
 
-        image_ = QGLWidget::convertToGLFormat(image_);
+        image_ = image_.convertToFormat(QImage::Format_RGBA8888).mirrored();
 
         GLuint ids[1];
         glGenTextures(1, &ids[0]);

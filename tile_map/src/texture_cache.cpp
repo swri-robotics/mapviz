@@ -27,39 +27,25 @@
 //
 // *****************************************************************************
 
-#include <tile_map/texture_cache.h>
+#include <tile_map/texture_cache.hpp>
 
 #include <cmath>
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-
 #include <rclcpp/logging.hpp>
 
-#include <QGLWidget>
 #include <QImage>
 
 #include <swri_math_util/math_util.h>
 
 namespace tile_map
 {
-  Texture::Texture(int32_t texture_id, size_t hash) :
-    id(texture_id),
+  Texture::Texture(std::unique_ptr<QOpenGLTexture> texture, size_t hash) :
+    texture_(std::move(texture)),
     url_hash(hash)
   {
   }
 
-  Texture::~Texture()
-  {
-    //ROS_ERROR("==== DELETING TEXTURE: %d ====", id);
-    // The texture will automatically be freed from the GPU memory when it goes
-    // out of scope.  This is effectively when it is no longer in the texture
-    // cache or being referenced for a render.
-    GLuint ids[1];
-    ids[0] = id;
-    glDeleteTextures(1, &ids[0]);
-  }
+  Texture::~Texture() = default;
 
   TextureCache::TextureCache(ImageCachePtr image_cache,
       size_t size,
@@ -99,25 +85,6 @@ namespace tile_map
           // potentially be done in a background thread by the image cache.
           QImage qimage = *image_ptr;
 
-          GLuint ids[1];
-          uint32_t check = 9999999;
-          ids[0] = check;
-
-          glGenTextures(1, &ids[0]);
-
-          if (check == ids[0])
-          {
-            RCLCPP_ERROR(logger_, "FAILED TO CREATE TEXTURE");
-
-            GLenum err = glGetError();
-            const GLubyte *errString = gluErrorString(err);
-            RCLCPP_ERROR(logger_, "GL ERROR(%u): %s", err, errString);
-            return texture;
-          }
-
-          texture_ptr = new TexturePtr(std::make_shared<Texture>(ids[0], url_hash));
-          texture = *texture_ptr;
-
           float max_dim = std::max(qimage.width(), qimage.height());
           int32_t dimension = swri_math_util::Round(
             std::pow(2, std::ceil(std::log(max_dim) / std::log(2.0f))));
@@ -127,23 +94,25 @@ namespace tile_map
             qimage = qimage.scaled(dimension, dimension, Qt::IgnoreAspectRatio, Qt::FastTransformation);
           }
 
-          glBindTexture(GL_TEXTURE_2D, texture->id);
-          glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGBA,
-            dimension,
-            dimension,
-            0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            QGLWidget::convertToGLFormat(qimage).bits());
+          const QImage gl_image = qimage.convertToFormat(QImage::Format_RGBA8888).mirrored();
 
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          auto open_gl_texture = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
+          open_gl_texture->setFormat(QOpenGLTexture::RGBA8_UNorm);
+          open_gl_texture->setSize(dimension, dimension);
+          open_gl_texture->allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
+          open_gl_texture->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, gl_image.constBits());
+          open_gl_texture->setMinificationFilter(QOpenGLTexture::Linear);
+          open_gl_texture->setMagnificationFilter(QOpenGLTexture::Linear);
+          open_gl_texture->setWrapMode(QOpenGLTexture::ClampToEdge);
 
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+          if (!open_gl_texture->isCreated())
+          {
+            RCLCPP_ERROR(logger_, "Failed to create tile texture for %s", url.toStdString().c_str());
+            return texture;
+          }
+
+          texture_ptr = new TexturePtr(std::make_shared<Texture>(std::move(open_gl_texture), url_hash));
+          texture = *texture_ptr;
 
           cache_.insert(url_hash, texture_ptr);
         }

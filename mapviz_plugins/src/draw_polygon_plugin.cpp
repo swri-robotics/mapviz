@@ -27,18 +27,18 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/draw_polygon_plugin.h>
+#include <mapviz_plugins/draw_polygon_plugin.hpp>
 
 // QT libraries
 #include <QDateTime>
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QPalette>
 
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
-#include <mapviz/select_frame_dialog.h>
+#include <mapviz/select_frame_dialog.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -172,10 +172,13 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool DrawPolygonPlugin::Initialize(QGLWidget* canvas)
+  bool DrawPolygonPlugin::Initialize(QOpenGLWidget* canvas)
   {
     map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     initialized_ = true;
     return true;

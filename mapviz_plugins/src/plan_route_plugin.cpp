@@ -27,12 +27,12 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/plan_route_plugin.h>
+#include <mapviz_plugins/plan_route_plugin.hpp>
 
 // QT libraries
 #include <QDateTime>
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPalette>
@@ -230,10 +230,13 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool PlanRoutePlugin::Initialize(QGLWidget* canvas)
+  bool PlanRoutePlugin::Initialize(QOpenGLWidget* canvas)
   {
     map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     retry_timer_ = node_->create_wall_timer(1000ms, [this](){Retry();});
 

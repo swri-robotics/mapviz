@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/point_click_publisher_plugin.h>
+#include <mapviz_plugins/point_click_publisher_plugin.hpp>
 #include <swri_transform_util/frames.h>
 #include <tf2/transform_datatypes.hpp>
 
@@ -68,7 +68,7 @@ namespace mapviz_plugins
     }
   }
 
-  bool PointClickPublisherPlugin::Initialize(QGLWidget* canvas)
+  bool PointClickPublisherPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
     canvas_->installEventFilter(&click_filter_);

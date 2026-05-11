@@ -1,0 +1,31 @@
+include(CMakeFindDependencyMacro)
+
+function(_tile_map_ensure_interface_alias alias_target dependency_target)
+  if(TARGET ${alias_target})
+    return()
+  endif()
+
+  add_library(${alias_target} INTERFACE IMPORTED)
+  set_target_properties(${alias_target} PROPERTIES
+    INTERFACE_LINK_LIBRARIES ${dependency_target})
+endfunction()
+
+if(NOT TARGET jsoncpp_lib)
+  find_package(jsoncpp QUIET CONFIG)
+  if(TARGET JsonCpp::JsonCpp)
+    _tile_map_ensure_interface_alias(jsoncpp_lib JsonCpp::JsonCpp)
+  elseif(NOT TARGET jsoncpp_lib)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(JSONCPP REQUIRED IMPORTED_TARGET jsoncpp)
+    _tile_map_ensure_interface_alias(jsoncpp_lib PkgConfig::JSONCPP)
+  endif()
+endif()
+
+if(NOT TARGET yaml-cpp)
+  find_package(yaml-cpp QUIET CONFIG)
+  if(NOT TARGET yaml-cpp)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(YamlCpp REQUIRED IMPORTED_TARGET yaml-cpp)
+    _tile_map_ensure_interface_alias(yaml-cpp PkgConfig::YamlCpp)
+  endif()
+endif()

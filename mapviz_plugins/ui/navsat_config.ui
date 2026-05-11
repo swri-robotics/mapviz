@@ -267,7 +267,7 @@
   <customwidget>
    <class>mapviz::ColorButton</class>
    <extends>QPushButton</extends>
-   <header location="global">mapviz/color_button.h</header>
+   <header location="global">mapviz/color_button.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

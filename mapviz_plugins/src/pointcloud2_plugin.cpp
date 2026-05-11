@@ -27,13 +27,12 @@
 //
 // *****************************************************************************
 
-#include <GL/glew.h>
-#include <mapviz_plugins/pointcloud2_plugin.h>
-#include <mapviz_plugins/topic_select.h>
+#include <mapviz_plugins/pointcloud2_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -68,7 +67,9 @@ namespace mapviz_plugins
     num_of_feats_(0),
     need_new_list_(true),
     need_minmax_(false),
-    qos_(rmw_qos_profile_default)
+    qos_(rmw_qos_profile_default),
+    point_buffer_(QOpenGLBuffer::VertexBuffer),
+    color_buffer_(QOpenGLBuffer::VertexBuffer)
   {
     ui_.setupUi(config_widget_);
 
@@ -429,9 +430,6 @@ namespace mapviz_plugins
           if( scans_.size() >= buffer_size_)
           {
               scan = std::move( scans_.front() );
-          } else {
-             glGenBuffers(1, &scan.color_vbo);
-             glGenBuffers(1, &scan.point_vbo);
           }
           while (scans_.size() >= buffer_size_)
           {
@@ -622,9 +620,12 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool PointCloud2Plugin::Initialize(QGLWidget* canvas)
+  bool PointCloud2Plugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
 
     DrawIcon();
 
@@ -633,6 +634,13 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::Draw(double x, double y, double scale)
   {
+    if (!point_buffer_.isCreated()) {
+      point_buffer_.create();
+    }
+    if (!color_buffer_.isCreated()) {
+      color_buffer_.create();
+    }
+
     glPointSize(point_size_);
 
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -645,26 +653,24 @@ namespace mapviz_plugins
       {
         if (scan.transformed && !scan.gl_color.empty())
         {
-          glBindBuffer(GL_ARRAY_BUFFER, scan.point_vbo);  // coordinates
-          glBufferData(
-            GL_ARRAY_BUFFER,
-            scan.gl_point.size() * sizeof(float),
+          point_buffer_.bind();
+          point_buffer_.allocate(
             scan.gl_point.data(),
-            GL_STATIC_DRAW);
+            scan.gl_point.size() * sizeof(float));
           glVertexPointer( 2, GL_FLOAT, 0, nullptr);
 
-          glBindBuffer(GL_ARRAY_BUFFER, scan.color_vbo);  // color
-          glBufferData(
-            GL_ARRAY_BUFFER,
-            scan.gl_color.size() * sizeof(uint8_t),
+          color_buffer_.bind();
+          color_buffer_.allocate(
             scan.gl_color.data(),
-            GL_STATIC_DRAW);
+            scan.gl_color.size() * sizeof(uint8_t));
           glColorPointer( 4, GL_UNSIGNED_BYTE, 0, nullptr);
 
           glDrawArrays(GL_POINTS, 0, scan.gl_point.size() / 2 );
         }
       }
     }
+    point_buffer_.release();
+    color_buffer_.release();
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

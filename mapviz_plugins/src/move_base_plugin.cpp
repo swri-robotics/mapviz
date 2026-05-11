@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/move_base_plugin.h>
+#include <mapviz_plugins/move_base_plugin.hpp>
 
 // C++ standard libraries
 #include <cstdio>
@@ -36,7 +36,7 @@
 // QT libraries
 #include <QDateTime>
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPalette>
@@ -121,10 +121,13 @@ QWidget* MoveBasePlugin::GetConfigWidget(QWidget* parent)
     return config_widget_;
 }
 
-bool MoveBasePlugin::Initialize(QGLWidget* canvas)
+bool MoveBasePlugin::Initialize(QOpenGLWidget* canvas)
 {
     map_canvas_ = static_cast<mapviz::MapCanvas*>(canvas);
     map_canvas_->installEventFilter(this);
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     initialized_ = true;
     return true;
 }

@@ -5,12 +5,15 @@ import launch_ros.actions
 
 
 def generate_launch_description():
+    mapviz_node = launch_ros.actions.Node(
+        package="mapviz",
+        executable="mapviz",
+        name="mapviz",
+        on_exit=launch.actions.Shutdown(),
+    )
+
     return launch.LaunchDescription([
-        launch_ros.actions.Node(
-            package="mapviz",
-            executable="mapviz",
-            name="mapviz",
-        ),
+        mapviz_node,
         launch_ros.actions.Node(
             package="swri_transform_util",
             executable="initialize_origin.py",

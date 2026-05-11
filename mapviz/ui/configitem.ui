@@ -719,7 +719,7 @@
   <customwidget>
    <class>mapviz::DoubleClickWidget</class>
    <extends>QWidget</extends>
-   <header>mapviz/widgets.h</header>
+   <header>mapviz/widgets.hpp</header>
    <container>1</container>
    <slots>
     <signal>DoubleClicked()</signal>
@@ -729,12 +729,12 @@
   <customwidget>
    <class>mapviz::SingleClickLabel</class>
    <extends>QLabel</extends>
-   <header>mapviz/widgets.h</header>
+   <header>mapviz/widgets.hpp</header>
   </customwidget>
   <customwidget>
    <class>mapviz::IconWidget</class>
    <extends>QWidget</extends>
-   <header>mapviz/widgets.h</header>
+   <header>mapviz/widgets.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

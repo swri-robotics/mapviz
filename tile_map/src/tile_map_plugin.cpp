@@ -27,12 +27,12 @@
 //
 // *****************************************************************************
 
-#include <mapviz/mapviz_plugin.h>
-#include <tile_map/tile_map_plugin.h>
-#include <tile_map/tile_source.h>
-#include <tile_map/bing_source.h>
-#include <tile_map/stadia_source.h>
-#include <tile_map/wmts_source.h>
+#include <mapviz/mapviz_plugin.hpp>
+#include <tile_map/tile_map_plugin.hpp>
+#include <tile_map/tile_source.hpp>
+#include <tile_map/bing_source.hpp>
+#include <tile_map/stadia_source.hpp>
+#include <tile_map/wmts_source.hpp>
 
 // QT libraries
 #include <QOpenGLWidget>
@@ -326,7 +326,7 @@ namespace tile_map
     return config_widget_;
   }
 
-  bool TileMapPlugin::Initialize(QGLWidget* canvas)
+  bool TileMapPlugin::Initialize(QOpenGLWidget* canvas)
   {
     canvas_ = canvas;
 

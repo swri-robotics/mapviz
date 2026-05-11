@@ -27,7 +27,7 @@
 //
 // *****************************************************************************
 
-#include <multires_image/QGLMap.h>
+#include <multires_image/QGLMap.hpp>
 
 // C++ standard libraries
 #include <cmath>
@@ -35,7 +35,7 @@
 namespace multires_image
 {
 QGLMap::QGLMap(QWidget *parent)
-  : QGLWidget(parent)
+  : QOpenGLWidget(parent)
   , ui()
   , m_initialized(false)
   , m_scale(1.0)
@@ -153,6 +153,7 @@ void QGLMap::ChangeCenter(double x, double y)
 
 void QGLMap::initializeGL()
 {
+  initializeOpenGLFunctions();
   glClearColor(0.58f, 0.56f, 0.5f, 1);
   glEnable(GL_POINT_SMOOTH);
   glEnable(GL_LINE_SMOOTH);

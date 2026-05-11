@@ -1,25 +1,48 @@
-### SET CMAKE POLICIES ###
 cmake_minimum_required(VERSION 3.10...3.17)
-
-if(${CMAKE_VERSION} VERSION_LESS 3.12)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-endif()
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
-
-if(${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-  cmake_policy(SET CMP0072 NEW)
-endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-### END CMAKE POLICIES ###
 
 project(mapviz_plugins
   LANGUAGES CXX)
+
+function(mapviz_plugins_ensure_interface_alias alias_target dependency_target)
+  if(TARGET ${alias_target})
+    return()
+  endif()
+
+  add_library(${alias_target} INTERFACE IMPORTED)
+  set_target_properties(${alias_target} PROPERTIES
+    INTERFACE_LINK_LIBRARIES ${dependency_target})
+endfunction()
+
+function(mapviz_plugins_ensure_opencv_component component)
+  if(TARGET opencv_${component})
+    return()
+  endif()
+
+  if(TARGET OpenCV::opencv_${component})
+    mapviz_plugins_ensure_interface_alias(opencv_${component} OpenCV::opencv_${component})
+    return()
+  endif()
+
+  if(TARGET PkgConfig::OpenCV)
+    mapviz_plugins_ensure_interface_alias(opencv_${component} PkgConfig::OpenCV)
+    return()
+  endif()
+
+  message(FATAL_ERROR "Unable to resolve OpenCV component target opencv_${component}")
+endfunction()
+
+set(MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_autogen/include)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
@@ -49,20 +72,31 @@ find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
 ### QT ###
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-add_definitions(-DWFlags=WindowFlags)
+find_package(Qt5 QUIET COMPONENTS Core Gui OpenGL Widgets)
+if(Qt5_FOUND)
+  set(MAPVIZ_PLUGINS_QT_VERSION_MAJOR 5)
+else()
+  find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Widgets)
+  set(MAPVIZ_PLUGINS_QT_VERSION_MAJOR 6)
+endif()
+if(MAPVIZ_PLUGINS_QT_VERSION_MAJOR EQUAL 6)
+  find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
+endif()
 
-find_package(OpenCV COMPONENTS core imgproc REQUIRED)
-
-### OpenGL ###
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
+find_package(OpenCV QUIET CONFIG COMPONENTS core imgproc highgui)
+if(NOT OpenCV_FOUND)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(OpenCV REQUIRED IMPORTED_TARGET opencv4)
+endif()
+foreach(component IN ITEMS core imgproc highgui)
+  mapviz_plugins_ensure_opencv_component(${component})
+endforeach()
 
 # Need to include the current dir to include the results of building Qt UI files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/ui)
 set(UI_FILES
   ui/attitude_indicator_config.ui
   ui/coordinate_picker_config.ui
@@ -121,43 +155,68 @@ set(SRC_FILES
   src/topic_select.cpp)
 
 set(HEADER_FILES
-  include/${PROJECT_NAME}/attitude_indicator_plugin.h
-  include/${PROJECT_NAME}/canvas_click_filter.h
-  include/${PROJECT_NAME}/coordinate_picker_plugin.h
-  include/${PROJECT_NAME}/disparity_plugin.h
-  include/${PROJECT_NAME}/draw_polygon_plugin.h
-  include/${PROJECT_NAME}/float_plugin.h
-  include/${PROJECT_NAME}/gps_plugin.h
-  include/${PROJECT_NAME}/grid_plugin.h
-  include/${PROJECT_NAME}/image_plugin.h
-  include/${PROJECT_NAME}/laserscan_plugin.h
-  include/${PROJECT_NAME}/marker_plugin.h
-  include/${PROJECT_NAME}/measuring_plugin.h
-  include/${PROJECT_NAME}/navsat_plugin.h
-  include/${PROJECT_NAME}/occupancy_grid_plugin.h
-  include/${PROJECT_NAME}/odometry_plugin.h
-  include/${PROJECT_NAME}/path_plugin.h
-  include/${PROJECT_NAME}/placeable_window_proxy.h
-  include/${PROJECT_NAME}/plan_route_plugin.h
-  include/${PROJECT_NAME}/point_click_publisher_plugin.h
-  include/${PROJECT_NAME}/pointcloud2_plugin.h
-  include/${PROJECT_NAME}/point_drawing_plugin.h
-  include/${PROJECT_NAME}/pose_plugin.h
-  include/${PROJECT_NAME}/robot_image_plugin.h
-  include/${PROJECT_NAME}/route_plugin.h
-  include/${PROJECT_NAME}/string_plugin.h
-  include/${PROJECT_NAME}/textured_marker_plugin.h
-  include/${PROJECT_NAME}/tf_frame_plugin.h
-  include/${PROJECT_NAME}/topic_select.h)
+  include/${PROJECT_NAME}/attitude_indicator_plugin.hpp
+  include/${PROJECT_NAME}/canvas_click_filter.hpp
+  include/${PROJECT_NAME}/coordinate_picker_plugin.hpp
+  include/${PROJECT_NAME}/disparity_plugin.hpp
+  include/${PROJECT_NAME}/draw_polygon_plugin.hpp
+  include/${PROJECT_NAME}/float_plugin.hpp
+  include/${PROJECT_NAME}/gps_plugin.hpp
+  include/${PROJECT_NAME}/grid_plugin.hpp
+  include/${PROJECT_NAME}/image_plugin.hpp
+  include/${PROJECT_NAME}/laserscan_plugin.hpp
+  include/${PROJECT_NAME}/marker_plugin.hpp
+  include/${PROJECT_NAME}/measuring_plugin.hpp
+  include/${PROJECT_NAME}/navsat_plugin.hpp
+  include/${PROJECT_NAME}/occupancy_grid_plugin.hpp
+  include/${PROJECT_NAME}/odometry_plugin.hpp
+  include/${PROJECT_NAME}/path_plugin.hpp
+  include/${PROJECT_NAME}/placeable_window_proxy.hpp
+  include/${PROJECT_NAME}/plan_route_plugin.hpp
+  include/${PROJECT_NAME}/point_click_publisher_plugin.hpp
+  include/${PROJECT_NAME}/pointcloud2_plugin.hpp
+  include/${PROJECT_NAME}/point_drawing_plugin.hpp
+  include/${PROJECT_NAME}/pose_plugin.hpp
+  include/${PROJECT_NAME}/robot_image_plugin.hpp
+  include/${PROJECT_NAME}/route_plugin.hpp
+  include/${PROJECT_NAME}/string_plugin.hpp
+  include/${PROJECT_NAME}/textured_marker_plugin.hpp
+  include/${PROJECT_NAME}/tf_frame_plugin.hpp
+  include/${PROJECT_NAME}/topic_select.hpp)
 
-qt5_wrap_ui(UI_SRC_FILES ${UI_FILES})
-qt5_wrap_cpp(MOC_FILES ${HEADER_FILES})
+set(MAPVIZ_PLUGINS_QT_LIBRARIES
+  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Core
+  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Gui
+  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::OpenGL
+  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Widgets
+)
+
+if(MAPVIZ_PLUGINS_QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_PLUGINS_QT_LIBRARIES Qt6::OpenGLWidgets)
+  set(MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES
+    Qt6Core
+    Qt6Gui
+    Qt6OpenGL
+    Qt6OpenGLWidgets
+    Qt6Widgets)
+else()
+  set(MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES
+    Qt5Core
+    Qt5Gui
+    Qt5OpenGL
+    Qt5Widgets)
+endif()
 
 add_library(${PROJECT_NAME} SHARED
-    ${MOC_FILES}
+    ${HEADER_FILES}
     ${SRC_FILES}
-    ${UI_SRC_FILES}
+    ${UI_FILES}
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  AUTOMOC ON
+  AUTOUIC ON
+  AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
+  QT_MAJOR_VERSION ${MAPVIZ_PLUGINS_QT_VERSION_MAJOR})
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
@@ -167,16 +226,18 @@ target_include_directories(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME}
   PUBLIC
     "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE
+    WFlags=WindowFlags)
 
 # Iron and later switched some cv_bridge files to .hpp from .h
 if ("$ENV{ROS_DISTRO}" STRLESS "iron")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE "-DUSE_CVBRIDGE_H_FILES")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CVBRIDGE_H_FILES)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     ament_index_cpp::ament_index_cpp
     cv_bridge::cv_bridge
-    ${GLUT_LIBRARY}
     ${gps_msgs_TARGETS}
     image_transport::image_transport
     ${map_msgs_TARGETS}
@@ -190,10 +251,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     opencv_imgproc
     opencv_highgui
     pluginlib::pluginlib
-    Qt5::Core
-    Qt5::Gui
-    Qt5::OpenGL
-    Qt5::Widgets
+    ${MAPVIZ_PLUGINS_QT_LIBRARIES}
     rclcpp::rclcpp
     ${sensor_msgs_TARGETS}
     sensor_msgs::sensor_msgs_library
@@ -206,17 +264,15 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tf2::tf2
     tf2_ros::tf2_ros
     ${visualization_msgs_TARGETS})
-target_include_directories(${PROJECT_NAME} INTERFACE
-  ${swri_roscpp_TARGETS}
-)
 
 ### Install the plugins ###
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.h")
+  FILES_MATCHING PATTERN "*.hpp")
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ui_topicselect.h
-  DESTINATION include/${PROJECT_NAME})
+install(DIRECTORY ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR}/
+  DESTINATION include/${PROJECT_NAME}
+  FILES_MATCHING PATTERN "ui_*.h")
 
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
@@ -226,8 +282,9 @@ install(TARGETS ${PROJECT_NAME}
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
-ament_export_targets(export_${PROJECT_NAME})
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
+  ament_index_cpp
   cv_bridge
   geometry_msgs
   gps_msgs
@@ -235,23 +292,21 @@ ament_export_dependencies(
   map_msgs
   mapviz
   marti_common_msgs
+  marti_nav_msgs
   marti_sensor_msgs
   marti_visualization_msgs
   nav_msgs
-  OpenCV
-  Qt5Core
-  Qt5Gui
-  Qt5OpenGL
-  Qt5Widgets
+  pluginlib
+  ${MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES}
   rclcpp
   sensor_msgs
   std_msgs
+  std_srvs
   stereo_msgs
   swri_image_util
-  swri_math_util
   swri_route_util
   swri_transform_util
-  visualization_msgs
   tf2
-  tf2_ros)
-ament_package()
+  tf2_ros
+  visualization_msgs)
+ament_package(CONFIG_EXTRAS cmake/mapviz_plugins-extras.cmake)

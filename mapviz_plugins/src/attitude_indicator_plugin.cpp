@@ -27,24 +27,24 @@
 //
 // *****************************************************************************
 
-#include <mapviz_plugins/attitude_indicator_plugin.h>
-#include <mapviz_plugins/topic_select.h>
-#include <GL/glut.h>
+#include <mapviz_plugins/attitude_indicator_plugin.hpp>
+#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDebug>
 #include <QDialog>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
-#include <mapviz/select_frame_dialog.h>
+#include <mapviz/select_frame_dialog.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
+#include <cmath>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -53,6 +53,64 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPl
 
 namespace mapviz_plugins
 {
+  namespace
+  {
+
+    void DrawSolidSphere(QOpenGLFunctions_1_1& gl, double radius, int slices, int stacks)
+    {
+      for (int stack = 0; stack < stacks; ++stack) {
+        const double phi0 = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+        const double phi1 = M_PI * (static_cast<double>(stack + 1) / stacks - 0.5);
+        const double z0 = radius * std::sin(phi0);
+        const double z1 = radius * std::sin(phi1);
+        const double zr0 = radius * std::cos(phi0);
+        const double zr1 = radius * std::cos(phi1);
+
+        gl.glBegin(GL_QUAD_STRIP);
+        for (int slice = 0; slice <= slices; ++slice) {
+          const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
+          const double cos_theta = std::cos(theta);
+          const double sin_theta = std::sin(theta);
+
+          gl.glNormal3d(cos_theta * zr0 / radius, sin_theta * zr0 / radius, z0 / radius);
+          gl.glVertex3d(cos_theta * zr0, sin_theta * zr0, z0);
+          gl.glNormal3d(cos_theta * zr1 / radius, sin_theta * zr1 / radius, z1 / radius);
+          gl.glVertex3d(cos_theta * zr1, sin_theta * zr1, z1);
+        }
+        gl.glEnd();
+      }
+    }
+
+    void DrawWireSphere(QOpenGLFunctions_1_1& gl, double radius, int slices, int stacks)
+    {
+      for (int stack = 1; stack < stacks; ++stack) {
+        const double phi = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+        const double z = radius * std::sin(phi);
+        const double zr = radius * std::cos(phi);
+
+        gl.glBegin(GL_LINE_LOOP);
+        for (int slice = 0; slice < slices; ++slice) {
+          const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
+          gl.glVertex3d(std::cos(theta) * zr, std::sin(theta) * zr, z);
+        }
+        gl.glEnd();
+      }
+
+      for (int slice = 0; slice < slices; ++slice) {
+        const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
+
+        gl.glBegin(GL_LINE_STRIP);
+        for (int stack = 0; stack <= stacks; ++stack) {
+          const double phi = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+          const double z = radius * std::sin(phi);
+          const double zr = radius * std::cos(phi);
+          gl.glVertex3d(std::cos(theta) * zr, std::sin(theta) * zr, z);
+        }
+        gl.glEnd();
+      }
+    }
+  }  // namespace
+
   AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
     topic_(""),
     qos_(rmw_qos_profile_default),
@@ -159,7 +217,8 @@ namespace mapviz_plugins
     tf2::Quaternion attitude_orientation(
       orientation.x,
       orientation.y,
-      orientation.z,
+      orientation.z
+,
       orientation.w);
 
     tf2::Matrix3x3 m(attitude_orientation);
@@ -179,7 +238,8 @@ namespace mapviz_plugins
   void AttitudeIndicatorPlugin::PrintInfo(const std::string& message)
   {
     PrintInfoHelper(ui_.status, message);
-  }
+  
+}
 
   void AttitudeIndicatorPlugin::PrintWarning(const std::string& message)
   {
@@ -192,10 +252,13 @@ namespace mapviz_plugins
     return config_widget_;
   }
 
-  bool AttitudeIndicatorPlugin::Initialize(QGLWidget* canvas)
+  bool AttitudeIndicatorPlugin::Initialize(QOpenGLWidget* canvas)
   {
     initialized_ = true;
     canvas_ = canvas;
+    canvas->makeCurrent();
+    initializeOpenGLFunctions();
+    canvas->doneCurrent();
     placer_.setContainer(canvas_);
     startTimer(50);
     return true;
@@ -230,7 +293,7 @@ namespace mapviz_plugins
     glRotated(yaw_, 0.0, 0.0, 1.0);
     glClipPlane(GL_CLIP_PLANE1, eqn2);
     glEnable(GL_CLIP_PLANE1);
-    glutSolidSphere(.8, 20, 16);
+    DrawSolidSphere(*this, .8, 20, 16);
     glDisable(GL_CLIP_PLANE1);
     glPopMatrix();
 
@@ -245,19 +308,19 @@ namespace mapviz_plugins
     glClipPlane(GL_CLIP_PLANE2, eqn3);
     glEnable(GL_CLIP_PLANE2);
     glEnable(GL_CLIP_PLANE3);
-    glutWireSphere(.801, 10, 16);
+    DrawWireSphere(*this, .801, 10, 16);
     glDisable(GL_CLIP_PLANE2);
     glDisable(GL_CLIP_PLANE3);
     glPopMatrix();
 
     glPushMatrix();
     glColor3f(0.62745098f, 0.321568627f, 0.176470588f);
-    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);  // x
-    glRotated(roll_, 0.0, 1.0, 0.0);  // y
-    glRotated(yaw_, 0.0, 0.0, 1.0);   // z
+    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+    glRotated(roll_, 0.0, 1.0, 0.0);
+    glRotated(yaw_, 0.0, 0.0, 1.0);
     glClipPlane(GL_CLIP_PLANE0, eqn);
     glEnable(GL_CLIP_PLANE0);
-    glutSolidSphere(.8, 20, 16);
+    DrawSolidSphere(*this, .8, 20, 16);
     glDisable(GL_CLIP_PLANE0);
     glPopMatrix();
     glDisable(GL_DEPTH_TEST);

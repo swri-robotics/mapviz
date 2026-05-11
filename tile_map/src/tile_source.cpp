@@ -28,7 +28,7 @@
 //
 // *****************************************************************************
 
-#include <tile_map/tile_source.h>
+#include <tile_map/tile_source.hpp>
 
 namespace tile_map
 {
