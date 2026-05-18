@@ -6,7 +6,13 @@ jobs:
   industrial_ci:
     strategy:
       matrix:
-        env:       
+        env: 
+          - {ROS_DISTRO: humble, ROS_REPO: testing}
+          - {ROS_DISTRO: humble, ROS_REPO: main}
+          - {ROS_DISTRO: jazzy, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: jazzy, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: kilted, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: kilted, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}       
           - {ROS_DISTRO: rolling, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
           - {ROS_DISTRO: rolling, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
     runs-on: ubuntu-latest
