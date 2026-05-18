@@ -32,14 +32,7 @@ find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 
-find_package(Qt5 QUIET COMPONENTS Core Gui Network OpenGL Widgets)
-if(Qt5_FOUND)
-  set(TILE_MAP_QT_VERSION_MAJOR 5)
-else()
-  find_package(Qt6 REQUIRED COMPONENTS Core Gui Network OpenGL Widgets)
-  set(TILE_MAP_QT_VERSION_MAJOR 6)
-  find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
-endif()
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Network OpenGL OpenGLWidgets Widgets)
 
 find_package(jsoncpp QUIET CONFIG)
 if(NOT TARGET jsoncpp_lib)
@@ -83,37 +76,28 @@ set(QT_HEADERS
 )
 
 set(TILE_MAP_QT_LIBRARIES
-  Qt${TILE_MAP_QT_VERSION_MAJOR}::Network
-  Qt${TILE_MAP_QT_VERSION_MAJOR}::Core
-  Qt${TILE_MAP_QT_VERSION_MAJOR}::Gui
-  Qt${TILE_MAP_QT_VERSION_MAJOR}::OpenGL
-  Qt${TILE_MAP_QT_VERSION_MAJOR}::Widgets
+  Qt6::Network
+  Qt6::Core
+  Qt6::Gui
+  Qt6::OpenGL
+  Qt6::Widgets
 )
 
-if(TILE_MAP_QT_VERSION_MAJOR EQUAL 6)
-  list(APPEND TILE_MAP_QT_LIBRARIES Qt6::OpenGLWidgets)
-  set(TILE_MAP_QT_EXPORT_DEPENDENCIES
-    Qt6Network
-    Qt6Core
-    Qt6Gui
-    Qt6OpenGL
-    Qt6OpenGLWidgets
-    Qt6Widgets)
-else()
-  set(TILE_MAP_QT_EXPORT_DEPENDENCIES
-    Qt5Network
-    Qt5Core
-    Qt5Gui
-    Qt5OpenGL
-    Qt5Widgets)
-endif()
+list(APPEND TILE_MAP_QT_LIBRARIES Qt6::OpenGLWidgets)
+set(TILE_MAP_QT_EXPORT_DEPENDENCIES
+  Qt6Network
+  Qt6Core
+  Qt6Gui
+  Qt6OpenGL
+  Qt6OpenGLWidgets
+  Qt6Widgets)
 
 add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  QT_MAJOR_VERSION ${TILE_MAP_QT_VERSION_MAJOR})
+  QT_MAJOR_VERSION 6)
 target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -141,7 +125,7 @@ set_target_properties(${PROJECT_NAME}_plugin PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  QT_MAJOR_VERSION ${TILE_MAP_QT_VERSION_MAJOR})
+  QT_MAJOR_VERSION 6)
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
 install(DIRECTORY include/

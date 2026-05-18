@@ -72,16 +72,7 @@ find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
 ### QT ###
-find_package(Qt5 QUIET COMPONENTS Core Gui OpenGL Widgets)
-if(Qt5_FOUND)
-  set(MAPVIZ_PLUGINS_QT_VERSION_MAJOR 5)
-else()
-  find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Widgets)
-  set(MAPVIZ_PLUGINS_QT_VERSION_MAJOR 6)
-endif()
-if(MAPVIZ_PLUGINS_QT_VERSION_MAJOR EQUAL 6)
-  find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
-endif()
+find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL OpenGLWidgets Widgets)
 
 find_package(OpenCV QUIET CONFIG COMPONENTS core imgproc highgui)
 if(NOT OpenCV_FOUND)
@@ -185,27 +176,19 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/topic_select.hpp)
 
 set(MAPVIZ_PLUGINS_QT_LIBRARIES
-  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Core
-  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Gui
-  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::OpenGL
-  Qt${MAPVIZ_PLUGINS_QT_VERSION_MAJOR}::Widgets
+  Qt6::Core
+  Qt6::Gui
+  Qt6::OpenGL
+  Qt6::Widgets
 )
 
-if(MAPVIZ_PLUGINS_QT_VERSION_MAJOR EQUAL 6)
-  list(APPEND MAPVIZ_PLUGINS_QT_LIBRARIES Qt6::OpenGLWidgets)
-  set(MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES
-    Qt6Core
-    Qt6Gui
-    Qt6OpenGL
-    Qt6OpenGLWidgets
-    Qt6Widgets)
-else()
-  set(MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES
-    Qt5Core
-    Qt5Gui
-    Qt5OpenGL
-    Qt5Widgets)
-endif()
+list(APPEND MAPVIZ_PLUGINS_QT_LIBRARIES Qt6::OpenGLWidgets)
+set(MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES
+  Qt6Core
+  Qt6Gui
+  Qt6OpenGL
+  Qt6OpenGLWidgets
+  Qt6Widgets)
 
 add_library(${PROJECT_NAME} SHARED
     ${HEADER_FILES}
@@ -216,7 +199,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-  QT_MAJOR_VERSION ${MAPVIZ_PLUGINS_QT_VERSION_MAJOR})
+  QT_MAJOR_VERSION 6)
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC

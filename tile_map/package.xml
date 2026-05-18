@@ -15,11 +15,11 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>qt5-qmake</buildtool_depend>
+  <buildtool_depend>qt6-qmake</buildtool_depend>
 
   <build_depend>libjsoncpp-dev</build_depend>
-  <depend>libqt5-core</depend>
-  <build_depend>libqt5-opengl-dev</build_depend>
+  <depend>libqt6-core</depend>
+  <build_depend>libqt6-opengl-dev</build_depend>
 
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
@@ -30,7 +30,7 @@
   <depend>yaml-cpp</depend>
 
   <exec_depend>libjsoncpp</exec_depend>
-  <exec_depend>libqt5-opengl</exec_depend>
+  <exec_depend>libqt6-opengl</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -63,21 +63,15 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-find_package(Qt5 QUIET COMPONENTS Concurrent Core Gui OpenGL Widgets)
-if(Qt5_FOUND)
-  set(MAPVIZ_QT_VERSION_MAJOR 5)
-else()
-  find_package(Qt6
-    REQUIRED
-    COMPONENTS
-      Concurrent
-      Core
-      Gui
-      OpenGL
-      OpenGLWidgets
-      Widgets)
-  set(MAPVIZ_QT_VERSION_MAJOR 6)
-endif()
+find_package(Qt6
+  REQUIRED
+  COMPONENTS
+    Concurrent
+    Core
+    Gui
+    OpenGL
+    OpenGLWidgets
+    Widgets)
 
 find_package(OpenCV QUIET CONFIG COMPONENTS core highgui imgcodecs imgproc videoio)
 if(NOT OpenCV_FOUND)
@@ -134,30 +128,21 @@ set(SRC_FILES
 )
 
 set(MAPVIZ_QT_LIBRARIES
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::Concurrent
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::Core
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::Gui
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::OpenGL
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::Widgets
+  Qt6::Concurrent
+  Qt6::Core
+  Qt6::Gui
+  Qt6::OpenGL
+  Qt6::Widgets
 )
 
-if(MAPVIZ_QT_VERSION_MAJOR EQUAL 6)
-  list(APPEND MAPVIZ_QT_LIBRARIES Qt6::OpenGLWidgets)
-  set(MAPVIZ_QT_EXPORT_DEPENDENCIES
-    Qt6Concurrent
-    Qt6Core
-    Qt6Gui
-    Qt6OpenGL
-    Qt6OpenGLWidgets
-    Qt6Widgets)
-else()
-  set(MAPVIZ_QT_EXPORT_DEPENDENCIES
-    Qt5Concurrent
-    Qt5Core
-    Qt5Gui
-    Qt5OpenGL
-    Qt5Widgets)
-endif()
+list(APPEND MAPVIZ_QT_LIBRARIES Qt6::OpenGLWidgets)
+set(MAPVIZ_QT_EXPORT_DEPENDENCIES
+  Qt6Concurrent
+  Qt6Core
+  Qt6Gui
+  Qt6OpenGL
+  Qt6OpenGLWidgets
+  Qt6Widgets)
 
 ### Build mapviz core library ###
 add_library(${PROJECT_NAME}_core SHARED
@@ -205,7 +190,7 @@ set_target_properties(${PROJECT_NAME}_core PROPERTIES
   AUTOUIC ON
   AUTORCC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-  QT_MAJOR_VERSION ${MAPVIZ_QT_VERSION_MAJOR})
+  QT_MAJOR_VERSION 6)
 
 ### Build rqt plugin (thin wrapper, loaded dynamically by rqt) ###
 add_library(rqt_${PROJECT_NAME} SHARED
@@ -218,7 +203,7 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
 )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
-  QT_MAJOR_VERSION ${MAPVIZ_QT_VERSION_MAJOR})
+  QT_MAJOR_VERSION 6)
 
 ### Build mapviz as a standalone executable ###
 add_executable(${PROJECT_NAME}
