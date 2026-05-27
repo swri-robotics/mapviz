@@ -180,6 +180,8 @@ install(FILES plugin.xml
   DESTINATION share/${PROJECT_NAME} 
 )
 
+pluginlib_export_plugin_description_file(rqt_gui "plugin.xml")
+
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   GLEW

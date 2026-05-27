@@ -31,7 +31,7 @@
 #ifndef TILE_MAP_STADIA_SOURCE_H
 #define TILE_MAP_STADIA_SOURCE_H
 
-#include "tile_source.h"
+#include <tile_map/tile_source.hpp>
 
 #include <string>
 
