@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.1 (2026-05-27)
+------------------
 * Fix plugin export (`#875 <https://github.com/swri-robotics/mapviz/issues/875>`_)
   * fix mapviz rqt plugin declaration
   * make plugin shared lib
