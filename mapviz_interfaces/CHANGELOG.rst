@@ -2,6 +2,9 @@
 Changelog for package mapviz_interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.0.0 (2026-05-10)
 ------------------
 * Refactor OpenGL Interface (`#871 <https://github.com/swri-robotics/mapviz/issues/871>`_)
