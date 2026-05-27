@@ -1,4 +1,4 @@
-<library path="lib/librqt_mapviz">
+<library path="rqt_mapviz">
     <class name="mapviz/rqt_mapviz" type="mapviz::RqtMapviz" base_class_type="rqt_gui_cpp::Plugin">
         <description>
             Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data.

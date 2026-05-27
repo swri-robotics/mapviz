@@ -108,7 +108,7 @@ else()
     Qt5Widgets)
 endif()
 
-add_library(${PROJECT_NAME} ${TILE_SRC_FILES})
+add_library(${PROJECT_NAME} SHARED ${TILE_SRC_FILES} ${QT_HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
