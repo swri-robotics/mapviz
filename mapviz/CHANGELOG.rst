@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.6.5 (2026-05-29)
+------------------
 * Fix plugin export (`#875 <https://github.com/swri-robotics/mapviz/issues/875>`_)
   Co-authored-by: Ben Andrew <benjamin.andrew@swri.org>
   (cherry picked from commit 667d284ac3138bcb726e32cca478a9a768b8dc0c)
