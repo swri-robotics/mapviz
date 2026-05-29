@@ -2,6 +2,17 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.0.1 (2026-05-27)
+------------------
+* Fix plugin export (`#875 <https://github.com/swri-robotics/mapviz/issues/875>`_)
+  * fix mapviz rqt plugin declaration
+  * make plugin shared lib
+  * add headers to library sources for AUTOMOC
+  also fixed include
+  ---------
+  Co-authored-by: Ben Andrew <benjamin.andrew@swri.org>
+* Contributors: DangitBen
+
 3.0.0 (2026-05-10)
 ------------------
 * Refactor OpenGL Interface (`#871 <https://github.com/swri-robotics/mapviz/issues/871>`_)
