@@ -16,7 +16,6 @@
 
   <depend>libqt6-core</depend>
   <build_depend>libqt6-opengl-dev</build_depend>
-  <build_depend>ros_environment</build_depend>
 
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
