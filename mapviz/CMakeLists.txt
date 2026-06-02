@@ -50,6 +50,19 @@ set(MAPVIZ_AUTOGEN_UI_INCLUDE_DIR
   ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui)
 
 find_package(ament_cmake REQUIRED)
+
+# Find Qt6 early before any dependencies that use it (like rqt_gui_cpp)
+# to avoid target conflict issues
+find_package(Qt6
+  REQUIRED
+  COMPONENTS
+    Concurrent
+    Core
+    Gui
+    OpenGL
+    OpenGLWidgets
+    Widgets)
+
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
@@ -62,16 +75,6 @@ find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-
-find_package(Qt6
-  REQUIRED
-  COMPONENTS
-    Concurrent
-    Core
-    Gui
-    OpenGL
-    OpenGLWidgets
-    Widgets)
 
 find_package(OpenCV QUIET CONFIG COMPONENTS core highgui imgcodecs imgproc videoio)
 if(NOT OpenCV_FOUND)
