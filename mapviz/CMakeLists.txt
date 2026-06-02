@@ -193,7 +193,7 @@ set_target_properties(${PROJECT_NAME}_core PROPERTIES
   AUTOUIC ON
   AUTORCC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-  QT_MAJOR_VERSION 6)
+)
 
 ### Build rqt plugin (thin wrapper, loaded dynamically by rqt) ###
 add_library(rqt_${PROJECT_NAME} SHARED
@@ -206,7 +206,7 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
 )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
-  QT_MAJOR_VERSION 6)
+)
 
 ### Build mapviz as a standalone executable ###
 add_executable(${PROJECT_NAME}
