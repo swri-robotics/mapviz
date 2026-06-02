@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2026, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -57,14 +57,14 @@ namespace mapviz_plugins
     {
       is_mouse_down_ = true;
       QMouseEvent* me = dynamic_cast<QMouseEvent*>(event);
-      mouse_down_pos_ = me->localPos();
+      mouse_down_pos_ = me->position();
       mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
     } else if (event->type() == QEvent::MouseButtonRelease) {
       if (is_mouse_down_)
       {
         QMouseEvent* me = dynamic_cast<QMouseEvent*>(event);
 
-        qreal distance = QLineF(mouse_down_pos_, me->localPos()).length();
+        qreal distance = QLineF(mouse_down_pos_, me->position()).length();
         qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
         // Only fire the event if the mouse has moved less than the maximum distance
@@ -73,7 +73,7 @@ namespace mapviz_plugins
         // or just holding the cursor in place.
         if (msecsDiff < max_ms_ && distance <= max_distance_)
         {
-          Q_EMIT pointClicked(me->localPos());
+          Q_EMIT pointClicked(me->position());
         }
       }
       is_mouse_down_ = false;

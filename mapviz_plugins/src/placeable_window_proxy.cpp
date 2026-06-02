@@ -160,7 +160,7 @@ bool PlaceableWindowProxy::handleMousePress(QMouseEvent *event)
   {
     start_rect_ = rect_;
     start_point_ = event->pos();
-    state_ = getNextState(event->localPos());
+    state_ = getNextState(event->position());
     return true;
   }
 
@@ -200,7 +200,7 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
 
   if (state_ == INACTIVE)
   {
-    if (!rect_.contains(event->localPos()))
+    if (!rect_.contains(event->position()))
     {
       if (has_cursor_)
       {
@@ -214,7 +214,7 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     // cursor to indicate the state the user would enter by clicking.
 
     Qt::CursorShape shape;
-    switch(getNextState(event->localPos()))
+    switch(getNextState(event->position()))
     {
     case MOVE_TOP_LEFT:
     case MOVE_BOTTOM_RIGHT:
@@ -239,7 +239,7 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     return true;
   }
 
-  QPointF dp = event->localPos() - start_point_;
+  QPointF dp = event->position() - start_point_;
 
   // todo: enforce minimum size & constrain aspect ratio for resizes.
   if (state_ == MOVE_ALL)
@@ -249,25 +249,25 @@ bool PlaceableWindowProxy::handleMouseMove(QMouseEvent *event)
     rect_ = resizeHelper(start_rect_,
                         start_rect_.bottomRight(),
                         start_rect_.topLeft(),
-                        event->localPos());
+                        event->position());
     rect_.moveBottomRight(start_rect_.bottomRight());
   } else if (state_ == MOVE_BOTTOM_LEFT) {
     rect_ = resizeHelper(start_rect_,
                         start_rect_.topRight(),
                         start_rect_.bottomLeft(),
-                        event->localPos());
+                        event->position());
     rect_.moveTopRight(start_rect_.topRight());
   } else if (state_ == MOVE_BOTTOM_RIGHT) {
     rect_ = resizeHelper(start_rect_,
                         start_rect_.topLeft(),
                         start_rect_.bottomRight(),
-                        event->localPos());
+                        event->position());
     rect_.moveTopLeft(start_rect_.topLeft());
   } else if (state_ == MOVE_TOP_RIGHT) {
     rect_ = resizeHelper(start_rect_,
                         start_rect_.bottomLeft(),
                         start_rect_.topRight(),
-                        event->localPos());
+                        event->position());
     rect_.moveBottomLeft(start_rect_.bottomLeft());
   } else {
     qWarning("Unhandled state in PlaceableWindowProxy: %d", state_);

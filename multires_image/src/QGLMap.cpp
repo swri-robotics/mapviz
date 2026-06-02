@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2014, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2026, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -185,8 +185,8 @@ void QGLMap::paintGL()
 
 void QGLMap::mousePressEvent(QMouseEvent* e)
 {
-  m_mouseDownX = e->x();
-  m_mouseDownY = e->y();
+  m_mouseDownX = e->position().x();
+  m_mouseDownY = e->position().y();
   m_mouseDown = true;
 
   update();
@@ -207,7 +207,7 @@ void QGLMap::mouseReleaseEvent(QMouseEvent* e)
 void QGLMap::mouseMoveEvent(QMouseEvent* e)
 {
   if (m_mouseDown)
-    MousePan(e->x(), e->y());
+    MousePan(e->position().x(), e->position().y());
 }
 
 void QGLMap::MousePan(int x, int y)

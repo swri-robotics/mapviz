@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2018, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2026, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -153,7 +153,7 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
   selected_point_ = -1;
   int closest_point = 0;
   double closest_distance = std::numeric_limits<double>::max();
-  QPointF point = event->localPos();
+  QPointF point = event->position();
   RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
   for (size_t i = 0; i < vertices_.size(); i++)
   {
@@ -176,7 +176,7 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
       return true;
     } else {
       is_mouse_down_ = true;
-      mouse_down_pos_ = event->localPos();
+      mouse_down_pos_ = event->position();
       mouse_down_time_ = QDateTime::currentMSecsSinceEpoch();
       return false;
     }
@@ -197,7 +197,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 {
   if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
   {
-    QPointF point = event->localPos();
+    QPointF point = event->position();
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
     tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
     vertices_[selected_point_].setX(position.x());
@@ -209,7 +209,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
 
     return true;
   } else if (is_mouse_down_) {
-    qreal distance = QLineF(mouse_down_pos_, event->localPos()).length();
+    qreal distance = QLineF(mouse_down_pos_, event->position()).length();
     qint64 msecsDiff = QDateTime::currentMSecsSinceEpoch() - mouse_down_time_;
 
     // Only fire the event if the mouse has moved less than the maximum distance
@@ -218,7 +218,7 @@ bool MeasuringPlugin::handleMouseRelease(QMouseEvent* event)
     // or just holding the cursor in place.
     if (msecsDiff < max_ms_ && distance <= max_distance_)
     {
-      QPointF point = event->localPos();
+      QPointF point = event->position();
 
       QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
       tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
@@ -277,7 +277,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 {
   if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
   {
-    QPointF point = event->localPos();
+    QPointF point = event->position();
     std::string frame = target_frame_;
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
     tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);

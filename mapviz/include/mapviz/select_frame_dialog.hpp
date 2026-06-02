@@ -29,7 +29,7 @@
 #ifndef MAPVIZ__SELECT_FRAME_DIALOG_HPP_
 #define MAPVIZ__SELECT_FRAME_DIALOG_HPP_
 
-#include <tf2_ros/buffer.h>
+#include <tf2_ros/buffer.hpp>
 
 #include <QDialog>
 

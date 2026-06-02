@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2018, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2026, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -129,7 +129,7 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
-  QPointF point = event->localPos();
+  QPointF point = event->position();
   RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;

@@ -352,8 +352,8 @@ void MapCanvas::Zoom(float factor)
 
 void MapCanvas::mousePressEvent(QMouseEvent* e)
 {
-  mouse_x_ = e->x();
-  mouse_y_ = e->y();
+  mouse_x_ = e->position().x();
+  mouse_y_ = e->position().y();
   mouse_previous_y_ = mouse_y_;
   drag_x_ = 0;
   drag_y_ = 0;
@@ -397,17 +397,17 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
     switch (mouse_button_) {
       case Qt::LeftButton:
       case Qt::MiddleButton:
-        if (((mouse_x_ - e->x()) != 0 || (mouse_y_ - e->y()) != 0)) {
-          drag_x_ = -((mouse_x_ - e->x()) * view_scale_);
-          drag_y_ = ((mouse_y_ - e->y()) * view_scale_);
+        if (((mouse_x_ - e->position().x()) != 0 || (mouse_y_ - e->position().y()) != 0)) {
+          drag_x_ = -((mouse_x_ - e->position().x()) * view_scale_);
+          drag_y_ = ((mouse_y_ - e->position().y()) * view_scale_);
         }
         break;
       case Qt::RightButton:
-        diff = e->y() - mouse_previous_y_;
+        diff = e->position().y() - mouse_previous_y_;
         if (diff != 0) {
           Zoom((static_cast<float>(diff)) / 10.0f);
         }
-        mouse_previous_y_ = e->y();
+        mouse_previous_y_ = e->position().y();
         break;
       default:
         // Unexpected mouse button
@@ -417,8 +417,8 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
 
   double center_x = -offset_x_ - drag_x_;
   double center_y = -offset_y_ - drag_y_;
-  double x = center_x + (e->x() - width() / 2.0) * view_scale_;
-  double y = center_y + (height() / 2.0 - e->y()) * view_scale_;
+  double x = center_x + (e->position().x() - width() / 2.0) * view_scale_;
+  double y = center_y + (height() / 2.0 - e->position().y()) * view_scale_;
 
   geometry_msgs::msg::PointStamped point_in = make_point_stamped(x, y, 0.0);
   geometry_msgs::msg::PointStamped point_out;
@@ -427,8 +427,8 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
   tf2::doTransform(point_in, point_out, tfm_temp);
 
   mouse_hovering_ = true;
-  mouse_hover_x_ = e->x();
-  mouse_hover_y_ = e->y();
+  mouse_hover_x_ = e->position().x();
+  mouse_hover_y_ = e->position().y();
 
   Q_EMIT Hover(point_out.point.x, point_out.point.y, view_scale_);
 }
