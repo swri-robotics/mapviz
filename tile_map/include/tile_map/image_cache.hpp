@@ -53,7 +53,7 @@ namespace tile_map
   class Image
   {
   public:
-    Image(const QString& uri, size_t uri_hash);
+    Image(const QString& uri, size_t uri_hash, uint64_t priority = 0);
     ~Image() = default;
 
     QString Uri() const { return uri_; }
@@ -67,14 +67,11 @@ namespace tile_map
     void AddFailure();
     bool Failed() const { return failed_; }
 
-    void SetBasePriority(int32_t priority) { base_priority_ = priority; }
-    int32_t BasePriority() const { return base_priority_; }
-
     void SetLastRequestedFrame(uint64_t frame) { last_requested_frame_ = frame; }
     uint64_t LastRequestedFrame() const { return last_requested_frame_; }
 
-    void SetLastRequestedTick(uint64_t tick) { last_requested_tick_ = tick; }
-    uint64_t LastRequestedTick() const { return last_requested_tick_; }
+    void SetPriority(uint64_t priority) { priority_ = priority; }
+    uint64_t Priority() const { return priority_; }
 
     bool Loading() const { return loading_; }
     void SetLoading(bool loading) { loading_ = loading; }
@@ -91,9 +88,8 @@ namespace tile_map
     bool loading_;
     int32_t failures_;
     bool failed_;
-    int32_t base_priority_ = 0;
     uint64_t last_requested_frame_ = 0;
-    uint64_t last_requested_tick_ = 0;
+    uint64_t priority_ = 0;
 
     mutable std::shared_ptr<QImage> image_;
     QByteArray pending_data_;

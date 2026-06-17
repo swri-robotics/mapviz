@@ -43,18 +43,18 @@ namespace tile_map
 {
   bool ComparePriority(const ImagePtr left, const ImagePtr right)
   {
-    return (static_cast<uint64_t>(left->BasePriority()) + left->LastRequestedTick()) >
-           (static_cast<uint64_t>(right->BasePriority()) + right->LastRequestedTick());
+    return left->Priority() > right->Priority();
   }
 
   const int Image::MAXIMUM_FAILURES = 5;
 
-  Image::Image(const QString& uri, size_t uri_hash) :
+  Image::Image(const QString& uri, size_t uri_hash, uint64_t priority) :
     uri_(uri),
     uri_hash_(uri_hash),
     loading_(false),
     failures_(0),
-    failed_(false)
+    failed_(false),
+    priority_(priority)
   {
   }
 
@@ -196,21 +196,16 @@ namespace tile_map
       {
         if (!unprocessed_.contains(uri_hash))
         {
-          image->SetBasePriority(priority);
           image->SetLastRequestedFrame(frame_);
-          image->SetLastRequestedTick(tick_++);
+          image->SetPriority(tick_++);
           unprocessed_[uri_hash] = image;
           uri_to_hash_map_[uri] = uri_hash;
           cache_thread_->notify();
         }
         else
         {
-          // Tile has been re-requested but still not processed.
-          // Update priority (in case it changes), and increase tick count to increase the
-          // overall priority of this tile (sum of base priority and ticks).
-          image->SetBasePriority(priority);
           image->SetLastRequestedFrame(frame_);
-          image->SetLastRequestedTick(tick_++);
+          image->SetPriority(tick_++);
         }
       }
       else
