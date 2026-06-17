@@ -123,6 +123,8 @@ namespace tile_map
     disconnect(cache_thread_, SIGNAL(RequestImage(QString)),
         this, SLOT(ProcessRequest(QString)));
 
+    // After setting our exit flag to true, release any conditions the cache thread
+    // might be waiting on so that it will exit.
     exit_ = true;
     cache_thread_->notify();
     network_request_semaphore_.release(MAXIMUM_NETWORK_REQUESTS);
