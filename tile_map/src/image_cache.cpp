@@ -196,16 +196,24 @@ namespace tile_map
       {
         if (!unprocessed_.contains(uri_hash))
         {
+          // Set an image's starting priority so that it's higher than the
+          // starting priority of every other image we've requested so
+          // far; that ensures that, all other things being equal, the
+          // most recently requested images will be loaded first.
           image->SetLastRequestedFrame(frame_);
-          image->SetPriority(tick_++);
+          image->SetPriority(priority + tick_++);
           unprocessed_[uri_hash] = image;
           uri_to_hash_map_[uri] = uri_hash;
           cache_thread_->notify();
         }
         else
         {
+          // Every time an image is requested but hasn't been loaded yet,
+          // increase its priority.  Tiles within the visible area will
+          // be requested more frequently, so this will make them load faster
+          // than tiles the user can't see.
           image->SetLastRequestedFrame(frame_);
-          image->SetPriority(tick_++);
+          image->SetPriority(priority + tick_++);
         }
       }
       else
