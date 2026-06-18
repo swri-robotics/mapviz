@@ -134,8 +134,10 @@ namespace tile_map
 
   void ImageCache::IncrementFrame()
   {
+    // As the user scrolls through many viewports, thousands of tile requests can accumulate.
     // Remove any unprocessed tile requests that aren't visible in the
-    // current viewport frame request
+    // current viewport frame request (unless we've already received a server reply and are actively
+    // decoding the image)
     unprocessed_mutex_.lock();
     for (auto it = unprocessed_.begin(); it != unprocessed_.end(); ) {
       if (!it.value()->Loading() && !it.value()->HasPendingData() &&
@@ -388,10 +390,7 @@ namespace tile_map
 
         ImagePtr image = images.front();
         image_cache_->unprocessed_mutex_.lock();
-        // As the user scrolls through many viewports, thousands of tile requests can accumulate.
-        // We're assuming only the current frame is really important to cache and anything unprocessed
-        // outside of that can be dropped (unless we've already received a server reply and are actively
-        // decoding the image)
+        // Request images only if they aren't currently pending, loading, or previously failed
         if (!image->Loading() && !image->Failed() && !image->HasPendingData() &&
             image_cache_->unprocessed_.value(image->UriHash()) == image)
         {
