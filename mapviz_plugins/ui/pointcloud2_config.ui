@@ -34,11 +34,11 @@
    </property>
    <item row="2" column="3">
     <widget class="QPushButton" name="selecttopic">
-     <property name="maximumSize">
-      <size>
-       <width>55</width>
-       <height>16777215</height>
-      </size>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="font">
       <font>
@@ -444,11 +444,11 @@
    </item>
    <item row="3" column="3">
     <widget class="QPushButton" name="buttonResetBuffer">
-     <property name="maximumSize">
-      <size>
-       <width>55</width>
-       <height>16777215</height>
-      </size>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="text">
       <string>Clear</string>

@@ -34,12 +34,6 @@
    </property>
    <item row="4" column="1">
     <widget class="QDoubleSpinBox" name="alpha">
-     <property name="maximumSize">
-      <size>
-       <width>50</width>
-       <height>16777215</height>
-      </size>
-     </property>
      <property name="decimals">
       <number>1</number>
      </property>
@@ -119,11 +113,11 @@
    </item>
    <item row="2" column="0">
     <widget class="QPushButton" name="select_grid">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>16777215</height>
-      </size>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="font">
       <font>
@@ -149,12 +143,6 @@
    </item>
    <item row="5" column="1">
     <widget class="QComboBox" name="color_scheme">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>16777215</height>
-      </size>
-     </property>
      <item>
       <property name="text">
        <string>map</string>

@@ -83,6 +83,12 @@
    </item>
    <item row="5" column="3">
     <widget class="QPushButton" name="reset_cache_button">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>Reset Cache</string>
      </property>
@@ -153,6 +159,12 @@
    </item>
    <item row="4" column="3">
     <widget class="QPushButton" name="delete_button">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -163,6 +175,12 @@
    </item>
    <item row="4" column="2">
     <widget class="QPushButton" name="save_button">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -194,12 +212,6 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>50</width>
-       <height>16777215</height>
-      </size>
      </property>
      <property name="value">
       <number>15</number>

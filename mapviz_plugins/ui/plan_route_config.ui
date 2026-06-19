@@ -107,6 +107,12 @@
    </item>
    <item row="10" column="2">
     <widget class="QPushButton" name="publish">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>Publish Route</string>
      </property>
@@ -152,6 +158,12 @@
    </item>
    <item row="7" column="2">
     <widget class="QPushButton" name="clear">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>Clear</string>
      </property>
