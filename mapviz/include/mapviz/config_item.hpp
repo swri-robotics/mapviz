@@ -38,6 +38,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QResizeEvent>
 #include <QListWidgetItem>
 
 // C++ standard libraries
@@ -82,11 +83,14 @@ public Q_SLOTS:
 
 private:
   void contextMenuEvent(QContextMenuEvent *event) override;
+  void resizeEvent(QResizeEvent* event) override;
+  void updateNameLabel();
 
 protected:
   QListWidgetItem* item_;
   QString name_;
   QString type_;
+  QString full_label_text_;
   QAction* edit_name_action_;
   QAction* duplicate_item_action_;
   QAction* remove_item_action_;
