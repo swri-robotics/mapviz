@@ -65,6 +65,8 @@ namespace tile_map
     TexturePtr GetTexture(size_t url_hash, const QString& url, bool& failed, int priority);
     void AddTexture(const TexturePtr& texture);
 
+    void IncrementFrame();
+
     void SetLogger(rclcpp::Logger logger);
 
     void Clear();
