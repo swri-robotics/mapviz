@@ -61,6 +61,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <limits>
@@ -585,6 +586,14 @@ void RobotModelPlugin::FileEdited() {
   file_path_ = path;
   if (file_path_.empty()) {
     PrintWarning("No file selected.");
+    return;
+  }
+  if (std::filesystem::path(file_path_).extension() == ".xacro") {
+    const std::string out =
+        std::filesystem::path(file_path_).replace_extension("").string();
+    PrintError("Cannot load .xacro files directly");
+    RCLCPP_ERROR(rclcpp::get_logger("robot_model_plugin"),
+                 "Run: xacro %s > %s", file_path_.c_str(), out.c_str());
     return;
   }
   std::ifstream ifs(file_path_);
