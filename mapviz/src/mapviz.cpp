@@ -896,9 +896,7 @@ void Mapviz::Save(const std::string& filename)
       << ui_.actionShow_Capture_Tools->isChecked();
   out << YAML::Key << "window_width" << YAML::Value << width();
   out << YAML::Key << "window_height" << YAML::Value << height();
-  if (config_panel_pinned_) {
-    out << YAML::Key << "panel_width" << YAML::Value << ui_.configdock->width();
-  }
+  out << YAML::Key << "panel_width" << YAML::Value << ui_.configdock->width();
   out << YAML::Key << "view_scale" << YAML::Value << canvas_->ViewScale();
   out << YAML::Key << "offset_x" << YAML::Value << canvas_->OffsetX();
   out << YAML::Key << "offset_y" << YAML::Value << canvas_->OffsetY();
