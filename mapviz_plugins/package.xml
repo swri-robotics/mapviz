@@ -46,6 +46,8 @@
   <depend>swri_route_util</depend>
   <depend>swri_transform_util</depend>
   <depend>tf2</depend>
+  <depend>assimp</depend>
+  <depend>urdf</depend>
   <depend>visualization_msgs</depend>
   
   <exec_depend>libqt5-opengl</exec_depend>
