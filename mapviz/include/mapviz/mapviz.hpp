@@ -55,6 +55,7 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/executors/single_threaded_executor.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -62,7 +63,9 @@
 #include <std_srvs/srv/empty.hpp>
 
 // C++ standard libraries
+#include <atomic>
 #include <string>
+#include <thread>
 #include <vector>
 #include <map>
 #include <memory>
@@ -178,8 +181,11 @@ protected:
   QMenu* image_transport_menu_;
 
   QTimer frame_timer_;
-  QTimer spin_timer_;
+  QTimer spin_timer_;  // unused in standalone mode; kept for rqt embedding
   QTimer save_timer_;
+  rclcpp::executors::SingleThreadedExecutor::UniquePtr spin_executor_;
+  std::thread spin_thread_;
+  std::atomic<bool> spin_thread_running_{false};
   QTimer record_timer_;
   QTimer profile_timer_;
 

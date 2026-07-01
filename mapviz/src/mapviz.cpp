@@ -329,6 +329,11 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
 Mapviz::~Mapviz()
 {
+  if (spin_thread_running_) {
+    spin_executor_->cancel();
+    spin_thread_running_ = false;
+    if (spin_thread_.joinable()) spin_thread_.join();
+  }
   video_thread_.quit();
   video_thread_.wait();
 }
@@ -359,8 +364,16 @@ void Mapviz::Initialize()
 {
   if (!initialized_) {
     if (is_standalone_) {
-      spin_timer_.start(30);
-      connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
+      spin_executor_ = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+      spin_executor_->add_node(node_);
+      spin_thread_running_ = true;
+      spin_thread_ = std::thread([this]() {
+        spin_executor_->spin();
+        spin_thread_running_ = false;
+        if (!rclcpp::ok()) {
+          QApplication::exit();
+        }
+      });
     }
 
     // Create a sub-menu that lists all available Image Transports
