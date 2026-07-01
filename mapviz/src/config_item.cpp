@@ -30,6 +30,7 @@
 #include <mapviz/config_item.hpp>
 #include <QMenu>
 #include <QAction>
+#include <QFontMetrics>
 #include <QInputDialog>
 
 namespace mapviz
@@ -78,13 +79,31 @@ namespace mapviz
   void ConfigItem::SetName(QString name)
   {
     name_ = name;
-    ui_.namelabel->setText(type_ + " (" + name_ + ")");
+    full_label_text_ = type_ + " (" + name_ + ")";
+    updateNameLabel();
   }
 
   void ConfigItem::SetType(QString type)
   {
     type_ = type;
-    ui_.namelabel->setText(type_ + " (" + name_ + ")");
+    full_label_text_ = type_ + " (" + name_ + ")";
+    updateNameLabel();
+  }
+
+  void ConfigItem::resizeEvent(QResizeEvent* event)
+  {
+    QWidget::resizeEvent(event);
+    updateNameLabel();
+  }
+
+  void ConfigItem::updateNameLabel()
+  {
+    if (ui_.namelabel->width() <= 0) {
+      return;
+    }
+    QFontMetrics fm(ui_.namelabel->font());
+    ui_.namelabel->setText(
+        fm.elidedText(full_label_text_, Qt::ElideRight, ui_.namelabel->width()));
   }
 
   void ConfigItem::SetWidget(QWidget* widget)
