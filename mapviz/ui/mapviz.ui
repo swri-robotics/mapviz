@@ -119,11 +119,11 @@
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
          <widget class="QLabel" name="label">
-          <property name="maximumSize">
-           <size>
-            <width>85</width>
-            <height>16777215</height>
-           </size>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="font">
            <font>
@@ -138,11 +138,11 @@
         </item>
         <item row="1" column="0" rowspan="2">
          <widget class="QLabel" name="label_2">
-          <property name="maximumSize">
-           <size>
-            <width>85</width>
-            <height>16777215</height>
-           </size>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="font">
            <font>
@@ -157,11 +157,11 @@
         </item>
         <item row="5" column="0">
          <widget class="QLabel" name="label_3">
-          <property name="maximumSize">
-           <size>
-            <width>85</width>
-            <height>16777215</height>
-           </size>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="font">
            <font>
@@ -173,6 +173,19 @@
            <string>Background:</string>
           </property>
          </widget>
+        </item>
+        <item row="5" column="2">
+         <spacer name="horizontalSpacer_bg">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item row="5" column="1">
          <widget class="mapviz::ColorButton" name="bg_color">
@@ -304,12 +317,6 @@
         </property>
         <item>
          <widget class="QPushButton" name="addbutton">
-          <property name="maximumSize">
-           <size>
-            <width>80</width>
-            <height>16777215</height>
-           </size>
-          </property>
           <property name="toolTip">
            <string>Add a new display (Ctrl + N)</string>
           </property>
@@ -320,12 +327,6 @@
         </item>
         <item>
          <widget class="QPushButton" name="removebutton">
-          <property name="maximumSize">
-           <size>
-            <width>80</width>
-            <height>16777215</height>
-           </size>
-          </property>
           <property name="toolTip">
            <string>Remove the selected display (Ctrl + X)</string>
           </property>
