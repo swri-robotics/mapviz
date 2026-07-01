@@ -81,7 +81,7 @@
     <description>Display maps and other OccupancyGrids</description>
   </class>
   <class name="mapviz_plugins/robot_model" type="mapviz_plugins::RobotModelPlugin" base_class_type="mapviz::MapvizPlugin">
-    <description>Visualizes a URDF robot model as an efficient top-down 2D outline at the robot's TF frame.</description>
+    <description>Renders a URDF robot model top-down using Lambert shading</description>
   </class>
 </library>
 
