@@ -80,5 +80,8 @@
   <class name="mapviz_plugins/occupancy_grid" type="mapviz_plugins::OccupancyGridPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Display maps and other OccupancyGrids</description>
   </class>
+  <class name="mapviz_plugins/robot_model" type="mapviz_plugins::RobotModelPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Renders a URDF robot model top-down using Lambert shading</description>
+  </class>
 </library>
 
