@@ -31,10 +31,10 @@
 #define TILE_MAP_IMAGE_CACHE_HPP_
 
 #include <string>
-#include <limits>
 
 #include <rclcpp/logger.hpp>
 
+#include <QByteArray>
 #include <QCache>
 #include <QImage>
 #include <QMap>
@@ -67,30 +67,33 @@ namespace tile_map
     void AddFailure();
     bool Failed() const { return failed_; }
 
-    void IncreasePriority()
-    {
-      if (priority_ < std::numeric_limits<uint64_t>::max())
-      {
-        priority_++;
-      }
-    }
+    void SetLastRequestedFrame(uint64_t frame) { last_requested_frame_ = frame; }
+    uint64_t LastRequestedFrame() const { return last_requested_frame_; }
+
     void SetPriority(uint64_t priority) { priority_ = priority; }
     uint64_t Priority() const { return priority_; }
 
     bool Loading() const { return loading_; }
     void SetLoading(bool loading) { loading_ = loading; }
 
+    void SetDecodedImage(std::shared_ptr<QImage> img) { image_ = img; }
+
+    bool HasPendingData() const { return has_pending_data_; }
+    void SetPendingData(const QByteArray& data);
+    QByteArray TakePendingData();
+
   private:
     QString uri_;
-
     size_t uri_hash_;
-
     bool loading_;
     int32_t failures_;
     bool failed_;
-    uint64_t priority_;
+    uint64_t last_requested_frame_ = 0;
+    uint64_t priority_ = 0;
 
     mutable std::shared_ptr<QImage> image_;
+    QByteArray pending_data_;
+    bool has_pending_data_ = false;
 
     static const int MAXIMUM_FAILURES;
   };
@@ -107,6 +110,8 @@ namespace tile_map
     ~ImageCache() override;
 
     ImagePtr GetImage(size_t uri_hash, const QString& uri, int32_t priority = 0);
+
+    void IncrementFrame();
 
     void SetLogger(rclcpp::Logger logger);
 
@@ -129,6 +134,7 @@ namespace tile_map
     QMutex unprocessed_mutex_;
     bool exit_;
 
+    uint64_t frame_;
     uint64_t tick_;
 
     CacheThread* cache_thread_;
@@ -157,7 +163,7 @@ namespace tile_map
 
     private:
       ImageCache* image_cache_;
-      QMutex waiting_mutex_;
+      QSemaphore waiting_semaphore_;
 
       static const int MAXIMUM_SEQUENTIAL_REQUESTS;
   };

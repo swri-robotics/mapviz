@@ -218,6 +218,8 @@ namespace tile_map
           }
         }
       }
+
+      tile_cache_->IncrementFrame();
     }
   }
 

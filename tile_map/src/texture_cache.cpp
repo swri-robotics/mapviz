@@ -131,6 +131,11 @@ namespace tile_map
     }
   }
 
+  void TextureCache::IncrementFrame()
+  {
+    image_cache_->IncrementFrame();
+  }
+
   void TextureCache::SetLogger(rclcpp::Logger logger)
   {
     logger_ = logger;

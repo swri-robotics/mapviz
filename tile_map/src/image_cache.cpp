@@ -63,6 +63,20 @@ namespace tile_map
     image_ = std::make_shared<QImage>();
   }
 
+  void Image::SetPendingData(const QByteArray& data)
+  {
+    pending_data_ = data;
+    has_pending_data_ = true;
+  }
+
+  QByteArray Image::TakePendingData()
+  {
+    QByteArray result;
+    std::swap(result, pending_data_);
+    has_pending_data_ = false;
+    return result;
+  }
+
   void Image::ClearImage()
   {
     image_.reset();
@@ -83,6 +97,7 @@ namespace tile_map
     cache_dir_(cache_dir),
     cache_(size),
     exit_(false),
+    frame_(0),
     tick_(0),
     cache_thread_(new CacheThread(this)),
     network_request_semaphore_(MAXIMUM_NETWORK_REQUESTS),
@@ -96,11 +111,18 @@ namespace tile_map
     connect(cache_thread_, SIGNAL(RequestImage(QString)), this, SLOT(ProcessRequest(QString)));
 
     cache_thread_->start();
-    cache_thread_->setPriority(QThread::NormalPriority);
+    cache_thread_->setPriority(QThread::LowPriority);
   }
 
   ImageCache::~ImageCache()
   {
+    // Disconnect signals before touching the thread or network manager in
+    // case of any cleanup race conditions
+    disconnect(&network_manager_, SIGNAL(finished(QNetworkReply*)),
+        this, SLOT(ProcessReply(QNetworkReply*)));
+    disconnect(cache_thread_, SIGNAL(RequestImage(QString)),
+        this, SLOT(ProcessRequest(QString)));
+
     // After setting our exit flag to true, release any conditions the cache thread
     // might be waiting on so that it will exit.
     exit_ = true;
@@ -108,6 +130,26 @@ namespace tile_map
     network_request_semaphore_.release(MAXIMUM_NETWORK_REQUESTS);
     cache_thread_->wait();
     delete cache_thread_;
+  }
+
+  void ImageCache::IncrementFrame()
+  {
+    // As the user scrolls through many viewports, thousands of tile requests can accumulate.
+    // Remove any unprocessed tile requests that aren't visible in the
+    // current viewport frame request (unless we've already received a server reply and are actively
+    // decoding the image)
+    unprocessed_mutex_.lock();
+    for (auto it = unprocessed_.begin(); it != unprocessed_.end(); ) {
+      if (!it.value()->Loading() && !it.value()->HasPendingData() &&
+          it.value()->LastRequestedFrame() < frame_) {
+        uri_to_hash_map_.remove(it.value()->Uri());
+        it = unprocessed_.erase(it);
+      } else {
+        ++it;
+      }
+    }
+    unprocessed_mutex_.unlock();
+    frame_++;
   }
 
   void ImageCache::Clear()
@@ -162,6 +204,7 @@ namespace tile_map
           // starting priority of every other image we've requested so
           // far; that ensures that, all other things being equal, the
           // most recently requested images will be loaded first.
+          image->SetLastRequestedFrame(frame_);
           image->SetPriority(priority + tick_++);
           unprocessed_[uri_hash] = image;
           uri_to_hash_map_[uri] = uri_hash;
@@ -173,6 +216,7 @@ namespace tile_map
           // increase its priority.  Tiles within the visible area will
           // be requested more frequently, so this will make them load faster
           // than tiles the user can't see.
+          image->SetLastRequestedFrame(frame_);
           image->SetPriority(priority + tick_++);
         }
       }
@@ -211,40 +255,50 @@ namespace tile_map
   {
     QString url = reply->url().toString();
 
-    ImagePtr image;
+    // Store raw bytes under the mutex
+    // CacheThread decodes instead of the higher priority main thread.
     unprocessed_mutex_.lock();
 
-    size_t hash = uri_to_hash_map_[url];
-    image = unprocessed_[hash];
+    size_t hash = uri_to_hash_map_.value(url, 0);
+    ImagePtr image;
+    if (uri_to_hash_map_.contains(url)) {
+      image = unprocessed_.value(hash);
+    }
+
+    bool keep_in_queue = false;
     if (image)
     {
       if (reply->error() == QNetworkReply::NoError)
       {
-        QByteArray data = reply->readAll();
-        image->InitializeImage();
-        if (!image->GetImage()->loadFromData(data))
-        {
-          image->ClearImage();
-          image->AddFailure();
-        }
+        image->SetPendingData(reply->readAll());
+        keep_in_queue = true;  // CacheThread will decode then remove
       }
       else
       {
         auto steady_clock = rclcpp::Clock();
-        RCLCPP_ERROR_THROTTLE(logger_, steady_clock, 1.0, "NETWORK ERROR: %s", reply->errorString().toStdString().c_str());
+        RCLCPP_ERROR_THROTTLE(logger_, steady_clock, 1000,
+          "tile_map: network error for %s: %s",
+          url.toStdString().c_str(), reply->errorString().toStdString().c_str());
         image->AddFailure();
       }
-    }
-
-    unprocessed_.remove(hash);
-    uri_to_hash_map_.remove(url);
-    if (image)
-    {
       image->SetLoading(false);
     }
+    else
+    {
+      RCLCPP_WARN(logger_, "tile_map: reply for unknown URL (already evicted?): %s",
+        url.toStdString().c_str());
+    }
+
+    if (!keep_in_queue && uri_to_hash_map_.contains(url)) {
+      unprocessed_.remove(hash);
+      uri_to_hash_map_.remove(url);
+    }
+
     network_request_semaphore_.release();
 
     unprocessed_mutex_.unlock();
+
+    cache_thread_->notify();
 
     reply->deleteLater();
   }
@@ -253,14 +307,18 @@ namespace tile_map
 
   CacheThread::CacheThread(ImageCache* parent) :
     image_cache_(parent),
-    waiting_mutex_()
+    waiting_semaphore_(0)
   {
-    waiting_mutex_.lock();
   }
 
   void CacheThread::notify()
   {
-    waiting_mutex_.unlock();
+    // Using a semaphore here to safely call release from any thread. There is a race
+    // here where multiple threads can see available as 0, but this just causes extra
+    // wakeups and is effectively harmless
+    if (waiting_semaphore_.available() == 0) {
+      waiting_semaphore_.release();
+    }
   }
 
   void CacheThread::run()
@@ -268,14 +326,55 @@ namespace tile_map
     while (!image_cache_->exit_)
     {
       // Wait until we're told there are images we need to request.
-      waiting_mutex_.lock();
+      waiting_semaphore_.acquire();
+
+      // Decode any tiles whose network bytes have arrived (set by ProcessReply).
+      // This keeps JPEG/PNG decode off the main thread so it cannot block the
+      // Qt event loop and delay render frames.
+      while (!image_cache_->exit_)
+      {
+        image_cache_->unprocessed_mutex_.lock();
+        ImagePtr to_decode;
+        for (auto& img : image_cache_->unprocessed_) {
+          if (img->HasPendingData()) { to_decode = img; break; }
+        }
+        QByteArray raw_data;
+        if (to_decode) {
+          raw_data = to_decode->TakePendingData();
+        }
+        image_cache_->unprocessed_mutex_.unlock();
+
+        if (!to_decode) { break; }
+
+        auto decoded = std::make_shared<QImage>();
+        if (!decoded->loadFromData(raw_data))
+        {
+          decoded.reset();
+          RCLCPP_WARN(image_cache_->logger_, "tile_map: failed to decode image from %s",
+            to_decode->Uri().toStdString().c_str());
+        }
+
+        image_cache_->unprocessed_mutex_.lock();
+        if (image_cache_->unprocessed_.value(to_decode->UriHash()) == to_decode)
+        {
+          if (decoded) {
+            to_decode->SetDecodedImage(decoded);
+          } else {
+            to_decode->AddFailure();
+          }
+          image_cache_->unprocessed_.remove(to_decode->UriHash());
+          image_cache_->uri_to_hash_map_.remove(to_decode->Uri());
+        }
+        image_cache_->unprocessed_mutex_.unlock();
+      }
 
       // Next, get all of them and sort them by priority.
+      // Sort under the mutex guard to prevent seg faults from occurring
+      // during comparisons in other threads
       image_cache_->unprocessed_mutex_.lock();
       QList<ImagePtr> images = image_cache_->unprocessed_.values();
-      image_cache_->unprocessed_mutex_.unlock();
-
       std::sort(images.begin(), images.end(), ComparePriority);
+      image_cache_->unprocessed_mutex_.unlock();
 
       // Go through all of them and request them.  Qt's network manager will
       // only handle six simultaneous requests at once, so we use a semaphore
@@ -291,14 +390,16 @@ namespace tile_map
 
         ImagePtr image = images.front();
         image_cache_->unprocessed_mutex_.lock();
-        if (!image->Loading() && !image->Failed())
+        // Request images only if they aren't currently pending, loading, or previously failed
+        if (!image->Loading() && !image->Failed() && !image->HasPendingData() &&
+            image_cache_->unprocessed_.value(image->UriHash()) == image)
         {
           count++;
           image->SetLoading(true);
           images.pop_front();
 
           QString uri = image->Uri();
-          size_t hash = image_cache_->uri_to_hash_map_[uri];
+          size_t hash = image_cache_->uri_to_hash_map_.value(uri);
           if (uri.startsWith(QString("file:///")))
           {
             image->InitializeImage();
@@ -313,6 +414,7 @@ namespace tile_map
             image_cache_->uri_to_hash_map_.remove(uri);
             image->SetLoading(false);
             image_cache_->network_request_semaphore_.release();
+            image_cache_->cache_thread_->notify();
           }
           else
           {
@@ -322,13 +424,9 @@ namespace tile_map
         else
         {
           images.pop_front();
+          image_cache_->network_request_semaphore_.release();
         }
         image_cache_->unprocessed_mutex_.unlock();
-
-      }
-      if (!images.empty())
-      {
-        waiting_mutex_.unlock();
       }
     }
   }
