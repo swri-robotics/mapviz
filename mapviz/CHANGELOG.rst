@@ -2,6 +2,18 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Dual Support for Qt5 and Qt6 (`#873 <https://github.com/swri-robotics/mapviz/issues/873>`_)
+  Adding support for building against both Qt5 and Qt6
+* Remove config panel pin check (`#883 <https://github.com/swri-robotics/mapviz/issues/883>`_)
+* Add persistent config dock size; Move config toggle button (`#881 <https://github.com/swri-robotics/mapviz/issues/881>`_)
+* Plugin panel eliding (`#880 <https://github.com/swri-robotics/mapviz/issues/880>`_)
+* Adjust UI element size properties to work for higher resolutions/scaling (`#879 <https://github.com/swri-robotics/mapviz/issues/879>`_)
+  * Update button/text/space fields to work better for a variety of display resolutions and scalings
+  * Fix spinboxes for 1080p
+* Contributors: Alex Youngs, David Anthony
+
 3.0.1 (2026-05-27)
 ------------------
 * Fix plugin export (`#875 <https://github.com/swri-robotics/mapviz/issues/875>`_)

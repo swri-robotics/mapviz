@@ -2,6 +2,16 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Dual Support for Qt5 and Qt6 (`#873 <https://github.com/swri-robotics/mapviz/issues/873>`_)
+  Adding support for building against both Qt5 and Qt6
+* Adjust UI element size properties to work for higher resolutions/scaling (`#879 <https://github.com/swri-robotics/mapviz/issues/879>`_)
+  * Update button/text/space fields to work better for a variety of display resolutions and scalings
+  * Fix spinboxes for 1080p
+* Tilemap Plugin Peformance/Stability Improvements (`#877 <https://github.com/swri-robotics/mapviz/issues/877>`_)
+* Contributors: Alex Youngs, David Anthony
+
 3.0.1 (2026-05-27)
 ------------------
 * Fix plugin export (`#875 <https://github.com/swri-robotics/mapviz/issues/875>`_)
