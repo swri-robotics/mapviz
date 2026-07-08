@@ -151,7 +151,8 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     pin_button_(nullptr),
     title_label_(nullptr),
     collapsed_label_(nullptr),
-    config_panel_pinned_(true)
+    config_panel_pinned_(true),
+    pinned_panel_width_(CONFIG_PANEL_PINNED_WIDTH)
 {
   // Multiple users could be using mapviz, so its name needs to be anonymous,
   // but ROS 2 Dashing doesn't have a way to set that through node options;
@@ -178,11 +179,6 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     title_layout->setContentsMargins(4, 0, 4, 0);
     title_layout->setSpacing(4);
 
-    title_label_ = new QLabel("Config", title_bar);
-    title_label_->setStyleSheet("font-weight: bold;");
-    title_layout->addWidget(title_label_);
-    title_layout->addStretch();
-
     pin_button_ = new QToolButton(title_bar);
     pin_button_->setCheckable(true);
     pin_button_->setChecked(true);
@@ -196,6 +192,11 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
       pin_button_->setText("\xF0\x9F\x93\x8C");  // pin emoji as fallback
     }
     title_layout->addWidget(pin_button_);
+
+    title_label_ = new QLabel("Config", title_bar);
+    title_label_->setStyleSheet("font-weight: bold;");
+    title_layout->addWidget(title_label_);
+    title_layout->addStretch();
 
     title_bar->setLayout(title_layout);
     ui_.configdock->setTitleBarWidget(title_bar);
@@ -716,6 +717,15 @@ void Mapviz::Open(const std::string& filename)
       ui_.actionShow_Capture_Tools->setChecked(show_capture_tools);
     }
 
+    if (doc["panel_width"]) {
+      int panel_width = doc["panel_width"].as<int>();
+      if (panel_width >= CONFIG_PANEL_PINNED_WIDTH) {
+        pinned_panel_width_ = panel_width;
+        resizeDocks({ui_.configdock}, {panel_width}, Qt::Horizontal);
+        ui_.configdock->setMinimumWidth(CONFIG_PANEL_PINNED_WIDTH);
+      }
+    }
+
     if (doc["window_width"]) {
       int window_width = doc["window_width"].as<int>();
       resize(window_width, height());
@@ -886,6 +896,7 @@ void Mapviz::Save(const std::string& filename)
       << ui_.actionShow_Capture_Tools->isChecked();
   out << YAML::Key << "window_width" << YAML::Value << width();
   out << YAML::Key << "window_height" << YAML::Value << height();
+  out << YAML::Key << "panel_width" << YAML::Value << ui_.configdock->width();
   out << YAML::Key << "view_scale" << YAML::Value << canvas_->ViewScale();
   out << YAML::Key << "offset_x" << YAML::Value << canvas_->OffsetX();
   out << YAML::Key << "offset_y" << YAML::Value << canvas_->OffsetY();
@@ -1258,7 +1269,7 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   config_item->SetType(pretty_type);
   QListWidgetItem* item = new PluginConfigListItem();
   config_item->SetListItem(item);
-  item->setSizeHint(config_item->sizeHint());
+  item->setSizeHint(QSize(0, config_item->sizeHint().height()));
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
   connect(
     config_item,
@@ -1387,8 +1398,10 @@ void Mapviz::TogglePinConfigPanel(bool pinned)
   if (pinned) {
     pin_button_->setToolTip("Panel pinned (click to auto-hide)");
     // Restore full dock
+    const int target = std::max(pinned_panel_width_, CONFIG_PANEL_PINNED_WIDTH);
     title_label_->setText("Config");
     ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
+    resizeDocks({ui_.configdock}, {target}, Qt::Horizontal);
     ui_.configdock->setMinimumWidth(CONFIG_PANEL_PINNED_WIDTH);
     collapsed_label_->setVisible(false);
     ui_.widget_2->show();
@@ -1584,7 +1597,7 @@ void Mapviz::UpdateSizeHints()
       // Make sure the ConfigItem in the QListWidgetItem we're getting really
       // exists; if this method is called before it's been initialized, it would
       // cause a crash.
-      item->setSizeHint(widget->sizeHint());
+      item->setSizeHint(QSize(0, widget->sizeHint().height()));
     }
   }
 }
@@ -1735,11 +1748,17 @@ void Mapviz::HandleProfileTimer()
 
 bool Mapviz::eventFilter(QObject* object, QEvent* event)
 {
-  if (object == ui_.configdock && !config_panel_pinned_) {
+  if (object == ui_.configdock && config_panel_pinned_ &&
+      event->type() == QEvent::Resize) {
+    // Grab the resized panel width
+    pinned_panel_width_ = ui_.configdock->width();
+  } else if (object == ui_.configdock && !config_panel_pinned_) {
     if (event->type() == QEvent::Enter) {
       // Expand on mouse enter
+      const int target = std::max(pinned_panel_width_, CONFIG_PANEL_PINNED_WIDTH);
       title_label_->setText("Config");
       ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
+      resizeDocks({ui_.configdock}, {target}, Qt::Horizontal);
       ui_.configdock->setMinimumWidth(CONFIG_PANEL_PINNED_WIDTH);
       collapsed_label_->setVisible(false);
       ui_.widget_2->show();

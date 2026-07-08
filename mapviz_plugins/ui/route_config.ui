@@ -124,11 +124,11 @@
    </item>
    <item row="2" column="3">
     <widget class="QPushButton" name="selecttopic">
-     <property name="maximumSize">
-      <size>
-       <width>55</width>
-       <height>16777215</height>
-      </size>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="font">
       <font>
@@ -206,14 +206,14 @@
    </item>
    <item row="7" column="3">
     <widget class="QPushButton" name="selectpositiontopic">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="enabled">
       <bool>true</bool>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>55</width>
-       <height>16777215</height>
-      </size>
      </property>
      <property name="font">
       <font>

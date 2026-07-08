@@ -225,6 +225,7 @@ protected:
   QLabel* title_label_ = nullptr;
   QWidget* collapsed_label_ = nullptr;
   bool config_panel_pinned_ = false;
+  int pinned_panel_width_;
 
   Stopwatch meas_spin_;
 };

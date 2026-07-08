@@ -69,6 +69,8 @@ find_package(swri_route_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(assimp REQUIRED)
+find_package(urdf REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
 ### QT ###
@@ -112,6 +114,7 @@ set(UI_FILES
   ui/route_config.ui
   ui/string_config.ui
   ui/textured_marker_config.ui
+  ui/robot_model_config.ui
   ui/tf_frame_config.ui
   ui/topicselect.ui)
 
@@ -138,6 +141,7 @@ set(SRC_FILES
   src/pointcloud2_plugin.cpp
   src/point_drawing_plugin.cpp
   src/pose_plugin.cpp
+  src/robot_model_plugin.cpp
   src/robot_image_plugin.cpp
   src/route_plugin.cpp
   src/string_plugin.cpp
@@ -168,6 +172,7 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/pointcloud2_plugin.hpp
   include/${PROJECT_NAME}/point_drawing_plugin.hpp
   include/${PROJECT_NAME}/pose_plugin.hpp
+  include/${PROJECT_NAME}/robot_model_plugin.hpp
   include/${PROJECT_NAME}/robot_image_plugin.hpp
   include/${PROJECT_NAME}/route_plugin.hpp
   include/${PROJECT_NAME}/string_plugin.hpp
@@ -246,7 +251,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     ${swri_route_util_TARGETS}
     tf2::tf2
     tf2_ros::tf2_ros
+    ${urdf_TARGETS}
     ${visualization_msgs_TARGETS})
+
+target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
 ### Install the plugins ###
 install(DIRECTORY include/
@@ -291,5 +299,6 @@ ament_export_dependencies(
   swri_transform_util
   tf2
   tf2_ros
+  urdf
   visualization_msgs)
 ament_package(CONFIG_EXTRAS cmake/mapviz_plugins-extras.cmake)

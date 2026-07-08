@@ -66,6 +66,12 @@
    </item>
    <item row="8" column="2">
     <widget class="QPushButton" name="publish">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>Publish Polygon</string>
      </property>
@@ -83,6 +89,12 @@
    </item>
    <item row="5" column="2">
     <widget class="QPushButton" name="clear">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>Clear</string>
      </property>
@@ -126,6 +138,12 @@
    </item>
    <item row="0" column="3">
     <widget class="QPushButton" name="selectframe">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>Select</string>
      </property>
