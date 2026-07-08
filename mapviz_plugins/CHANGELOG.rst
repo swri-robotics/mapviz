@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-08)
+------------------
 * Dual Support for Qt5 and Qt6 (`#873 <https://github.com/swri-robotics/mapviz/issues/873>`_)
   Adding support for building against both Qt5 and Qt6
 * Robot Model Plugin (`#882 <https://github.com/swri-robotics/mapviz/issues/882>`_)

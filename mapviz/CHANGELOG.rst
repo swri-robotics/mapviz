@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-08)
+------------------
 * Dual Support for Qt5 and Qt6 (`#873 <https://github.com/swri-robotics/mapviz/issues/873>`_)
   Adding support for building against both Qt5 and Qt6
 * Remove config panel pin check (`#883 <https://github.com/swri-robotics/mapviz/issues/883>`_)
