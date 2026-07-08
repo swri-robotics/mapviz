@@ -65,6 +65,7 @@ find_package(std_srvs REQUIRED)
 find_package(stereo_msgs REQUIRED)
 find_package(swri_image_util REQUIRED)
 find_package(swri_math_util REQUIRED)
+find_package(qt_gui_cpp REQUIRED)
 find_package(swri_route_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
@@ -74,7 +75,12 @@ find_package(urdf REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
 ### QT ###
-find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL OpenGLWidgets Widgets)
+set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
+set(MAPVIZ_PLUGINS_QT_COMPONENTS Core Gui OpenGL Widgets)
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_PLUGINS_QT_COMPONENTS OpenGLWidgets)
+endif()
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS ${MAPVIZ_PLUGINS_QT_COMPONENTS})
 
 find_package(OpenCV QUIET CONFIG COMPONENTS core imgproc highgui)
 if(NOT OpenCV_FOUND)
@@ -181,19 +187,24 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/topic_select.hpp)
 
 set(MAPVIZ_PLUGINS_QT_LIBRARIES
-  Qt6::Core
-  Qt6::Gui
-  Qt6::OpenGL
-  Qt6::Widgets
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Gui
+  Qt${QT_VERSION_MAJOR}::OpenGL
+  Qt${QT_VERSION_MAJOR}::Widgets
 )
 
-list(APPEND MAPVIZ_PLUGINS_QT_LIBRARIES Qt6::OpenGLWidgets)
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_PLUGINS_QT_LIBRARIES Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
+endif()
 set(MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES
-  Qt6Core
-  Qt6Gui
-  Qt6OpenGL
-  Qt6OpenGLWidgets
-  Qt6Widgets)
+  Qt${QT_VERSION_MAJOR}Core
+  Qt${QT_VERSION_MAJOR}Gui
+  Qt${QT_VERSION_MAJOR}OpenGL
+  Qt${QT_VERSION_MAJOR}Widgets)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES Qt${QT_VERSION_MAJOR}OpenGLWidgets)
+endif()
 
 add_library(${PROJECT_NAME} SHARED
     ${HEADER_FILES}
@@ -204,7 +215,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-  QT_MAJOR_VERSION 6)
+  QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC

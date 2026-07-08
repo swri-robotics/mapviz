@@ -27,12 +27,18 @@ endfunction()
 find_package(ament_cmake REQUIRED)
 find_package(mapviz REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(qt_gui_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Network OpenGL OpenGLWidgets Widgets)
+set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
+set(TILE_MAP_QT_COMPONENTS Core Gui Network OpenGL Widgets)
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND TILE_MAP_QT_COMPONENTS OpenGLWidgets)
+endif()
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS ${TILE_MAP_QT_COMPONENTS})
 
 find_package(jsoncpp QUIET CONFIG)
 if(NOT TARGET jsoncpp_lib)
@@ -76,28 +82,33 @@ set(QT_HEADERS
 )
 
 set(TILE_MAP_QT_LIBRARIES
-  Qt6::Network
-  Qt6::Core
-  Qt6::Gui
-  Qt6::OpenGL
-  Qt6::Widgets
+  Qt${QT_VERSION_MAJOR}::Network
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Gui
+  Qt${QT_VERSION_MAJOR}::OpenGL
+  Qt${QT_VERSION_MAJOR}::Widgets
 )
 
-list(APPEND TILE_MAP_QT_LIBRARIES Qt6::OpenGLWidgets)
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND TILE_MAP_QT_LIBRARIES Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
+endif()
 set(TILE_MAP_QT_EXPORT_DEPENDENCIES
-  Qt6Network
-  Qt6Core
-  Qt6Gui
-  Qt6OpenGL
-  Qt6OpenGLWidgets
-  Qt6Widgets)
+  Qt${QT_VERSION_MAJOR}Network
+  Qt${QT_VERSION_MAJOR}Core
+  Qt${QT_VERSION_MAJOR}Gui
+  Qt${QT_VERSION_MAJOR}OpenGL
+  Qt${QT_VERSION_MAJOR}Widgets)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND TILE_MAP_QT_EXPORT_DEPENDENCIES Qt${QT_VERSION_MAJOR}OpenGLWidgets)
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${TILE_SRC_FILES} ${QT_HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  QT_MAJOR_VERSION 6)
+  QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
 target_include_directories(${PROJECT_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -125,7 +136,7 @@ set_target_properties(${PROJECT_NAME}_plugin PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  QT_MAJOR_VERSION 6)
+  QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
 target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
 
 install(DIRECTORY include/

@@ -13,20 +13,21 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>qt6-qmake</buildtool_depend>
-
-  <depend>libqt6-core</depend>
-  <build_depend>libqt6-opengl-dev</build_depend>
+  <build_depend>qt-base-dev</build_depend>
+  <build_export_depend>qt-base-dev</build_export_depend>
 
   <depend>geometry_msgs</depend>
   <depend>mapviz</depend>
   <depend>pluginlib</depend>
+  <depend>qt_gui_cpp</depend>
   <depend>rclcpp</depend>
   <depend>swri_math_util</depend>
   <depend>swri_transform_util</depend>
   <depend>tf2</depend>
 
-  <exec_depend>libqt6-opengl</exec_depend>
+  <exec_depend>libqtcore</exec_depend>
+  <exec_depend>libqtgui</exec_depend>
+  <exec_depend>libqtopengl</exec_depend>
   <exec_depend>rclpy</exec_depend>
 
   <export>

@@ -21,19 +21,26 @@ set(MULTIRES_PLUGIN_AUTOGEN_INCLUDE_DIR
 find_package(ament_cmake REQUIRED)
 find_package(mapviz REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(qt_gui_cpp REQUIRED)
 find_package(rclcpp  REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(swri_transform_util  REQUIRED)
 find_package(swri_math_util REQUIRED)
 
-find_package(Qt6
+set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
+set(MULTIRES_IMAGE_QT_COMPONENTS
+  Core
+  Gui
+  OpenGL
+  Widgets)
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MULTIRES_IMAGE_QT_COMPONENTS OpenGLWidgets)
+endif()
+
+find_package(Qt${QT_VERSION_MAJOR}
   REQUIRED
   COMPONENTS
-    Core
-    Gui
-    OpenGL
-    OpenGLWidgets
-    Widgets)
+    ${MULTIRES_IMAGE_QT_COMPONENTS})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -41,19 +48,24 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set(MULTIRES_IMAGE_QT_LIBRARIES
-  Qt6::Core
-  Qt6::Gui
-  Qt6::OpenGL
-  Qt6::Widgets
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Gui
+  Qt${QT_VERSION_MAJOR}::OpenGL
+  Qt${QT_VERSION_MAJOR}::Widgets
 )
 
-list(APPEND MULTIRES_IMAGE_QT_LIBRARIES Qt6::OpenGLWidgets)
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MULTIRES_IMAGE_QT_LIBRARIES Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
+endif()
 set(MULTIRES_IMAGE_QT_EXPORT_DEPENDENCIES
-  Qt6Core
-  Qt6Gui
-  Qt6OpenGL
-  Qt6OpenGLWidgets
-  Qt6Widgets)
+  Qt${QT_VERSION_MAJOR}Core
+  Qt${QT_VERSION_MAJOR}Gui
+  Qt${QT_VERSION_MAJOR}OpenGL
+  Qt${QT_VERSION_MAJOR}Widgets)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MULTIRES_IMAGE_QT_EXPORT_DEPENDENCIES Qt${QT_VERSION_MAJOR}OpenGLWidgets)
+endif()
 
 # Build libtile_cache
 set(TILE_SRC_FILES
@@ -73,7 +85,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  QT_MAJOR_VERSION 6)
+  QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
@@ -116,7 +128,7 @@ set_target_properties(multires_widget PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  QT_MAJOR_VERSION 6)
+  QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
 target_include_directories(multires_widget
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -145,7 +157,7 @@ set_target_properties(multires_view_node PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  QT_MAJOR_VERSION 6)
+  QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
 target_link_libraries(multires_view_node PUBLIC
   multires_widget
   rclcpp::rclcpp
@@ -172,7 +184,7 @@ set_target_properties(${PROJECT_NAME}_plugin PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  QT_MAJOR_VERSION 6)
+  QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
 
 target_include_directories(${PROJECT_NAME}_plugin
   PUBLIC

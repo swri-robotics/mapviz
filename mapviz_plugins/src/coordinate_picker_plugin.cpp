@@ -29,6 +29,7 @@
 
 #include <mapviz_plugins/coordinate_picker_plugin.hpp>
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/qt_mouse_event_compat.hpp>
 
 #include <QClipboard>
 #include <QMouseEvent>
@@ -129,7 +130,7 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
-  QPointF point = event->position();
+  QPointF point = mapviz::MouseEventPosition(event);
   RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;

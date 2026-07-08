@@ -50,24 +50,32 @@ set(MAPVIZ_AUTOGEN_UI_INCLUDE_DIR
   ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui)
 
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
 
-# Find Qt6 early before any dependencies that use it (like rqt_gui_cpp)
-# to avoid target conflict issues
-find_package(Qt6
+find_package(qt_gui_cpp REQUIRED)
+set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
+find_package(Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}
   REQUIRED
   COMPONENTS
     Concurrent
     Core
     Gui
     OpenGL
-    OpenGLWidgets
-    Widgets)
+    Widgets
+)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+  find_package(Qt6
+    REQUIRED
+    COMPONENTS
+      OpenGLWidgets
+  )
+endif()
 
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(rclcpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(swri_math_util REQUIRED)
@@ -131,21 +139,27 @@ set(SRC_FILES
 )
 
 set(MAPVIZ_QT_LIBRARIES
-  Qt6::Concurrent
-  Qt6::Core
-  Qt6::Gui
-  Qt6::OpenGL
-  Qt6::Widgets
+  Qt${QT_VERSION_MAJOR}::Concurrent
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Gui
+  Qt${QT_VERSION_MAJOR}::OpenGL
+  Qt${QT_VERSION_MAJOR}::Widgets
 )
 
-list(APPEND MAPVIZ_QT_LIBRARIES Qt6::OpenGLWidgets)
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_QT_LIBRARIES Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
+endif()
+
 set(MAPVIZ_QT_EXPORT_DEPENDENCIES
-  Qt6Concurrent
-  Qt6Core
-  Qt6Gui
-  Qt6OpenGL
-  Qt6OpenGLWidgets
-  Qt6Widgets)
+  Qt${QT_VERSION_MAJOR}Concurrent
+  Qt${QT_VERSION_MAJOR}Core
+  Qt${QT_VERSION_MAJOR}Gui
+  Qt${QT_VERSION_MAJOR}OpenGL
+  Qt${QT_VERSION_MAJOR}Widgets)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_QT_EXPORT_DEPENDENCIES Qt${QT_VERSION_MAJOR}OpenGLWidgets)
+endif()
 
 ### Build mapviz core library ###
 add_library(${PROJECT_NAME}_core SHARED

@@ -29,6 +29,8 @@
 
 #include <multires_image/QGLMap.hpp>
 
+#include <mapviz/qt_mouse_event_compat.hpp>
+
 // C++ standard libraries
 #include <cmath>
 
@@ -185,8 +187,9 @@ void QGLMap::paintGL()
 
 void QGLMap::mousePressEvent(QMouseEvent* e)
 {
-  m_mouseDownX = e->position().x();
-  m_mouseDownY = e->position().y();
+  const QPointF mouse_position = mapviz::MouseEventPosition(e);
+  m_mouseDownX = mouse_position.x();
+  m_mouseDownY = mouse_position.y();
   m_mouseDown = true;
 
   update();
@@ -206,8 +209,10 @@ void QGLMap::mouseReleaseEvent(QMouseEvent* e)
 
 void QGLMap::mouseMoveEvent(QMouseEvent* e)
 {
-  if (m_mouseDown)
-    MousePan(e->position().x(), e->position().y());
+  if (m_mouseDown) {
+    const QPointF mouse_position = mapviz::MouseEventPosition(e);
+    MousePan(mouse_position.x(), mouse_position.y());
+  }
 }
 
 void QGLMap::MousePan(int x, int y)
