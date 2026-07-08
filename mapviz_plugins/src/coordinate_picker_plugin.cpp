@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2018, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2026, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 
 #include <mapviz_plugins/coordinate_picker_plugin.hpp>
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/qt_mouse_event_compat.hpp>
 
 #include <QClipboard>
 #include <QMouseEvent>
@@ -129,7 +130,7 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
-  QPointF point = event->localPos();
+  QPointF point = mapviz::MouseEventPosition(event);
   RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;

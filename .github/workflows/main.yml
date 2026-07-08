@@ -13,6 +13,9 @@ jobs:
           - {ROS_DISTRO: jazzy, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
           - {ROS_DISTRO: kilted, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
           - {ROS_DISTRO: kilted, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: lyrical, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: lyrical, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: rolling, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

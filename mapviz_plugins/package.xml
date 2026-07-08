@@ -13,11 +13,8 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>qt5-qmake</buildtool_depend>
-
-  <depend>libqt5-core</depend>
-  <build_depend>libqt5-opengl-dev</build_depend>
-  <build_depend>ros_environment</build_depend>
+  <build_depend>qt-base-dev</build_depend>
+  <build_export_depend>qt-base-dev</build_export_depend>
 
   <depend>ament_index_cpp</depend>
   <depend>assimp</depend>
@@ -34,6 +31,7 @@
   <depend>marti_visualization_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
+  <depend>qt_gui_cpp</depend>
   <depend>rclcpp_action</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
@@ -48,7 +46,9 @@
   <depend>urdf</depend>
   <depend>visualization_msgs</depend>
   
-  <exec_depend>libqt5-opengl</exec_depend>
+  <exec_depend>libqtcore</exec_depend>
+  <exec_depend>libqtgui</exec_depend>
+  <exec_depend>libqtopengl</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

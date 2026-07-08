@@ -50,11 +50,32 @@ set(MAPVIZ_AUTOGEN_UI_INCLUDE_DIR
   ${MAPVIZ_AUTOGEN_INCLUDE_DIR}/ui)
 
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+
+find_package(qt_gui_cpp REQUIRED)
+set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
+find_package(Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}
+  REQUIRED
+  COMPONENTS
+    Concurrent
+    Core
+    Gui
+    OpenGL
+    Widgets
+)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+  find_package(Qt6
+    REQUIRED
+    COMPONENTS
+      OpenGLWidgets
+  )
+endif()
+
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(mapviz_interfaces REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(rclcpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(swri_math_util REQUIRED)
@@ -62,22 +83,6 @@ find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-
-find_package(Qt5 QUIET COMPONENTS Concurrent Core Gui OpenGL Widgets)
-if(Qt5_FOUND)
-  set(MAPVIZ_QT_VERSION_MAJOR 5)
-else()
-  find_package(Qt6
-    REQUIRED
-    COMPONENTS
-      Concurrent
-      Core
-      Gui
-      OpenGL
-      OpenGLWidgets
-      Widgets)
-  set(MAPVIZ_QT_VERSION_MAJOR 6)
-endif()
 
 find_package(OpenCV QUIET CONFIG COMPONENTS core highgui imgcodecs imgproc videoio)
 if(NOT OpenCV_FOUND)
@@ -134,29 +139,26 @@ set(SRC_FILES
 )
 
 set(MAPVIZ_QT_LIBRARIES
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::Concurrent
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::Core
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::Gui
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::OpenGL
-  Qt${MAPVIZ_QT_VERSION_MAJOR}::Widgets
+  Qt${QT_VERSION_MAJOR}::Concurrent
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Gui
+  Qt${QT_VERSION_MAJOR}::OpenGL
+  Qt${QT_VERSION_MAJOR}::Widgets
 )
 
-if(MAPVIZ_QT_VERSION_MAJOR EQUAL 6)
-  list(APPEND MAPVIZ_QT_LIBRARIES Qt6::OpenGLWidgets)
-  set(MAPVIZ_QT_EXPORT_DEPENDENCIES
-    Qt6Concurrent
-    Qt6Core
-    Qt6Gui
-    Qt6OpenGL
-    Qt6OpenGLWidgets
-    Qt6Widgets)
-else()
-  set(MAPVIZ_QT_EXPORT_DEPENDENCIES
-    Qt5Concurrent
-    Qt5Core
-    Qt5Gui
-    Qt5OpenGL
-    Qt5Widgets)
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_QT_LIBRARIES Qt${QT_VERSION_MAJOR}::OpenGLWidgets)
+endif()
+
+set(MAPVIZ_QT_EXPORT_DEPENDENCIES
+  Qt${QT_VERSION_MAJOR}Concurrent
+  Qt${QT_VERSION_MAJOR}Core
+  Qt${QT_VERSION_MAJOR}Gui
+  Qt${QT_VERSION_MAJOR}OpenGL
+  Qt${QT_VERSION_MAJOR}Widgets)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+  list(APPEND MAPVIZ_QT_EXPORT_DEPENDENCIES Qt${QT_VERSION_MAJOR}OpenGLWidgets)
 endif()
 
 ### Build mapviz core library ###
@@ -205,7 +207,7 @@ set_target_properties(${PROJECT_NAME}_core PROPERTIES
   AUTOUIC ON
   AUTORCC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui"
-  QT_MAJOR_VERSION ${MAPVIZ_QT_VERSION_MAJOR})
+)
 
 ### Build rqt plugin (thin wrapper, loaded dynamically by rqt) ###
 add_library(rqt_${PROJECT_NAME} SHARED
@@ -218,7 +220,7 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
 )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
-  QT_MAJOR_VERSION ${MAPVIZ_QT_VERSION_MAJOR})
+)
 
 ### Build mapviz as a standalone executable ###
 add_executable(${PROJECT_NAME}

@@ -12,11 +12,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>pkg-config</buildtool_depend>
-  <buildtool_depend>qt6-qmake</buildtool_depend>
 
-  <depend>libqt6-core</depend>
-  <build_depend>libqt6-opengl-dev</build_depend>
-  <build_depend>ros_environment</build_depend>
+  <build_depend>qt-base-dev</build_depend>
+
+  <build_export_depend>qt-base-dev</build_export_depend>
 
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
@@ -36,7 +35,9 @@
   <depend>tf2_ros</depend>
   <depend>yaml-cpp</depend>
 
-  <exec_depend>libqt6-opengl</exec_depend>
+  <exec_depend>libqtcore</exec_depend>
+  <exec_depend>libqtgui</exec_depend>
+  <exec_depend>libqtopengl</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

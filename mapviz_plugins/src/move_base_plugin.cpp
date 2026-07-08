@@ -1,6 +1,6 @@
 // *****************************************************************************
 //
-// Copyright (c) 2017, Southwest Research Institute® (SwRI®)
+// Copyright (c) 2026, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/move_base_plugin.hpp>
+#include <mapviz/qt_mouse_event_compat.hpp>
 
 // C++ standard libraries
 #include <cstdio>
@@ -208,11 +209,7 @@ bool MoveBasePlugin::handleMousePress(QMouseEvent* event)
     {
         is_mouse_down_ = true;
         arrow_angle_ = 0;
-#if QT_VERSION >= 0x050000
-      arrow_tail_position_= map_canvas_->MapGlCoordToFixedFrame( event->localPos() );
-#else
-      arrow_tail_position_= map_canvas_->MapGlCoordToFixedFrame( event->posF() );
-#endif
+          arrow_tail_position_ = map_canvas_->MapGlCoordToFixedFrame(mapviz::MouseEventPosition(event));
         return true;
     }
     return false;
@@ -222,11 +219,7 @@ bool MoveBasePlugin::handleMouseMove(QMouseEvent* event)
 {
     if (is_mouse_down_)
     {
-#if QT_VERSION >= 0x050000
-        QPointF head_pos = map_canvas_->MapGlCoordToFixedFrame( event->localPos() );
-#else
-        QPointF head_pos = map_canvas_->MapGlCoordToFixedFrame( event->posF() );
-#endif
+    QPointF head_pos = map_canvas_->MapGlCoordToFixedFrame(mapviz::MouseEventPosition(event));
         arrow_angle_ = atan2( head_pos.y() - arrow_tail_position_.y(),
                               head_pos.x() - arrow_tail_position_.x() );
     }
