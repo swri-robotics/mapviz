@@ -46,7 +46,11 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rmw/qos_profiles.h>
 
+#ifdef MAPVIZ_HAVE_URDF_MODEL_HPP
 #include <urdf/model.hpp>
+#else
+#include <urdf/model.h>
+#endif
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>

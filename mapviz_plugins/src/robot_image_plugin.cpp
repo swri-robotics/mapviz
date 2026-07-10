@@ -350,7 +350,12 @@ namespace mapviz_plugins
             Qt::FastTransformation);
         }
 
+        // QImage::flipped() replaced mirrored() in Qt 6; Qt 5 only has mirrored().
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         image_ = image_.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
+#else
+        image_ = image_.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
+#endif
 
         GLuint ids[1];
         glGenTextures(1, &ids[0]);

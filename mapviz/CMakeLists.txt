@@ -74,6 +74,17 @@ endif()
 
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
+
+# image_transport (part of image_common) changed the ImageTransport
+# constructor from taking an rclcpp::Node::SharedPtr to taking an
+# rclcpp::Node& starting with image_common 6.4.0. Detect which API is
+# available so mapviz.cpp can call the correct one.
+if(image_transport_VERSION VERSION_LESS "6.4.0")
+  set(MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF OFF)
+else()
+  set(MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF ON)
+endif()
+
 find_package(mapviz_interfaces REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
@@ -201,6 +212,11 @@ target_compile_definitions(${PROJECT_NAME}_core PRIVATE
   WFlags=WindowFlags
   __STDC_FORMAT_MACROS
 )
+if(MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF)
+  target_compile_definitions(${PROJECT_NAME}_core PRIVATE
+    MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF
+  )
+endif()
 
 set_target_properties(${PROJECT_NAME}_core PROPERTIES
   AUTOMOC ON

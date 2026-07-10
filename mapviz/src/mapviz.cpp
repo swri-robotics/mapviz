@@ -365,7 +365,14 @@ void Mapviz::Initialize()
     }
 
     // Create a sub-menu that lists all available Image Transports
+    // image_common < 6.4.0 (e.g. ROS Humble) exposes
+    // ImageTransport(rclcpp::Node::SharedPtr); 6.4.0+ replaced it with
+    // ImageTransport(rclcpp::Node&).
+#ifdef MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF
     image_transport::ImageTransport it(*node_);
+#else
+    image_transport::ImageTransport it(node_);
+#endif
     std::vector<std::string> transports = it.getLoadableTransports();
     QActionGroup* group = new QActionGroup(image_transport_menu_);
     for (const auto& iter : transports)
