@@ -104,7 +104,7 @@ namespace multires_image
 
             m_memorySize = m_dimension * m_dimension * 4;
 
-            m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
+            m_image = m_image.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
           }
         }
         else

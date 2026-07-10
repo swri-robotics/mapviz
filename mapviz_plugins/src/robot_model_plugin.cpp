@@ -46,13 +46,18 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rmw/qos_profiles.h>
 
-#include <urdf/model.h>
+#include <urdf/model.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include <ament_index_cpp/version.h>
+#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
+#include <ament_index_cpp/get_package_share_path.hpp>
+#else
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#endif
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
@@ -87,7 +92,11 @@ std::string resolveUri(const std::string& uri)
     const std::string pkg = no_scheme.substr(0, slash);
     const std::string rel = no_scheme.substr(slash + 1);
     try {
+#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
+      return (ament_index_cpp::get_package_share_path(pkg) / rel).string();
+#else
       return ament_index_cpp::get_package_share_directory(pkg) + "/" + rel;
+#endif
     } catch (...) {
       return {};
     }

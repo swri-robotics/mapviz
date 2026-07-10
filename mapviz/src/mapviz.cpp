@@ -163,6 +163,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   std::snprintf(buf, sizeof(buf), "_%llu", (unsigned long long)rclcpp::Clock().now().nanoseconds());
   name << buf;
   node_ = std::make_shared<rclcpp::Node>(name.str());
+  executor_.add_node(node_);
 
   QString default_path = GetDefaultConfigPath();
   node_->declare_parameter("config", default_path.toStdString());
@@ -364,7 +365,7 @@ void Mapviz::Initialize()
     }
 
     // Create a sub-menu that lists all available Image Transports
-    image_transport::ImageTransport it(node_);
+    image_transport::ImageTransport it(*node_);
     std::vector<std::string> transports = it.getLoadableTransports();
     QActionGroup* group = new QActionGroup(image_transport_menu_);
     for (const auto& iter : transports)
@@ -480,7 +481,7 @@ void Mapviz::SpinOnce()
 {
   if (rclcpp::ok()) {
     meas_spin_.start();
-    rclcpp::spin_some(node_);
+    executor_.spin_some();
     meas_spin_.stop();
   } else {
     QApplication::exit();

@@ -74,7 +74,7 @@ namespace multires_image
   {
     while (rclcpp::ok())
     {
-      rclcpp::spin_some(node_);
+      executor_.spin_some();
 
       usleep(10);
     }
@@ -92,6 +92,7 @@ namespace multires_image
       rclcpp::init(argc_, argv_);
 
       node_ = std::make_shared<rclcpp::Node>("multires_view_node");
+      executor_.add_node(node_);
 
       node_->declare_parameter("image_path", "");
 

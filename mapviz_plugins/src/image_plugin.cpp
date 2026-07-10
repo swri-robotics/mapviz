@@ -308,7 +308,7 @@ namespace mapviz_plugins
         if (transport_ == "default")
         {
           RCLCPP_DEBUG(node_->get_logger(), "Using default transport.");
-          image_transport::ImageTransport it(node_);
+          image_transport::ImageTransport it(*node_);
           image_sub_ = it.subscribe(
             topic_,
             qos_.depth,
@@ -317,12 +317,11 @@ namespace mapviz_plugins
           RCLCPP_DEBUG(node_->get_logger(), "Setting transport to %s on %s.",
                    transport_.c_str(), node_->get_fully_qualified_name());
 
-          image_transport::ImageTransport it(node_);
-          image_sub_ = image_transport::create_subscription(node_.get(),
+          image_sub_ = image_transport::create_subscription(*node_,
               topic_,
               std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1),
               transport_,
-              qos);
+              rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos));
         }
 
         RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
@@ -686,7 +685,7 @@ namespace mapviz_plugins
 
     // As soon as we have a node, we can find the available image transports
     // and add them to our combo box.
-    image_transport::ImageTransport it(node_);
+    image_transport::ImageTransport it(*node_);
     std::vector<std::string> transports = it.getLoadableTransports();
     for (const std::string& transport : transports)
     {
