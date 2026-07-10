@@ -50,6 +50,18 @@ find_package(cv_bridge REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(gps_msgs REQUIRED)
 find_package(image_transport REQUIRED)
+
+# image_transport (part of image_common) changed the ImageTransport
+# constructor, and the create_subscription() free function, from taking
+# rclcpp::Node::SharedPtr / rclcpp::Node* to taking rclcpp::Node& starting
+# with image_common 6.4.0. Detect which API is available so the plugins can
+# call the correct one.
+if(image_transport_VERSION VERSION_LESS "6.4.0")
+  set(MAPVIZ_PLUGINS_IMAGE_TRANSPORT_TAKES_NODE_REF OFF)
+else()
+  set(MAPVIZ_PLUGINS_IMAGE_TRANSPORT_TAKES_NODE_REF ON)
+endif()
+
 find_package(map_msgs REQUIRED)
 find_package(mapviz REQUIRED)
 find_package(marti_common_msgs REQUIRED)
@@ -73,6 +85,13 @@ find_package(tf2_ros REQUIRED)
 find_package(assimp REQUIRED)
 find_package(urdf REQUIRED)
 find_package(visualization_msgs REQUIRED)
+
+# urdf renamed model.h to model.hpp in some distros (not yet in ROS Humble).
+# Detect which header is actually available rather than assuming by distro.
+include(CheckIncludeFileCXX)
+set(CMAKE_REQUIRED_INCLUDES ${urdf_INCLUDE_DIRS})
+check_include_file_cxx("urdf/model.hpp" MAPVIZ_PLUGINS_HAVE_URDF_MODEL_HPP)
+unset(CMAKE_REQUIRED_INCLUDES)
 
 ### QT ###
 set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
@@ -232,6 +251,16 @@ target_compile_definitions(${PROJECT_NAME}
 # Iron and later switched some cv_bridge files to .hpp from .h
 if ("$ENV{ROS_DISTRO}" STRLESS "iron")
   target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CVBRIDGE_H_FILES)
+endif()
+
+if(MAPVIZ_PLUGINS_IMAGE_TRANSPORT_TAKES_NODE_REF)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE
+    MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF
+  )
+endif()
+
+if(MAPVIZ_PLUGINS_HAVE_URDF_MODEL_HPP)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE MAPVIZ_HAVE_URDF_MODEL_HPP)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC

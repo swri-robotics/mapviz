@@ -211,6 +211,7 @@ protected:
   bool updating_frames_;
 
   std::shared_ptr<rclcpp::Node> node_;
+  rclcpp::executors::SingleThreadedExecutor executor_;
   rclcpp::Service<mapviz_interfaces::srv::AddMapvizDisplay>::SharedPtr add_display_srv_;
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_;

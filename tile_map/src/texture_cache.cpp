@@ -94,7 +94,12 @@ namespace tile_map
             qimage = qimage.scaled(dimension, dimension, Qt::IgnoreAspectRatio, Qt::FastTransformation);
           }
 
-          const QImage gl_image = qimage.convertToFormat(QImage::Format_RGBA8888).mirrored();
+          // QImage::flipped() replaced mirrored() in Qt 6; Qt 5 only has mirrored().
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+          const QImage gl_image = qimage.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
+#else
+          const QImage gl_image = qimage.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
+#endif
 
           auto open_gl_texture = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
           open_gl_texture->setFormat(QOpenGLTexture::RGBA8_UNorm);
