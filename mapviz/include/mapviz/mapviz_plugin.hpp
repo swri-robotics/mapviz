@@ -144,7 +144,7 @@ public:
 
       meas_paint_.start();
       Paint(painter, x, y, scale);
-      meas_paint_.start();
+      meas_paint_.stop();
     }
   }
 
