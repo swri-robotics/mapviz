@@ -75,6 +75,8 @@ namespace mapviz_plugins
   void MarkerPlugin::ClearHistory()
   {
     RCLCPP_DEBUG(node_->get_logger(), "MarkerPlugin::ClearHistory()");
+    // markers_ and marker_visible_ are shared with the ROS spin thread.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     markers_.clear();
     marker_visible_.clear();
     ui_.nsList->clear();
@@ -105,6 +107,8 @@ namespace mapviz_plugins
 
     if ((topic != topic_) || !qosEqual(qos, qos_))
     {
+      std::lock_guard<std::recursive_mutex> lock(DataMutex());
+
       initialized_ = false;
       markers_.clear();
       marker_visible_.clear();
@@ -207,11 +211,15 @@ namespace mapviz_plugins
 
       if (marker_visible_.emplace(marker.ns, true).second)
       {
+        // This runs on the ROS spin thread; the namespace list widget can
+        // only be updated on the GUI thread.
         QString name_string(marker.ns.c_str());
-        auto* item = new QListWidgetItem(name_string, ui_.nsList);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Unchecked);
-        item->setCheckState(Qt::Checked);
+        QMetaObject::invokeMethod(this, [this, name_string]() {
+            auto* item = new QListWidgetItem(name_string, ui_.nsList);
+            item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+            item->setCheckState(Qt::Unchecked);
+            item->setCheckState(Qt::Checked);
+          }, Qt::QueuedConnection);
       }
 
 

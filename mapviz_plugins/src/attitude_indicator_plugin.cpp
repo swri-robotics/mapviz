@@ -227,7 +227,9 @@ namespace mapviz_plugins
     pitch_ = pitch_ * (180.0 / M_PI);
     yaw_ = yaw_ * (180.0 / M_PI);
 
-    canvas_->update();
+    // Runs on the ROS spin thread; QWidget::update() must be invoked on the
+    // GUI thread.
+    QMetaObject::invokeMethod(canvas_, "update", Qt::QueuedConnection);
   }
 
   void AttitudeIndicatorPlugin::PrintError(const std::string& message)

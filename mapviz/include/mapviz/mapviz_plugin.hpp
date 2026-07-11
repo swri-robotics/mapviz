@@ -45,9 +45,11 @@
 #include <QWidget>
 #include <QObject>
 #include <QOpenGLWidget>
+#include <QThread>
 
 // C++ standard libraries
 #include <memory>
+#include <mutex>
 #include <string>
 
 
@@ -60,6 +62,21 @@ class MapvizPlugin : public QObject
   Q_OBJECT
 public:
   ~MapvizPlugin() override = default;
+
+  /**
+   * Mutex guarding state shared between the background ROS spin thread and
+   * the GUI thread.  The background executor holds it while dispatching
+   * message callbacks; the draw/paint/transform entry points hold it while
+   * rendering.  TransformManager is not thread safe, so any access to
+   * tf_manager_ outside a message callback or Draw()/Paint()/Transform()
+   * must also hold this mutex.  Recursive so nested entry points
+   * (e.g. GetTransform() inside Transform()) can lock freely.
+   */
+  static std::recursive_mutex& DataMutex()
+  {
+    static std::recursive_mutex mutex;
+    return mutex;
+  }
 
   virtual bool Initialize(
       std::shared_ptr<tf2_ros::Buffer> tf_buffer,
@@ -125,6 +142,8 @@ public:
   void DrawPlugin(double x, double y, double scale)
   {
     if (visible_ && initialized_) {
+      std::lock_guard<std::recursive_mutex> lock(DataMutex());
+
       meas_transform_.start();
       Transform();
       meas_transform_.stop();
@@ -138,6 +157,8 @@ public:
   void PaintPlugin(QPainter* painter, double x, double y, double scale)
   {
     if (visible_ && initialized_) {
+      std::lock_guard<std::recursive_mutex> lock(DataMutex());
+
       meas_transform_.start();
       Transform();
       meas_transform_.stop();
@@ -151,6 +172,8 @@ public:
   void SetTargetFrame(const std::string& frame_id)
   {
     if (frame_id != target_frame_) {
+      std::lock_guard<std::recursive_mutex> lock(DataMutex());
+
       target_frame_ = frame_id;
 
       meas_transform_.start();
@@ -187,6 +210,10 @@ public:
     if (!initialized_) {
       return false;
     }
+
+    // TransformManager is not thread safe; this can be called from both the
+    // ROS spin thread (message callbacks) and the GUI thread.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
 
     tf2::TimePoint time;
     rclcpp::Time now = node_->now();
@@ -380,14 +407,36 @@ private:
   Stopwatch meas_transform_;
   Stopwatch meas_paint_;
   Stopwatch meas_draw_;
+
+  // Deduplicates status messages; the print helpers can be called from the
+  // ROS spin thread, so the label text can't be read there for comparison.
+  std::mutex status_mutex_;
+  std::string last_status_msg_;
+
+  // Returns true the first time each unique message is seen; used so the
+  // status label and log are only updated when the message changes.
+  bool StatusMessageChanged(const std::string& message)
+  {
+    std::lock_guard<std::mutex> lock(status_mutex_);
+    if (message == last_status_msg_) {
+      return false;
+    }
+    last_status_msg_ = message;
+    return true;
+  }
 };
 typedef std::shared_ptr<MapvizPlugin> MapvizPluginPtr;
 
 // Implementation
+//
+// The print helpers may be called from the ROS spin thread, but QLabel can
+// only be touched from the GUI thread, so the label update is posted to the
+// label's thread with a queued invocation when necessary.  The label is used
+// as the invocation context so pending updates are dropped if it is deleted.
 inline void MapvizPlugin::PrintErrorHelper(QLabel *status_label, const std::string &message,
                                             double throttle)
 {
-    if (message == status_label->text().toStdString()) {
+    if (!StatusMessageChanged(message)) {
       return;
     }
 
@@ -397,16 +446,23 @@ inline void MapvizPlugin::PrintErrorHelper(QLabel *status_label, const std::stri
     } else {
         RCLCPP_ERROR(logger, "%s", message.c_str());
     }
-    QPalette p(status_label->palette());
-    p.setColor(QPalette::Text, Qt::red);
-    status_label->setPalette(p);
-    status_label->setText(message.c_str());
+    auto update_label = [status_label, message]() {
+      QPalette p(status_label->palette());
+      p.setColor(QPalette::Text, Qt::red);
+      status_label->setPalette(p);
+      status_label->setText(message.c_str());
+    };
+    if (QThread::currentThread() == status_label->thread()) {
+      update_label();
+    } else {
+      QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
+    }
 }
 
 inline void MapvizPlugin::PrintInfoHelper(QLabel *status_label, const std::string &message,
                                           double throttle)
 {
-    if (message == status_label->text().toStdString()) {
+    if (!StatusMessageChanged(message)) {
       return;
     }
 
@@ -416,16 +472,23 @@ inline void MapvizPlugin::PrintInfoHelper(QLabel *status_label, const std::strin
     } else {
         RCLCPP_INFO(logger, "%s", message.c_str());
     }
-    QPalette p(status_label->palette());
-    p.setColor(QPalette::Text, Qt::darkGreen);
-    status_label->setPalette(p);
-    status_label->setText(message.c_str());
+    auto update_label = [status_label, message]() {
+      QPalette p(status_label->palette());
+      p.setColor(QPalette::Text, Qt::darkGreen);
+      status_label->setPalette(p);
+      status_label->setText(message.c_str());
+    };
+    if (QThread::currentThread() == status_label->thread()) {
+      update_label();
+    } else {
+      QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
+    }
 }
 
 inline void MapvizPlugin::PrintWarningHelper(QLabel *status_label, const std::string &message,
                                               double throttle)
 {
-    if (message == status_label->text().toStdString()) {
+    if (!StatusMessageChanged(message)) {
       return;
     }
 
@@ -435,10 +498,17 @@ inline void MapvizPlugin::PrintWarningHelper(QLabel *status_label, const std::st
     } else {
         RCLCPP_WARN(logger, "%s", message.c_str());
     }
-    QPalette p(status_label->palette());
-    p.setColor(QPalette::Text, Qt::darkYellow);
-    status_label->setPalette(p);
-    status_label->setText(message.c_str());
+    auto update_label = [status_label, message]() {
+      QPalette p(status_label->palette());
+      p.setColor(QPalette::Text, Qt::darkYellow);
+      status_label->setPalette(p);
+      status_label->setText(message.c_str());
+    };
+    if (QThread::currentThread() == status_label->thread()) {
+      update_label();
+    } else {
+      QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
+    }
 }
 
 }   // namespace mapviz

@@ -154,6 +154,8 @@ namespace mapviz_plugins
   void LaserScanPlugin::ClearHistory()
   {
     RCLCPP_DEBUG(node_->get_logger(), "LaserScan::ClearHistory()");
+    // scans_ is shared with the message callback on the ROS spin thread.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     scans_.clear();
   }
 
@@ -273,6 +275,8 @@ namespace mapviz_plugins
     ui_.topic->setText(QString::fromStdString(topic));
     if ((topic != topic_) || !qosEqual(qos, qos_))
     {
+      std::lock_guard<std::recursive_mutex> lock(DataMutex());
+
       initialized_ = false;
       scans_.clear();
       has_message_ = false;
@@ -309,6 +313,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::BufferSizeChanged(int value)
   {
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     buffer_size_ = static_cast<size_t>(value);
 
     if (buffer_size_ > 0)

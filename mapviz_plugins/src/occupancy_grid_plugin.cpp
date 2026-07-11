@@ -152,6 +152,8 @@ namespace mapviz_plugins
     texture_x_(0.0),
     texture_y_(0.0),
     texture_size_(0),
+    color_scheme_("map"),
+    texture_stale_(false),
     map_palette_(makeMapPalette()),
     costmap_palette_( makeCostmapPalette()),
     topic_(""),
@@ -251,6 +253,8 @@ namespace mapviz_plugins
     ui_.topic_grid->setText(QString::fromStdString(topic));
     if ((topic_ != topic) || !qosEqual(qos, qos_))
     {
+      std::lock_guard<std::recursive_mutex> lock(DataMutex());
+
       initialized_ = false;
       grid_.reset();
       raw_buffer_.clear();
@@ -294,12 +298,18 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::colorSchemeUpdated(const QString &)
   {
+    // Runs on the GUI thread; the buffers and cached scheme are shared with
+    // the message callbacks on the spin thread.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
+
+    color_scheme_ = ui_.color_scheme->currentText().toStdString();
+
     if( grid_ && !raw_buffer_.empty())
     {
       const size_t width  = grid_->info.width;
       const size_t height = grid_->info.height;
       const Palette& palette =
-        (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
+        (color_scheme_ == "map") ?  map_palette_ : costmap_palette_;
 
       for (size_t row = 0; row < height;  row++)
       {
@@ -353,7 +363,14 @@ namespace mapviz_plugins
     }
 
     canvas_->makeCurrent();
+    rebuildTexture();
+    canvas_->doneCurrent();
+  }
 
+  // Requires the GL context to already be current; called directly from
+  // Draw(), where making/releasing the context would disrupt paintGL().
+  void OccupancyGridPlugin::rebuildTexture()
+  {
     texture_.reset();
 
     texture_ = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
@@ -369,7 +386,6 @@ namespace mapviz_plugins
       static_cast<const void*>(color_buffer_.data()));
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    canvas_->doneCurrent();
   }
 
   void OccupancyGridPlugin::Callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
@@ -393,7 +409,7 @@ namespace mapviz_plugins
     }
 
     const Palette& palette =
-      (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
+      (color_scheme_ == "map") ?  map_palette_ : costmap_palette_;
 
     raw_buffer_.resize(texture_size_*texture_size_, 0);
     color_buffer_.resize(texture_size_*texture_size_*CHANNELS, 0);
@@ -413,7 +429,8 @@ namespace mapviz_plugins
     texture_x_ = static_cast<float>(width) / static_cast<float>(texture_size_);
     texture_y_ = static_cast<float>(height) / static_cast<float>(texture_size_);
 
-    updateTexture();
+    // The GL upload has to happen on the GUI thread; Draw() picks it up.
+    texture_stale_ = true;
     PrintInfo("Map received");
   }
 
@@ -424,7 +441,7 @@ namespace mapviz_plugins
     if( initialized_ )
     {
       const Palette& palette =
-        (ui_.color_scheme->currentText() == "map") ?  map_palette_ : costmap_palette_;
+        (color_scheme_ == "map") ?  map_palette_ : costmap_palette_;
 
       for (size_t row = 0; row < msg->height; row++)
       {
@@ -437,12 +454,18 @@ namespace mapviz_plugins
           memcpy( &color_buffer_[index_dst*CHANNELS], &palette[color*CHANNELS], CHANNELS);
         }
       }
-      updateTexture();
+      texture_stale_ = true;
     }
   }
 
   void OccupancyGridPlugin::Draw(double x, double y, double scale)
   {
+    if (texture_stale_)
+    {
+      rebuildTexture();
+      texture_stale_ = false;
+    }
+
     glPushMatrix();
 
     if( grid_ && transformed_)

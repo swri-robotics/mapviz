@@ -163,7 +163,19 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
   std::snprintf(buf, sizeof(buf), "_%llu", (unsigned long long)rclcpp::Clock().now().nanoseconds());
   name << buf;
   node_ = std::make_shared<rclcpp::Node>(name.str());
-  executor_.add_node(node_);
+
+  // Callbacks that must run on the GUI thread (the add_mapviz_display
+  // service creates widgets) go in this group, which is spun by executor_
+  // from a QTimer.  The rest of the node's callbacks are serviced by
+  // ros_executor_ on a background thread; see Initialize().
+  gui_callback_group_ = node_->create_callback_group(
+      rclcpp::CallbackGroupType::MutuallyExclusive,
+      false /* don't add to the executor that spins the node */);
+  executor_.add_callback_group(gui_callback_group_, node_->get_node_base_interface());
+
+  ros_executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  ros_executor_->add_node(node_);
+  spinning_ = false;
 
   QString default_path = GetDefaultConfigPath();
   node_->declare_parameter("config", default_path.toStdString());
@@ -330,6 +342,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
 
 Mapviz::~Mapviz()
 {
+  StopSpinThread();
   video_thread_.quit();
   video_thread_.wait();
 }
@@ -348,6 +361,9 @@ void Mapviz::closeEvent(QCloseEvent* event)
 {
   AutoSave();
 
+  // Stop servicing message callbacks before tearing the plugins down.
+  StopSpinThread();
+
   for (auto& display : plugins_) {
     MapvizPluginPtr plugin = display.second;
     canvas_->RemovePlugin(plugin);
@@ -359,10 +375,10 @@ void Mapviz::closeEvent(QCloseEvent* event)
 void Mapviz::Initialize()
 {
   if (!initialized_) {
-    if (is_standalone_) {
-      spin_timer_.start(30);
-      connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
-    }
+    // executor_ only services the GUI callback group; this timer runs in
+    // both standalone and rqt modes.
+    spin_timer_.start(30);
+    connect(&spin_timer_, SIGNAL(timeout()), this, SLOT(SpinOnce()));
 
     // Create a sub-menu that lists all available Image Transports
     // image_common < 6.4.0 (e.g. ROS Humble) exposes
@@ -419,12 +435,22 @@ void Mapviz::Initialize()
     canvas_->SetFixedFrame(ui_.fixedframe->currentText().toStdString());
     canvas_->SetTargetFrame(ui_.targetframe->currentText().toStdString());
 
+    // This service creates and configures widgets, so it must be handled on
+    // the GUI thread; the GUI callback group is spun there by SpinOnce().
     add_display_srv_ = node_->create_service<mapviz_interfaces::srv::AddMapvizDisplay>(
                                               "add_mapviz_display",
                                               std::bind(&Mapviz::AddDisplay,
                                                   this,
                                                   std::placeholders::_1,
-                                                  std::placeholders::_2));
+                                                  std::placeholders::_2),
+#if RCLCPP_VERSION_GTE(17, 0, 0)
+                                              // Iron and newer take rclcpp::QoS
+                                              rclcpp::ServicesQoS(),
+#else
+                                              // Humble takes rmw_qos_profile_t
+                                              rmw_qos_profile_services_default,
+#endif
+                                              gui_callback_group_);
 
     QString default_path = GetDefaultConfigPath();
 
@@ -457,7 +483,34 @@ void Mapviz::Initialize()
     setFocus();   // Set the main window as focused object,
                   // prevent other fields from obtaining focus at startup
 
+    // Service ROS message callbacks on a background thread so that message
+    // processing never blocks the GUI.  The callbacks are dispatched while
+    // holding MapvizPlugin::DataMutex(), which is also held by the plugin
+    // draw/transform entry points on the GUI thread; that mutual exclusion
+    // is what makes the plugins' message buffers and the shared
+    // TransformManager safe to use from both threads.
+    spinning_ = true;
+    ros_spin_thread_ = std::thread([this]() {
+      while (spinning_ && rclcpp::ok()) {
+        {
+          std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
+          ros_executor_->spin_some();
+        }
+        // Sleep outside the lock so the GUI thread gets a chance to draw
+        // even under a constant stream of messages.
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+      }
+    });
+
     initialized_ = true;
+  }
+}
+
+void Mapviz::StopSpinThread()
+{
+  spinning_ = false;
+  if (ros_spin_thread_.joinable()) {
+    ros_spin_thread_.join();
   }
 }
 
@@ -1043,6 +1096,9 @@ void Mapviz::SaveConfig()
 void Mapviz::ClearHistory()
 {
   RCLCPP_DEBUG(node_->get_logger(), "Mapviz::ClearHistory()");
+  // ClearHistory() mutates plugin message buffers that the spin thread
+  // may be appending to.
+  std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
   for (auto& plugin : plugins_) {
     plugin.second->ClearHistory();
   }
@@ -1187,6 +1243,9 @@ void Mapviz::Hover(double x, double y, double scale)
 
     swri_transform_util::Transform transform;
     std::string fixed_frame = ui_.fixedframe->currentText().toStdString();
+    // TransformManager is not thread safe and is also used by message
+    // callbacks on the spin thread.
+    std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
     if
     (
       fixed_frame.length() > 0 &&
@@ -1621,6 +1680,10 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
   RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Remove display ...");
 
   if (item) {
+    // Hold the data mutex so the plugin (and its subscriptions) can't be
+    // destroyed while the spin thread is dispatching one of its callbacks.
+    std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
+
     canvas_->RemovePlugin(plugins_[item]);
     plugins_.erase(item);
 
@@ -1703,6 +1766,9 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
 
 void Mapviz::ClearDisplays()
 {
+  // See RemoveDisplay(): plugins must not be destroyed mid-callback.
+  std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
+
   while (ui_.configs->count() > 0) {
     RCLCPP_INFO(node_->get_logger(), "Remove display ...");
 

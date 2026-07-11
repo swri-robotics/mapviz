@@ -202,6 +202,9 @@ namespace mapviz_plugins
 
   bool DrawPolygonPlugin::handleMousePress(QMouseEvent* event)
   {
+    // Uses tf_manager_, which is shared with callbacks on the ROS spin
+    // thread and is not thread safe.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     if(!this->Visible())
     {
       RCLCPP_DEBUG(node_->get_logger(), "Ignoring mouse press, since draw polygon plugin is hidden");
@@ -260,6 +263,9 @@ namespace mapviz_plugins
 
   bool DrawPolygonPlugin::handleMouseRelease(QMouseEvent* event)
   {
+    // Uses tf_manager_, which is shared with callbacks on the ROS spin
+    // thread and is not thread safe.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     std::string frame = ui_.frame->text().toStdString();
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
@@ -320,6 +326,9 @@ namespace mapviz_plugins
 
   bool DrawPolygonPlugin::handleMouseMove(QMouseEvent* event)
   {
+    // Uses tf_manager_, which is shared with callbacks on the ROS spin
+    // thread and is not thread safe.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < vertices_.size())
     {
       QPointF point = mapviz::MouseEventPosition(event);

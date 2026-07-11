@@ -262,6 +262,9 @@ namespace mapviz_plugins
 
   bool PlanRoutePlugin::handleMousePress(QMouseEvent* event)
   {
+    // Uses tf_manager_, which is shared with callbacks on the ROS spin
+    // thread and is not thread safe.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     selected_point_ = -1;
     int closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();
@@ -317,6 +320,9 @@ namespace mapviz_plugins
 
   bool PlanRoutePlugin::handleMouseRelease(QMouseEvent* event)
   {
+    // Uses tf_manager_, which is shared with callbacks on the ROS spin
+    // thread and is not thread safe.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     QPointF point = mapviz::MouseEventPosition(event);
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < waypoints_.size())
     {
@@ -366,6 +372,9 @@ namespace mapviz_plugins
 
   bool PlanRoutePlugin::handleMouseMove(QMouseEvent* event)
   {
+    // Uses tf_manager_, which is shared with callbacks on the ROS spin
+    // thread and is not thread safe.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     if (selected_point_ >= 0 && static_cast<size_t>(selected_point_) < waypoints_.size())
     {
       QPointF point = mapviz::MouseEventPosition(event);

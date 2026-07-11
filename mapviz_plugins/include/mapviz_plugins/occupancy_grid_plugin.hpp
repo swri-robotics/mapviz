@@ -120,6 +120,13 @@ private:
   std::vector<uchar> color_buffer_;
   uint32_t texture_size_;
 
+  // Message callbacks run on the ROS spin thread, which must not touch the
+  // GL context or widgets; they fill color_buffer_, cache the widget-driven
+  // color scheme here, and set texture_stale_ so Draw() re-uploads the
+  // texture on the GUI thread.
+  std::string color_scheme_;
+  bool texture_stale_;
+
   Palette map_palette_;
   Palette costmap_palette_;
 
@@ -127,6 +134,7 @@ private:
   void Callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
   void CallbackUpdate(const map_msgs::msg::OccupancyGridUpdate::SharedPtr msg);
   void updateTexture();
+  void rebuildTexture();
 };
 }   // namespace mapviz_plugins
 

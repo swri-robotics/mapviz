@@ -130,6 +130,9 @@ bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
 
 bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
 {
+  // Uses tf_manager_, which is shared with callbacks on the ROS spin
+  // thread and is not thread safe.
+  std::lock_guard<std::recursive_mutex> lock(DataMutex());
   QPointF point = mapviz::MouseEventPosition(event);
   RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
 

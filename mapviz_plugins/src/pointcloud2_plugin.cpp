@@ -569,7 +569,9 @@ namespace mapviz_plugins
       scans_.push_back( std::move(scan) );
     }
     new_topic_ = true;
-    canvas_->update();
+    // Runs on the ROS spin thread; QWidget::update() must be invoked on the
+    // GUI thread.
+    QMetaObject::invokeMethod(canvas_, "update", Qt::QueuedConnection);
   }
 
   float PointCloud2Plugin::PointFeature(const uint8_t* data, const FieldInfo& feature_info)

@@ -384,22 +384,15 @@ namespace mapviz_plugins
     // Calculate aspect ratio after rotation
     original_aspect_ratio_ = static_cast<double>(cv_image_->image.rows) / static_cast<double>(cv_image_->image.cols);
 
-    if( ui_.keep_ratio->isChecked() )
-    {
-      double height =  width_ * original_aspect_ratio_;
-      if (units_ == PERCENT)
-      {
-        height *= static_cast<double>(canvas_->width()) / static_cast<double>(canvas_->height());
-        // Round to 2 decimal places for percent
-        height = std::round(height * 100.0) / 100.0;
-      }
-      else
-      {
-        // Round to nearest whole number for pixels
-        height = std::round(height);
-      }
-      ui_.height->setValue(height);
-    }
+    // This callback runs on the ROS spin thread; reading keep_ratio and
+    // updating the height spin box must happen on the GUI thread.
+    QMetaObject::invokeMethod(this, [this]() {
+        std::lock_guard<std::recursive_mutex> lock(DataMutex());
+        if (ui_.keep_ratio->isChecked())
+        {
+          KeepRatioChanged(true);
+        }
+      }, Qt::QueuedConnection);
 
     has_image_ = true;
   }

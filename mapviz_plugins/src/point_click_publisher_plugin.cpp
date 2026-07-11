@@ -118,6 +118,9 @@ namespace mapviz_plugins
 
   void PointClickPublisherPlugin::pointClicked(const QPointF& point)
   {
+    // Uses tf_manager_, which is shared with callbacks on the ROS spin
+    // thread and is not thread safe.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     QPointF transformed = canvas_->MapGlCoordToFixedFrame(point);
 
     std::string output_frame = ui_.outputframe->currentText().toStdString();
@@ -203,6 +206,9 @@ namespace mapviz_plugins
 
   void PointClickPublisherPlugin::updateFrames()
   {
+    // Uses tf_manager_, which is shared with callbacks on the ROS spin
+    // thread and is not thread safe.
+    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     std::vector<std::string> frames;
     tf_buf_->_getFrameStrings(frames);
 
