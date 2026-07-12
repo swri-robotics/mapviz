@@ -498,6 +498,14 @@ RobotModelPlugin::RobotModelPlugin()
   connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
   connect(ui_.browsefile, SIGNAL(clicked()), this, SLOT(BrowseFile()));
   connect(ui_.filepath, SIGNAL(editingFinished()), this, SLOT(FileEdited()));
+
+  // The description is received on the ROS spin thread but parsed on the
+  // GUI thread, which owns the plugin's state; this connection is queued
+  // because the emitting thread differs from this object's thread.
+  qRegisterMetaType<std_msgs::msg::String::ConstSharedPtr>(
+      "std_msgs::msg::String::ConstSharedPtr");
+  connect(this, &RobotModelPlugin::DescriptionReceived,
+          this, &RobotModelPlugin::handleDescription);
 }
 
 bool RobotModelPlugin::Initialize(QOpenGLWidget* canvas) {
@@ -654,9 +662,16 @@ void RobotModelPlugin::TopicEdited() {
   PrintWarning("Waiting for description on " + topic_);
 }
 
+// Runs on the ROS spin thread: hand the message to the GUI thread and
+// return immediately so message processing never blocks ROS spinning.
 void RobotModelPlugin::robotDescriptionCallback(
-    const std_msgs::msg::String::SharedPtr msg) {
-  parseUrdf(msg->data);
+    const std_msgs::msg::String::ConstSharedPtr msg) {
+  Q_EMIT DescriptionReceived(msg);
+}
+
+void RobotModelPlugin::handleDescription(
+    const std_msgs::msg::String::ConstSharedPtr description) {
+  parseUrdf(description->data);
 }
 
 void RobotModelPlugin::parseUrdf(const std::string& xml) {

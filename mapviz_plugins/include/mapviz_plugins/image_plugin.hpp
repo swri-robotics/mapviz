@@ -31,6 +31,7 @@
 #define MAPVIZ_PLUGINS__IMAGE_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -120,6 +121,14 @@ protected Q_SLOTS:
   void KeepRatioChanged(bool checked);
   void SetRotation(QString rotation);
 
+Q_SIGNALS:
+  // Emitted from the ROS spin thread; delivered as queued connections to
+  // handleImage() on the GUI thread, which owns all plugin state.
+  void ImageReceived(const sensor_msgs::msg::Image::ConstSharedPtr image);
+
+private Q_SLOTS:
+  void handleImage(const sensor_msgs::msg::Image::ConstSharedPtr image);
+
 private:
   Ui::image_config ui_;
   QWidget* config_widget_;
@@ -158,5 +167,6 @@ private:
   std::string UnitsToString(Units units);
 };
 }   // namespace mapviz_plugins
+
 
 #endif  // MAPVIZ_PLUGINS__IMAGE_PLUGIN_HPP_

@@ -69,14 +69,24 @@ namespace mapviz_plugins
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
 
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; these connections are
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<visualization_msgs::msg::Marker::ConstSharedPtr>(
+        "visualization_msgs::msg::Marker::ConstSharedPtr");
+    qRegisterMetaType<visualization_msgs::msg::MarkerArray::ConstSharedPtr>(
+        "visualization_msgs::msg::MarkerArray::ConstSharedPtr");
+    QObject::connect(this, &MarkerPlugin::MarkerReceived,
+                     this, &MarkerPlugin::handleMarker);
+    QObject::connect(this, &MarkerPlugin::MarkerArrayReceived,
+                     this, &MarkerPlugin::handleMarkerArray);
+
     startTimer(1000);
   }
 
   void MarkerPlugin::ClearHistory()
   {
     RCLCPP_DEBUG(node_->get_logger(), "MarkerPlugin::ClearHistory()");
-    // markers_ and marker_visible_ are shared with the ROS spin thread.
-    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     markers_.clear();
     marker_visible_.clear();
     ui_.nsList->clear();
@@ -107,8 +117,6 @@ namespace mapviz_plugins
 
     if ((topic != topic_) || !qosEqual(qos, qos_))
     {
-      std::lock_guard<std::recursive_mutex> lock(DataMutex());
-
       initialized_ = false;
       markers_.clear();
       marker_visible_.clear();
@@ -141,14 +149,14 @@ namespace mapviz_plugins
           marker_sub_ = node_->create_subscription<visualization_msgs::msg::Marker>(
             topic_,
             rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&MarkerPlugin::handleMarker, this, std::placeholders::_1));
+            std::bind(&MarkerPlugin::markerCallback, this, std::placeholders::_1));
         }
         else if (topic_type == "visualization_msgs/msg/MarkerArray")
         {
           marker_array_sub_ = node_->create_subscription<visualization_msgs::msg::MarkerArray>(
             topic_,
             rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&MarkerPlugin::handleMarkerArray, this, std::placeholders::_1));
+            std::bind(&MarkerPlugin::markerArrayCallback, this, std::placeholders::_1));
         }
         else
         {
@@ -169,7 +177,21 @@ namespace mapviz_plugins
     }
   }
 
-  void MarkerPlugin::handleMarker(visualization_msgs::msg::Marker::ConstSharedPtr marker)
+  // These callbacks run on the ROS spin thread: they hand the message to the
+  // GUI thread and return immediately so message processing never blocks ROS
+  // spinning.
+  void MarkerPlugin::markerCallback(const visualization_msgs::msg::Marker::ConstSharedPtr marker)
+  {
+    Q_EMIT MarkerReceived(marker);
+  }
+
+  void MarkerPlugin::markerArrayCallback(
+      const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers)
+  {
+    Q_EMIT MarkerArrayReceived(markers);
+  }
+
+  void MarkerPlugin::handleMarker(const visualization_msgs::msg::Marker::ConstSharedPtr marker)
   {
     processMarker(*marker);
   }
@@ -211,15 +233,11 @@ namespace mapviz_plugins
 
       if (marker_visible_.emplace(marker.ns, true).second)
       {
-        // This runs on the ROS spin thread; the namespace list widget can
-        // only be updated on the GUI thread.
         QString name_string(marker.ns.c_str());
-        QMetaObject::invokeMethod(this, [this, name_string]() {
-            auto* item = new QListWidgetItem(name_string, ui_.nsList);
-            item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-            item->setCheckState(Qt::Unchecked);
-            item->setCheckState(Qt::Checked);
-          }, Qt::QueuedConnection);
+        auto* item = new QListWidgetItem(name_string, ui_.nsList);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Unchecked);
+        item->setCheckState(Qt::Checked);
       }
 
 
@@ -420,7 +438,7 @@ namespace mapviz_plugins
     point.transformed_arrow_right = point.transformed_arrow_point + right_tf * arrowOffset;
   }
 
-  void MarkerPlugin::handleMarkerArray(visualization_msgs::msg::MarkerArray::ConstSharedPtr markers)
+  void MarkerPlugin::handleMarkerArray(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers)
   {
     for (const auto & marker : markers->markers)
     {

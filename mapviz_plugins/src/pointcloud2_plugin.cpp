@@ -62,7 +62,6 @@ namespace mapviz_plugins
     min_value_(0.0),
     point_size_(3),
     buffer_size_(1),
-    new_topic_(true),
     has_message_(false),
     num_of_feats_(0),
     need_new_list_(true),
@@ -161,6 +160,15 @@ namespace mapviz_plugins
                      SIGNAL(VisibleChanged(bool)),
                      this,
                      SLOT(SetSubscription(bool)));
+
+    // Scans are decoded on the ROS spin thread but must be finished
+    // (tf, coloring, widgets) on the GUI thread, which owns the plugin's
+    // state; this connection is queued because the emitting thread differs
+    // from this object's thread.
+    qRegisterMetaType<std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan>>(
+        "std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan>");
+    QObject::connect(this, &PointCloud2Plugin::ScanProcessed,
+                     this, &PointCloud2Plugin::handleScan);
   }
 
   void PointCloud2Plugin::ClearHistory()
@@ -205,7 +213,6 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::ResetTransformedPointClouds()
   {
-    QMutexLocker locker(&scan_mutex_);
     for (Scan& scan : scans_)
     {
       scan.transformed = false;
@@ -216,8 +223,7 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::ClearPointClouds()
   {
-      QMutexLocker locker(&scan_mutex_);
-      scans_.clear();
+    scans_.clear();
   }
 
   void PointCloud2Plugin::SetSubscription(bool subscribe)
@@ -231,7 +237,6 @@ namespace mapviz_plugins
         rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos_)),
         std::bind(&PointCloud2Plugin::PointCloud2Callback, this, std::placeholders::_1)
       );
-      new_topic_ = true;
       need_new_list_ = true;
       max_.clear();
       min_.clear();
@@ -299,7 +304,7 @@ namespace mapviz_plugins
   }
 
   inline int32_t findChannelIndex(
-    const sensor_msgs::msg::PointCloud2::SharedPtr cloud,
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr& cloud,
     const std::string& channel)
   {
     for (int32_t i = 0; static_cast<size_t>(i) < cloud->fields.size(); ++i)
@@ -316,7 +321,6 @@ namespace mapviz_plugins
   void PointCloud2Plugin::UpdateColors()
   {
     {
-      QMutexLocker locker(&scan_mutex_);
       for (Scan& scan : scans_)
       {
         scan.gl_color.clear();
@@ -359,10 +363,7 @@ namespace mapviz_plugins
     if ((topic != topic_) || !qosEqual(qos, qos_))
     {
       initialized_ = false;
-      {
-        QMutexLocker locker(&scan_mutex_);
-        scans_.clear();
-      }
+      scans_.clear();
       has_message_ = false;
       PrintWarning("No messages received.");
 
@@ -391,7 +392,6 @@ namespace mapviz_plugins
 
     if (buffer_size_ > 0)
     {
-      QMutexLocker locker(&scan_mutex_);
       while (scans_.size() > buffer_size_)
       {
         scans_.pop_front();
@@ -408,49 +408,14 @@ namespace mapviz_plugins
     canvas_->update();
   }
 
-  void PointCloud2Plugin::PointCloud2Callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+  void PointCloud2Plugin::PointCloud2Callback(
+      const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
   {
-    if (!has_message_)
-    {
-      initialized_ = true;
-      has_message_ = true;
-    }
-
-    // Note that unlike some plugins, this one does not store nor rely on the
-    // source_frame_ member variable.  This one can potentially store many
-    // messages with different source frames, so we need to store and transform
-    // them individually.
-
-    Scan scan;
-    {
-        // recycle already allocated memory, reusing an old scan
-      QMutexLocker locker(&scan_mutex_);
-      if (buffer_size_ > 0 )
-      {
-          if( scans_.size() >= buffer_size_)
-          {
-              scan = std::move( scans_.front() );
-          }
-          while (scans_.size() >= buffer_size_)
-          {
-            scans_.pop_front();
-          }
-      }
-    }
-
-    scan.stamp = msg->header.stamp;
-    scan.color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
-    scan.source_frame = msg->header.frame_id;
-    scan.transformed = true;
-
-    swri_transform_util::Transform transform;
-    if (!GetTransform(scan.source_frame, msg->header.stamp, transform))
-    {
-      scan.transformed = false;
-      PrintError("No transform between " + scan.source_frame + " and " + target_frame_);
-      return;
-    }
-
+    // Runs on the ROS spin thread: the expensive decode of the raw point
+    // buffer happens here so it never stalls rendering, then the prepared
+    // scan is handed to handleScan() through a queued signal.  Everything
+    // that depends on tf, widgets, or user-editable settings stays on the
+    // GUI thread.
     int32_t xi = findChannelIndex(msg, "x");
     int32_t yi = findChannelIndex(msg, "y");
     int32_t zi = findChannelIndex(msg, "z");
@@ -460,56 +425,22 @@ namespace mapviz_plugins
       return;
     }
 
-    if (new_topic_)
+    // Note that unlike some plugins, this one does not store nor rely on the
+    // source_frame_ member variable.  This one can potentially store many
+    // messages with different source frames, so we need to store and transform
+    // them individually.
+    auto scan = std::make_shared<Scan>();
+    scan->stamp = msg->header.stamp;
+    scan->color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
+    scan->source_frame = msg->header.frame_id;
+    scan->transformed = false;
+
+    for (const auto& field : msg->fields)
     {
-      for (auto & field : msg->fields)
-      {
-        FieldInfo input;
-        std::string name = field.name;
-
-        uint32_t offset_value = field.offset;
-        uint8_t datatype_value = field.datatype;
-        input.offset = offset_value;
-        input.datatype = datatype_value;
-        scan.new_features.insert(std::pair<std::string, FieldInfo>(name, input));
-      }
-
-      new_topic_ = false;
-      num_of_feats_ = scan.new_features.size();
-
-      max_.resize(num_of_feats_);
-      min_.resize(num_of_feats_);
-
-      int label = 1;
-      if (need_new_list_)
-      {
-        int new_feature_index = ui_.color_transformer->currentIndex();
-        std::map<std::string, FieldInfo>::const_iterator it;
-        for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
-        {
-          ui_.color_transformer->removeItem(static_cast<int>(num_of_feats_));
-          num_of_feats_--;
-        }
-
-        for (it = scan.new_features.begin(); it != scan.new_features.end(); ++it)
-        {
-          std::string const field = it->first;
-          if (field == saved_color_transformer_)
-          {
-            // The very first time we see a new set of features, that means the
-            // plugin was just created; if we have a saved value, set the current
-            // index to that and clear the saved value.
-            new_feature_index = label;
-            saved_color_transformer_ = "";
-          }
-
-          ui_.color_transformer->addItem(QString::fromStdString(field), QVariant(label));
-          num_of_feats_++;
-          label++;
-        }
-        ui_.color_transformer->setCurrentIndex(new_feature_index);
-        need_new_list_ = false;
-      }
+      FieldInfo input;
+      input.offset = field.offset;
+      input.datatype = field.datatype;
+      scan->new_features.insert(std::pair<std::string, FieldInfo>(field.name, input));
     }
 
     if (!msg->data.empty())
@@ -520,20 +451,15 @@ namespace mapviz_plugins
       const uint32_t yoff = msg->fields[yi].offset;
       const uint32_t zoff = msg->fields[zi].offset;
       const size_t num_points = msg->data.size() / point_step;
-      const size_t num_features = scan.new_features.size();
-      scan.points.resize(num_points);
+      const size_t num_features = scan->new_features.size();
+      scan->points.resize(num_points);
 
       std::vector<FieldInfo> field_infos;
       field_infos.reserve(num_features);
-      for (auto & new_feature : scan.new_features)
+      for (const auto& new_feature : scan->new_features)
       {
         field_infos.push_back(new_feature.second);
       }
-
-      scan.gl_point.clear();
-      scan.gl_point.reserve(num_points*2);
-      scan.gl_color.clear();
-      scan.gl_color.reserve(num_points*4);
 
       for (size_t i = 0; i < num_points; i++, ptr += point_step)
       {
@@ -541,37 +467,104 @@ namespace mapviz_plugins
         float y = *reinterpret_cast<const float*>(ptr + yoff);
         float z = *reinterpret_cast<const float*>(ptr + zoff);
 
-        StampedPoint& point = scan.points[i];
+        StampedPoint& point = scan->points[i];
         point.point = tf2::Vector3(x, y, z);
 
         point.features.resize(num_features);
 
-        for (int count=0; count < field_infos.size(); count++)
+        for (size_t count = 0; count < field_infos.size(); count++)
         {
           point.features[count] = PointFeature(ptr, field_infos[count]);
         }
-        if (scan.transformed)
-        {
-          const tf2::Vector3 transformed_point = transform * point.point;
-          scan.gl_point.push_back( transformed_point.getX() );
-          scan.gl_point.push_back( transformed_point.getY() );
-        }
-        const QColor color = CalculateColor(point);
-        scan.gl_color.push_back( color.red());
-        scan.gl_color.push_back( color.green());
-        scan.gl_color.push_back( color.blue());
-        scan.gl_color.push_back( static_cast<uint8_t>(alpha_ * 255.0 ) );
       }
     }
 
+    Q_EMIT ScanProcessed(scan);
+  }
+
+  void PointCloud2Plugin::handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan)
+  {
+    // Runs on the GUI thread via a queued connection from
+    // PointCloud2Callback(), so tf, widgets, and user-editable settings are
+    // all safe to use here without locking.
+    if (!has_message_)
     {
-      QMutexLocker locker(&scan_mutex_);
-      scans_.push_back( std::move(scan) );
+      initialized_ = true;
+      has_message_ = true;
     }
-    new_topic_ = true;
-    // Runs on the ROS spin thread; QWidget::update() must be invoked on the
-    // GUI thread.
-    QMetaObject::invokeMethod(canvas_, "update", Qt::QueuedConnection);
+
+    num_of_feats_ = scan->new_features.size();
+
+    max_.resize(num_of_feats_);
+    min_.resize(num_of_feats_);
+
+    int label = 1;
+    if (need_new_list_)
+    {
+      int new_feature_index = ui_.color_transformer->currentIndex();
+      std::map<std::string, FieldInfo>::const_iterator it;
+      for (it = scan->new_features.begin(); it != scan->new_features.end(); ++it)
+      {
+        ui_.color_transformer->removeItem(static_cast<int>(num_of_feats_));
+        num_of_feats_--;
+      }
+
+      for (it = scan->new_features.begin(); it != scan->new_features.end(); ++it)
+      {
+        std::string const field = it->first;
+        if (field == saved_color_transformer_)
+        {
+          // The very first time we see a new set of features, that means the
+          // plugin was just created; if we have a saved value, set the current
+          // index to that and clear the saved value.
+          new_feature_index = label;
+          saved_color_transformer_ = "";
+        }
+
+        ui_.color_transformer->addItem(QString::fromStdString(field), QVariant(label));
+        num_of_feats_++;
+        label++;
+      }
+      ui_.color_transformer->setCurrentIndex(new_feature_index);
+      need_new_list_ = false;
+    }
+
+    swri_transform_util::Transform transform;
+    if (!GetTransform(scan->source_frame, scan->stamp, transform))
+    {
+      PrintError("No transform between " + scan->source_frame + " and " + target_frame_);
+      return;
+    }
+    scan->transformed = true;
+
+    scan->gl_point.clear();
+    scan->gl_point.reserve(scan->points.size()*2);
+    scan->gl_color.clear();
+    scan->gl_color.reserve(scan->points.size()*4);
+
+    for (const StampedPoint& point : scan->points)
+    {
+      const tf2::Vector3 transformed_point = transform * point.point;
+      scan->gl_point.push_back( transformed_point.getX() );
+      scan->gl_point.push_back( transformed_point.getY() );
+
+      const QColor color = CalculateColor(point);
+      scan->gl_color.push_back( color.red());
+      scan->gl_color.push_back( color.green());
+      scan->gl_color.push_back( color.blue());
+      scan->gl_color.push_back( static_cast<uint8_t>(alpha_ * 255.0 ) );
+    }
+
+    if (buffer_size_ > 0)
+    {
+      while (scans_.size() >= buffer_size_)
+      {
+        scans_.pop_front();
+      }
+    }
+    scans_.push_back( std::move(*scan) );
+
+    canvas_->update();
   }
 
   float PointCloud2Plugin::PointFeature(const uint8_t* data, const FieldInfo& feature_info)
@@ -649,8 +642,6 @@ namespace mapviz_plugins
     glEnableClientState(GL_COLOR_ARRAY);
 
     {
-      QMutexLocker locker(&scan_mutex_);
-
       for (Scan& scan : scans_)
       {
         if (scan.transformed && !scan.gl_color.empty())
@@ -702,8 +693,6 @@ namespace mapviz_plugins
   void PointCloud2Plugin::Transform()
   {
     {
-      QMutexLocker locker(&scan_mutex_);
-
       bool was_using_latest_transforms = use_latest_transforms_;
       use_latest_transforms_ = false;
       for (Scan& scan : scans_)

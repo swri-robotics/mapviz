@@ -88,6 +88,14 @@ namespace mapviz_plugins
             SLOT(LapToggled(bool)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; this connection is
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<gps_msgs::msg::GPSFix::ConstSharedPtr>(
+        "gps_msgs::msg::GPSFix::ConstSharedPtr");
+    QObject::connect(this, &GpsPlugin::GpsFixReceived,
+                     this, &GpsPlugin::handleGpsFix);
   }
 
   void GpsPlugin::SelectTopic()
@@ -134,7 +142,14 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::GPSFixCallback(const gps_msgs::msg::GPSFix::SharedPtr gps)
+  void GpsPlugin::GPSFixCallback(const gps_msgs::msg::GPSFix::ConstSharedPtr gps)
+  {
+    // Runs on the ROS spin thread: hand the message to the GUI thread and
+    // return immediately so message processing never blocks ROS spinning.
+    Q_EMIT GpsFixReceived(gps);
+  }
+
+  void GpsPlugin::handleGpsFix(const gps_msgs::msg::GPSFix::ConstSharedPtr gps)
   {
     if (!tf_manager_->LocalXyUtil()->Initialized())
     {

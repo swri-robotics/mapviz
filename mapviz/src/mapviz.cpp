@@ -484,20 +484,17 @@ void Mapviz::Initialize()
                   // prevent other fields from obtaining focus at startup
 
     // Service ROS message callbacks on a background thread so that message
-    // processing never blocks the GUI.  The callbacks are dispatched while
-    // holding MapvizPlugin::DataMutex(), which is also held by the plugin
-    // draw/transform entry points on the GUI thread; that mutual exclusion
-    // is what makes the plugins' message buffers and the shared
-    // TransformManager safe to use from both threads.
+    // waiting and decoding never block the GUI.  Plugin callbacks only
+    // decode and emit queued signals, so no data lock is needed; the
+    // teardown mutex just keeps RemoveDisplay()/ClearDisplays() from
+    // destroying a plugin while one of its callbacks is being dispatched.
     spinning_ = true;
     ros_spin_thread_ = std::thread([this]() {
       while (spinning_ && rclcpp::ok()) {
         {
-          std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
+          std::lock_guard<std::mutex> lock(plugin_teardown_mutex_);
           ros_executor_->spin_some();
         }
-        // Sleep outside the lock so the GUI thread gets a chance to draw
-        // even under a constant stream of messages.
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
       }
     });
@@ -1096,9 +1093,6 @@ void Mapviz::SaveConfig()
 void Mapviz::ClearHistory()
 {
   RCLCPP_DEBUG(node_->get_logger(), "Mapviz::ClearHistory()");
-  // ClearHistory() mutates plugin message buffers that the spin thread
-  // may be appending to.
-  std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
   for (auto& plugin : plugins_) {
     plugin.second->ClearHistory();
   }
@@ -1243,9 +1237,6 @@ void Mapviz::Hover(double x, double y, double scale)
 
     swri_transform_util::Transform transform;
     std::string fixed_frame = ui_.fixedframe->currentText().toStdString();
-    // TransformManager is not thread safe and is also used by message
-    // callbacks on the spin thread.
-    std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
     if
     (
       fixed_frame.length() > 0 &&
@@ -1680,9 +1671,9 @@ void Mapviz::RemoveDisplay(QListWidgetItem* item)
   RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Remove display ...");
 
   if (item) {
-    // Hold the data mutex so the plugin (and its subscriptions) can't be
+    // Hold the teardown mutex so the plugin (and its subscriptions) can't be
     // destroyed while the spin thread is dispatching one of its callbacks.
-    std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
+    std::lock_guard<std::mutex> lock(plugin_teardown_mutex_);
 
     canvas_->RemovePlugin(plugins_[item]);
     plugins_.erase(item);
@@ -1767,7 +1758,7 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
 void Mapviz::ClearDisplays()
 {
   // See RemoveDisplay(): plugins must not be destroyed mid-callback.
-  std::lock_guard<std::recursive_mutex> lock(MapvizPlugin::DataMutex());
+  std::lock_guard<std::mutex> lock(plugin_teardown_mutex_);
 
   while (ui_.configs->count() > 0) {
     RCLCPP_INFO(node_->get_logger(), "Remove display ...");

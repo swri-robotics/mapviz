@@ -67,8 +67,6 @@ namespace mapviz_plugins
   void PointDrawingPlugin::ClearHistory()
   {
     RCLCPP_INFO(node_->get_logger(), "PointDrawingPlugin::ClearHistory()");
-    // points_ is shared with message callbacks on the ROS spin thread.
-    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     points_.clear();
   }
 
@@ -162,7 +160,6 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::ResetTransformedPoints()
   {
-    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     for (std::deque<StampedPoint>& lap : laps_)
     {
       for (StampedPoint& point : lap)
@@ -199,7 +196,6 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::ClearPoints()
   {
-    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     points_.clear();
   }
 
@@ -225,7 +221,6 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::BufferSizeChanged(int value)
   {
-    std::lock_guard<std::recursive_mutex> lock(DataMutex());
     buffer_size_ = value;
 
     if (buffer_size_ > 0)

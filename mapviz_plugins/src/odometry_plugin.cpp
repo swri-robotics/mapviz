@@ -102,6 +102,14 @@ namespace mapviz_plugins
                      SLOT(ShowAllCovariancesToggled(bool)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; this connection is
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<nav_msgs::msg::Odometry::ConstSharedPtr>(
+        "nav_msgs::msg::Odometry::ConstSharedPtr");
+    QObject::connect(this, &OdometryPlugin::OdometryReceived,
+                     this, &OdometryPlugin::handleOdometry);
   }
 
   void OdometryPlugin::SelectTopic()
@@ -150,7 +158,16 @@ namespace mapviz_plugins
   }
 
   void OdometryPlugin::odometryCallback(
-      const nav_msgs::msg::Odometry::SharedPtr odometry)
+      const nav_msgs::msg::Odometry::ConstSharedPtr odometry)
+  {
+    // Runs on the ROS spin thread: hand the message to the GUI thread and
+    // return immediately so message processing never blocks ROS spinning
+    // (and vice versa: slow processing doesn't hold up the executor).
+    Q_EMIT OdometryReceived(odometry);
+  }
+
+  void OdometryPlugin::handleOdometry(
+      const nav_msgs::msg::Odometry::ConstSharedPtr odometry)
   {
     if (!has_message_)
     {

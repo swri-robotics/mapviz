@@ -117,6 +117,14 @@ namespace mapviz_plugins
     void SetOffsetY(int offset);
     void PostfixEdited();
 
+  Q_SIGNALS:
+    // Emitted from the ROS spin thread; delivered as a queued connection to
+    // handleFloat() on the GUI thread, which owns all plugin state.
+    void FloatReceived(double value);
+
+  private Q_SLOTS:
+    void handleFloat(double value);
+
   private:
     Ui::float_config ui_;
     QWidget* config_widget_;

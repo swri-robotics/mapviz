@@ -66,6 +66,7 @@
 #include <atomic>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -222,11 +223,15 @@ protected:
   rclcpp::CallbackGroup::SharedPtr gui_callback_group_;
 
   // Spins everything else on the node (plugin subscriptions, tf, etc.) on a
-  // background thread so message processing doesn't block the GUI.  The
-  // spin loop holds MapvizPlugin::DataMutex() while dispatching callbacks.
+  // background thread so message waiting and decoding never block the GUI.
+  // Plugin callbacks hand their results to the GUI thread through queued
+  // signal connections, so no data locking is needed; the only
+  // synchronization is plugin_teardown_mutex_, which keeps a plugin from
+  // being destroyed while one of its callbacks is being dispatched.
   std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> ros_executor_;
   std::thread ros_spin_thread_;
   std::atomic_bool spinning_;
+  std::mutex plugin_teardown_mutex_;
 
   void StopSpinThread();
 

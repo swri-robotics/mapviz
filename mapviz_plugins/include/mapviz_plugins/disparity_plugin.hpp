@@ -32,6 +32,7 @@
 
 // Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QColor>
@@ -111,6 +112,14 @@ protected Q_SLOTS:
   void SetHeight(int height);
   void SetSubscription(bool visible);
 
+Q_SIGNALS:
+  // Emitted from the ROS spin thread; delivered as queued connections to
+  // handleDisparity() on the GUI thread, which owns all plugin state.
+  void DisparityReceived(const stereo_msgs::msg::DisparityImage::ConstSharedPtr disparity);
+
+private Q_SLOTS:
+  void handleDisparity(const stereo_msgs::msg::DisparityImage::ConstSharedPtr disparity);
+
 private:
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   Ui::disparity_config ui_;
@@ -138,7 +147,7 @@ private:
   cv::Mat_<cv::Vec3b> disparity_color_;
   cv::Mat scaled_image_;
 
-  void disparityCallback(const stereo_msgs::msg::DisparityImage::SharedPtr image);
+  void disparityCallback(const stereo_msgs::msg::DisparityImage::ConstSharedPtr image);
 
   void ScaleImage(double width, double height);
   void DrawIplImage(cv::Mat *image);
@@ -149,5 +158,6 @@ private:
   static const unsigned char COLOR_MAP[];
 };
 }   // namespace mapviz_plugins
+
 
 #endif  // MAPVIZ_PLUGINS__DISPARITY_PLUGIN_HPP_

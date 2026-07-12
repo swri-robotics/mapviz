@@ -116,6 +116,11 @@ protected Q_SLOTS:
   void SetOffsetX(int offset);
   void SetOffsetY(int offset);
 
+Q_SIGNALS:
+  // Emitted from the ROS spin thread; delivered as a queued connection to
+  // SetText() on the GUI thread, which owns all plugin state.
+  void TextReceived(const QString& text);
+
 private:
   Ui::string_config ui_;
   QWidget* config_widget_;

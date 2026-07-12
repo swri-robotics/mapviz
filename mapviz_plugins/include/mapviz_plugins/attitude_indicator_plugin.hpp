@@ -32,6 +32,7 @@
 
 // Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QColor>
@@ -96,6 +97,18 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin,
    void SelectTopic();
    void TopicEdited();
 
+ Q_SIGNALS:
+   // Emitted from the ROS spin thread; delivered as queued connections to
+   // the handle*() slots on the GUI thread, which owns all plugin state.
+   void ImuReceived(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
+   void OdometryReceived(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
+   void PoseReceived(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
+
+ private Q_SLOTS:
+   void handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
+   void handleOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
+   void handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
+
  private:
   void AttitudeCallbackImu(sensor_msgs::msg::Imu::ConstSharedPtr imu);
   void AttitudeCallbackOdom(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
@@ -117,4 +130,5 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin,
   Ui::attitude_indicator_config ui_{};
 };  // class AttitudeIndicatorPlugin
 }  // namespace mapviz_plugins
+
 #endif  // MAPVIZ_PLUGINS__ATTITUDE_INDICATOR_PLUGIN_HPP_

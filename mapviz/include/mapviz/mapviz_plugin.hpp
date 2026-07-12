@@ -64,19 +64,28 @@ public:
   ~MapvizPlugin() override = default;
 
   /**
-   * Mutex guarding state shared between the background ROS spin thread and
-   * the GUI thread.  The background executor holds it while dispatching
-   * message callbacks; the draw/paint/transform entry points hold it while
-   * rendering.  TransformManager is not thread safe, so any access to
-   * tf_manager_ outside a message callback or Draw()/Paint()/Transform()
-   * must also hold this mutex.  Recursive so nested entry points
-   * (e.g. GetTransform() inside Transform()) can lock freely.
+   * Threading model
+   *
+   * ROS message callbacks run on a background spin thread, while rendering,
+   * widgets, and the (not thread safe) TransformManager belong to the GUI
+   * thread.  Plugins bridge the two with queued signals: the subscription
+   * callback does any expensive, configuration-independent decoding on
+   * local data, then emits the result through a signal connected to a slot
+   * on this object.  Because the emitting thread differs from the receiving
+   * object's thread, Qt delivers it as a queued event on the GUI thread,
+   * where all plugin state may be used without locking.  Carry results in
+   * shared_ptrs (declared with Q_DECLARE_METATYPE and registered with
+   * qRegisterMetaType) so queued copies stay cheap.  See OdometryPlugin
+   * (simple handoff) and PointCloud2Plugin (heavy decode in the callback)
+   * for the pattern.
+   *
+   * The rules this imposes on plugin code:
+   *  - Subscription callbacks must not touch widgets, the GL context,
+   *    tf_manager_, or any state shared with the GUI thread; they decode
+   *    and emit.
+   *  - Everything else (Draw/Paint/Transform, config slots, GetTransform)
+   *    runs on the GUI thread and needs no synchronization.
    */
-  static std::recursive_mutex& DataMutex()
-  {
-    static std::recursive_mutex mutex;
-    return mutex;
-  }
 
   virtual bool Initialize(
       std::shared_ptr<tf2_ros::Buffer> tf_buffer,
@@ -142,8 +151,6 @@ public:
   void DrawPlugin(double x, double y, double scale)
   {
     if (visible_ && initialized_) {
-      std::lock_guard<std::recursive_mutex> lock(DataMutex());
-
       meas_transform_.start();
       Transform();
       meas_transform_.stop();
@@ -157,8 +164,6 @@ public:
   void PaintPlugin(QPainter* painter, double x, double y, double scale)
   {
     if (visible_ && initialized_) {
-      std::lock_guard<std::recursive_mutex> lock(DataMutex());
-
       meas_transform_.start();
       Transform();
       meas_transform_.stop();
@@ -172,8 +177,6 @@ public:
   void SetTargetFrame(const std::string& frame_id)
   {
     if (frame_id != target_frame_) {
-      std::lock_guard<std::recursive_mutex> lock(DataMutex());
-
       target_frame_ = frame_id;
 
       meas_transform_.start();
@@ -210,10 +213,6 @@ public:
     if (!initialized_) {
       return false;
     }
-
-    // TransformManager is not thread safe; this can be called from both the
-    // ROS spin thread (message callbacks) and the GUI thread.
-    std::lock_guard<std::recursive_mutex> lock(DataMutex());
 
     tf2::TimePoint time;
     rclcpp::Time now = node_->now();

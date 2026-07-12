@@ -100,6 +100,14 @@ namespace mapviz_plugins
 
     ui_.width->setKeyboardTracking(false);
     ui_.height->setKeyboardTracking(false);
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; these connections are
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<sensor_msgs::msg::Image::ConstSharedPtr>(
+        "sensor_msgs::msg::Image::ConstSharedPtr");
+    QObject::connect(this, &ImagePlugin::ImageReceived,
+                     this, &ImagePlugin::handleImage);
   }
 
   void ImagePlugin::SetOffsetX(int offset)
@@ -349,6 +357,13 @@ namespace mapviz_plugins
 
   void ImagePlugin::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image)
   {
+    // Runs on the ROS spin thread: hand the message to the GUI thread and
+    // return immediately so message processing never blocks ROS spinning.
+    Q_EMIT ImageReceived(image);
+  }
+
+  void ImagePlugin::handleImage(const sensor_msgs::msg::Image::ConstSharedPtr image)
+  {
     if (!has_message_)
     {
       initialized_ = true;
@@ -384,15 +399,10 @@ namespace mapviz_plugins
     // Calculate aspect ratio after rotation
     original_aspect_ratio_ = static_cast<double>(cv_image_->image.rows) / static_cast<double>(cv_image_->image.cols);
 
-    // This callback runs on the ROS spin thread; reading keep_ratio and
-    // updating the height spin box must happen on the GUI thread.
-    QMetaObject::invokeMethod(this, [this]() {
-        std::lock_guard<std::recursive_mutex> lock(DataMutex());
-        if (ui_.keep_ratio->isChecked())
-        {
-          KeepRatioChanged(true);
-        }
-      }, Qt::QueuedConnection);
+    if (ui_.keep_ratio->isChecked())
+    {
+      KeepRatioChanged(true);
+    }
 
     has_image_ = true;
   }

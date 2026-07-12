@@ -92,6 +92,18 @@ namespace mapviz_plugins
                      SLOT(PositionTopicEdited()));
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
                      SLOT(SetDrawStyle(QString)));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; these connections are
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<marti_nav_msgs::msg::Route::ConstSharedPtr>(
+        "marti_nav_msgs::msg::Route::ConstSharedPtr");
+    qRegisterMetaType<marti_nav_msgs::msg::RoutePosition::ConstSharedPtr>(
+        "marti_nav_msgs::msg::RoutePosition::ConstSharedPtr");
+    QObject::connect(this, &RoutePlugin::RouteReceived,
+                     this, &RoutePlugin::handleRoute);
+    QObject::connect(this, &RoutePlugin::RoutePositionReceived,
+                     this, &RoutePlugin::handleRoutePosition);
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
                      SLOT(DrawIcon()));
   }
@@ -220,15 +232,29 @@ namespace mapviz_plugins
 
   }
 
+  // These callbacks run on the ROS spin thread: they hand the message to the
+  // GUI thread and return immediately so message processing never blocks ROS
+  // spinning.
   void RoutePlugin::PositionCallback(
-      const marti_nav_msgs::msg::RoutePosition::SharedPtr msg)
+      const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr msg)
   {
-    src_route_position_ = msg;
+    Q_EMIT RoutePositionReceived(msg);
   }
 
-  void RoutePlugin::RouteCallback(const marti_nav_msgs::msg::Route::SharedPtr msg)
+  void RoutePlugin::RouteCallback(const marti_nav_msgs::msg::Route::ConstSharedPtr msg)
   {
-    src_route_ = sru::Route(*msg);
+    Q_EMIT RouteReceived(msg);
+  }
+
+  void RoutePlugin::handleRoutePosition(
+      const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr position)
+  {
+    src_route_position_ = position;
+  }
+
+  void RoutePlugin::handleRoute(const marti_nav_msgs::msg::Route::ConstSharedPtr route)
+  {
+    src_route_ = sru::Route(*route);
   }
 
   void RoutePlugin::PrintError(const std::string& message)

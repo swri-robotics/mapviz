@@ -83,6 +83,12 @@ namespace mapviz_plugins
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectColor()));
     QObject::connect(ui_.postfix, SIGNAL(editingFinished()), this, SLOT(PostfixEdited()));
 
+    // Values are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; this connection is
+    // queued because the emitting thread differs from this object's thread.
+    QObject::connect(this, &FloatPlugin::FloatReceived,
+                     this, &FloatPlugin::handleFloat);
+
     font_.setFamily(tr("Helvetica"));
     ui_.font_button->setFont(font_);
     ui_.font_button->setText(font_.family());
@@ -448,6 +454,13 @@ namespace mapviz_plugins
   }
 
   void FloatPlugin::floatCallback(double value)
+  {
+    // Runs on the ROS spin thread: hand the value to the GUI thread and
+    // return immediately so message processing never blocks ROS spinning.
+    Q_EMIT FloatReceived(value);
+  }
+
+  void FloatPlugin::handleFloat(double value)
   {
 
     std::string str = std::to_string(value);
