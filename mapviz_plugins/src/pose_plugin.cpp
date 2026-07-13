@@ -98,6 +98,14 @@ namespace mapviz_plugins
             SLOT(LapToggled(bool)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; this connection is
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<geometry_msgs::msg::PoseStamped::ConstSharedPtr>(
+        "geometry_msgs::msg::PoseStamped::ConstSharedPtr");
+    QObject::connect(this, &PosePlugin::PoseReceived,
+                     this, &PosePlugin::handlePose);
   }
 
   void PosePlugin::SelectTopic()
@@ -145,7 +153,14 @@ namespace mapviz_plugins
     }
   }
 
-  void PosePlugin::PoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr pose)
+  void PosePlugin::PoseCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr pose)
+  {
+    // Runs on the ROS spin thread: hand the message to the GUI thread and
+    // return immediately so message processing never blocks ROS spinning.
+    Q_EMIT PoseReceived(pose);
+  }
+
+  void PosePlugin::handlePose(const geometry_msgs::msg::PoseStamped::ConstSharedPtr pose)
   {
     if (!has_message_)
     {

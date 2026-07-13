@@ -31,6 +31,7 @@
 #define MAPVIZ_PLUGINS__PATH_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLWidget>
@@ -81,6 +82,14 @@ class PathPlugin : public mapviz_plugins::PointDrawingPlugin
     void SelectTopic();
     void TopicEdited();
   
+  Q_SIGNALS:
+    // Emitted from the ROS spin thread; delivered as a queued connection to
+    // handlePath() on the GUI thread, which owns all plugin state.
+    void PathReceived(const nav_msgs::msg::Path::ConstSharedPtr msg);
+
+  private Q_SLOTS:
+    void handlePath(const nav_msgs::msg::Path::ConstSharedPtr msg);
+
   private:
     Ui::path_config ui_;
     QWidget* config_widget_;
@@ -92,8 +101,9 @@ class PathPlugin : public mapviz_plugins::PointDrawingPlugin
     bool has_message_;
 
     void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-    void pathCallback(const nav_msgs::msg::Path::SharedPtr path);
+    void pathCallback(const nav_msgs::msg::Path::ConstSharedPtr msg);
 };
 }   // namespace mapviz_plugins
+
 
 #endif  // MAPVIZ_PLUGINS__PATH_PLUGIN_HPP_

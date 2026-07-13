@@ -149,6 +149,14 @@ namespace mapviz_plugins
         SIGNAL(TargetFrameChanged(const std::string&)),
         this,
         SLOT(ResetTransformedScans()));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; these connections are
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<sensor_msgs::msg::LaserScan::ConstSharedPtr>(
+        "sensor_msgs::msg::LaserScan::ConstSharedPtr");
+    QObject::connect(this, &LaserScanPlugin::LaserScanReceived,
+                     this, &LaserScanPlugin::handleLaserScan);
   }
 
   void LaserScanPlugin::ClearHistory()
@@ -326,7 +334,7 @@ namespace mapviz_plugins
   }
 
   void LaserScanPlugin::updatePreComputedTriginometic(
-    const sensor_msgs::msg::LaserScan::SharedPtr msg)
+    const sensor_msgs::msg::LaserScan::ConstSharedPtr msg)
   {
       if( msg->ranges.size() != prev_ranges_size_ ||
           msg->angle_min !=  prev_angle_min_  ||
@@ -367,7 +375,14 @@ namespace mapviz_plugins
       return has_tranform;
   }
 
-  void LaserScanPlugin::laserScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
+  void LaserScanPlugin::laserScanCallback(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg)
+  {
+    // Runs on the ROS spin thread: hand the message to the GUI thread and
+    // return immediately so message processing never blocks ROS spinning.
+    Q_EMIT LaserScanReceived(msg);
+  }
+
+  void LaserScanPlugin::handleLaserScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg)
   {
     if (!has_message_)
     {

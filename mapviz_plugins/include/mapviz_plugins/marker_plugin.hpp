@@ -31,6 +31,7 @@
 #define MAPVIZ_PLUGINS__MARKER_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -121,6 +122,17 @@ protected Q_SLOTS:
   void TopicEdited();
   void ClearHistory() override;
 
+Q_SIGNALS:
+  // Emitted from the ROS spin thread; delivered as queued connections to
+  // the handleMarker*() slots on the GUI thread, which owns all plugin
+  // state.
+  void MarkerReceived(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
+  void MarkerArrayReceived(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
+
+private Q_SLOTS:
+  void handleMarker(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
+  void handleMarkerArray(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
+
 private:
   struct Color
   {
@@ -177,13 +189,14 @@ private:
   std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;
   std::unordered_map<std::string, bool, MarkerNsHash> marker_visible_;
 
-  void handleMarker(visualization_msgs::msg::Marker::ConstSharedPtr marker);
-  void handleMarkerArray(visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
+  void markerCallback(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
+  void markerArrayCallback(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
   void processMarker(const visualization_msgs::msg::Marker& marker);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   void transformArrow(MarkerData& markerData,
                       const swri_transform_util::Transform& transform);
 };
 }   // namespace mapviz_plugins
+
 
 #endif  // MAPVIZ_PLUGINS__MARKER_PLUGIN_HPP_

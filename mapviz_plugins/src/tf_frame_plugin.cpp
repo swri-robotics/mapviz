@@ -152,8 +152,11 @@ namespace mapviz_plugins
     initializeOpenGLFunctions();
     canvas->doneCurrent();
 
-    timer_ = node_->create_wall_timer(std::chrono::milliseconds(100),
-        std::bind(&TfFramePlugin::TimerCallback, this));
+    // A QTimer (instead of a ROS wall timer) so TimerCallback() runs on the
+    // GUI thread, which owns the plugin's state and the TransformManager.
+    QObject::connect(&timer_, &QTimer::timeout,
+                     this, &TfFramePlugin::TimerCallback);
+    timer_.start(100);
 
     SetColor(ui_.color->color());
 

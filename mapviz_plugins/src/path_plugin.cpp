@@ -75,6 +75,14 @@ namespace mapviz_plugins
     connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     connect(ui_.path_color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; this connection is
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<nav_msgs::msg::Path::ConstSharedPtr>(
+        "nav_msgs::msg::Path::ConstSharedPtr");
+    QObject::connect(this, &PathPlugin::PathReceived,
+                     this, &PathPlugin::handlePath);
   }
 
   void PathPlugin::SelectTopic()
@@ -121,7 +129,14 @@ namespace mapviz_plugins
     }
   }
 
-  void PathPlugin::pathCallback(const nav_msgs::msg::Path::SharedPtr path)
+  void PathPlugin::pathCallback(const nav_msgs::msg::Path::ConstSharedPtr path)
+  {
+    // Runs on the ROS spin thread: hand the message to the GUI thread and
+    // return immediately so message processing never blocks ROS spinning.
+    Q_EMIT PathReceived(path);
+  }
+
+  void PathPlugin::handlePath(const nav_msgs::msg::Path::ConstSharedPtr path)
   {
     if (!has_message_)
     {

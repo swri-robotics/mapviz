@@ -139,6 +139,22 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; these connections are
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<sensor_msgs::msg::Imu::ConstSharedPtr>(
+        "sensor_msgs::msg::Imu::ConstSharedPtr");
+    qRegisterMetaType<nav_msgs::msg::Odometry::ConstSharedPtr>(
+        "nav_msgs::msg::Odometry::ConstSharedPtr");
+    qRegisterMetaType<geometry_msgs::msg::Pose::ConstSharedPtr>(
+        "geometry_msgs::msg::Pose::ConstSharedPtr");
+    QObject::connect(this, &AttitudeIndicatorPlugin::ImuReceived,
+                     this, &AttitudeIndicatorPlugin::handleImu);
+    QObject::connect(this, &AttitudeIndicatorPlugin::OdometryReceived,
+                     this, &AttitudeIndicatorPlugin::handleOdometry);
+    QObject::connect(this, &AttitudeIndicatorPlugin::PoseReceived,
+                     this, &AttitudeIndicatorPlugin::handlePose);
   }
 
   void AttitudeIndicatorPlugin::SelectTopic()
@@ -195,18 +211,37 @@ namespace mapviz_plugins
     }
   }
 
+  // These callbacks run on the ROS spin thread: they hand the message to the
+  // GUI thread and return immediately so message processing never blocks ROS
+  // spinning.
   void AttitudeIndicatorPlugin::AttitudeCallbackOdom(
     nav_msgs::msg::Odometry::ConstSharedPtr odometry)
   {
-    applyAttitudeOrientation(odometry->pose.pose.orientation);
+    Q_EMIT OdometryReceived(odometry);
   }
 
   void AttitudeIndicatorPlugin::AttitudeCallbackImu(sensor_msgs::msg::Imu::ConstSharedPtr imu)
   {
-    applyAttitudeOrientation(imu->orientation);
+    Q_EMIT ImuReceived(imu);
   }
 
   void AttitudeIndicatorPlugin::AttitudeCallbackPose(geometry_msgs::msg::Pose::ConstSharedPtr pose)
+  {
+    Q_EMIT PoseReceived(pose);
+  }
+
+  void AttitudeIndicatorPlugin::handleOdometry(
+    const nav_msgs::msg::Odometry::ConstSharedPtr odometry)
+  {
+    applyAttitudeOrientation(odometry->pose.pose.orientation);
+  }
+
+  void AttitudeIndicatorPlugin::handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu)
+  {
+    applyAttitudeOrientation(imu->orientation);
+  }
+
+  void AttitudeIndicatorPlugin::handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose)
   {
     applyAttitudeOrientation(pose->orientation);
   }

@@ -194,6 +194,19 @@ namespace mapviz_plugins
       SIGNAL(currentTextChanged(const QString &)),
       this,
       SLOT(colorSchemeUpdated(const QString &)));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state, the GL texture, and
+    // the color-scheme widget; these connections are queued because the
+    // emitting thread differs from this object's thread.
+    qRegisterMetaType<nav_msgs::msg::OccupancyGrid::ConstSharedPtr>(
+        "nav_msgs::msg::OccupancyGrid::ConstSharedPtr");
+    qRegisterMetaType<map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr>(
+        "map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr");
+    QObject::connect(this, &OccupancyGridPlugin::GridReceived,
+                     this, &OccupancyGridPlugin::handleGrid);
+    QObject::connect(this, &OccupancyGridPlugin::GridUpdateReceived,
+                     this, &OccupancyGridPlugin::handleGridUpdate);
   }
 
   void OccupancyGridPlugin::DrawIcon()
@@ -372,7 +385,21 @@ namespace mapviz_plugins
     canvas_->doneCurrent();
   }
 
-  void OccupancyGridPlugin::Callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
+  // These callbacks run on the ROS spin thread: they hand the message to the
+  // GUI thread and return immediately so message processing never blocks ROS
+  // spinning.
+  void OccupancyGridPlugin::Callback(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg)
+  {
+    Q_EMIT GridReceived(msg);
+  }
+
+  void OccupancyGridPlugin::CallbackUpdate(
+      const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg)
+  {
+    Q_EMIT GridUpdateReceived(msg);
+  }
+
+  void OccupancyGridPlugin::handleGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg)
   {
     grid_ = msg;
     const int width  = grid_->info.width;
@@ -417,7 +444,8 @@ namespace mapviz_plugins
     PrintInfo("Map received");
   }
 
-  void OccupancyGridPlugin::CallbackUpdate(const map_msgs::msg::OccupancyGridUpdate::SharedPtr msg)
+  void OccupancyGridPlugin::handleGridUpdate(
+      const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg)
   {
     PrintInfo("Update Received");
 

@@ -31,6 +31,7 @@
 #define MAPVIZ_PLUGINS__OCCUPANCY_GRID_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -98,11 +99,22 @@ protected Q_SLOTS:
 
   void FrameChanged(std::string);
 
+Q_SIGNALS:
+  // Emitted from the ROS spin thread; delivered as queued connections to
+  // the handleGrid*() slots on the GUI thread, which owns all plugin
+  // state, the GL texture, and the color-scheme widget.
+  void GridReceived(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr grid);
+  void GridUpdateReceived(const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update);
+
+private Q_SLOTS:
+  void handleGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr grid);
+  void handleGridUpdate(const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update);
+
 private:
   Ui::occupancy_grid_config ui_;
   QWidget* config_widget_;
 
-  nav_msgs::msg::OccupancyGrid::SharedPtr grid_;
+  nav_msgs::msg::OccupancyGrid::ConstSharedPtr grid_;
 
   rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr grid_sub_;
   rclcpp::Subscription<map_msgs::msg::OccupancyGridUpdate>::SharedPtr update_sub_;
@@ -124,10 +136,11 @@ private:
   Palette costmap_palette_;
 
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void Callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
-  void CallbackUpdate(const map_msgs::msg::OccupancyGridUpdate::SharedPtr msg);
+  void Callback(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg);
+  void CallbackUpdate(const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg);
   void updateTexture();
 };
 }   // namespace mapviz_plugins
+
 
 #endif  // MAPVIZ_PLUGINS__OCCUPANCY_GRID_PLUGIN_HPP_

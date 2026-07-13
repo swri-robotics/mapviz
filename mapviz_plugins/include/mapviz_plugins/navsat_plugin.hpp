@@ -21,6 +21,7 @@
 #define MAPVIZ_PLUGINS__NAVSAT_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/ros_metatypes.hpp>
 #include <mapviz/map_canvas.hpp>
 #include <mapviz_plugins/point_drawing_plugin.hpp>
 
@@ -72,6 +73,14 @@ class NavSatPlugin : public mapviz_plugins::PointDrawingPlugin
   void SelectTopic();
   void TopicEdited();
 
+  Q_SIGNALS:
+    // Emitted from the ROS spin thread; delivered as a queued connection to
+    // handleNavSatFix() on the GUI thread, which owns all plugin state.
+    void NavSatFixReceived(const sensor_msgs::msg::NavSatFix::ConstSharedPtr msg);
+
+  private Q_SLOTS:
+    void handleNavSatFix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr msg);
+
   private:
   Ui::navsat_config ui_;
   QWidget* config_widget_;
@@ -83,8 +92,9 @@ class NavSatPlugin : public mapviz_plugins::PointDrawingPlugin
   bool has_message_;
 
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void NavSatFixCallback(const sensor_msgs::msg::NavSatFix::ConstSharedPtr navsat);
+  void NavSatFixCallback(const sensor_msgs::msg::NavSatFix::ConstSharedPtr msg);
 };
 }   // namespace mapviz_plugins
+
 
 #endif  // MAPVIZ_PLUGINS__NAVSAT_PLUGIN_HPP_

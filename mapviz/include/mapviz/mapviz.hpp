@@ -55,6 +55,7 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/version.h>
 #include <pluginlib/class_loader.hpp>
 #include <tf2_ros/buffer.hpp>
 #include <tf2_ros/transform_listener.hpp>
@@ -62,10 +63,13 @@
 #include <std_srvs/srv/empty.hpp>
 
 // C++ standard libraries
-#include <string>
-#include <vector>
+#include <atomic>
 #include <map>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
 
 // Auto-generated UI files
 #include "ui/ui_mapviz.h"
@@ -211,7 +215,26 @@ protected:
   bool updating_frames_;
 
   std::shared_ptr<rclcpp::Node> node_;
+
+  // Spins only gui_callback_group_ (currently the add_mapviz_display
+  // service, which manipulates widgets); pumped from a QTimer on the GUI
+  // thread via SpinOnce().
   rclcpp::executors::SingleThreadedExecutor executor_;
+  rclcpp::CallbackGroup::SharedPtr gui_callback_group_;
+
+  // Spins everything else on the node (plugin subscriptions, tf, etc.) on a
+  // background thread so message waiting and decoding never block the GUI.
+  // Plugin callbacks hand their results to the GUI thread through queued
+  // signal connections, so no data locking is needed; the only
+  // synchronization is plugin_teardown_mutex_, which keeps a plugin from
+  // being destroyed while one of its callbacks is being dispatched.
+  std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> ros_executor_;
+  std::thread ros_spin_thread_;
+  std::atomic_bool spinning_;
+  std::mutex plugin_teardown_mutex_;
+
+  void StopSpinThread();
+
   rclcpp::Service<mapviz_interfaces::srv::AddMapvizDisplay>::SharedPtr add_display_srv_;
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_;

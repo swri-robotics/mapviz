@@ -31,6 +31,7 @@
 #define MAPVIZ_PLUGINS__ROUTE_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -97,6 +98,16 @@ class RoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
     void SetDrawStyle(QString style);
     void DrawIcon() override;
 
+  Q_SIGNALS:
+    // Emitted from the ROS spin thread; delivered as queued connections to
+    // the handle*() slots on the GUI thread, which owns all plugin state.
+    void RouteReceived(const marti_nav_msgs::msg::Route::ConstSharedPtr route);
+    void RoutePositionReceived(const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr position);
+
+  private Q_SLOTS:
+    void handleRoute(const marti_nav_msgs::msg::Route::ConstSharedPtr route);
+    void handleRoutePosition(const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr position);
+
   private:
     Ui::route_config ui_;
     QWidget* config_widget_;
@@ -113,13 +124,14 @@ class RoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 
     swri_route_util::Route src_route_;
     // marti_nav_msgs::RoutePositionConstPtr src_route_position_;
-    marti_nav_msgs::msg::RoutePosition::SharedPtr src_route_position_;
+    marti_nav_msgs::msg::RoutePosition::ConstSharedPtr src_route_position_;
 
     void connectRouteCallback(const std::string& topic, const rmw_qos_profile_t& qos);
     void connectPositionCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-    void RouteCallback(const marti_nav_msgs::msg::Route::SharedPtr msg);
-    void PositionCallback(const marti_nav_msgs::msg::RoutePosition::SharedPtr msg);
+    void RouteCallback(const marti_nav_msgs::msg::Route::ConstSharedPtr msg);
+    void PositionCallback(const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr msg);
 };
 }   // namespace mapviz_plugins
+
 
 #endif  // MAPVIZ_PLUGINS__ROUTE_PLUGIN_HPP_

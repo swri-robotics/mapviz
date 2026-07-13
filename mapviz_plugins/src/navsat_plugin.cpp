@@ -79,6 +79,14 @@ namespace mapviz_plugins
                      SLOT(SetColor(const QColor&)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
+
+    // Messages are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; this connection is
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<sensor_msgs::msg::NavSatFix::ConstSharedPtr>(
+        "sensor_msgs::msg::NavSatFix::ConstSharedPtr");
+    QObject::connect(this, &NavSatPlugin::NavSatFixReceived,
+                     this, &NavSatPlugin::handleNavSatFix);
   }
 
   void NavSatPlugin::SelectTopic()
@@ -125,8 +133,14 @@ namespace mapviz_plugins
     }
   }
 
-  void NavSatPlugin::NavSatFixCallback(
-      const sensor_msgs::msg::NavSatFix::ConstSharedPtr navsat)
+  void NavSatPlugin::NavSatFixCallback(const sensor_msgs::msg::NavSatFix::ConstSharedPtr navsat)
+  {
+    // Runs on the ROS spin thread: hand the message to the GUI thread and
+    // return immediately so message processing never blocks ROS spinning.
+    Q_EMIT NavSatFixReceived(navsat);
+  }
+
+  void NavSatPlugin::handleNavSatFix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr navsat)
   {
     if (!tf_manager_->LocalXyUtil()->Initialized())
     {

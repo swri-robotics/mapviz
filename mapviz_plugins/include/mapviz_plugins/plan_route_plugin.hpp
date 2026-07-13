@@ -101,6 +101,15 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
   void Clear();
   void VisibilityChanged(bool);
 
+  Q_SIGNALS:
+    // Emitted from the ROS spin thread when the PlanRoute service responds;
+    // delivered as a queued connection to handlePlanRouteResponse() on the
+    // GUI thread, which owns all plugin state.
+    void PlanRouteCompleted(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future);
+
+  private Q_SLOTS:
+    void handlePlanRouteResponse(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future);
+
   private:
   // void Retry(const ros::TimerEvent& e);
   void Retry();
@@ -130,5 +139,8 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
   qreal max_distance_;
 };
 }   // namespace mapviz_plugins
+
+// Allows the service response future to be copied into a queued signal emission.
+Q_DECLARE_METATYPE(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture)
 
 #endif  // MAPVIZ_PLUGINS__PLAN_ROUTE_PLUGIN_HPP_

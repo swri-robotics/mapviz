@@ -37,7 +37,6 @@
 #include <QOpenGLFunctions_1_5>
 #include <QOpenGLWidget>
 #include <QColor>
-#include <QMutex>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -70,6 +69,27 @@ public:
   {
     COLOR_FLAT = 0,
     COLOR_Z = 3
+  };
+
+  struct StampedPoint
+  {
+    tf2::Vector3 point;
+    std::vector<float> features;
+  };
+
+  // Public so a shared_ptr to a decoded scan can be carried by a queued
+  // signal from the ROS spin thread to the GUI thread.
+  struct Scan
+  {
+    rclcpp::Time stamp;
+    QColor color;
+    std::vector<StampedPoint> points;
+    std::string source_frame;
+    bool transformed;
+    std::map<std::string, FieldInfo> new_features;
+
+    std::vector<float> gl_point;
+    std::vector<uint8_t> gl_color;
   };
 
   PointCloud2Plugin();
@@ -111,29 +131,19 @@ protected Q_SLOTS:
   void ClearPointClouds();
   void SetSubscription(bool subscribe);
 
+Q_SIGNALS:
+  // Emitted from the ROS spin thread with a freshly decoded scan; delivered
+  // as a queued connection to handleScan() on the GUI thread, which owns
+  // scans_ and everything configuration-dependent.
+  void ScanProcessed(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
+
+private Q_SLOTS:
+  void handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
+
 private:
-  struct StampedPoint
-  {
-    tf2::Vector3 point;
-    std::vector<float> features;
-  };
-
-  struct Scan
-  {
-    rclcpp::Time stamp;
-    QColor color;
-    std::vector<StampedPoint> points;
-    std::string source_frame;
-    bool transformed;
-    std::map<std::string, FieldInfo> new_features;
-
-    std::vector<float> gl_point;
-    std::vector<uint8_t> gl_color;
-  };
-
   float PointFeature(const uint8_t*, const FieldInfo&);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void PointCloud2Callback(const sensor_msgs::msg::PointCloud2::SharedPtr scan);
+  void PointCloud2Callback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr scan);
   QColor CalculateColor(const StampedPoint& point);
   void UpdateMinMaxWidgets();
 
@@ -147,7 +157,6 @@ private:
   double min_value_;
   size_t point_size_;
   size_t buffer_size_;
-  bool new_topic_;
   bool has_message_;
   size_t num_of_feats_;
   bool need_new_list_;
@@ -163,9 +172,10 @@ private:
 
   QOpenGLBuffer point_buffer_;
   QOpenGLBuffer color_buffer_;
-
-  QMutex scan_mutex_;
 };
 }   // namespace mapviz_plugins
+
+// Allows the decoded scan to be carried by a queued signal emission.
+Q_DECLARE_METATYPE(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan>)
 
 #endif  // MAPVIZ_PLUGINS__POINTCLOUD2_PLUGIN_HPP_

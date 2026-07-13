@@ -101,6 +101,14 @@ namespace mapviz_plugins
                      SIGNAL(VisibleChanged(bool)),
                      this,
                      SLOT(VisibilityChanged(bool)));
+
+    // Service responses arrive on the ROS spin thread but must be processed
+    // on the GUI thread, which owns the plugin's state; this connection is
+    // queued because the emitting thread differs from this object's thread.
+    qRegisterMetaType<rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture>(
+        "rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture");
+    QObject::connect(this, &PlanRoutePlugin::PlanRouteCompleted,
+                     this, &PlanRoutePlugin::handlePlanRouteResponse);
   }
 
   PlanRoutePlugin::~PlanRoutePlugin()
@@ -177,6 +185,14 @@ namespace mapviz_plugins
   }
 
   void PlanRoutePlugin::ClientCallback(
+    rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future)
+  {
+    // Runs on the ROS spin thread: hand the response to the GUI thread and
+    // return immediately.
+    Q_EMIT PlanRouteCompleted(future);
+  }
+
+  void PlanRoutePlugin::handlePlanRouteResponse(
     rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future)
   {
     RCLCPP_ERROR(node_->get_logger(), "Request callback happened");

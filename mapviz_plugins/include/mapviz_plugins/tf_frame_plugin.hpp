@@ -34,6 +34,7 @@
 #include <mapviz_plugins/point_drawing_plugin.hpp>
 // QT libraries
 #include <QOpenGLWidget>
+#include <QTimer>
 #include <QObject>
 #include <QWidget>
 
@@ -84,7 +85,7 @@ class TfFramePlugin : public mapviz_plugins::PointDrawingPlugin
   Ui::tf_frame_config ui_{};
   QWidget* config_widget_;
 
-  rclcpp::TimerBase::SharedPtr timer_;
+  QTimer timer_;
 
   void TimerCallback();
 };

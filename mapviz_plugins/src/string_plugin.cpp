@@ -84,6 +84,12 @@ namespace mapviz_plugins
     QObject::connect(ui_.font_button, SIGNAL(clicked()), this, SLOT(SelectFont()));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectColor()));
 
+    // Strings are received on the ROS spin thread but must be processed on
+    // the GUI thread, which owns the plugin's state; this connection is
+    // queued because the emitting thread differs from this object's thread.
+    QObject::connect(this, &StringPlugin::TextReceived,
+                     this, &StringPlugin::SetText);
+
     // Change the default font size to our desired size and update the UI with it
     font_.setPointSize(DEFAULT_FONT_SIZE);
     ui_.font_button->setFont(font_);
@@ -361,7 +367,8 @@ namespace mapviz_plugins
           string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
             rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
               [this](const std_msgs::msg::String::ConstSharedPtr str) {
-            SetText(QString(str->data.c_str()));
+            // Runs on the ROS spin thread; SetText runs on the GUI thread.
+            Q_EMIT TextReceived(QString(str->data.c_str()));
           });
         }
         catch(...)
@@ -376,7 +383,8 @@ namespace mapviz_plugins
           string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
             rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
               [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
-            SetText(QString(str->value.c_str()));
+            // Runs on the ROS spin thread; SetText runs on the GUI thread.
+            Q_EMIT TextReceived(QString(str->value.c_str()));
           });
         }
         catch(...)
