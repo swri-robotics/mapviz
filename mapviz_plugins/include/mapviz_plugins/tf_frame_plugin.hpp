@@ -65,14 +65,15 @@ class TfFramePlugin : public mapviz_plugins::PointDrawingPlugin
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
-  void Draw(double x, double y, double scale) override;
-
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
   QWidget* GetConfigWidget(QWidget* parent) override;
 
   protected:
+  void Draw(double x, double y, double scale) override;
+
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;

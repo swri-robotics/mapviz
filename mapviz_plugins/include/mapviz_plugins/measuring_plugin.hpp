@@ -61,13 +61,6 @@ class MeasuringPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
     bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override { }
 
-    void Paint(QPainter* painter, double x, double y, double scale) override;
-    void Draw(double x, double y, double scale) override;
-    void Transform() override { }
-
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
     void DistanceCalculation();
 
     QWidget* GetConfigWidget(QWidget* parent) override;
@@ -82,6 +75,16 @@ class MeasuringPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
     }
 
   protected:
+    void Paint(QPainter* painter, double x, double y, double scale) override;
+
+    void Draw(double x, double y, double scale) override;
+
+    void Transform() override { }
+
+    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+
     bool eventFilter(QObject* object, QEvent* event) override;
     bool handleMousePress(QMouseEvent*);
     bool handleMouseRelease(QMouseEvent*);

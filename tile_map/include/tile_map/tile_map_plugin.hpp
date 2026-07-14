@@ -62,16 +62,18 @@ namespace tile_map
     bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override {}
 
+    QWidget* GetConfigWidget(QWidget* parent) override;
+
+    void SetNode(rclcpp::Node& node) override;
+
+  protected:
     void Draw(double x, double y, double scale) override;
 
     void Transform() override;
 
     void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
     void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
-    QWidget* GetConfigWidget(QWidget* parent) override;
-
-    void SetNode(rclcpp::Node& node) override;
 
   protected Q_SLOTS:
     void PrintError(const std::string& message) override;
