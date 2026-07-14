@@ -134,19 +134,6 @@ public:
 
   virtual void ClearHistory() {}
 
-  /**
-   * Draws on the Mapviz canvas using OpenGL commands; this will be called
-   * before Paint();
-   */
-  virtual void Draw(double x, double y, double scale) = 0;
-
-  /**
-   * Draws on the Mapviz canvas using a QPainter; this is called after Draw().
-   * You only need to implement this if you're actually using a QPainter.
-   */
-  virtual void Paint(QPainter* /* painter */, double /* x */,
-                     double /* y */, double /* scale */) {}
-
   void SetUseLatestTransforms(bool value)
   {
     if (value != use_latest_transforms_) {
@@ -287,11 +274,6 @@ public:
     return false;
   }
 
-  virtual void Transform() = 0;
-
-  virtual void LoadConfig(const YAML::Node& load, const std::string& path) = 0;
-  virtual void SaveConfig(YAML::Emitter& emitter, const std::string& path) = 0;
-
   /**
    * The framework's entry points to LoadConfig()/SaveConfig().  Like
    * DrawPlugin()/PaintPlugin(), these assert the GUI thread on behalf of the
@@ -359,6 +341,32 @@ Q_SIGNALS:
 
 
 protected:
+  /**
+   * Customization hooks, deliberately protected: the framework only invokes
+   * them through the public wrappers (DrawPlugin(), PaintPlugin(),
+   * SetTargetFrame(), LoadConfigPlugin(), SaveConfigPlugin()), which assert
+   * the GUI thread before dispatching, so nothing can call these off-thread
+   * through the base class.
+   */
+
+  /**
+   * Draws on the Mapviz canvas using OpenGL commands; this will be called
+   * before Paint();
+   */
+  virtual void Draw(double x, double y, double scale) = 0;
+
+  /**
+   * Draws on the Mapviz canvas using a QPainter; this is called after Draw().
+   * You only need to implement this if you're actually using a QPainter.
+   */
+  virtual void Paint(QPainter* /* painter */, double /* x */,
+                     double /* y */, double /* scale */) {}
+
+  virtual void Transform() = 0;
+
+  virtual void LoadConfig(const YAML::Node& load, const std::string& path) = 0;
+  virtual void SaveConfig(YAML::Emitter& emitter, const std::string& path) = 0;
+
   /**
    * Subscribe to @p topic, delivering every message to @p on_gui_thread on the
    * GUI thread.  The subscription is created on the node's default callback
