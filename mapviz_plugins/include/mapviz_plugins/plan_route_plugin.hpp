@@ -36,6 +36,7 @@
 #include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QObject>
+#include <QTimer>
 #include <QWidget>
 
 // ROS libraries
@@ -123,7 +124,7 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
   std::string route_topic_;
 
   rclcpp::Publisher<marti_nav_msgs::msg::Route>::SharedPtr route_pub_;
-  rclcpp::TimerBase::SharedPtr retry_timer_;
+  QTimer retry_timer_;
 
   bool failed_service_;
   swri_route_util::RoutePtr route_preview_;

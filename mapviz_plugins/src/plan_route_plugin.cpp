@@ -255,7 +255,11 @@ namespace mapviz_plugins
     initializeOpenGLFunctions();
     canvas->doneCurrent();
 
-    retry_timer_ = NodeUnsafe()->create_wall_timer(1000ms, [this](){Retry();});
+    // A QTimer (instead of a ROS wall timer) so Retry() runs on the GUI
+    // thread, which owns the plugin's state and the UI widgets it reads.
+    QObject::connect(&retry_timer_, &QTimer::timeout,
+                     this, &PlanRoutePlugin::Retry);
+    retry_timer_.start(1000);
 
     initialized_ = true;
     return true;
