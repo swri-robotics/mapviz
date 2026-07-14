@@ -639,7 +639,7 @@ void RobotModelPlugin::TopicEdited() {
 
   description_sub_.reset();
 
-  if (topic_.empty() || !NodeUnsafe()) {
+  if (topic_.empty()) {
     PrintWarning("No topic.");
     return;
   }
