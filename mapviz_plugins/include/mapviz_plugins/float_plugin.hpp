@@ -85,14 +85,6 @@ namespace mapviz_plugins
     bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override {}
 
-    void Draw(double x, double y, double scale) override;
-    void Paint(QPainter* painter, double x, double y, double scale) override;
-
-    void Transform() override {}
-
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
     QWidget* GetConfigWidget(QWidget* parent) override;
 
     bool SupportsPainting() override
@@ -101,6 +93,16 @@ namespace mapviz_plugins
     }
 
   protected:
+    void Draw(double x, double y, double scale) override;
+
+    void Paint(QPainter* painter, double x, double y, double scale) override;
+
+    void Transform() override {}
+
+    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+
     void PaintText(QPainter* painter);
     void PrintError(const std::string& message) override;
     void PrintInfo(const std::string& message) override;
@@ -117,13 +119,6 @@ namespace mapviz_plugins
     void SetOffsetY(int offset);
     void PostfixEdited();
 
-  Q_SIGNALS:
-    // Emitted from the ROS spin thread; delivered as a queued connection to
-    // handleFloat() on the GUI thread, which owns all plugin state.
-    void FloatReceived(double value);
-
-  private Q_SLOTS:
-    void handleFloat(double value);
 
   private:
     Ui::float_config ui_;
@@ -149,7 +144,8 @@ namespace mapviz_plugins
     QFont font_;
     QStaticText message_;
 
-    void floatCallback(double value);
+    // Called on the GUI thread by Subscribe(); owns all plugin state.
+    void handleFloat(double value);
     void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
 
     std::string AnchorToString(Anchor anchor);

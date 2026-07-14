@@ -142,7 +142,7 @@ namespace mapviz_plugins
     std::unique_ptr<geometry_msgs::msg::PointStamped> stamped =
       std::make_unique<geometry_msgs::msg::PointStamped>();
     stamped->header.frame_id = output_frame;
-    stamped->header.stamp = node_->get_clock()->now();
+    stamped->header.stamp = Clock()->now();
     stamped->point.x = transformed.x();
     stamped->point.y = transformed.y();
     stamped->point.z = 0.0;
@@ -196,7 +196,7 @@ namespace mapviz_plugins
 
     if (!topic.isEmpty())
     {
-      point_publisher_ = node_->create_publisher<geometry_msgs::msg::PointStamped>(
+      point_publisher_ = Publisher<geometry_msgs::msg::PointStamped>(
           topic.toStdString(), rclcpp::QoS(1000));
     }
   }

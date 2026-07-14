@@ -65,16 +65,19 @@ public:
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
+  QWidget* GetConfigWidget(QWidget* parent) override;
+
+protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override;
 
   void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
   void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  void Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst);
 
-protected:
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;
@@ -117,7 +120,6 @@ private:
   swri_transform_util::Transform transform_;
 
   void RecalculateGrid();
-  void Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst);
 };
 }   // namespace mapviz_plugins
 

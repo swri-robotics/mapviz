@@ -211,7 +211,7 @@ namespace mapviz_plugins
       return;
     } else if (!visible) {
       image_sub_.shutdown();
-      RCLCPP_INFO(node_->get_logger(), "Dropped subscription to %s", topic_.c_str());
+      RCLCPP_INFO(Logger(), "Dropped subscription to %s", topic_.c_str());
     } else {
       Resubscribe();
     }
@@ -220,7 +220,7 @@ namespace mapviz_plugins
   void ImagePlugin::SetTransport(const QString& transport)
   {
     transport_ = transport.toStdString();
-    RCLCPP_INFO(node_->get_logger(), "Changing image_transport to %s.", transport_.c_str());
+    RCLCPP_INFO(Logger(), "Changing image_transport to %s.", transport_.c_str());
     TopicEdited();
   }
 
@@ -262,7 +262,7 @@ namespace mapviz_plugins
   void ImagePlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      TopicSource(),
       "sensor_msgs/msg/Image",
       qos_);
     if (!topic.empty())
@@ -315,34 +315,34 @@ namespace mapviz_plugins
       {
         if (transport_ == "default")
         {
-          RCLCPP_DEBUG(node_->get_logger(), "Using default transport.");
+          RCLCPP_DEBUG(Logger(), "Using default transport.");
           // image_common < 6.4.0 (e.g. ROS Humble) exposes
           // ImageTransport(rclcpp::Node::SharedPtr); 6.4.0+ replaced it with
           // ImageTransport(rclcpp::Node&).
 #ifdef MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF
-          image_transport::ImageTransport it(*node_);
+          image_transport::ImageTransport it(*NodeUnsafe());
 #else
-          image_transport::ImageTransport it(node_);
+          image_transport::ImageTransport it(NodeUnsafe());
 #endif
           image_sub_ = it.subscribe(
             topic_,
             qos_.depth,
             std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1));
         } else {
-          RCLCPP_DEBUG(node_->get_logger(), "Setting transport to %s on %s.",
-                   transport_.c_str(), node_->get_fully_qualified_name());
+          RCLCPP_DEBUG(Logger(), "Setting transport to %s on %s.",
+                   transport_.c_str(), NodeUnsafe()->get_fully_qualified_name());
 
           // Similarly, create_subscription() took rclcpp::Node* and a
           // rmw_qos_profile_t before image_common 6.4.0, and rclcpp::Node&
           // with an rclcpp::QoS from 6.4.0 onward.
 #ifdef MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF
-          image_sub_ = image_transport::create_subscription(*node_,
+          image_sub_ = image_transport::create_subscription(*NodeUnsafe(),
               topic_,
               std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1),
               transport_,
               rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos));
 #else
-          image_sub_ = image_transport::create_subscription(node_.get(),
+          image_sub_ = image_transport::create_subscription(NodeUnsafe().get(),
               topic_,
               std::bind(&ImagePlugin::imageCallback, this, std::placeholders::_1),
               transport_,
@@ -350,7 +350,7 @@ namespace mapviz_plugins
 #endif
         }
 
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
@@ -572,7 +572,7 @@ namespace mapviz_plugins
       {
         ui_.transport_combo_box->setCurrentIndex(index);
       } else {
-        RCLCPP_WARN(node_->get_logger(), "Saved image transport %s is unavailable.",
+        RCLCPP_WARN(Logger(), "Saved image transport %s is unavailable.",
                  transport_.c_str());
       }
     }
@@ -702,14 +702,14 @@ namespace mapviz_plugins
 
   void ImagePlugin::SetNode(rclcpp::Node& node)
   {
-    node_ = node.shared_from_this();
+    MapvizPlugin::SetNode(node);
 
     // As soon as we have a node, we can find the available image transports
     // and add them to our combo box.
 #ifdef MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF
-    image_transport::ImageTransport it(*node_);
+    image_transport::ImageTransport it(*NodeUnsafe());
 #else
-    image_transport::ImageTransport it(node_);
+    image_transport::ImageTransport it(NodeUnsafe());
 #endif
     std::vector<std::string> transports = it.getLoadableTransports();
     for (const std::string& transport : transports)

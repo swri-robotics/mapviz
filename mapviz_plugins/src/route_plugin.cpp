@@ -93,17 +93,6 @@ namespace mapviz_plugins
     QObject::connect(ui_.drawstyle, SIGNAL(activated(QString)), this,
                      SLOT(SetDrawStyle(QString)));
 
-    // Messages are received on the ROS spin thread but must be processed on
-    // the GUI thread, which owns the plugin's state; these connections are
-    // queued because the emitting thread differs from this object's thread.
-    qRegisterMetaType<marti_nav_msgs::msg::Route::ConstSharedPtr>(
-        "marti_nav_msgs::msg::Route::ConstSharedPtr");
-    qRegisterMetaType<marti_nav_msgs::msg::RoutePosition::ConstSharedPtr>(
-        "marti_nav_msgs::msg::RoutePosition::ConstSharedPtr");
-    QObject::connect(this, &RoutePlugin::RouteReceived,
-                     this, &RoutePlugin::handleRoute);
-    QObject::connect(this, &RoutePlugin::RoutePositionReceived,
-                     this, &RoutePlugin::handleRoutePosition);
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this,
                      SLOT(DrawIcon()));
   }
@@ -151,7 +140,7 @@ namespace mapviz_plugins
   void RoutePlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      TopicSource(),
       "marti_nav_msgs/msg/Route",
       qos_);
 
@@ -164,7 +153,7 @@ namespace mapviz_plugins
   void RoutePlugin::SelectPositionTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      TopicSource(),
       "marti_nav_msgs/msg/RoutePosition",
       position_qos_);
 
@@ -190,14 +179,15 @@ namespace mapviz_plugins
       qos_ = qos;
       if (!topic.empty())
       {
-        route_sub_ =
-            node_->create_subscription<marti_nav_msgs::msg::Route>(
-              topic_,
-              rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-              std::bind(&RoutePlugin::RouteCallback, this, std::placeholders::_1)
-            );
+        // Subscribe() delivers each message to handleRoute() on the GUI
+        // thread, where plugin state may be touched without locking.
+        Subscribe<marti_nav_msgs::msg::Route>(
+            topic_, qos, route_sub_,
+            [this](marti_nav_msgs::msg::Route::ConstSharedPtr msg) {
+              handleRoute(msg);
+            });
 
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
@@ -220,30 +210,16 @@ namespace mapviz_plugins
       {
         position_topic_ = topic;
         position_qos_ = qos;
-        position_sub_ = node_->create_subscription<marti_nav_msgs::msg::RoutePosition>(
-          topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-          std::bind(&RoutePlugin::PositionCallback, this, std::placeholders::_1)
-        );
+        Subscribe<marti_nav_msgs::msg::RoutePosition>(
+          topic_, qos, position_sub_,
+          [this](marti_nav_msgs::msg::RoutePosition::ConstSharedPtr msg) {
+            handleRoutePosition(msg);
+          });
 
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", position_topic_.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", position_topic_.c_str());
       }
     }
 
-  }
-
-  // These callbacks run on the ROS spin thread: they hand the message to the
-  // GUI thread and return immediately so message processing never blocks ROS
-  // spinning.
-  void RoutePlugin::PositionCallback(
-      const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr msg)
-  {
-    Q_EMIT RoutePositionReceived(msg);
-  }
-
-  void RoutePlugin::RouteCallback(const marti_nav_msgs::msg::Route::ConstSharedPtr msg)
-  {
-    Q_EMIT RouteReceived(msg);
   }
 
   void RoutePlugin::handleRoutePosition(

@@ -139,7 +139,7 @@ namespace mapviz_plugins
       {
         route_topic_ = ui_.topic->text().toStdString();
         route_pub_.reset();
-        route_pub_ = node_->create_publisher<marti_nav_msgs::msg::Route>(
+        route_pub_ = Publisher<marti_nav_msgs::msg::Route>(
           route_topic_,
           rclcpp::QoS(1));
       }
@@ -150,6 +150,7 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::PlanRoute()
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     route_preview_ = sru::RoutePtr();
     bool start_from_vehicle = ui_.start_from_vehicle->isChecked();
     if (waypoints_.size() + start_from_vehicle < 2 || !Visible())
@@ -163,7 +164,7 @@ namespace mapviz_plugins
       PrintError("Service name may not be empty.");
       return;
     }
-    auto client = node_->create_client<marti_nav_msgs::srv::PlanRoute>(service);
+    auto client = NodeUnsafe()->create_client<marti_nav_msgs::srv::PlanRoute>(service);
     client->wait_for_service(1ms);
 
     if (!client->service_is_ready())
@@ -175,7 +176,7 @@ namespace mapviz_plugins
     auto plan_route = std::make_shared<marti_nav_msgs::srv::PlanRoute::Request>();
 
     plan_route->header.frame_id = swri_transform_util::_wgs84_frame;
-    plan_route->header.stamp = node_->now();
+    plan_route->header.stamp = Now();
     plan_route->plan_from_vehicle = static_cast<unsigned char>(start_from_vehicle);
     plan_route->waypoints = waypoints_;
 
@@ -195,7 +196,7 @@ namespace mapviz_plugins
   void PlanRoutePlugin::handlePlanRouteResponse(
     rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future)
   {
-    RCLCPP_ERROR(node_->get_logger(), "Request callback happened");
+    RCLCPP_ERROR(Logger(), "Request callback happened");
     const auto& result = future.get();
     if (future.valid())
     {
@@ -216,6 +217,7 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Retry()
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     PlanRoute();
   }
 
@@ -255,7 +257,11 @@ namespace mapviz_plugins
     initializeOpenGLFunctions();
     canvas->doneCurrent();
 
-    retry_timer_ = node_->create_wall_timer(1000ms, [this](){Retry();});
+    // A QTimer (instead of a ROS wall timer) so Retry() runs on the GUI
+    // thread, which owns the plugin's state and the UI widgets it reads.
+    QObject::connect(&retry_timer_, &QTimer::timeout,
+                     this, &PlanRoutePlugin::Retry);
+    retry_timer_.start(1000);
 
     initialized_ = true;
     return true;

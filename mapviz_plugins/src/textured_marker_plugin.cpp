@@ -81,20 +81,11 @@ TexturedMarkerPlugin::TexturedMarkerPlugin() :
   QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
   QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
   QObject::connect(ui_.alphaSlide, SIGNAL(valueChanged(int)), this, SLOT(SetAlphaLevel(int)));
-
-  // By using a signal/slot connection, we ensure that we only generate GL textures on the
-  // main thread in case a non-main thread handles the ROS callbacks.
-  qRegisterMetaType<marti_visualization_msgs::msg::TexturedMarker>("TexturedMarker");
-
-  QObject::connect(this,
-    SIGNAL(MarkerReceived(marti_visualization_msgs::msg::TexturedMarker)),
-    this,
-    SLOT(ProcessMarker(marti_visualization_msgs::msg::TexturedMarker)));
 }
 
 void TexturedMarkerPlugin::ClearHistory()
 {
-  RCLCPP_DEBUG(node_->get_logger(), "TexturedMarkerPlugin::ClearHistory()");
+  RCLCPP_DEBUG(Logger(), "TexturedMarkerPlugin::ClearHistory()");
   markers_.clear();
 }
 
@@ -116,14 +107,14 @@ void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
   } else {
     // Ex. convert int in range 0-100 to float in range 0-1
     alphaVal_ = (static_cast<float>(alpha) / max);
-    RCLCPP_INFO(node_->get_logger(), "Adjusting alpha value to: %f", alphaVal_);
+    RCLCPP_INFO(Logger(), "Adjusting alpha value to: %f", alphaVal_);
   }
 }
 
 void TexturedMarkerPlugin::SelectTopic()
 {
   auto [topic, qos] = SelectTopicDialog::selectTopic(
-    node_,
+    TopicSource(),
     "marti_visualization_msgs/msg/TexturedMarker",
     "marti_visualization_msgs/msg/TexturedMarkerArray",
     qos_);
@@ -155,35 +146,39 @@ void TexturedMarkerPlugin::connectCallback(const std::string& topic, const rmw_q
     topic_ = topic;
     qos_ = qos;
     if (!topic.empty()) {
-      auto known_topics = node_->get_topic_names_and_types();
+      auto known_topics = TopicSource().topics();
       if (known_topics.count(topic_) > 0) {
         rclcpp::QoS topic_qos(rclcpp::QoSInitialization::from_rmw(qos_));
         std::string topic_type = known_topics[topic_][0];
         if (topic_type == "marti_visualization_msgs/msg/TexturedMarkerArray") {
-          marker_arr_sub_ =
-            node_->create_subscription<marti_visualization_msgs::msg::TexturedMarkerArray>(
-            topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&TexturedMarkerPlugin::MarkerArrayCallback, this, std::placeholders::_1)
-            );
-          RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+          // Subscribe() delivers each message to ProcessMarker() on the GUI
+          // thread, which is required because ProcessMarker() generates GL
+          // textures that may only be created on the GUI thread.
+          Subscribe<marti_visualization_msgs::msg::TexturedMarkerArray>(
+            topic_, qos, marker_arr_sub_,
+            [this](marti_visualization_msgs::msg::TexturedMarkerArray::ConstSharedPtr markers) {
+              for (const auto & marker : markers->markers) {
+                ProcessMarker(marker);
+              }
+            });
+          RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
         }
         else if(topic_type == "marti_visualization_msgs/msg/TexturedMarker") {
-          marker_sub_ = node_->create_subscription<marti_visualization_msgs::msg::TexturedMarker>(
-            topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&TexturedMarkerPlugin::MarkerCallback, this, std::placeholders::_1)
-          );
-          RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+          Subscribe<marti_visualization_msgs::msg::TexturedMarker>(
+            topic_, qos, marker_sub_,
+            [this](marti_visualization_msgs::msg::TexturedMarker::ConstSharedPtr marker) {
+              ProcessMarker(*marker);
+            });
+          RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
         }
         else {
-          RCLCPP_ERROR(node_->get_logger(),
+          RCLCPP_ERROR(Logger(),
               "Unable to subscribe to topic %s (unsupported type %s).",
               topic_.c_str(), topic_type.c_str());
         }
       }
       else {
-        RCLCPP_ERROR(node_->get_logger(),
+        RCLCPP_ERROR(Logger(),
             "Unable to subscribe to topic %s, (does not exist).", topic_.c_str());
       }
     }
@@ -308,13 +303,13 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
         markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ *
           markerData.texture_size_));
       } else {
-        RCLCPP_WARN(node_->get_logger(), "Unsupported encoding: %s", markerData.encoding_.c_str());
+        RCLCPP_WARN(Logger(), "Unsupported encoding: %s", markerData.encoding_.c_str());
       }
 
       size_t expected = marker.image.height * marker.image.width * bpp;
       if (!markerData.texture_.empty() && marker.image.data.size() < expected) {
         RCLCPP_ERROR(
-          node_->get_logger(),
+          Logger(),
           "TexturedMarker image had expected data size %li but only got %li. Dropping message.",
           expected,
           marker.image.data.size());
@@ -411,20 +406,6 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
       static_cast<float>(markerData.texture_size_);
   } else {
     markers_[marker.ns].erase(marker.id);
-  }
-}
-
-void TexturedMarkerPlugin::MarkerCallback(
-  marti_visualization_msgs::msg::TexturedMarker::ConstSharedPtr marker)
-{
-  Q_EMIT MarkerReceived(*marker);
-}
-
-void TexturedMarkerPlugin::MarkerArrayCallback(
-  marti_visualization_msgs::msg::TexturedMarkerArray::ConstSharedPtr markers)
-{
-  for (const auto & marker : markers->markers) {
-    Q_EMIT MarkerReceived(marker);
   }
 }
 

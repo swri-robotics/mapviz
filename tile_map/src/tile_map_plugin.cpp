@@ -288,7 +288,7 @@ namespace tile_map
     if (message == ui_.status->text().toStdString())
       return;
 
-    RCLCPP_ERROR(node_->get_logger(), "Error: %s", message.c_str());
+    RCLCPP_ERROR(Logger(), "Error: %s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::red);
     ui_.status->setPalette(p);
@@ -300,7 +300,7 @@ namespace tile_map
     if (message == ui_.status->text().toStdString())
       return;
 
-    RCLCPP_INFO(node_->get_logger(), "%s", message.c_str());
+    RCLCPP_INFO(Logger(), "%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::green);
     ui_.status->setPalette(p);
@@ -312,7 +312,7 @@ namespace tile_map
     if (message == ui_.status->text().toStdString())
       return;
 
-    RCLCPP_WARN(node_->get_logger(), "%s", message.c_str());
+    RCLCPP_WARN(Logger(), "%s", message.c_str());
     QPalette p(ui_.status->palette());
     p.setColor(QPalette::Text, Qt::darkYellow);
     ui_.status->setPalette(p);
@@ -362,7 +362,7 @@ namespace tile_map
         last_width_ = canvas_->width();
         last_height_ = canvas_->height();
         tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
-        RCLCPP_DEBUG(node_->get_logger(), "TileMapPlugin::Draw: Successfully set view");
+        RCLCPP_DEBUG(Logger(), "TileMapPlugin::Draw: Successfully set view");
       }
       tile_map_.Draw();
     }

@@ -83,14 +83,6 @@ public:
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
-  void Draw(double x, double y, double scale) override;
-  void Paint(QPainter* painter, double x, double y, double scale) override;
-
-  void Transform() override {}
-
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
   QWidget* GetConfigWidget(QWidget* parent) override;
 
   bool SupportsPainting() override
@@ -101,6 +93,16 @@ public:
   void SetText(const QString& text);
 
 protected:
+  void Draw(double x, double y, double scale) override;
+
+  void Paint(QPainter* painter, double x, double y, double scale) override;
+
+  void Transform() override {}
+
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+
   void PaintText(QPainter* painter);
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
@@ -115,11 +117,6 @@ protected Q_SLOTS:
   void SetUnits(QString units);
   void SetOffsetX(int offset);
   void SetOffsetY(int offset);
-
-Q_SIGNALS:
-  // Emitted from the ROS spin thread; delivered as a queued connection to
-  // SetText() on the GUI thread, which owns all plugin state.
-  void TextReceived(const QString& text);
 
 private:
   Ui::string_config ui_;

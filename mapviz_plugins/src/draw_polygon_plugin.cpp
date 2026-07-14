@@ -113,7 +113,7 @@ namespace mapviz_plugins
     source_frame_ = ui_.frame->text().toStdString();
     PrintWarning("Waiting for transform.");
 
-    RCLCPP_INFO(node_->get_logger(), "Setting target frame to to %s", source_frame_.c_str());
+    RCLCPP_INFO(Logger(), "Setting target frame to to %s", source_frame_.c_str());
 
     initialized_ = true;
   }
@@ -124,13 +124,13 @@ namespace mapviz_plugins
     {
       polygon_topic_ = ui_.topic->text().toStdString();
       rclcpp::QoS qos = rclcpp::QoS(1).durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
-      polygon_pub_ = node_->create_publisher<geometry_msgs::msg::PolygonStamped>(
+      polygon_pub_ = Publisher<geometry_msgs::msg::PolygonStamped>(
           polygon_topic_, qos);
     }
 
     geometry_msgs::msg::PolygonStamped::UniquePtr polygon =
         std::make_unique<geometry_msgs::msg::PolygonStamped>();
-    polygon->header.stamp = node_->get_clock()->now();
+    polygon->header.stamp = Clock()->now();
     polygon->header.frame_id = ui_.frame->text().toStdString();
 
     for (const auto& vertex : vertices_)
@@ -204,7 +204,7 @@ namespace mapviz_plugins
   {
     if(!this->Visible())
     {
-      RCLCPP_DEBUG(node_->get_logger(), "Ignoring mouse press, since draw polygon plugin is hidden");
+      RCLCPP_DEBUG(Logger(), "Ignoring mouse press, since draw polygon plugin is hidden");
       return false;
     }
     
@@ -289,7 +289,7 @@ namespace mapviz_plugins
       {
         QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
         RCLCPP_INFO(
-          node_->get_logger(),
+          Logger(),
           "mouse point at %f, %f -> %f, %f",
           point.x(),
           point.y(),
@@ -305,7 +305,7 @@ namespace mapviz_plugins
           vertices_.push_back(position);
           transformed_vertices_.resize(vertices_.size());
           RCLCPP_INFO(
-            node_->get_logger(),
+            Logger(),
             "Adding vertex at %lf, %lf %s",
             position.x(),
             position.y(),

@@ -37,7 +37,7 @@
 
 #include <QDialog>
 
-#include <rclcpp/rclcpp.hpp>
+#include <mapviz/topic_source.hpp>
 #include <rmw/qos_profiles.h>
 #include "ui_topicselect.h"
 
@@ -78,7 +78,7 @@ class SelectTopicDialog : public QDialog
    * selection, the topic will be empty and the QoS will be the RMW default.
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
-    const rclcpp::Node::SharedPtr& node,
+    const mapviz::TopicSource& source,
     const std::string& datatype,
     const rmw_qos_profile_t& qos,
     QWidget* parent = nullptr);
@@ -93,7 +93,7 @@ class SelectTopicDialog : public QDialog
    * info will be empty, and the QoS will be the RMW defaults.
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
-    const rclcpp::Node::SharedPtr& node,
+    const mapviz::TopicSource& source,
     const std::string& datatype1,
     const std::string& datatype2,
     const rmw_qos_profile_t& qos,
@@ -107,7 +107,7 @@ class SelectTopicDialog : public QDialog
    * selection, the topic will be an empty string the QoS will be RMW defaults.
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
-    const rclcpp::Node::SharedPtr& node,
+    const mapviz::TopicSource& source,
     const std::vector<std::string>& datatypes,
     const rmw_qos_profile_t& qos,
     QWidget* parent = nullptr);
@@ -121,7 +121,7 @@ class SelectTopicDialog : public QDialog
    * returned vector will be empty, and the QoS will be the RMW default.
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
-    const rclcpp::Node::SharedPtr& node,
+    const mapviz::TopicSource& source,
     const std::string& datatype,
     const rmw_qos_profile_t& qos,
     QWidget* parent = nullptr);
@@ -136,7 +136,7 @@ class SelectTopicDialog : public QDialog
    * the RMW default.
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
-    const rclcpp::Node::SharedPtr& node,
+    const mapviz::TopicSource& source,
     const std::string& datatype1,
     const std::string& datatype2,
     const rmw_qos_profile_t& qos,
@@ -151,7 +151,7 @@ class SelectTopicDialog : public QDialog
    * RMW defaults.
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
-    const rclcpp::Node::SharedPtr& node,
+    const mapviz::TopicSource& source,
     const std::vector<std::string>& datatypes,
     const rmw_qos_profile_t& qos,
     QWidget* parent = nullptr);
@@ -160,7 +160,7 @@ class SelectTopicDialog : public QDialog
    * Constructor for the SelectTopicDialog.
    */
   explicit SelectTopicDialog(
-    const rclcpp::Node::SharedPtr& node,
+    const mapviz::TopicSource& source,
     const rmw_qos_profile_t& qos,
     QWidget* parent = nullptr);
 
@@ -210,7 +210,7 @@ class SelectTopicDialog : public QDialog
   int fetch_topics_timer_id_;
   Ui::TopicSelect *ui_;
 
-  std::shared_ptr<rclcpp::Node> nh_;   // This may need to be a shared instance of Mapviz's node
+  mapviz::TopicSource source_;
 };  // class SelectTopicDialog
 }  // namespace mapviz
 

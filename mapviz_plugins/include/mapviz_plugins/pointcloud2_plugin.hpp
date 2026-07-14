@@ -100,16 +100,17 @@ public:
 
   void ClearHistory() override;
 
+  QWidget* GetConfigWidget(QWidget* parent) override;
+
+protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override;
 
   void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
   void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
-
-protected:
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;
@@ -131,19 +132,16 @@ protected Q_SLOTS:
   void ClearPointClouds();
   void SetSubscription(bool subscribe);
 
-Q_SIGNALS:
-  // Emitted from the ROS spin thread with a freshly decoded scan; delivered
-  // as a queued connection to handleScan() on the GUI thread, which owns
-  // scans_ and everything configuration-dependent.
-  void ScanProcessed(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
-
-private Q_SLOTS:
-  void handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
-
 private:
-  float PointFeature(const uint8_t*, const FieldInfo&);
+  // Decodes the raw cloud on the ROS spin thread; static (a Subscribe()
+  // function pointer) so it cannot touch plugin state.  Returns an empty
+  // (feature-less) Scan for malformed clouds.
+  static Scan DecodeScan(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg);
+  static float PointFeature(const uint8_t*, const FieldInfo&);
+  // Runs on the GUI thread via Subscribe(); owns scans_ and everything
+  // configuration-dependent.
+  void handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void PointCloud2Callback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr scan);
   QColor CalculateColor(const StampedPoint& point);
   void UpdateMinMaxWidgets();
 
@@ -174,8 +172,5 @@ private:
   QOpenGLBuffer color_buffer_;
 };
 }   // namespace mapviz_plugins
-
-// Allows the decoded scan to be carried by a queued signal emission.
-Q_DECLARE_METATYPE(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan>)
 
 #endif  // MAPVIZ_PLUGINS__POINTCLOUD2_PLUGIN_HPP_

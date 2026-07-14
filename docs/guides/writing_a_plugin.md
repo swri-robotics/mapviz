@@ -96,6 +96,22 @@ display-list icon, and `ClearHistory()` to drop buffered data.
 Use the base class `GetTransform(...)` to look up transforms, and the
 `LoadQosConfig`/`SaveQosConfig` helpers to persist subscription QoS.
 
+## Accessing the ROS node
+
+The mapviz node is **private** to the base class — there is no `node_` member
+for plugins to reach into. Instead the base class exposes a small set of
+accessors, so that the thread-unsafe part of ROS access (registering a
+callback that then runs on the background thread) can only be done through
+`Subscribe()`, which routes the result back to the GUI thread for you:
+
+| Accessor | Use |
+|:-|:-|
+| `Subscribe<MsgT>(...)` | Subscribe to a topic and receive messages on the GUI thread. See [Threading model](#threading-model). |
+| `Publisher<MsgT>(topic, qos)` | Create a publisher (thin wrapper over `create_publisher`). Publishing is thread-safe. |
+| `Logger()` | The node's `rclcpp::Logger`. Safe to call from any thread. |
+| `Now()` / `Clock()` | The node's current time / clock. |
+| `NodeUnsafe()` | Escape hatch returning the raw `rclcpp::Node::SharedPtr`, for APIs the helpers don't wrap: `image_transport`, the select-topic/service dialogs, service clients, wall timers, and node introspection. **You** are responsible for the thread-safety of whatever you do with it — in particular, never register a subscription or timer callback here that touches plugin state, since those run on the spin thread. Use `Subscribe()` instead. |
+
 ## Threading model
 
 This is the one contract you must follow. Mapviz services ROS on a
@@ -103,81 +119,91 @@ background spin thread so that message traffic never stalls rendering, while
 rendering, widgets, the GL context, and the (not thread safe)
 `TransformManager` all belong to the GUI thread.
 
-**Subscription callbacks run on the spin thread and must not touch widgets,
-the GL context, `tf_manager_`/`GetTransform()`, or any state shared with the
-GUI thread.** A callback should do at most expensive, configuration-independent
-decoding on local data, then hand the result to the GUI thread with a queued
-signal. Everything else — `Draw()`, `Paint()`, `Transform()`, config-widget
-slots — runs on the GUI thread and needs no locking.
+`Draw()`, `Paint()`, `Transform()`, and your config-widget slots all run on
+the GUI thread and need no locking. The only work that happens off it is
+message reception — and `Subscribe()` exists so you never have to hand-write
+the thread hop.
 
-The handoff uses an ordinary Qt signal/slot pair. Because the signal is
-emitted from a different thread than the one your plugin object lives on, Qt
-automatically delivers it as a queued event on the GUI thread:
+### Subscribing
+
+`Subscribe<MsgT>()` creates the subscription (serviced by the spin thread) and
+delivers each message to a handler that runs on the **GUI thread**, so the
+handler may freely touch buffers, widgets, `GetTransform()`, and config:
 
 ```cpp
 // my_display_plugin.hpp
-class MyDisplayPlugin : public mapviz::MapvizPlugin
-{
-  Q_OBJECT
-  // ...
-
-Q_SIGNALS:
-  // Emitted from the ROS spin thread; delivered as a queued connection to
-  // handleMessage() on the GUI thread, which owns all plugin state.
-  void MessageReceived(const my_msgs::msg::MyMessage::ConstSharedPtr msg);
-
-private Q_SLOTS:
-  void handleMessage(const my_msgs::msg::MyMessage::ConstSharedPtr msg);
-
 private:
-  void messageCallback(const my_msgs::msg::MyMessage::ConstSharedPtr msg);
-};
-
-// Required so the shared_ptr can be carried by a queued emission.
-Q_DECLARE_METATYPE(my_msgs::msg::MyMessage::ConstSharedPtr)
+  rclcpp::Subscription<my_msgs::msg::MyMessage>::SharedPtr sub_;
+  // Runs on the GUI thread; owns all plugin state.
+  void handleMessage(my_msgs::msg::MyMessage::ConstSharedPtr msg);
 ```
 
 ```cpp
-// my_display_plugin.cpp — in the constructor:
-qRegisterMetaType<my_msgs::msg::MyMessage::ConstSharedPtr>(
-    "my_msgs::msg::MyMessage::ConstSharedPtr");
-QObject::connect(this, &MyDisplayPlugin::MessageReceived,
-                 this, &MyDisplayPlugin::handleMessage);
+// my_display_plugin.cpp — from a topic-edited slot, SelectTopic(), or LoadConfig():
+Subscribe<my_msgs::msg::MyMessage>(
+    topic, qos, sub_,
+    [this](my_msgs::msg::MyMessage::ConstSharedPtr msg) { handleMessage(msg); });
+```
 
-// The subscription callback: decode and emit, nothing else.
-void MyDisplayPlugin::messageCallback(
-    const my_msgs::msg::MyMessage::ConstSharedPtr msg)
-{
-  Q_EMIT MessageReceived(msg);
-}
+The subscription is written into the handle you pass (`sub_`); reset it, or
+call `Subscribe()` again, to unsubscribe. No `Q_DECLARE_METATYPE`,
+`qRegisterMetaType`, signal, or `connect` is required — the marshaling is
+handled internally, and messages are carried as `ConstSharedPtr` so the hop is
+just a pointer copy. `OdometryPlugin` is a minimal example.
 
-// The slot: runs on the GUI thread, free to use tf, widgets, and config.
-void MyDisplayPlugin::handleMessage(
-    const my_msgs::msg::MyMessage::ConstSharedPtr msg)
+### Decoding off the GUI thread
+
+If decoding a message is expensive (e.g. unpacking a point cloud), use the
+two-type overload to do that work on the spin thread and hand only the decoded
+result to the GUI thread:
+
+```cpp
+Subscribe<sensor_msgs::msg::PointCloud2, Scan>(
+    topic, qos, sub_,
+    &MyDisplayPlugin::DecodeScan,                       // Scan (*)(const PointCloud2::ConstSharedPtr&)
+    [this](std::shared_ptr<Scan> scan) { handleScan(scan); });
+```
+
+`DecodeScan` is a plain **function pointer**, not a lambda or `std::function` —
+it therefore cannot capture, which is what guarantees it can't touch plugin
+state from the spin thread. It must depend only on the message; anything
+configuration-dependent (coloring, tf, widgets) belongs in the GUI-thread
+handler. Because it can't be a normal member function, make it `static`. Its
+returned value is moved into a `shared_ptr` and delivered to your handler.
+`PointCloud2Plugin` is a full example.
+
+### Asserting the thread
+
+To catch mistakes, assert your thread affinity at the top of methods that
+must run on the GUI thread:
+
+```cpp
+void MyDisplayPlugin::Draw(double x, double y, double scale)
 {
-  // update buffers, call GetTransform(), touch ui_, etc.
+  MAPVIZ_ASSERT_GUI_THREAD();
+  // ...
 }
 ```
 
-Emit `ConstSharedPtr`s (or a `shared_ptr` to your own decoded struct) so the
-queued copy is just a pointer. For a simple example see `OdometryPlugin`; for
-a plugin that does heavy per-message decoding in the callback before emitting
-see `PointCloud2Plugin`.
+`MAPVIZ_ASSERT_GUI_THREAD()` logs an error whenever it is reached off the GUI
+thread (in every build, including Release, unlike a bare `Q_ASSERT`) and
+additionally aborts in debug builds. Use it in `Draw()`, `Paint()`,
+`Transform()`, and any helper that assumes GUI-thread ownership.
 
 Notes:
 
-- Declare metatypes for your **own** types in your own headers. If several
-  headers in one library share a type, put the declaration in one common
-  header (see `mapviz_plugins/ros_metatypes.hpp`) — `AUTOMOC` compiles a
-  library's moc files in a single translation unit, so a type declared in
-  two of its headers is a redefinition. Two *separate* plugin libraries
-  registering the same type is fine.
 - The `Print*Helper` methods are safe to call from either thread.
-- Queued connections do not apply backpressure: if your topic can outrun the
-  GUI, coalesce in the callback (e.g. store the latest message and emit a
-  lightweight notification) instead of emitting every message.
+- `Subscribe()` does not apply backpressure: if your topic can outrun the GUI,
+  coalesce (e.g. keep only the latest message) in your handler.
 - Timers: use a `QTimer` (fires on the GUI thread), not
-  `node_->create_wall_timer()` (fires on the spin thread) — see
+  `NodeUnsafe()->create_wall_timer()` (fires on the spin thread) — see
   `TfFramePlugin`.
 - Create and reset subscriptions from GUI code (topic-edited slots,
   `LoadConfig`), as the built-in plugins do.
+- If you must go around `Subscribe()` — for example `image_transport`, whose
+  subscription factory `Subscribe()` can't wrap — you are back to the manual
+  contract: the callback runs on the spin thread and must only decode and hand
+  off to the GUI thread with a queued Qt signal. Declare the metatype for the
+  carried type with `Q_DECLARE_METATYPE(...)` in your plugin header and
+  `qRegisterMetaType<...>()` in the constructor. `ImagePlugin` is the one
+  in-tree example.

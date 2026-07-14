@@ -69,24 +69,12 @@ namespace mapviz_plugins
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
 
-    // Messages are received on the ROS spin thread but must be processed on
-    // the GUI thread, which owns the plugin's state; these connections are
-    // queued because the emitting thread differs from this object's thread.
-    qRegisterMetaType<visualization_msgs::msg::Marker::ConstSharedPtr>(
-        "visualization_msgs::msg::Marker::ConstSharedPtr");
-    qRegisterMetaType<visualization_msgs::msg::MarkerArray::ConstSharedPtr>(
-        "visualization_msgs::msg::MarkerArray::ConstSharedPtr");
-    QObject::connect(this, &MarkerPlugin::MarkerReceived,
-                     this, &MarkerPlugin::handleMarker);
-    QObject::connect(this, &MarkerPlugin::MarkerArrayReceived,
-                     this, &MarkerPlugin::handleMarkerArray);
-
     startTimer(1000);
   }
 
   void MarkerPlugin::ClearHistory()
   {
-    RCLCPP_DEBUG(node_->get_logger(), "MarkerPlugin::ClearHistory()");
+    RCLCPP_DEBUG(Logger(), "MarkerPlugin::ClearHistory()");
     markers_.clear();
     marker_visible_.clear();
     ui_.nsList->clear();
@@ -95,7 +83,7 @@ namespace mapviz_plugins
   void MarkerPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      TopicSource(),
       "visualization_msgs/msg/Marker",
       "visualization_msgs/msg/MarkerArray",
       qos_);
@@ -140,27 +128,31 @@ namespace mapviz_plugins
       // That would require a way to de-serialize the data for mapviz to consume (based on message type)
       // The code below checks for the topic type and subscribes in the appropriate manner
 
-      auto known_topics = node_->get_topic_names_and_types();
+      auto known_topics = TopicSource().topics();
       if (known_topics.count(topic_) > 0)
       {
         std::string topic_type = known_topics[topic_][0];
         if (topic_type == "visualization_msgs/msg/Marker")
         {
-          marker_sub_ = node_->create_subscription<visualization_msgs::msg::Marker>(
-            topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&MarkerPlugin::markerCallback, this, std::placeholders::_1));
+          // Subscribe() delivers each message to handleMarker() on the GUI
+          // thread, where plugin state may be touched without locking.
+          Subscribe<visualization_msgs::msg::Marker>(
+            topic_, qos, marker_sub_,
+            [this](visualization_msgs::msg::Marker::ConstSharedPtr marker) {
+              handleMarker(marker);
+            });
         }
         else if (topic_type == "visualization_msgs/msg/MarkerArray")
         {
-          marker_array_sub_ = node_->create_subscription<visualization_msgs::msg::MarkerArray>(
-            topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&MarkerPlugin::markerArrayCallback, this, std::placeholders::_1));
+          Subscribe<visualization_msgs::msg::MarkerArray>(
+            topic_, qos, marker_array_sub_,
+            [this](visualization_msgs::msg::MarkerArray::ConstSharedPtr markers) {
+              handleMarkerArray(markers);
+            });
         }
         else
         {
-          RCLCPP_ERROR(node_->get_logger(),
+          RCLCPP_ERROR(Logger(),
             "Unable to subscribe to topic %s (unsupported type %s).",
             topic_.c_str(), topic_type.c_str());
           return;
@@ -168,27 +160,13 @@ namespace mapviz_plugins
       }
       else
       {
-        RCLCPP_ERROR(node_->get_logger(),
+        RCLCPP_ERROR(Logger(),
             "Unable to subscribe to topic %s (does not exist).", topic_.c_str());
         return;
       }
 
-      RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+      RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
     }
-  }
-
-  // These callbacks run on the ROS spin thread: they hand the message to the
-  // GUI thread and return immediately so message processing never blocks ROS
-  // spinning.
-  void MarkerPlugin::markerCallback(const visualization_msgs::msg::Marker::ConstSharedPtr marker)
-  {
-    Q_EMIT MarkerReceived(marker);
-  }
-
-  void MarkerPlugin::markerArrayCallback(
-      const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers)
-  {
-    Q_EMIT MarkerArrayReceived(markers);
   }
 
   void MarkerPlugin::handleMarker(const visualization_msgs::msg::Marker::ConstSharedPtr marker)
@@ -278,10 +256,10 @@ namespace mapviz_plugins
       if (lifetime.nanoseconds() == 0)
       {
         markerData.expire_time = rclcpp::Time(rclcpp::Time::max().nanoseconds(),
-            node_->get_clock()->get_clock_type());
+            Clock()->get_clock_type());
       } else {
         // Temporarily add 5 seconds to fix some existing markers.
-        markerData.expire_time = node_->now() + lifetime + rclcpp::Duration(5, 0);
+        markerData.expire_time = Now() + lifetime + rclcpp::Duration(5, 0);
       }
 
       if (markerData.display_type == visualization_msgs::msg::Marker::ARROW)
@@ -376,7 +354,7 @@ namespace mapviz_plugins
         }
       } else {
         RCLCPP_WARN_ONCE(
-          node_->get_logger(),
+          Logger(),
           "Unsupported marker type: %d",
           markerData.display_type);
       }
@@ -490,7 +468,7 @@ namespace mapviz_plugins
       }
     }
 
-    rclcpp::Time now = node_->now();
+    rclcpp::Time now = Now();
 
     auto markerIter = markers_.begin();
     while (markerIter != markers_.end())
@@ -651,7 +629,7 @@ namespace mapviz_plugins
     // Most of the marker drawing is done using OpenGL commands, but text labels
     // are rendered using a QPainter.  This is intended primarily as an example
     // of how the QPainter works.
-    rclcpp::Time now = node_->now();
+    rclcpp::Time now = Now();
 
     // We don't want the text to be rotated or scaled, but we do want it to be
     // translated appropriately.  So, we save off the current world transform

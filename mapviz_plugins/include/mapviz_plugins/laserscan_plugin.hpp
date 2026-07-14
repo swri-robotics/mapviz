@@ -31,7 +31,6 @@
 #define MAPVIZ_PLUGINS__LASERSCAN_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -74,16 +73,17 @@ class LaserScanPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
 
     void ClearHistory() override;
 
+    QWidget* GetConfigWidget(QWidget* parent) override;
+
+  protected:
     void Draw(double x, double y, double scale) override;
 
     void Transform() override;
 
     void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
     void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
-
-  protected:
     void PrintError(const std::string& message) override;
     void PrintInfo(const std::string& message) override;
     void PrintWarning(const std::string& message) override;
@@ -102,10 +102,6 @@ class LaserScanPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
     void DrawIcon() override;
     void ResetTransformedScans();
 
-  Q_SIGNALS:
-    // Emitted from the ROS spin thread; delivered as queued connections to
-    // handleLaserScan() on the GUI thread, which owns all plugin state.
-    void LaserScanReceived(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan);
 
   private Q_SLOTS:
     void handleLaserScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan);
@@ -130,7 +126,6 @@ class LaserScanPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
       bool has_intensity;
     };
 
-    void laserScanCallback(const sensor_msgs::msg::LaserScan::ConstSharedPtr scan);
     void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
     QColor CalculateColor(const StampedPoint& point, bool has_intensity);
     void updatePreComputedTriginometic(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg);

@@ -36,6 +36,7 @@
 #include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QObject>
+#include <QTimer>
 #include <QWidget>
 
 // ROS libraries
@@ -71,14 +72,6 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
-  void Draw(double x, double y, double scale) override;
-  void Paint(QPainter* painter, double x, double y, double scale) override;
-
-  void Transform() override {};
-
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
   QWidget* GetConfigWidget(QWidget* parent) override;
 
   bool SupportsPainting() override
@@ -87,6 +80,16 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
   }
 
   protected:
+  void Draw(double x, double y, double scale) override;
+
+  void Paint(QPainter* painter, double x, double y, double scale) override;
+
+  void Transform() override {};
+
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;
@@ -123,7 +126,7 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
   std::string route_topic_;
 
   rclcpp::Publisher<marti_nav_msgs::msg::Route>::SharedPtr route_pub_;
-  rclcpp::TimerBase::SharedPtr retry_timer_;
+  QTimer retry_timer_;
 
   bool failed_service_;
   swri_route_util::RoutePtr route_preview_;

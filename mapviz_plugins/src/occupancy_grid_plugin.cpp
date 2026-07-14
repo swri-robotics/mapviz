@@ -195,18 +195,6 @@ namespace mapviz_plugins
       this,
       SLOT(colorSchemeUpdated(const QString &)));
 
-    // Messages are received on the ROS spin thread but must be processed on
-    // the GUI thread, which owns the plugin's state, the GL texture, and
-    // the color-scheme widget; these connections are queued because the
-    // emitting thread differs from this object's thread.
-    qRegisterMetaType<nav_msgs::msg::OccupancyGrid::ConstSharedPtr>(
-        "nav_msgs::msg::OccupancyGrid::ConstSharedPtr");
-    qRegisterMetaType<map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr>(
-        "map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr");
-    QObject::connect(this, &OccupancyGridPlugin::GridReceived,
-                     this, &OccupancyGridPlugin::handleGrid);
-    QObject::connect(this, &OccupancyGridPlugin::GridUpdateReceived,
-                     this, &OccupancyGridPlugin::handleGridUpdate);
   }
 
   void OccupancyGridPlugin::DrawIcon()
@@ -244,7 +232,7 @@ namespace mapviz_plugins
   void OccupancyGridPlugin::SelectTopicGrid()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      TopicSource(),
       "nav_msgs/msg/OccupancyGrid",
       qos_);
     if (!topic.empty())
@@ -275,18 +263,23 @@ namespace mapviz_plugins
 
       if (!topic.empty())
       {
-        grid_sub_ = node_->create_subscription<nav_msgs::msg::OccupancyGrid>(
-          topic,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-          std::bind(&OccupancyGridPlugin::Callback, this, std::placeholders::_1));
+        // Subscribe() delivers each message to handleGrid()/handleGridUpdate()
+        // on the GUI thread, where plugin state, the GL texture, and the
+        // color-scheme widget may be touched without locking.
+        Subscribe<nav_msgs::msg::OccupancyGrid>(
+          topic, qos, grid_sub_,
+          [this](nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg) {
+            handleGrid(msg);
+          });
         if(ui_.checkbox_update->isChecked())
         {
-          update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
-            topic,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&OccupancyGridPlugin::CallbackUpdate, this, std::placeholders::_1));
+          Subscribe<map_msgs::msg::OccupancyGridUpdate>(
+            topic, qos, update_sub_,
+            [this](map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg) {
+              handleGridUpdate(msg);
+            });
         }
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", topic.c_str());
       }
     }
   }
@@ -298,10 +291,13 @@ namespace mapviz_plugins
 
     if (ui_.checkbox_update)
     {
-      update_sub_ = node_->create_subscription<map_msgs::msg::OccupancyGridUpdate>(
-        topic,
-        rclcpp::QoS(10),
-        std::bind(&OccupancyGridPlugin::CallbackUpdate, this, std::placeholders::_1));
+      rmw_qos_profile_t update_qos = rmw_qos_profile_default;
+      update_qos.depth = 10;
+      Subscribe<map_msgs::msg::OccupancyGridUpdate>(
+        topic, update_qos, update_sub_,
+        [this](map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg) {
+          handleGridUpdate(msg);
+        });
     }
   }
 
@@ -383,20 +379,6 @@ namespace mapviz_plugins
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     canvas_->doneCurrent();
-  }
-
-  // These callbacks run on the ROS spin thread: they hand the message to the
-  // GUI thread and return immediately so message processing never blocks ROS
-  // spinning.
-  void OccupancyGridPlugin::Callback(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg)
-  {
-    Q_EMIT GridReceived(msg);
-  }
-
-  void OccupancyGridPlugin::CallbackUpdate(
-      const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg)
-  {
-    Q_EMIT GridUpdateReceived(msg);
   }
 
   void OccupancyGridPlugin::handleGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg)

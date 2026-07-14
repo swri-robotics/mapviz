@@ -21,3 +21,6 @@ Gemfile.lock
 _site/
 venv/
 __pycache__/
+install
+log
+build

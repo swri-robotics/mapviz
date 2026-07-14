@@ -32,7 +32,6 @@
 
 // Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QColor>
@@ -87,16 +86,17 @@ public:
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
+  QWidget* GetConfigWidget(QWidget* parent) override;
+
+protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override {}
 
   void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
   void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
-
-protected:
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;
@@ -112,13 +112,6 @@ protected Q_SLOTS:
   void SetHeight(int height);
   void SetSubscription(bool visible);
 
-Q_SIGNALS:
-  // Emitted from the ROS spin thread; delivered as queued connections to
-  // handleDisparity() on the GUI thread, which owns all plugin state.
-  void DisparityReceived(const stereo_msgs::msg::DisparityImage::ConstSharedPtr disparity);
-
-private Q_SLOTS:
-  void handleDisparity(const stereo_msgs::msg::DisparityImage::ConstSharedPtr disparity);
 
 private:
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
@@ -147,7 +140,8 @@ private:
   cv::Mat_<cv::Vec3b> disparity_color_;
   cv::Mat scaled_image_;
 
-  void disparityCallback(const stereo_msgs::msg::DisparityImage::ConstSharedPtr image);
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
+  void handleDisparity(const stereo_msgs::msg::DisparityImage::ConstSharedPtr disparity);
 
   void ScaleImage(double width, double height);
   void DrawIplImage(cv::Mat *image);

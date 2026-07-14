@@ -70,17 +70,19 @@ namespace mapviz_plugins
     bool Initialize(QOpenGLWidget* canvas);
     void Shutdown() {}
 
-    void Draw(double x, double y, double scale);
-
-    void Paint(QPainter* painter, double x, double y, double scale) {}
-    void Transform() {}
-
-    void LoadConfig(const YAML::Node& node, const std::string& path);
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
-
     QWidget* GetConfigWidget(QWidget* parent);
 
    protected:
+    void Draw(double x, double y, double scale);
+
+    void Paint(QPainter* painter, double x, double y, double scale) {}
+
+    void Transform() {}
+
+    void LoadConfig(const YAML::Node& node, const std::string& path);
+
+    void SaveConfig(YAML::Emitter& emitter, const std::string& path);
+
     virtual void PrintError(const std::string& message) override;
     virtual void PrintInfo(const std::string& message) override;
     virtual void PrintWarning(const std::string& message) override;

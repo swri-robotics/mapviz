@@ -31,7 +31,6 @@
 #define MAPVIZ_PLUGINS__ROBOT_MODEL_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 #include <QColor>
 #include <QObject>
@@ -95,13 +94,17 @@ class RobotModelPlugin : public mapviz::MapvizPlugin {
 
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override;
-  void Draw(double x, double y, double scale) override;
-  void Transform() override;
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
   QWidget* GetConfigWidget(QWidget* parent) override;
 
  protected:
+  void Draw(double x, double y, double scale) override;
+
+  void Transform() override;
+
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;
@@ -114,14 +117,6 @@ class RobotModelPlugin : public mapviz::MapvizPlugin {
   void BrowseFile();
   void FileEdited();
 
- Q_SIGNALS:
-   // Emitted from the ROS spin thread; delivered as queued connections to
-   // handleDescription() on the GUI thread, which owns all plugin state.
-   void DescriptionReceived(const std_msgs::msg::String::ConstSharedPtr description);
-
- private Q_SLOTS:
-   void handleDescription(const std_msgs::msg::String::ConstSharedPtr description);
-
  private:
   struct BakeResult {
     GLuint texture{0};
@@ -133,7 +128,8 @@ class RobotModelPlugin : public mapviz::MapvizPlugin {
     bool ready{false};
   };
 
-  void robotDescriptionCallback(const std_msgs::msg::String::ConstSharedPtr msg);
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
+  void handleDescription(const std_msgs::msg::String::ConstSharedPtr description);
   void parseUrdf(const std::string& xml);
   void rebakeRaster(const std::vector<LinkGeometry>& geoms, double scale,
                     int canvas_max_dim, bool off_screen);

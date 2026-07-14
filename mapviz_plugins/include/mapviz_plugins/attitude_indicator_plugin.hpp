@@ -32,7 +32,6 @@
 
 // Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QColor>
@@ -73,16 +72,17 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin,
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override;
 
+  QWidget* GetConfigWidget(QWidget* parent) override;
+
+ protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override {}
 
   void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
   void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
-
- protected:
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;
@@ -97,22 +97,11 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin,
    void SelectTopic();
    void TopicEdited();
 
- Q_SIGNALS:
-   // Emitted from the ROS spin thread; delivered as queued connections to
-   // the handle*() slots on the GUI thread, which owns all plugin state.
-   void ImuReceived(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
-   void OdometryReceived(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-   void PoseReceived(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
-
- private Q_SLOTS:
-   void handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
-   void handleOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-   void handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
-
  private:
-  void AttitudeCallbackImu(sensor_msgs::msg::Imu::ConstSharedPtr imu);
-  void AttitudeCallbackOdom(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-  void AttitudeCallbackPose(geometry_msgs::msg::Pose::ConstSharedPtr pose);
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
+  void handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
+  void handleOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
+  void handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
   void applyAttitudeOrientation(const geometry_msgs::msg::Quaternion &orientation);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
 

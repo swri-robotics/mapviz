@@ -31,7 +31,6 @@
 #define MAPVIZ_PLUGINS__MARKER_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -96,14 +95,6 @@ public:
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
-  void Draw(double x, double y, double scale) override;
-  void Paint(QPainter* painter, double x, double y, double scale) override;
-
-  void Transform() override;
-
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
   QWidget* GetConfigWidget(QWidget* parent) override;
 
   bool SupportsPainting() override
@@ -112,6 +103,16 @@ public:
   }
 
 protected:
+  void Draw(double x, double y, double scale) override;
+
+  void Paint(QPainter* painter, double x, double y, double scale) override;
+
+  void Transform() override;
+
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;
@@ -122,14 +123,8 @@ protected Q_SLOTS:
   void TopicEdited();
   void ClearHistory() override;
 
-Q_SIGNALS:
-  // Emitted from the ROS spin thread; delivered as queued connections to
-  // the handleMarker*() slots on the GUI thread, which owns all plugin
-  // state.
-  void MarkerReceived(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
-  void MarkerArrayReceived(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
-
-private Q_SLOTS:
+private:
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
   void handleMarker(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
   void handleMarkerArray(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
 
@@ -189,8 +184,6 @@ private:
   std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;
   std::unordered_map<std::string, bool, MarkerNsHash> marker_visible_;
 
-  void markerCallback(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
-  void markerArrayCallback(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
   void processMarker(const visualization_msgs::msg::Marker& marker);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   void transformArrow(MarkerData& markerData,

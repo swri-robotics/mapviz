@@ -161,19 +161,11 @@ namespace mapviz_plugins
                      this,
                      SLOT(SetSubscription(bool)));
 
-    // Scans are decoded on the ROS spin thread but must be finished
-    // (tf, coloring, widgets) on the GUI thread, which owns the plugin's
-    // state; this connection is queued because the emitting thread differs
-    // from this object's thread.
-    qRegisterMetaType<std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan>>(
-        "std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan>");
-    QObject::connect(this, &PointCloud2Plugin::ScanProcessed,
-                     this, &PointCloud2Plugin::handleScan);
   }
 
   void PointCloud2Plugin::ClearHistory()
   {
-    RCLCPP_DEBUG(node_->get_logger(), "PointCloud2Plugin::ClearHistory()");
+    RCLCPP_DEBUG(Logger(), "PointCloud2Plugin::ClearHistory()");
     scans_.clear();
   }
 
@@ -232,11 +224,14 @@ namespace mapviz_plugins
 
     if (subscribe && !topic_.empty())
     {
-      pc2_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
-        topic_,
-        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos_)),
-        std::bind(&PointCloud2Plugin::PointCloud2Callback, this, std::placeholders::_1)
-      );
+      // Subscribe() runs DecodeScan() (the expensive raw-buffer decode) on the
+      // ROS spin thread, then hands the prepared Scan to handleScan() on the
+      // GUI thread where tf, coloring, and widgets are safe to use.  DecodeScan
+      // is a static function pointer, so it cannot touch plugin state.
+      Subscribe<sensor_msgs::msg::PointCloud2, Scan>(
+        topic_, qos_, pc2_sub_,
+        &PointCloud2Plugin::DecodeScan,
+        [this](std::shared_ptr<Scan> scan) { handleScan(scan); });
       need_new_list_ = true;
       max_.clear();
       min_.clear();
@@ -341,7 +336,7 @@ namespace mapviz_plugins
   void PointCloud2Plugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      TopicSource(),
       "sensor_msgs/msg/PointCloud2",
       qos_);
     if (!topic.empty())
@@ -408,39 +403,43 @@ namespace mapviz_plugins
     canvas_->update();
   }
 
-  void PointCloud2Plugin::PointCloud2Callback(
-      const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
+  PointCloud2Plugin::Scan PointCloud2Plugin::DecodeScan(
+      const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg)
   {
     // Runs on the ROS spin thread: the expensive decode of the raw point
     // buffer happens here so it never stalls rendering, then the prepared
-    // scan is handed to handleScan() through a queued signal.  Everything
-    // that depends on tf, widgets, or user-editable settings stays on the
-    // GUI thread.
+    // scan is handed to handleScan() on the GUI thread.  This is a static
+    // function pointer (it cannot capture or touch plugin state); everything
+    // that depends on tf, widgets, or user-editable settings stays in
+    // handleScan().
+    Scan scan;
+
     int32_t xi = findChannelIndex(msg, "x");
     int32_t yi = findChannelIndex(msg, "y");
     int32_t zi = findChannelIndex(msg, "z");
 
     if (xi == -1 || yi == -1 || zi == -1)
     {
-      return;
+      // Malformed cloud: return an empty scan (no features); handleScan()
+      // drops it.
+      return scan;
     }
 
     // Note that unlike some plugins, this one does not store nor rely on the
     // source_frame_ member variable.  This one can potentially store many
     // messages with different source frames, so we need to store and transform
     // them individually.
-    auto scan = std::make_shared<Scan>();
-    scan->stamp = msg->header.stamp;
-    scan->color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
-    scan->source_frame = msg->header.frame_id;
-    scan->transformed = false;
+    scan.stamp = msg->header.stamp;
+    scan.color = QColor::fromRgbF(1.0f, 0.0f, 0.0f, 1.0f);
+    scan.source_frame = msg->header.frame_id;
+    scan.transformed = false;
 
     for (const auto& field : msg->fields)
     {
       FieldInfo input;
       input.offset = field.offset;
       input.datatype = field.datatype;
-      scan->new_features.insert(std::pair<std::string, FieldInfo>(field.name, input));
+      scan.new_features.insert(std::pair<std::string, FieldInfo>(field.name, input));
     }
 
     if (!msg->data.empty())
@@ -451,12 +450,12 @@ namespace mapviz_plugins
       const uint32_t yoff = msg->fields[yi].offset;
       const uint32_t zoff = msg->fields[zi].offset;
       const size_t num_points = msg->data.size() / point_step;
-      const size_t num_features = scan->new_features.size();
-      scan->points.resize(num_points);
+      const size_t num_features = scan.new_features.size();
+      scan.points.resize(num_points);
 
       std::vector<FieldInfo> field_infos;
       field_infos.reserve(num_features);
-      for (const auto& new_feature : scan->new_features)
+      for (const auto& new_feature : scan.new_features)
       {
         field_infos.push_back(new_feature.second);
       }
@@ -467,7 +466,7 @@ namespace mapviz_plugins
         float y = *reinterpret_cast<const float*>(ptr + yoff);
         float z = *reinterpret_cast<const float*>(ptr + zoff);
 
-        StampedPoint& point = scan->points[i];
+        StampedPoint& point = scan.points[i];
         point.point = tf2::Vector3(x, y, z);
 
         point.features.resize(num_features);
@@ -479,14 +478,21 @@ namespace mapviz_plugins
       }
     }
 
-    Q_EMIT ScanProcessed(scan);
+    return scan;
   }
 
   void PointCloud2Plugin::handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan)
   {
-    // Runs on the GUI thread via a queued connection from
-    // PointCloud2Callback(), so tf, widgets, and user-editable settings are
-    // all safe to use here without locking.
+    // Runs on the GUI thread via Subscribe(), so tf, widgets, and user-editable
+    // settings are all safe to use here without locking.
+
+    // DecodeScan() returns an empty (feature-less) scan for malformed clouds;
+    // drop those here, matching the old callback's early return.
+    if (scan->new_features.empty())
+    {
+      return;
+    }
+
     if (!has_message_)
     {
       initialized_ = true;
@@ -569,6 +575,8 @@ namespace mapviz_plugins
 
   float PointCloud2Plugin::PointFeature(const uint8_t* data, const FieldInfo& feature_info)
   {
+    // Static: runs on the ROS spin thread as part of DecodeScan(); must not
+    // touch plugin state, so it logs through the free "mapviz" logger.
     switch (feature_info.datatype)
     {
       case 1:
@@ -588,7 +596,8 @@ namespace mapviz_plugins
       case 8:
         return static_cast<float>(*reinterpret_cast<const double*>(data + feature_info.offset));
       default:
-        RCLCPP_WARN(node_->get_logger(), "Unknown data type in point: %d", feature_info.datatype);
+        RCLCPP_WARN(rclcpp::get_logger("mapviz"),
+          "Unknown data type in point: %d", feature_info.datatype);
         return 0.0;
     }
   }
@@ -713,7 +722,7 @@ namespace mapviz_plugins
               scan.gl_point.push_back( transformed_point.getY() );
             }
           } else {
-            RCLCPP_WARN(node_->get_logger(), "Unable to get transform.");
+            RCLCPP_WARN(Logger(), "Unable to get transform.");
             scan.transformed = false;
           }
         }
@@ -815,7 +824,7 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::ColorTransformerChanged(int index)
   {
-    RCLCPP_DEBUG(node_->get_logger(), "Color transformer changed to %d", index);
+    RCLCPP_DEBUG(Logger(), "Color transformer changed to %d", index);
     UpdateMinMaxWidgets();
     UpdateColors();
   }

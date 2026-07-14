@@ -102,7 +102,7 @@ namespace mapviz_plugins
     source_frame_ = ui_.frame->text().toStdString();
     PrintWarning("Waiting for transform.");
 
-    RCLCPP_INFO(node_->get_logger(), "Setting target frame to to %s", source_frame_.c_str());
+    RCLCPP_INFO(Logger(), "Setting target frame to to %s", source_frame_.c_str());
 
     initialized_ = true;
   }
@@ -110,7 +110,7 @@ namespace mapviz_plugins
   void TfFramePlugin::TimerCallback()
   {
     swri_transform_util::Transform transform;
-    if (GetTransform(node_->get_clock()->now(), transform))
+    if (GetTransform(Clock()->now(), transform))
     {
       StampedPoint stamped_point;
       stamped_point.point = transform.GetOrigin();

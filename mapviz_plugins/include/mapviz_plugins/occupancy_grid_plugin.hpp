@@ -31,7 +31,6 @@
 #define MAPVIZ_PLUGINS__OCCUPANCY_GRID_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -74,16 +73,17 @@ public:
   bool Initialize(QOpenGLWidget* canvas) override;
   void Shutdown() override {}
 
+  QWidget* GetConfigWidget(QWidget* parent) override;
+
+protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override;
 
   void LoadConfig(const YAML::Node& node, const std::string& path) override;
+
   void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
-
-protected:
   void PrintError(const std::string& message) override;
   void PrintInfo(const std::string& message) override;
   void PrintWarning(const std::string& message) override;
@@ -99,14 +99,9 @@ protected Q_SLOTS:
 
   void FrameChanged(std::string);
 
-Q_SIGNALS:
-  // Emitted from the ROS spin thread; delivered as queued connections to
-  // the handleGrid*() slots on the GUI thread, which owns all plugin
-  // state, the GL texture, and the color-scheme widget.
-  void GridReceived(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr grid);
-  void GridUpdateReceived(const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update);
-
-private Q_SLOTS:
+private:
+  // Called on the GUI thread by Subscribe(); own all plugin state, the GL
+  // texture, and the color-scheme widget.
   void handleGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr grid);
   void handleGridUpdate(const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update);
 
@@ -136,8 +131,6 @@ private:
   Palette costmap_palette_;
 
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void Callback(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg);
-  void CallbackUpdate(const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg);
   void updateTexture();
 };
 }   // namespace mapviz_plugins

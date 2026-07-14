@@ -39,9 +39,8 @@
 #include <QPushButton>
 #include <QTimerEvent>
 #include <QVBoxLayout>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp/node_interfaces/node_graph.hpp>
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <string>
@@ -51,8 +50,7 @@ namespace mapviz
 {
   void ServiceUpdaterThread::run()
   {
-    std::map<std::string, std::vector<std::string>> service_map =
-      nh_->get_service_names_and_types();
+    std::map<std::string, std::vector<std::string>> service_map = services_();
 
     if (allowed_datatype_.empty())
     {
@@ -74,11 +72,11 @@ namespace mapviz
     }
   }
 
-  std::string SelectServiceDialog::selectService(rclcpp::Node::SharedPtr node,
+  std::string SelectServiceDialog::selectService(const TopicSource& source,
       const std::string& datatype,
       QWidget* parent)
   {
-    SelectServiceDialog dialog(node, datatype, parent);
+    SelectServiceDialog dialog(source, datatype, parent);
     dialog.setDatatypeFilter(datatype);
     if (dialog.exec() == QDialog::Accepted) {
       return dialog.selectedService();
@@ -87,11 +85,11 @@ namespace mapviz
     }
   }
 
-  SelectServiceDialog::SelectServiceDialog(const rclcpp::Node::SharedPtr& node,
+  SelectServiceDialog::SelectServiceDialog(const TopicSource& source,
       const std::string& datatype,
       QWidget* parent)
       : QDialog(parent)
-      , nh_(node)
+      , source_(source)
       , allowed_datatype_(datatype)
       , cancel_button_(new QPushButton("&Cancel"))
       , list_widget_(new QListWidget())
@@ -155,7 +153,7 @@ namespace mapviz
     // finished, start a new one.
     if (!worker_thread_ || worker_thread_->isFinished())
     {
-      worker_thread_.reset(new ServiceUpdaterThread(nh_, allowed_datatype_, this));
+      worker_thread_.reset(new ServiceUpdaterThread(source_.services, allowed_datatype_, this));
       QObject::connect(worker_thread_.get(),
                        SIGNAL(servicesFetched(ServiceStringVector)),
                        this,

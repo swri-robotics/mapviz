@@ -85,7 +85,6 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctio
   ~PointDrawingPlugin() override = default;
   void ClearHistory() override;
 
-  void Transform() override;
   virtual bool DrawPoints(double scale);
   virtual bool DrawArrows();
   virtual bool DrawArrow(const StampedPoint& point);
@@ -113,6 +112,8 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctio
   void ClearPoints();
 
   protected:
+  void Transform() override;
+
   void pushPoint(StampedPoint point);
   double bufferSize() const;
   double positionTolerance() const;

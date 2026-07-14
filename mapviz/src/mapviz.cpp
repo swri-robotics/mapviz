@@ -861,7 +861,7 @@ void Mapviz::Open(const std::string& filename)
         {
           MapvizPluginPtr plugin =
               CreateNewDisplay(name, type, visible, collapsed);
-          plugin->LoadConfig(config, config_path);
+          plugin->LoadConfigPlugin(config, config_path);
           plugin->DrawIcon();
         }
         catch (const pluginlib::LibraryLoadException& e)
@@ -996,7 +996,7 @@ void Mapviz::Save(const std::string& filename)
           << YAML::Value
           << (dynamic_cast<ConfigItem*>(ui_.configs->itemWidget(ui_.configs->item(i))))->Collapsed();
 
-      plugins_[ui_.configs->item(i)]->SaveConfig(out, config_path);
+      plugins_[ui_.configs->item(i)]->SaveConfigPlugin(out, config_path);
 
       out << YAML::EndMap;
       out << YAML::EndMap;
@@ -1164,7 +1164,7 @@ void Mapviz::AddDisplay(
     }
 
     if (plugin->Name() == req->name && plugin->Type() == req->type) {
-      plugin->LoadConfig(config, "");
+      plugin->LoadConfigPlugin(config, "");
       plugin->SetVisible(req->visible);
 
       if (req->draw_order > 0) {
@@ -1190,7 +1190,7 @@ void Mapviz::AddDisplay(
   {
     MapvizPluginPtr plugin =
       CreateNewDisplay(req->name, req->type, req->visible, false, req->draw_order);
-    plugin->LoadConfig(config, "");
+    plugin->LoadConfigPlugin(config, "");
     plugin->DrawIcon();
     resp->success = true;
   }
@@ -1726,7 +1726,7 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
   out << YAML::BeginMap;
   out << YAML::Key << "visible" << YAML::Value << target_plugin->Visible();
   out << YAML::Key << "collapsed" << YAML::Value << target_config_item->Collapsed();
-  target_plugin->SaveConfig(out, "");
+  target_plugin->SaveConfigPlugin(out, "");
   out << YAML::EndMap;
   out << YAML::EndMap;
 
@@ -1746,7 +1746,7 @@ void Mapviz::DuplicateDisplay(QListWidgetItem* item)
         target_plugin->Type(),
         target_plugin->Visible(),
         target_config_item->Collapsed());
-    duplicate_plugin->LoadConfig(temp_config_node, "");
+    duplicate_plugin->LoadConfigPlugin(temp_config_node, "");
     duplicate_plugin->DrawIcon();
   }
   catch (const pluginlib::LibraryLoadException& e)
