@@ -144,7 +144,7 @@ namespace mapviz_plugins
   void AttitudeIndicatorPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-        NodeUnsafe(),
+        TopicSource(),
         topics_,
         qos_);
 

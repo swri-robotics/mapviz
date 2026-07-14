@@ -84,7 +84,7 @@ namespace mapviz_plugins
   void NavSatPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "sensor_msgs/msg/NavSatFix",
       qos_);
 

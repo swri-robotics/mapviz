@@ -262,7 +262,7 @@ namespace mapviz_plugins
   void ImagePlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "sensor_msgs/msg/Image",
       qos_);
     if (!topic.empty())

@@ -107,7 +107,7 @@ namespace mapviz_plugins
   void OdometryPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "nav_msgs/msg/Odometry",
       qos_);
     if (!topic.empty())

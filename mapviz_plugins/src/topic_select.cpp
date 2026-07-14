@@ -41,6 +41,7 @@
 #include <QTimerEvent>
 #include <QVBoxLayout>
 
+#include <rclcpp/logging.hpp>
 #include <rmw/qos_profiles.h>
 
 #include <mapviz_plugins/topic_select.hpp>
@@ -48,18 +49,18 @@
 namespace mapviz_plugins
 {
 std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
-  const rclcpp::Node::SharedPtr& node,
+  const mapviz::TopicSource& source,
   const std::string &datatype,
   const rmw_qos_profile_t& qos,
   QWidget* parent)
 {
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype);
-  return selectTopic(node, datatypes, qos, parent);
+  return selectTopic(source, datatypes, qos, parent);
 }
 
 std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
-  const rclcpp::Node::SharedPtr& node,
+  const mapviz::TopicSource& source,
   const std::string& datatype1,
   const std::string& datatype2,
   const rmw_qos_profile_t& qos,
@@ -68,16 +69,16 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype1);
   datatypes.push_back(datatype2);
-  return selectTopic(node, datatypes, qos, parent);
+  return selectTopic(source, datatypes, qos, parent);
 }
 
 std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
-  const rclcpp::Node::SharedPtr& node,
+  const mapviz::TopicSource& source,
   const std::vector<std::string>& datatypes,
   const rmw_qos_profile_t& qos,
   QWidget* parent)
 {
-  SelectTopicDialog dialog(node, qos, parent);
+  SelectTopicDialog dialog(source, qos, parent);
   dialog.allowMultipleTopics(false);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
@@ -91,18 +92,18 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
 }
 
 std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
-  const rclcpp::Node::SharedPtr& node,
+  const mapviz::TopicSource& source,
   const std::string& datatype,
   const rmw_qos_profile_t& qos,
   QWidget* parent)
 {
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype);
-  return selectTopics(node, datatypes, qos, parent);
+  return selectTopics(source, datatypes, qos, parent);
 }
 
 std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
-  const rclcpp::Node::SharedPtr& node,
+  const mapviz::TopicSource& source,
   const std::string& datatype1,
   const std::string& datatype2,
   const rmw_qos_profile_t& qos,
@@ -111,16 +112,16 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
   std::vector<std::string> datatypes;
   datatypes.push_back(datatype1);
   datatypes.push_back(datatype2);
-  return selectTopics(node, datatypes, qos, parent);
+  return selectTopics(source, datatypes, qos, parent);
 }
 
 std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::selectTopics(
-  const rclcpp::Node::SharedPtr& node,
+  const mapviz::TopicSource& source,
   const std::vector<std::string>& datatypes,
   const rmw_qos_profile_t& qos,
   QWidget* parent)
 {
-  SelectTopicDialog dialog(node, qos, parent);
+  SelectTopicDialog dialog(source, qos, parent);
   dialog.allowMultipleTopics(true);
   dialog.setDatatypeFilter(datatypes);
   if (dialog.exec() == QDialog::Accepted) {
@@ -135,13 +136,13 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
 }
 
 SelectTopicDialog::SelectTopicDialog(
-  const rclcpp::Node::SharedPtr& node,
+  const mapviz::TopicSource& source,
   const rmw_qos_profile_t& qos,
   QWidget* parent)
   :
   QDialog(parent),
   ui_(new Ui::TopicSelect),
-  nh_(node)
+  source_(source)
 {
   ui_->setupUi(this);
 
@@ -287,8 +288,8 @@ static bool topicSort(const std::string &info1,
 
 void SelectTopicDialog::fetchTopics()
 {
-  known_topics_ = nh_->get_topic_names_and_types();
-  auto services = nh_->get_service_names_and_types();
+  known_topics_ = source_.topics();
+  auto services = source_.services();
   known_topics_.insert(services.begin(), services.end());
   std::vector<std::string> map_keys;
   for (auto const& element : known_topics_)
@@ -370,7 +371,7 @@ void SelectTopicDialog::updateDisplayedTopics()
     if (removed_names.count(displayed_topics_[i]) == 0) {
       continue;
     }
-    RCLCPP_DEBUG(nh_->get_logger(), "Removing %s", displayed_topics_[i].c_str());
+    RCLCPP_DEBUG(source_.logger, "Removing %s", displayed_topics_[i].c_str());
 
     QListWidgetItem *item = ui_->topicList->takeItem(i - removed);
     delete item;
@@ -384,7 +385,7 @@ void SelectTopicDialog::updateDisplayedTopics()
     }
 
     ui_->topicList->insertItem(i, QString::fromStdString(next_displayed_topics[i]));
-    RCLCPP_DEBUG(nh_->get_logger(), "Inserting %s", next_displayed_topics[i].c_str());
+    RCLCPP_DEBUG(source_.logger, "Inserting %s", next_displayed_topics[i].c_str());
     if (ui_->topicList->count() == 1) {
       ui_->topicList->setCurrentRow(0);
     }

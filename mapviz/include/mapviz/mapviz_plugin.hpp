@@ -38,6 +38,7 @@
 #include <tf2_ros/buffer.hpp>
 #include <tf2_ros/transform_listener.hpp>
 
+#include <mapviz/topic_source.hpp>
 #include <mapviz/widgets.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -431,13 +432,28 @@ protected:
 
   /**
    * Direct access to the underlying node, for APIs the safe helpers above do
-   * not wrap (image_transport, the select-topic/service dialogs, service
-   * clients, wall timers, node introspection).  You are responsible for the
-   * thread-safety of anything you do with it: in particular, never register a
-   * subscription/timer callback here that touches plugin state, since those
-   * run on the background spin thread -- use Subscribe() instead.
+   * not wrap (image_transport, service clients, node introspection).  You are
+   * responsible for the thread-safety of anything you do with it: in
+   * particular, never register a subscription/timer callback here that
+   * touches plugin state, since those run on the background spin thread --
+   * use Subscribe() instead.  For the topic/service selection dialogs, use
+   * TopicSource() instead of handing over the node.
    */
   rclcpp::Node::SharedPtr NodeUnsafe() { return node_; }
+
+  /**
+   * A restricted view of the node for topic/service discovery (e.g. the
+   * SelectTopicDialog): thread-safe, read-only graph queries and a logger,
+   * with none of NodeUnsafe()'s caveats.
+   */
+  mapviz::TopicSource TopicSource() const
+  {
+    return {
+      [node = node_] { return node->get_topic_names_and_types(); },
+      [node = node_] { return node->get_service_names_and_types(); },
+      Logger()
+    };
+  }
 
   bool initialized_;
   bool visible_;

@@ -103,7 +103,7 @@ namespace mapviz_plugins
   void PosePlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "geometry_msgs/msg/PoseStamped",
       qos_);
   

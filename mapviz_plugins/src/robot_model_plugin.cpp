@@ -557,7 +557,7 @@ void RobotModelPlugin::DrawIcon() {
 
 void RobotModelPlugin::SelectTopic() {
   auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(), "std_msgs/msg/String", rmw_qos_profile_default);
+      TopicSource(), "std_msgs/msg/String", rmw_qos_profile_default);
   (void)qos;
   if (!topic.empty()) {
     ui_.topic->setText(QString::fromStdString(topic));

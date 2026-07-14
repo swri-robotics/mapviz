@@ -114,7 +114,7 @@ void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
 void TexturedMarkerPlugin::SelectTopic()
 {
   auto [topic, qos] = SelectTopicDialog::selectTopic(
-    NodeUnsafe(),
+    TopicSource(),
     "marti_visualization_msgs/msg/TexturedMarker",
     "marti_visualization_msgs/msg/TexturedMarkerArray",
     qos_);
@@ -146,7 +146,7 @@ void TexturedMarkerPlugin::connectCallback(const std::string& topic, const rmw_q
     topic_ = topic;
     qos_ = qos;
     if (!topic.empty()) {
-      auto known_topics = NodeUnsafe()->get_topic_names_and_types();
+      auto known_topics = TopicSource().topics();
       if (known_topics.count(topic_) > 0) {
         rclcpp::QoS topic_qos(rclcpp::QoSInitialization::from_rmw(qos_));
         std::string topic_type = known_topics[topic_][0];

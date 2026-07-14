@@ -336,7 +336,7 @@ namespace mapviz_plugins
   void PointCloud2Plugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "sensor_msgs/msg/PointCloud2",
       qos_);
     if (!topic.empty())

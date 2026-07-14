@@ -83,7 +83,7 @@ namespace mapviz_plugins
   void MarkerPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "visualization_msgs/msg/Marker",
       "visualization_msgs/msg/MarkerArray",
       qos_);
@@ -128,7 +128,7 @@ namespace mapviz_plugins
       // That would require a way to de-serialize the data for mapviz to consume (based on message type)
       // The code below checks for the topic type and subscribes in the appropriate manner
 
-      auto known_topics = NodeUnsafe()->get_topic_names_and_types();
+      auto known_topics = TopicSource().topics();
       if (known_topics.count(topic_) > 0)
       {
         std::string topic_type = known_topics[topic_][0];

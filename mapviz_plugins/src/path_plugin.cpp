@@ -80,7 +80,7 @@ namespace mapviz_plugins
   void PathPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "nav_msgs/msg/Path",
       qos_);
     if (!topic.empty())

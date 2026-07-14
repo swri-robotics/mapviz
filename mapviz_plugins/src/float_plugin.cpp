@@ -317,7 +317,7 @@ namespace mapviz_plugins
     topics.emplace_back("marti_common_msgs/msg/Float64Stamped");
     topics.emplace_back("marti_sensor_msgs/msg/Velocity");
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       topics,
       qos_);
     if (!topic.empty())

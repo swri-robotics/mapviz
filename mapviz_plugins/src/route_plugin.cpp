@@ -140,7 +140,7 @@ namespace mapviz_plugins
   void RoutePlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "marti_nav_msgs/msg/Route",
       qos_);
 
@@ -153,7 +153,7 @@ namespace mapviz_plugins
   void RoutePlugin::SelectPositionTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "marti_nav_msgs/msg/RoutePosition",
       position_qos_);
 

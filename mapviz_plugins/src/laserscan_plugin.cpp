@@ -254,7 +254,7 @@ namespace mapviz_plugins
   void LaserScanPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "sensor_msgs/msg/LaserScan",
       qos_);
     if (!topic.empty())

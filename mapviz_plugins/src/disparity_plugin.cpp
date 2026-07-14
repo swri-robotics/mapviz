@@ -175,7 +175,7 @@ namespace mapviz_plugins
   void DisparityPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      NodeUnsafe(),
+      TopicSource(),
       "stereo_msgs/msg/DisparityImage",
       qos_);
 
