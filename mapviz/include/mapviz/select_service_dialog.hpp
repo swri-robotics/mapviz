@@ -31,12 +31,13 @@
 #ifndef MAPVIZ__SELECT_SERVICE_DIALOG_HPP_
 #define MAPVIZ__SELECT_SERVICE_DIALOG_HPP_
 
-#include <rclcpp/rclcpp.hpp>
+#include <mapviz/topic_source.hpp>
 
 #include <QDialog>
 #include <QMetaType>
 #include <QThread>
 
+#include <functional>
 #include <memory>
 #include <set>
 #include <string>
@@ -64,11 +65,11 @@ class ServiceUpdaterThread : public QThread
   Q_OBJECT
 public:
   ServiceUpdaterThread(
-    const std::shared_ptr<rclcpp::Node>& nh,
+    std::function<TopicSource::NamesAndTypes()> services,
     const std::string& allowed_datatype,
     QObject* parent) :
     QThread(parent),
-    nh_(nh),
+    services_(std::move(services)),
     allowed_datatype_(allowed_datatype)
   {
   }
@@ -79,7 +80,7 @@ Q_SIGNALS:
   void fetchingFailed(const QString error_msg);
 
 private:
-  std::shared_ptr<rclcpp::Node> nh_;
+  std::function<TopicSource::NamesAndTypes()> services_;
   const std::string& allowed_datatype_;
 };
 
@@ -95,12 +96,14 @@ public:
    * Convenience function for creating a dialog that will prompt the user to select
    * a service and then return the value.  If no service was selected, the returned
    * value will be empty.
+   * @param[in] source Graph discovery access; see MapvizPlugin::TopicSource().
    * @param[in] datatype The type of service to search for; if empty, it will show
    *                     the user a list of all services.
    * @param[in] parent The dialog's parent widget.
    * @return The name of the selected service, or an empty string if there was none.
    */
-  static std::string selectService(rclcpp::Node::SharedPtr node, const std::string& datatype, QWidget* parent = 0);
+  static std::string selectService(
+    const TopicSource& source, const std::string& datatype, QWidget* parent = 0);
 
   /**
    * Constructs a new SelectServiceDialog and automatically starts a timer that
@@ -109,7 +112,7 @@ public:
    *                     the user a list of all services.
    * @param[in] parent The dialog's parent widget.
    */
-  explicit SelectServiceDialog(const rclcpp::Node::SharedPtr& node,
+  explicit SelectServiceDialog(const TopicSource& source,
       const std::string& datatype = "",
       QWidget* parent = nullptr);
   ~SelectServiceDialog() override;
@@ -155,7 +158,7 @@ private:
   void timerEvent(QTimerEvent *) override;
   void closeEvent(QCloseEvent *) override;
 
-  std::shared_ptr<rclcpp::Node> nh_;
+  TopicSource source_;
 
   std::string allowed_datatype_;
   std::vector<std::string> displayed_services_;
