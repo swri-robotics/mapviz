@@ -32,7 +32,6 @@
 
 // Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QColor>

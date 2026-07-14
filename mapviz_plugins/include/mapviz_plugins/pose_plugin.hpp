@@ -33,7 +33,6 @@
 
 // Include mapviz_plugin.h first to ensure GL deps are included in the right order
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 #include <mapviz/map_canvas.hpp>
 #include <mapviz_plugins/point_drawing_plugin.hpp>

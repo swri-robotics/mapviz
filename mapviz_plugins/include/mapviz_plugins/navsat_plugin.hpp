@@ -21,7 +21,6 @@
 #define MAPVIZ_PLUGINS__NAVSAT_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 #include <mapviz/map_canvas.hpp>
 #include <mapviz_plugins/point_drawing_plugin.hpp>
 

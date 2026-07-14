@@ -172,7 +172,4 @@ private:
 };
 }   // namespace mapviz_plugins
 
-// Allows the decoded scan to be carried by a queued signal emission.
-Q_DECLARE_METATYPE(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan>)
-
 #endif  // MAPVIZ_PLUGINS__POINTCLOUD2_PLUGIN_HPP_

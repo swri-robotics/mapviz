@@ -31,7 +31,6 @@
 #define MAPVIZ_PLUGINS__IMAGE_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -39,6 +38,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QColor>
+#include <QMetaType>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -168,5 +168,9 @@ private:
 };
 }   // namespace mapviz_plugins
 
+// ImagePlugin subscribes through image_transport (which Subscribe() cannot
+// wrap), so it still hands messages to the GUI thread with a queued Qt signal
+// carrying this shared_ptr; that requires the type to be a registered metatype.
+Q_DECLARE_METATYPE(sensor_msgs::msg::Image::ConstSharedPtr)
 
 #endif  // MAPVIZ_PLUGINS__IMAGE_PLUGIN_HPP_

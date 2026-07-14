@@ -31,7 +31,6 @@
 #define MAPVIZ_PLUGINS__ODOMETRY_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 #include <mapviz_plugins/point_drawing_plugin.hpp>
 // QT libraries
 #include <QOpenGLWidget>

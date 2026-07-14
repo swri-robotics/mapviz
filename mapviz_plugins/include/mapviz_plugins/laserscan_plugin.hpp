@@ -31,7 +31,6 @@
 #define MAPVIZ_PLUGINS__LASERSCAN_PLUGIN_HPP_
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz_plugins/ros_metatypes.hpp>
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>

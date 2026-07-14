@@ -203,6 +203,7 @@ Notes:
 - If you must go around `Subscribe()` — for example `image_transport`, whose
   subscription factory `Subscribe()` can't wrap — you are back to the manual
   contract: the callback runs on the spin thread and must only decode and hand
-  off to the GUI thread with a queued Qt signal (declare the metatype for your
-  message type; `mapviz_plugins/ros_metatypes.hpp` collects the common ones).
-  `ImagePlugin` is the one in-tree example.
+  off to the GUI thread with a queued Qt signal. Declare the metatype for the
+  carried type with `Q_DECLARE_METATYPE(...)` in your plugin header and
+  `qRegisterMetaType<...>()` in the constructor. `ImagePlugin` is the one
+  in-tree example.
