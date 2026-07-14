@@ -96,6 +96,145 @@ display-list icon, and `ClearHistory()` to drop buffered data.
 Use the base class `GetTransform(...)` to look up transforms, and the
 `LoadQosConfig`/`SaveQosConfig` helpers to persist subscription QoS.
 
+The rendering and config hooks (`Draw`, `Paint`, `Transform`, `LoadConfig`,
+`SaveConfig`) are **protected** virtuals. You override them, but you never call
+them yourself — the framework invokes them through public wrappers
+(`DrawPlugin()`, `SetTargetFrame()`, `LoadConfigPlugin()`, …) that assert
+GUI-thread affinity first. See [Threading model](#threading-model).
+
+## A skeleton plugin
+
+The shape below is the common case: subscribe to a topic, stash each message on
+the GUI thread, re-project it in `Transform()`, and render it in `Draw()`. The
+comments call out which thread each method runs on — the whole contract in one
+picture.
+
+```cpp
+// my_display_plugin.hpp
+#include <mapviz/mapviz_plugin.hpp>
+
+#include <QOpenGLFunctions_1_1>
+#include <QWidget>
+#include <rclcpp/rclcpp.hpp>
+
+#include <my_msgs/msg/my_message.hpp>
+#include "ui_my_display_config.h"   // Qt Designer-generated config widget
+
+namespace my_package
+{
+// Inherit QOpenGLFunctions_* if Draw() issues GL calls.
+class MyDisplayPlugin : public mapviz::MapvizPlugin,
+                        protected QOpenGLFunctions_1_1
+{
+  Q_OBJECT
+
+ public:
+  MyDisplayPlugin();
+
+  // Framework lifecycle — all called on the GUI thread.
+  bool Initialize(QOpenGLWidget* canvas) override;
+  void Shutdown() override {}
+  QWidget* GetConfigWidget(QWidget* parent) override;
+  bool SupportsPainting() override { return true; }   // only if you override Paint()
+
+ protected:
+  // Customization hooks: protected virtuals the framework reaches through its
+  // GUI-thread-asserting wrappers. Override them; never call them directly.
+  void Draw(double x, double y, double scale) override;
+  void Paint(QPainter* painter, double x, double y, double scale) override;  // optional
+  void Transform() override;
+  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+
+  void PrintError(const std::string& message) override;
+  void PrintInfo(const std::string& message) override;
+  void PrintWarning(const std::string& message) override;
+
+ protected Q_SLOTS:
+  void TopicEdited();   // wired to the config widget's topic field; GUI thread
+
+ private:
+  // Subscribe() marshals each message here, on the GUI thread, so this may
+  // freely touch data_, widgets, and GetTransform() without any locking.
+  void handleMessage(my_msgs::msg::MyMessage::ConstSharedPtr msg);
+
+  Ui::my_display_config ui_;
+  QWidget* config_widget_;
+
+  rclcpp::Subscription<my_msgs::msg::MyMessage>::SharedPtr sub_;
+  rmw_qos_profile_t qos_ = rmw_qos_profile_default;
+
+  MyDecodedData data_;   // written by handleMessage(), projected by Transform(),
+                         // read by Draw() — all on the GUI thread
+};
+}  // namespace my_package
+```
+
+```cpp
+// my_display_plugin.cpp
+#include <my_package/my_display_plugin.hpp>
+#include <pluginlib/class_list_macros.hpp>
+
+PLUGINLIB_EXPORT_CLASS(my_package::MyDisplayPlugin, mapviz::MapvizPlugin)
+
+namespace my_package
+{
+MyDisplayPlugin::MyDisplayPlugin()
+: config_widget_(new QWidget())
+{
+  ui_.setupUi(config_widget_);
+  QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+}
+
+bool MyDisplayPlugin::Initialize(QOpenGLWidget* canvas)
+{
+  canvas->makeCurrent();
+  initializeOpenGLFunctions();   // required before any GL call in Draw()
+  canvas->doneCurrent();
+  initialized_ = true;
+  return true;
+}
+
+QWidget* MyDisplayPlugin::GetConfigWidget(QWidget* parent)
+{
+  config_widget_->setParent(parent);
+  return config_widget_;
+}
+
+void MyDisplayPlugin::TopicEdited()
+{
+  // Subscribe() creates the subscription (serviced by the spin thread) and
+  // delivers every message to handleMessage() on the GUI thread. Overwriting
+  // sub_ drops the previous subscription.
+  Subscribe<my_msgs::msg::MyMessage>(
+      ui_.topic->text().toStdString(), qos_, sub_,
+      [this](my_msgs::msg::MyMessage::ConstSharedPtr msg) { handleMessage(msg); });
+}
+
+void MyDisplayPlugin::handleMessage(my_msgs::msg::MyMessage::ConstSharedPtr msg)
+{
+  // GUI thread. Copy what you need out of msg into data_; no locking.
+  data_ = Decode(*msg);
+}
+
+void MyDisplayPlugin::Transform()
+{
+  // GUI thread. Re-project data_ into target_frame_ with GetTransform(...).
+}
+
+void MyDisplayPlugin::Draw(double x, double y, double scale)
+{
+  // GUI thread, GL context current. Render data_.
+}
+
+// PrintError/PrintInfo/PrintWarning delegate to the base Print*Helper()s with
+// the config widget's status QLabel; LoadConfig/SaveConfig read and write the
+// ui_ fields. Omitted here for brevity.
+}  // namespace my_package
+```
+
+`OdometryPlugin` is the closest in-tree match to this shape.
+
 ## Accessing the ROS node
 
 The mapviz node is **private** to the base class — there is no `node_` member
@@ -110,7 +249,8 @@ callback that then runs on the background thread) can only be done through
 | `Publisher<MsgT>(topic, qos)` | Create a publisher (thin wrapper over `create_publisher`). Publishing is thread-safe. |
 | `Logger()` | The node's `rclcpp::Logger`. Safe to call from any thread. |
 | `Now()` / `Clock()` | The node's current time / clock. |
-| `NodeUnsafe()` | Escape hatch returning the raw `rclcpp::Node::SharedPtr`, for APIs the helpers don't wrap: `image_transport`, the select-topic/service dialogs, service clients, wall timers, and node introspection. **You** are responsible for the thread-safety of whatever you do with it — in particular, never register a subscription or timer callback here that touches plugin state, since those run on the spin thread. Use `Subscribe()` instead. |
+| `TopicSource()` | A restricted, thread-safe view of the ROS graph (topic/service enumeration plus a logger) for the select-topic/service dialogs. Hand this to the dialog instead of a raw node — it grants nothing that can register a callback. |
+| `NodeUnsafe()` | Escape hatch returning the raw `rclcpp::Node::SharedPtr`, for APIs the helpers don't wrap: `image_transport`, service clients, and node introspection. **You** are responsible for the thread-safety of whatever you do with it — in particular, never register a subscription or timer callback here that touches plugin state, since those run on the spin thread. Use `Subscribe()` instead. |
 
 ## Threading model
 
@@ -174,21 +314,28 @@ returned value is moved into a `shared_ptr` and delivered to your handler.
 
 ### Asserting the thread
 
-To catch mistakes, assert your thread affinity at the top of methods that
-must run on the GUI thread:
-
-```cpp
-void MyDisplayPlugin::Draw(double x, double y, double scale)
-{
-  MAPVIZ_ASSERT_GUI_THREAD();
-  // ...
-}
-```
-
 `MAPVIZ_ASSERT_GUI_THREAD()` logs an error whenever it is reached off the GUI
 thread (in every build, including Release, unlike a bare `Q_ASSERT`) and
-additionally aborts in debug builds. Use it in `Draw()`, `Paint()`,
-`Transform()`, and any helper that assumes GUI-thread ownership.
+additionally aborts in debug builds.
+
+You do **not** need it in `Draw()`, `Paint()`, `Transform()`, `LoadConfig()`,
+or `SaveConfig()`: the framework wrappers that reach those overrides
+(`DrawPlugin()`, `PaintPlugin()`, `SetTargetFrame()`, `LoadConfigPlugin()`,
+`SaveConfigPlugin()`) already assert on your behalf, and `Subscribe()` handlers
+are marshaled to the GUI thread for you.
+
+Use it at the top of any *other* entry point that assumes the GUI thread but
+whose caller isn't the mapviz framework — a `QTimer` callback, an
+`eventFilter()`, or a service-client response you hop back to the GUI thread
+yourself:
+
+```cpp
+void MyDisplayPlugin::onRetryTimer()   // connected to a QTimer::timeout
+{
+  MAPVIZ_ASSERT_GUI_THREAD();
+  // ... safe to touch widgets and plugin state
+}
+```
 
 Notes:
 
