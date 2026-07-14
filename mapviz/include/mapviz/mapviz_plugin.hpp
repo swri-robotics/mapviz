@@ -62,8 +62,13 @@ namespace mapviz
 /**
  * Asserts that the calling code is running on the GUI thread (the thread that
  * owns this plugin object).  Plugin state, widgets, the GL context, and
- * tf_manager_ may only be touched from that thread; use this at the top of any
- * method that assumes it.
+ * tf_manager_ may only be touched from that thread.
+ *
+ * The framework entry points that reach Draw(), Paint(), and Transform()
+ * (DrawPlugin(), PaintPlugin(), and SetTargetFrame()) already assert this, so
+ * plugin overrides of those methods do not need it.  Use it at the top of any
+ * *other* entry point that assumes the GUI thread -- e.g. a QTimer callback or
+ * an eventFilter() -- where the caller isn't the mapviz framework.
  *
  * Unlike a bare Q_ASSERT (which is compiled out when QT_NO_DEBUG is defined,
  * i.e. in the Release builds that ROS packages ship), this always logs an
@@ -173,6 +178,7 @@ public:
 
   void DrawPlugin(double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     if (visible_ && initialized_) {
       meas_transform_.start();
       Transform();
@@ -186,6 +192,7 @@ public:
 
   void PaintPlugin(QPainter* painter, double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     if (visible_ && initialized_) {
       meas_transform_.start();
       Transform();
@@ -199,6 +206,7 @@ public:
 
   void SetTargetFrame(const std::string& frame_id)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     if (frame_id != target_frame_) {
       target_frame_ = frame_id;
 

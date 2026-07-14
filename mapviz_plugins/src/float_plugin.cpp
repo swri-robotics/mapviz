@@ -98,13 +98,11 @@ namespace mapviz_plugins
 
   void FloatPlugin::Draw(double, double, double)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     // This plugin doesn't do any OpenGL drawing.
   }
 
   void FloatPlugin::Paint(QPainter* painter, double, double, double)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (has_message_)
     {
       painter->save();

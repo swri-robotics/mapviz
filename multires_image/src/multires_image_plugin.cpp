@@ -217,7 +217,6 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (transformed_ && tile_set_ != NULL && tile_view_ != NULL)
     {
       GetCenterPoint(x, y);
@@ -231,7 +230,6 @@ namespace mapviz_plugins
 
   void MultiresImagePlugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     transformed_ = false;
 
     if (!loaded_)

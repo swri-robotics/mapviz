@@ -453,7 +453,6 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     glPushMatrix();
 
     if( grid_ && transformed_)
@@ -516,7 +515,6 @@ namespace mapviz_plugins
 
   void OccupancyGridPlugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if( !initialized_ ) return;
     swri_transform_util::Transform transform;
     if ( grid_ )

@@ -178,7 +178,6 @@ namespace mapviz_plugins
 
   void PathPlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     bool lines;
     bool points;
     QColor old_color = ui_.path_color->color();

@@ -443,7 +443,6 @@ bool TexturedMarkerPlugin::Initialize(QOpenGLWidget * canvas)
 
 void TexturedMarkerPlugin::Draw(double x, double y, double scale)
 {
-  MAPVIZ_ASSERT_GUI_THREAD();
   rclcpp::Time now = rclcpp::Time();
 
   float alphaVal = alphaVal_;   // Set all markers to same alpha value
@@ -497,7 +496,6 @@ void TexturedMarkerPlugin::Draw(double x, double y, double scale)
 
 void TexturedMarkerPlugin::Transform()
 {
-  MAPVIZ_ASSERT_GUI_THREAD();
   std::map<std::string, std::map<int, MarkerData>>::iterator nsIter;
   for (nsIter = markers_.begin(); nsIter != markers_.end(); ++nsIter) {
     std::map<int, MarkerData>::iterator markerIter;

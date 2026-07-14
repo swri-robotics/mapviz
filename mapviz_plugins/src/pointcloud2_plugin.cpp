@@ -638,7 +638,6 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (!point_buffer_.isCreated()) {
       point_buffer_.create();
     }
@@ -702,7 +701,6 @@ namespace mapviz_plugins
 
   void PointCloud2Plugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     {
       bool was_using_latest_transforms = use_latest_transforms_;
       use_latest_transforms_ = false;

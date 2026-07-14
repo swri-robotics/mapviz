@@ -80,7 +80,6 @@ namespace mapviz_plugins
 
   void PointClickPublisherPlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
   }
 
   void PointClickPublisherPlugin::LoadConfig(const YAML::Node& node, const std::string& path)

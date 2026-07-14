@@ -100,13 +100,11 @@ namespace mapviz_plugins
 
   void StringPlugin::Draw(double, double, double)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     // This plugin doesn't do any  OpenGL drawing.
   }
 
   void StringPlugin::Paint(QPainter* painter, double, double, double)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (has_message_)
     {
       painter->save();

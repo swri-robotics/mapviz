@@ -465,7 +465,6 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     glPointSize(point_size_);
     glBegin(GL_POINTS);
 
@@ -513,7 +512,6 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     for (auto & scan : scans_)
     {
       if (!scan.transformed)

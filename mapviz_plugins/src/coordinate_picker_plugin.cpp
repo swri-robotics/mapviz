@@ -256,7 +256,6 @@ void CoordinatePickerPlugin::ClearCoordList()
 
 void CoordinatePickerPlugin::Draw(double x, double y, double scale)
 {
-  MAPVIZ_ASSERT_GUI_THREAD();
 }
 
 void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)

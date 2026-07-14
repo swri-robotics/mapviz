@@ -458,7 +458,6 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     for (size_t i = 0; i < ui_.nsList->count(); i++)
     {
       if (ui_.nsList->item(i)->checkState() == Qt::Checked)
@@ -627,7 +626,6 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     // Most of the marker drawing is done using OpenGL commands, but text labels
     // are rendered using a QPainter.  This is intended primarily as an example
     // of how the QPainter works.
@@ -676,7 +674,6 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     for (auto & markerIter : markers_)
     {
       MarkerData& marker = markerIter.second;

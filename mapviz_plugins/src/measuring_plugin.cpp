@@ -291,7 +291,6 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 
 void MeasuringPlugin::Draw(double x, double y, double scale)
 {
-  MAPVIZ_ASSERT_GUI_THREAD();
   glLineWidth(1);
   const QColor color = ui_.main_color->color();
   glColor4d(color.redF(), color.greenF(), color.blueF(), ui_.alpha->value()/2.0);
@@ -325,7 +324,6 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
 
 void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
 {
-  MAPVIZ_ASSERT_GUI_THREAD();
   bool show_measurements = ui_.show_measurements->isChecked();
   if (!show_measurements || vertices_.empty())
   {

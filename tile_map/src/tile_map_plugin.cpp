@@ -337,7 +337,6 @@ namespace tile_map
 
   void TileMapPlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (!tile_map_.IsReady())
     {
       return;
@@ -371,7 +370,6 @@ namespace tile_map
 
   void TileMapPlugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     swri_transform_util::Transform to_target;
     if (tf_manager_->GetTransform(target_frame_, source_frame_, to_target))
     {

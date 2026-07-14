@@ -247,7 +247,6 @@ namespace mapviz_plugins
 
   void OdometryPlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (ui_.show_covariance->isChecked())
     {
       DrawCovariance();
@@ -260,7 +259,6 @@ namespace mapviz_plugins
 
   void OdometryPlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     // dont render any timestamps if the show_timestamps is set to 0
     int interval = ui_.show_timestamps->value();
     if (interval == 0)

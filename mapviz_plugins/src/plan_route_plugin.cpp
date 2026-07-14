@@ -407,7 +407,6 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     stu::Transform transform;
     if (tf_manager_->GetTransform(target_frame_, stu::_wgs84_frame, transform))
     {
@@ -452,7 +451,6 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     painter->save();
     painter->resetTransform();
 

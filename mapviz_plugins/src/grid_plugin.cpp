@@ -206,7 +206,6 @@ namespace mapviz_plugins
 
   void GridPlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (transformed_) {
       QColor color = ui_.color->color();
 
@@ -282,7 +281,6 @@ namespace mapviz_plugins
 
   void GridPlugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     transformed_ = false;
 
     if (GetTransform(rclcpp::Time(), transform_))
@@ -298,7 +296,6 @@ namespace mapviz_plugins
 
   void GridPlugin::Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     auto points_it = src.begin();
     auto transformed_it = dst.begin();
     for (; points_it != src.end() && transformed_it != dst.end(); ++points_it)

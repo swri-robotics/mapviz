@@ -438,7 +438,6 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     bool transformed = false;
 
     for (auto &pt : points_)

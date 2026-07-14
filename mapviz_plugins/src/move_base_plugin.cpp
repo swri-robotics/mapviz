@@ -280,7 +280,6 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* event)
 
 void MoveBasePlugin::Draw(double x, double y, double scale)
 {
-  MAPVIZ_ASSERT_GUI_THREAD();
     std::array<QPointF, 7> arrow_points;
     arrow_points[0] = QPointF(10, 0);
     arrow_points[1] = QPointF(6, -2.5);

@@ -257,7 +257,6 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (texture_loaded_ && transformed_)
     {
       glColor3f(1.0f, 1.0f, 1.0f);
@@ -281,7 +280,6 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::Transform()
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     transformed_ = false;
 
     swri_transform_util::Transform transform;

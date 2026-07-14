@@ -700,7 +700,6 @@ void RobotModelPlugin::parseUrdf(const std::string& xml) {
 }
 
 void RobotModelPlugin::Transform() {
-  MAPVIZ_ASSERT_GUI_THREAD();
   std::lock_guard<std::mutex> lock(geometry_mutex_);
 
   if (!has_description_ || display_texture_ == 0) {
@@ -731,7 +730,6 @@ void RobotModelPlugin::Transform() {
 }
 
 void RobotModelPlugin::Draw(double x, double y, double scale) {
-  MAPVIZ_ASSERT_GUI_THREAD();
 
   GLuint tex_id = 0;
   std::array<std::pair<double, double>, 4> quad;

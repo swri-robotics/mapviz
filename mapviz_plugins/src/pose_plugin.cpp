@@ -211,7 +211,6 @@ namespace mapviz_plugins
 
   void PosePlugin::Draw(double x, double y, double scale)
   {
-    MAPVIZ_ASSERT_GUI_THREAD();
     if (DrawPoints(scale))
     {
       PrintInfo("OK");
