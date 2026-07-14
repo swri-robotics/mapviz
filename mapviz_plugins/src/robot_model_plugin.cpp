@@ -498,14 +498,6 @@ RobotModelPlugin::RobotModelPlugin()
   connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
   connect(ui_.browsefile, SIGNAL(clicked()), this, SLOT(BrowseFile()));
   connect(ui_.filepath, SIGNAL(editingFinished()), this, SLOT(FileEdited()));
-
-  // The description is received on the ROS spin thread but parsed on the
-  // GUI thread, which owns the plugin's state; this connection is queued
-  // because the emitting thread differs from this object's thread.
-  qRegisterMetaType<std_msgs::msg::String::ConstSharedPtr>(
-      "std_msgs::msg::String::ConstSharedPtr");
-  connect(this, &RobotModelPlugin::DescriptionReceived,
-          this, &RobotModelPlugin::handleDescription);
 }
 
 bool RobotModelPlugin::Initialize(QOpenGLWidget* canvas) {
@@ -565,7 +557,7 @@ void RobotModelPlugin::DrawIcon() {
 
 void RobotModelPlugin::SelectTopic() {
   auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_, "std_msgs/msg/String", rmw_qos_profile_default);
+      NodeUnsafe(), "std_msgs/msg/String", rmw_qos_profile_default);
   (void)qos;
   if (!topic.empty()) {
     ui_.topic->setText(QString::fromStdString(topic));
@@ -647,26 +639,24 @@ void RobotModelPlugin::TopicEdited() {
 
   description_sub_.reset();
 
-  if (topic_.empty() || !node_) {
+  if (topic_.empty() || !NodeUnsafe()) {
     PrintWarning("No topic.");
     return;
   }
 
   // robot_description is latched: use transient_local so we receive the
-  // last-published value immediately on subscribe.
-  auto qos = rclcpp::QoS(1).transient_local().reliable();
-  description_sub_ = node_->create_subscription<std_msgs::msg::String>(
-      topic_, qos,
-      std::bind(&RobotModelPlugin::robotDescriptionCallback, this,
-                std::placeholders::_1));
+  // last-published value immediately on subscribe.  Subscribe() delivers each
+  // message to handleDescription() on the GUI thread.
+  rmw_qos_profile_t qos = rmw_qos_profile_default;
+  qos.depth = 1;
+  qos.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+  qos.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  Subscribe<std_msgs::msg::String>(
+      topic_, qos, description_sub_,
+      [this](std_msgs::msg::String::ConstSharedPtr msg) {
+        handleDescription(msg);
+      });
   PrintWarning("Waiting for description on " + topic_);
-}
-
-// Runs on the ROS spin thread: hand the message to the GUI thread and
-// return immediately so message processing never blocks ROS spinning.
-void RobotModelPlugin::robotDescriptionCallback(
-    const std_msgs::msg::String::ConstSharedPtr msg) {
-  Q_EMIT DescriptionReceived(msg);
 }
 
 void RobotModelPlugin::handleDescription(
@@ -710,6 +700,7 @@ void RobotModelPlugin::parseUrdf(const std::string& xml) {
 }
 
 void RobotModelPlugin::Transform() {
+  MAPVIZ_ASSERT_GUI_THREAD();
   std::lock_guard<std::mutex> lock(geometry_mutex_);
 
   if (!has_description_ || display_texture_ == 0) {
@@ -740,6 +731,7 @@ void RobotModelPlugin::Transform() {
 }
 
 void RobotModelPlugin::Draw(double x, double y, double scale) {
+  MAPVIZ_ASSERT_GUI_THREAD();
 
   GLuint tex_id = 0;
   std::array<std::pair<double, double>, 4> quad;

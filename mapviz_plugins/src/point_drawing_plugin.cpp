@@ -66,7 +66,7 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::ClearHistory()
   {
-    RCLCPP_INFO(node_->get_logger(), "PointDrawingPlugin::ClearHistory()");
+    RCLCPP_INFO(Logger(), "PointDrawingPlugin::ClearHistory()");
     points_.clear();
   }
 
@@ -438,6 +438,7 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::Transform()
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     bool transformed = false;
 
     for (auto &pt : points_)

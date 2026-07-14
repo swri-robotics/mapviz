@@ -84,12 +84,6 @@ namespace mapviz_plugins
     QObject::connect(ui_.font_button, SIGNAL(clicked()), this, SLOT(SelectFont()));
     QObject::connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(SelectColor()));
 
-    // Strings are received on the ROS spin thread but must be processed on
-    // the GUI thread, which owns the plugin's state; this connection is
-    // queued because the emitting thread differs from this object's thread.
-    QObject::connect(this, &StringPlugin::TextReceived,
-                     this, &StringPlugin::SetText);
-
     // Change the default font size to our desired size and update the UI with it
     font_.setPointSize(DEFAULT_FONT_SIZE);
     ui_.font_button->setFont(font_);
@@ -106,11 +100,13 @@ namespace mapviz_plugins
 
   void StringPlugin::Draw(double, double, double)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     // This plugin doesn't do any  OpenGL drawing.
   }
 
   void StringPlugin::Paint(QPainter* painter, double, double, double)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     if (has_message_)
     {
       painter->save();
@@ -225,7 +221,7 @@ namespace mapviz_plugins
       if (!ok)
       {
         RCLCPP_ERROR(
-          node_->get_logger(),
+          Logger(),
           "Unable to load saved font: %s, reverting to default font",
           saved_font.c_str());
         font_ = QFont();
@@ -331,7 +327,7 @@ namespace mapviz_plugins
   void StringPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      NodeUnsafe(),
       "std_msgs/msg/String",
       qos_);
 
@@ -364,37 +360,37 @@ namespace mapviz_plugins
       {
         try
         {
-          string_sub_ = node_->create_subscription<std_msgs::msg::String>(topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-              [this](const std_msgs::msg::String::ConstSharedPtr str) {
-            // Runs on the ROS spin thread; SetText runs on the GUI thread.
-            Q_EMIT TextReceived(QString(str->data.c_str()));
-          });
+          // Subscribe() delivers each message to SetText() on the GUI thread,
+          // where plugin state may be touched without locking.
+          Subscribe<std_msgs::msg::String>(
+            topic_, qos, string_sub_,
+            [this](std_msgs::msg::String::ConstSharedPtr str) {
+              SetText(QString(str->data.c_str()));
+            });
         }
         catch(...)
         {
-          RCLCPP_ERROR(node_->get_logger(),
+          RCLCPP_ERROR(Logger(),
             "Exception thrown while subscribing to standard string: %s",
             topic_.c_str());
         }
 
         try
         {
-          string_stamped_sub_ = node_->create_subscription<marti_common_msgs::msg::StringStamped>(topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-              [this](const marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
-            // Runs on the ROS spin thread; SetText runs on the GUI thread.
-            Q_EMIT TextReceived(QString(str->value.c_str()));
-          });
+          Subscribe<marti_common_msgs::msg::StringStamped>(
+            topic_, qos, string_stamped_sub_,
+            [this](marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
+              SetText(QString(str->value.c_str()));
+            });
         }
         catch(...)
         {
-          RCLCPP_ERROR(node_->get_logger(),
+          RCLCPP_ERROR(Logger(),
             "Exception thrown while subscribing to Marti stamped string: %s",
             topic_.c_str());
         }
          
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }

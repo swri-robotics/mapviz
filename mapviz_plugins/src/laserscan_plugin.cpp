@@ -150,18 +150,11 @@ namespace mapviz_plugins
         this,
         SLOT(ResetTransformedScans()));
 
-    // Messages are received on the ROS spin thread but must be processed on
-    // the GUI thread, which owns the plugin's state; these connections are
-    // queued because the emitting thread differs from this object's thread.
-    qRegisterMetaType<sensor_msgs::msg::LaserScan::ConstSharedPtr>(
-        "sensor_msgs::msg::LaserScan::ConstSharedPtr");
-    QObject::connect(this, &LaserScanPlugin::LaserScanReceived,
-                     this, &LaserScanPlugin::handleLaserScan);
   }
 
   void LaserScanPlugin::ClearHistory()
   {
-    RCLCPP_DEBUG(node_->get_logger(), "LaserScan::ClearHistory()");
+    RCLCPP_DEBUG(Logger(), "LaserScan::ClearHistory()");
     scans_.clear();
   }
 
@@ -261,7 +254,7 @@ namespace mapviz_plugins
   void LaserScanPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      NodeUnsafe(),
       "sensor_msgs/msg/LaserScan",
       qos_);
     if (!topic.empty())
@@ -292,13 +285,13 @@ namespace mapviz_plugins
       qos_ = qos;
       if (!topic.empty())
       {
-        laserscan_sub_ = node_->create_subscription<sensor_msgs::msg::LaserScan>(
-          topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-          std::bind(&LaserScanPlugin::laserScanCallback, this, std::placeholders::_1)
-        );
+        // Subscribe() delivers each message to handleLaserScan() on the GUI
+        // thread, where plugin state may be touched without locking.
+        Subscribe<sensor_msgs::msg::LaserScan>(
+          topic_, qos, laserscan_sub_,
+          [this](sensor_msgs::msg::LaserScan::ConstSharedPtr msg) { handleLaserScan(msg); });
 
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
@@ -375,12 +368,6 @@ namespace mapviz_plugins
       return has_tranform;
   }
 
-  void LaserScanPlugin::laserScanCallback(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg)
-  {
-    // Runs on the ROS spin thread: hand the message to the GUI thread and
-    // return immediately so message processing never blocks ROS spinning.
-    Q_EMIT LaserScanReceived(msg);
-  }
 
   void LaserScanPlugin::handleLaserScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg)
   {
@@ -478,6 +465,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::Draw(double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     glPointSize(point_size_);
     glBegin(GL_POINTS);
 
@@ -525,6 +513,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::Transform()
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     for (auto & scan : scans_)
     {
       if (!scan.transformed)
@@ -637,7 +626,7 @@ namespace mapviz_plugins
 
   void LaserScanPlugin::ColorTransformerChanged(int index)
   {
-    RCLCPP_DEBUG(node_->get_logger(), "Color transformer changed to %d", index);
+    RCLCPP_DEBUG(Logger(), "Color transformer changed to %d", index);
     switch (index)
     {
       case COLOR_FLAT:

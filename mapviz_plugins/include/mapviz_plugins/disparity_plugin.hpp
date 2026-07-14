@@ -112,13 +112,6 @@ protected Q_SLOTS:
   void SetHeight(int height);
   void SetSubscription(bool visible);
 
-Q_SIGNALS:
-  // Emitted from the ROS spin thread; delivered as queued connections to
-  // handleDisparity() on the GUI thread, which owns all plugin state.
-  void DisparityReceived(const stereo_msgs::msg::DisparityImage::ConstSharedPtr disparity);
-
-private Q_SLOTS:
-  void handleDisparity(const stereo_msgs::msg::DisparityImage::ConstSharedPtr disparity);
 
 private:
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
@@ -147,7 +140,8 @@ private:
   cv::Mat_<cv::Vec3b> disparity_color_;
   cv::Mat scaled_image_;
 
-  void disparityCallback(const stereo_msgs::msg::DisparityImage::ConstSharedPtr image);
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
+  void handleDisparity(const stereo_msgs::msg::DisparityImage::ConstSharedPtr disparity);
 
   void ScaleImage(double width, double height);
   void DrawIplImage(cv::Mat *image);

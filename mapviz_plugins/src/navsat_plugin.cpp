@@ -79,20 +79,12 @@ namespace mapviz_plugins
                      SLOT(SetColor(const QColor&)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
-
-    // Messages are received on the ROS spin thread but must be processed on
-    // the GUI thread, which owns the plugin's state; this connection is
-    // queued because the emitting thread differs from this object's thread.
-    qRegisterMetaType<sensor_msgs::msg::NavSatFix::ConstSharedPtr>(
-        "sensor_msgs::msg::NavSatFix::ConstSharedPtr");
-    QObject::connect(this, &NavSatPlugin::NavSatFixReceived,
-                     this, &NavSatPlugin::handleNavSatFix);
   }
 
   void NavSatPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      NodeUnsafe(),
       "sensor_msgs/msg/NavSatFix",
       qos_);
 
@@ -123,22 +115,17 @@ namespace mapviz_plugins
       qos_ = qos;
       if (!topic.empty())
       {
-        navsat_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
-            topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&NavSatPlugin::NavSatFixCallback, this, std::placeholders::_1));
+        // Subscribe() delivers each message to handleNavSatFix() on the GUI
+        // thread, where plugin state may be touched without locking.
+        Subscribe<sensor_msgs::msg::NavSatFix>(
+          topic_, qos, navsat_sub_,
+          [this](sensor_msgs::msg::NavSatFix::ConstSharedPtr msg) { handleNavSatFix(msg); });
 
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void NavSatPlugin::NavSatFixCallback(const sensor_msgs::msg::NavSatFix::ConstSharedPtr navsat)
-  {
-    // Runs on the ROS spin thread: hand the message to the GUI thread and
-    // return immediately so message processing never blocks ROS spinning.
-    Q_EMIT NavSatFixReceived(navsat);
-  }
 
   void NavSatPlugin::handleNavSatFix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr navsat)
   {
@@ -201,6 +188,7 @@ namespace mapviz_plugins
 
   void NavSatPlugin::Draw(double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     if (DrawPoints(scale))
     {
       PrintInfo("OK");

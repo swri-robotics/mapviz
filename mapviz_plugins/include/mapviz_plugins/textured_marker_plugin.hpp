@@ -82,9 +82,6 @@ public:
 
   QWidget * GetConfigWidget(QWidget * parent) override;
 
-Q_SIGNALS:
-  void MarkerReceived(marti_visualization_msgs::msg::TexturedMarker marker);
-
 protected:
   void PrintError(const std::string & message) override;
   void PrintInfo(const std::string & message) override;
@@ -137,11 +134,6 @@ private:
   bool has_message_;
 
   std::map<std::string, std::map<int, MarkerData>> markers_;
-
-  void MarkerCallback(marti_visualization_msgs::msg::TexturedMarker::ConstSharedPtr marker);
-
-  void MarkerArrayCallback(
-    marti_visualization_msgs::msg::TexturedMarkerArray::ConstSharedPtr markers);
 };
 }   // namespace mapviz_plugins
 

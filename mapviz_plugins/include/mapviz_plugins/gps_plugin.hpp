@@ -75,10 +75,6 @@ class GpsPlugin : public mapviz_plugins::PointDrawingPlugin
     void SelectTopic();
     void TopicEdited();
 
-  Q_SIGNALS:
-    // Emitted from the ROS spin thread; delivered as a queued connection to
-    // handleGpsFix() on the GUI thread, which owns all plugin state.
-    void GpsFixReceived(const gps_msgs::msg::GPSFix::ConstSharedPtr msg);
 
   private Q_SLOTS:
     void handleGpsFix(const gps_msgs::msg::GPSFix::ConstSharedPtr msg);
@@ -94,7 +90,6 @@ class GpsPlugin : public mapviz_plugins::PointDrawingPlugin
     rclcpp::Subscription<gps_msgs::msg::GPSFix>::SharedPtr gps_sub_;
     bool has_message_;
 
-    void GPSFixCallback(const gps_msgs::msg::GPSFix::ConstSharedPtr msg);
     void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
 };
 }   // namespace mapviz_plugins

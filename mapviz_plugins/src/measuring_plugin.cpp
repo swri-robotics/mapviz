@@ -132,7 +132,7 @@ bool MeasuringPlugin::eventFilter(QObject* object, QEvent* event)
 {
   if(!this->Visible())
   {
-    RCLCPP_DEBUG(node_->get_logger(), "Ignoring mouse event, since measuring plugin is hidden");
+    RCLCPP_DEBUG(Logger(), "Ignoring mouse event, since measuring plugin is hidden");
     return false;
   }
 
@@ -155,7 +155,7 @@ bool MeasuringPlugin::handleMousePress(QMouseEvent* event)
   int closest_point = 0;
   double closest_distance = std::numeric_limits<double>::max();
   QPointF point = mapviz::MouseEventPosition(event);
-  RCLCPP_DEBUG(node_->get_logger(), "Map point: %f %f", point.x(), point.y());
+  RCLCPP_DEBUG(Logger(), "Map point: %f %f", point.x(), point.y());
   for (size_t i = 0; i < vertices_.size(); i++)
   {
     tf2::Vector3 vertex = vertices_[i];
@@ -291,6 +291,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
 
 void MeasuringPlugin::Draw(double x, double y, double scale)
 {
+  MAPVIZ_ASSERT_GUI_THREAD();
   glLineWidth(1);
   const QColor color = ui_.main_color->color();
   glColor4d(color.redF(), color.greenF(), color.blueF(), ui_.alpha->value()/2.0);
@@ -324,6 +325,7 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
 
 void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
 {
+  MAPVIZ_ASSERT_GUI_THREAD();
   bool show_measurements = ui_.show_measurements->isChecked();
   if (!show_measurements || vertices_.empty())
   {

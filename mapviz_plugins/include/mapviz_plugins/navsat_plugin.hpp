@@ -73,10 +73,6 @@ class NavSatPlugin : public mapviz_plugins::PointDrawingPlugin
   void SelectTopic();
   void TopicEdited();
 
-  Q_SIGNALS:
-    // Emitted from the ROS spin thread; delivered as a queued connection to
-    // handleNavSatFix() on the GUI thread, which owns all plugin state.
-    void NavSatFixReceived(const sensor_msgs::msg::NavSatFix::ConstSharedPtr msg);
 
   private Q_SLOTS:
     void handleNavSatFix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr msg);
@@ -92,7 +88,6 @@ class NavSatPlugin : public mapviz_plugins::PointDrawingPlugin
   bool has_message_;
 
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void NavSatFixCallback(const sensor_msgs::msg::NavSatFix::ConstSharedPtr msg);
 };
 }   // namespace mapviz_plugins
 

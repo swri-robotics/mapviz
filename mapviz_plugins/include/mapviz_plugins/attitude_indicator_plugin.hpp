@@ -97,22 +97,11 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin,
    void SelectTopic();
    void TopicEdited();
 
- Q_SIGNALS:
-   // Emitted from the ROS spin thread; delivered as queued connections to
-   // the handle*() slots on the GUI thread, which owns all plugin state.
-   void ImuReceived(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
-   void OdometryReceived(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-   void PoseReceived(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
-
- private Q_SLOTS:
-   void handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
-   void handleOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-   void handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
-
  private:
-  void AttitudeCallbackImu(sensor_msgs::msg::Imu::ConstSharedPtr imu);
-  void AttitudeCallbackOdom(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-  void AttitudeCallbackPose(geometry_msgs::msg::Pose::ConstSharedPtr pose);
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
+  void handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
+  void handleOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
+  void handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
   void applyAttitudeOrientation(const geometry_msgs::msg::Quaternion &orientation);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
 

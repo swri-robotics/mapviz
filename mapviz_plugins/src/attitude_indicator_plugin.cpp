@@ -139,28 +139,12 @@ namespace mapviz_plugins
 
     QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
     QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-
-    // Messages are received on the ROS spin thread but must be processed on
-    // the GUI thread, which owns the plugin's state; these connections are
-    // queued because the emitting thread differs from this object's thread.
-    qRegisterMetaType<sensor_msgs::msg::Imu::ConstSharedPtr>(
-        "sensor_msgs::msg::Imu::ConstSharedPtr");
-    qRegisterMetaType<nav_msgs::msg::Odometry::ConstSharedPtr>(
-        "nav_msgs::msg::Odometry::ConstSharedPtr");
-    qRegisterMetaType<geometry_msgs::msg::Pose::ConstSharedPtr>(
-        "geometry_msgs::msg::Pose::ConstSharedPtr");
-    QObject::connect(this, &AttitudeIndicatorPlugin::ImuReceived,
-                     this, &AttitudeIndicatorPlugin::handleImu);
-    QObject::connect(this, &AttitudeIndicatorPlugin::OdometryReceived,
-                     this, &AttitudeIndicatorPlugin::handleOdometry);
-    QObject::connect(this, &AttitudeIndicatorPlugin::PoseReceived,
-                     this, &AttitudeIndicatorPlugin::handlePose);
   }
 
   void AttitudeIndicatorPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-        node_,
+        NodeUnsafe(),
         topics_,
         qos_);
 
@@ -193,41 +177,25 @@ namespace mapviz_plugins
       qos_ = qos;
       if (!topic_.empty())
       {
-        odom_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
-            topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackOdom, this, std::placeholders::_1));
-        imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
-            topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackImu, this, std::placeholders::_1));
-        pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
-            topic_,
-            rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-            std::bind(&AttitudeIndicatorPlugin::AttitudeCallbackPose, this, std::placeholders::_1));
+        // Subscribe() delivers each message to the matching handle*() method
+        // on the GUI thread, where plugin state may be touched without locking.
+        Subscribe<nav_msgs::msg::Odometry>(
+            topic_, qos, odom_sub_,
+            [this](nav_msgs::msg::Odometry::ConstSharedPtr odometry) {
+              handleOdometry(odometry);
+            });
+        Subscribe<sensor_msgs::msg::Imu>(
+            topic_, qos, imu_sub_,
+            [this](sensor_msgs::msg::Imu::ConstSharedPtr imu) { handleImu(imu); });
+        Subscribe<geometry_msgs::msg::Pose>(
+            topic_, qos, pose_sub_,
+            [this](geometry_msgs::msg::Pose::ConstSharedPtr pose) {
+              handlePose(pose);
+            });
 
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
       }
     }
-  }
-
-  // These callbacks run on the ROS spin thread: they hand the message to the
-  // GUI thread and return immediately so message processing never blocks ROS
-  // spinning.
-  void AttitudeIndicatorPlugin::AttitudeCallbackOdom(
-    nav_msgs::msg::Odometry::ConstSharedPtr odometry)
-  {
-    Q_EMIT OdometryReceived(odometry);
-  }
-
-  void AttitudeIndicatorPlugin::AttitudeCallbackImu(sensor_msgs::msg::Imu::ConstSharedPtr imu)
-  {
-    Q_EMIT ImuReceived(imu);
-  }
-
-  void AttitudeIndicatorPlugin::AttitudeCallbackPose(geometry_msgs::msg::Pose::ConstSharedPtr pose)
-  {
-    Q_EMIT PoseReceived(pose);
   }
 
   void AttitudeIndicatorPlugin::handleOdometry(
@@ -363,6 +331,7 @@ namespace mapviz_plugins
 
   void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();

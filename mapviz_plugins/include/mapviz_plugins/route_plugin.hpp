@@ -98,13 +98,8 @@ class RoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
     void SetDrawStyle(QString style);
     void DrawIcon() override;
 
-  Q_SIGNALS:
-    // Emitted from the ROS spin thread; delivered as queued connections to
-    // the handle*() slots on the GUI thread, which owns all plugin state.
-    void RouteReceived(const marti_nav_msgs::msg::Route::ConstSharedPtr route);
-    void RoutePositionReceived(const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr position);
-
-  private Q_SLOTS:
+  private:
+    // Called on the GUI thread by Subscribe(); own all plugin state.
     void handleRoute(const marti_nav_msgs::msg::Route::ConstSharedPtr route);
     void handleRoutePosition(const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr position);
 
@@ -128,8 +123,6 @@ class RoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 
     void connectRouteCallback(const std::string& topic, const rmw_qos_profile_t& qos);
     void connectPositionCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-    void RouteCallback(const marti_nav_msgs::msg::Route::ConstSharedPtr msg);
-    void PositionCallback(const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr msg);
 };
 }   // namespace mapviz_plugins
 

@@ -148,7 +148,7 @@ namespace mapviz_plugins
     source_frame_ = ui_.frame->text().toStdString();
     PrintWarning("Waiting for transform.");
 
-    RCLCPP_INFO(node_->get_logger(), "Setting target frame to to %s", source_frame_.c_str());
+    RCLCPP_INFO(Logger(), "Setting target frame to to %s", source_frame_.c_str());
 
     initialized_ = true;
 
@@ -257,6 +257,7 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::Draw(double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     if (texture_loaded_ && transformed_)
     {
       glColor3f(1.0f, 1.0f, 1.0f);
@@ -280,10 +281,11 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::Transform()
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     transformed_ = false;
 
     swri_transform_util::Transform transform;
-    if (GetTransform(node_->get_clock()->now(), transform))
+    if (GetTransform(Clock()->now(), transform))
     {
       top_left_transformed_ = transform * top_left_;
       top_right_transformed_ = transform * top_right_;
@@ -297,7 +299,7 @@ namespace mapviz_plugins
 
   void RobotImagePlugin::LoadImage()
   {
-    RCLCPP_INFO(node_->get_logger(), "Loading image");
+    RCLCPP_INFO(Logger(), "Loading image");
     try
     {
       QImage nullImage;

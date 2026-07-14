@@ -87,14 +87,6 @@ class OdometryPlugin : public mapviz_plugins::PointDrawingPlugin
     void SelectTopic();
     void TopicEdited();
 
-  Q_SIGNALS:
-    // Emitted from the ROS spin thread; delivered as a queued connection to
-    // handleOdometry() on the GUI thread, which owns all plugin state.
-    void OdometryReceived(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-
-  private Q_SLOTS:
-    void handleOdometry(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-
   private:
     Ui::odometry_config ui_;
     QWidget* config_widget_;
@@ -102,7 +94,8 @@ class OdometryPlugin : public mapviz_plugins::PointDrawingPlugin
     rmw_qos_profile_t qos_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
     bool has_message_;
-    void odometryCallback(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
+    // Called on the GUI thread by Subscribe(); owns all plugin state.
+    void handleOdometry(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
     void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
 };
 }   // namespace mapviz_plugins

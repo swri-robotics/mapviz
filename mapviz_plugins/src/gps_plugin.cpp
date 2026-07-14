@@ -88,20 +88,12 @@ namespace mapviz_plugins
             SLOT(LapToggled(bool)));
     QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
                      SLOT(ClearPoints()));
-
-    // Messages are received on the ROS spin thread but must be processed on
-    // the GUI thread, which owns the plugin's state; this connection is
-    // queued because the emitting thread differs from this object's thread.
-    qRegisterMetaType<gps_msgs::msg::GPSFix::ConstSharedPtr>(
-        "gps_msgs::msg::GPSFix::ConstSharedPtr");
-    QObject::connect(this, &GpsPlugin::GpsFixReceived,
-                     this, &GpsPlugin::handleGpsFix);
   }
 
   void GpsPlugin::SelectTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(
-      node_,
+      NodeUnsafe(),
       "gps_msgs/msg/GPSFix",
       qos_);
     if (!topic.empty())
@@ -132,22 +124,17 @@ namespace mapviz_plugins
       qos_ = qos;
       if (!topic.empty())
       {
-        gps_sub_ = node_->create_subscription<gps_msgs::msg::GPSFix>(
-          topic_,
-          rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos),
-          std::bind(&GpsPlugin::GPSFixCallback, this, std::placeholders::_1));
+        // Subscribe() delivers each message to handleGpsFix() on the GUI
+        // thread, where plugin state may be touched without locking.
+        Subscribe<gps_msgs::msg::GPSFix>(
+          topic_, qos, gps_sub_,
+          [this](gps_msgs::msg::GPSFix::ConstSharedPtr msg) { handleGpsFix(msg); });
 
-        RCLCPP_INFO(node_->get_logger(), "Subscribing to %s", topic_.c_str());
+        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
       }
     }
   }
 
-  void GpsPlugin::GPSFixCallback(const gps_msgs::msg::GPSFix::ConstSharedPtr gps)
-  {
-    // Runs on the ROS spin thread: hand the message to the GUI thread and
-    // return immediately so message processing never blocks ROS spinning.
-    Q_EMIT GpsFixReceived(gps);
-  }
 
   void GpsPlugin::handleGpsFix(const gps_msgs::msg::GPSFix::ConstSharedPtr gps)
   {
@@ -216,6 +203,7 @@ namespace mapviz_plugins
 
   void GpsPlugin::Draw(double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     if (DrawPoints(scale))
     {
       PrintInfo("OK");

@@ -86,14 +86,6 @@ class PosePlugin : public mapviz_plugins::PointDrawingPlugin
     void SelectTopic();
     void TopicEdited();
 
-  Q_SIGNALS:
-    // Emitted from the ROS spin thread; delivered as a queued connection to
-    // handlePose() on the GUI thread, which owns all plugin state.
-    void PoseReceived(const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
-
-  private Q_SLOTS:
-    void handlePose(const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
-
   private:
     Ui::pose_config ui_;
     QWidget* config_widget_;
@@ -105,7 +97,8 @@ class PosePlugin : public mapviz_plugins::PointDrawingPlugin
     bool has_message_;
 
     void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-    void PoseCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
+    // Called on the GUI thread by Subscribe(); owns all plugin state.
+    void handlePose(const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
 };
 }   // namespace mapviz_plugins
 

@@ -139,7 +139,7 @@ namespace mapviz_plugins
       {
         route_topic_ = ui_.topic->text().toStdString();
         route_pub_.reset();
-        route_pub_ = node_->create_publisher<marti_nav_msgs::msg::Route>(
+        route_pub_ = Publisher<marti_nav_msgs::msg::Route>(
           route_topic_,
           rclcpp::QoS(1));
       }
@@ -163,7 +163,7 @@ namespace mapviz_plugins
       PrintError("Service name may not be empty.");
       return;
     }
-    auto client = node_->create_client<marti_nav_msgs::srv::PlanRoute>(service);
+    auto client = NodeUnsafe()->create_client<marti_nav_msgs::srv::PlanRoute>(service);
     client->wait_for_service(1ms);
 
     if (!client->service_is_ready())
@@ -175,7 +175,7 @@ namespace mapviz_plugins
     auto plan_route = std::make_shared<marti_nav_msgs::srv::PlanRoute::Request>();
 
     plan_route->header.frame_id = swri_transform_util::_wgs84_frame;
-    plan_route->header.stamp = node_->now();
+    plan_route->header.stamp = Now();
     plan_route->plan_from_vehicle = static_cast<unsigned char>(start_from_vehicle);
     plan_route->waypoints = waypoints_;
 
@@ -195,7 +195,7 @@ namespace mapviz_plugins
   void PlanRoutePlugin::handlePlanRouteResponse(
     rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future)
   {
-    RCLCPP_ERROR(node_->get_logger(), "Request callback happened");
+    RCLCPP_ERROR(Logger(), "Request callback happened");
     const auto& result = future.get();
     if (future.valid())
     {
@@ -255,7 +255,7 @@ namespace mapviz_plugins
     initializeOpenGLFunctions();
     canvas->doneCurrent();
 
-    retry_timer_ = node_->create_wall_timer(1000ms, [this](){Retry();});
+    retry_timer_ = NodeUnsafe()->create_wall_timer(1000ms, [this](){Retry();});
 
     initialized_ = true;
     return true;
@@ -403,6 +403,7 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Draw(double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     stu::Transform transform;
     if (tf_manager_->GetTransform(target_frame_, stu::_wgs84_frame, transform))
     {
@@ -447,6 +448,7 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Paint(QPainter* painter, double x, double y, double scale)
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     painter->save();
     painter->resetTransform();
 

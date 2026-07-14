@@ -131,19 +131,16 @@ protected Q_SLOTS:
   void ClearPointClouds();
   void SetSubscription(bool subscribe);
 
-Q_SIGNALS:
-  // Emitted from the ROS spin thread with a freshly decoded scan; delivered
-  // as a queued connection to handleScan() on the GUI thread, which owns
-  // scans_ and everything configuration-dependent.
-  void ScanProcessed(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
-
-private Q_SLOTS:
-  void handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
-
 private:
-  float PointFeature(const uint8_t*, const FieldInfo&);
+  // Decodes the raw cloud on the ROS spin thread; static (a Subscribe()
+  // function pointer) so it cannot touch plugin state.  Returns an empty
+  // (feature-less) Scan for malformed clouds.
+  static Scan DecodeScan(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg);
+  static float PointFeature(const uint8_t*, const FieldInfo&);
+  // Runs on the GUI thread via Subscribe(); owns scans_ and everything
+  // configuration-dependent.
+  void handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void PointCloud2Callback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr scan);
   QColor CalculateColor(const StampedPoint& point);
   void UpdateMinMaxWidgets();
 

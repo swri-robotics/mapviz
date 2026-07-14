@@ -122,14 +122,8 @@ protected Q_SLOTS:
   void TopicEdited();
   void ClearHistory() override;
 
-Q_SIGNALS:
-  // Emitted from the ROS spin thread; delivered as queued connections to
-  // the handleMarker*() slots on the GUI thread, which owns all plugin
-  // state.
-  void MarkerReceived(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
-  void MarkerArrayReceived(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
-
-private Q_SLOTS:
+private:
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
   void handleMarker(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
   void handleMarkerArray(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
 
@@ -189,8 +183,6 @@ private:
   std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;
   std::unordered_map<std::string, bool, MarkerNsHash> marker_visible_;
 
-  void markerCallback(const visualization_msgs::msg::Marker::ConstSharedPtr marker);
-  void markerArrayCallback(const visualization_msgs::msg::MarkerArray::ConstSharedPtr markers);
   void processMarker(const visualization_msgs::msg::Marker& marker);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   void transformArrow(MarkerData& markerData,

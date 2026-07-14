@@ -48,6 +48,7 @@
 #include <QThread>
 
 // C++ standard libraries
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -57,6 +58,28 @@
 
 namespace mapviz
 {
+
+/**
+ * Asserts that the calling code is running on the GUI thread (the thread that
+ * owns this plugin object).  Plugin state, widgets, the GL context, and
+ * tf_manager_ may only be touched from that thread; use this at the top of any
+ * method that assumes it.
+ *
+ * Unlike a bare Q_ASSERT (which is compiled out when QT_NO_DEBUG is defined,
+ * i.e. in the Release builds that ROS packages ship), this always logs an
+ * error when the check fails, and additionally aborts via Q_ASSERT in debug
+ * builds.  It must be used from a non-static member function of a MapvizPlugin
+ * (it relies on thread() and Logger()).
+ */
+#define MAPVIZ_ASSERT_GUI_THREAD()                                             \
+  do {                                                                         \
+    if (QThread::currentThread() != this->thread()) {                          \
+      RCLCPP_ERROR(this->Logger(),                                             \
+        "%s: called off the GUI thread; mapviz plugin state is not "           \
+        "thread-safe and must only be accessed on the GUI thread", __func__);  \
+      Q_ASSERT(!"mapviz: this function must run on the GUI thread");           \
+    }                                                                          \
+  } while (0)
 class MapvizPlugin : public QObject
 {
   Q_OBJECT
@@ -308,13 +331,111 @@ Q_SIGNALS:
 
 
 protected:
+  /**
+   * Subscribe to @p topic, delivering every message to @p on_gui_thread on the
+   * GUI thread.  The subscription is created on the node's default callback
+   * group, so it is serviced by the background ROS spin thread; this helper
+   * marshals each message onto the GUI thread through a queued invocation, so
+   * @p on_gui_thread may freely touch plugin state, widgets, and tf_manager_
+   * without any locking.  Use this overload when the per-message work is cheap
+   * (the common "store it and repaint" case).
+   *
+   * The subscription is written into @p out_sub; reset it (or overwrite it via
+   * another Subscribe call) to unsubscribe.
+   */
+  template <typename MsgT>
+  void Subscribe(
+      const std::string& topic,
+      const rmw_qos_profile_t& qos,
+      typename rclcpp::Subscription<MsgT>::SharedPtr& out_sub,
+      std::function<void(typename MsgT::ConstSharedPtr)> on_gui_thread)
+  {
+    rclcpp::QoS ros_qos(rclcpp::QoSInitialization::from_rmw(qos), qos);
+    out_sub = node_->create_subscription<MsgT>(
+        topic, ros_qos,
+        [this, cb = std::move(on_gui_thread)](typename MsgT::ConstSharedPtr msg)
+        {
+          // Runs on the ROS spin thread.  Hand the message to the GUI thread
+          // and return immediately; using 'this' as the invocation context
+          // means Qt discards the event if the plugin is destroyed, and
+          // because teardown runs on the GUI thread there is no race.
+          QMetaObject::invokeMethod(
+              this, [cb, msg]() { cb(msg); }, Qt::QueuedConnection);
+        });
+  }
+
+  /**
+   * Subscribe to @p topic, running @p decode on the background ROS spin thread
+   * and delivering its result to @p on_gui_thread on the GUI thread.  Use this
+   * overload when decoding a message is expensive (e.g. unpacking a point
+   * cloud) and you want that work off the GUI thread.
+   *
+   * @p decode is a plain function pointer, not a std::function: it therefore
+   * cannot capture, which structurally prevents it from touching plugin state
+   * from the spin thread.  It must depend only on the message (any
+   * configuration-dependent work belongs in @p on_gui_thread).  Its result is
+   * moved into a shared_ptr and marshaled to the GUI thread.
+   */
+  template <typename MsgT, typename DecodedT>
+  void Subscribe(
+      const std::string& topic,
+      const rmw_qos_profile_t& qos,
+      typename rclcpp::Subscription<MsgT>::SharedPtr& out_sub,
+      DecodedT (*decode)(const typename MsgT::ConstSharedPtr&),
+      std::function<void(std::shared_ptr<DecodedT>)> on_gui_thread)
+  {
+    rclcpp::QoS ros_qos(rclcpp::QoSInitialization::from_rmw(qos), qos);
+    out_sub = node_->create_subscription<MsgT>(
+        topic, ros_qos,
+        [this, decode, cb = std::move(on_gui_thread)]
+        (typename MsgT::ConstSharedPtr msg)
+        {
+          // Runs on the ROS spin thread.  'decode' may only look at the
+          // message; the decoded result is handed to the GUI thread.
+          auto decoded = std::make_shared<DecodedT>(decode(msg));
+          QMetaObject::invokeMethod(
+              this, [cb, decoded]() { cb(decoded); }, Qt::QueuedConnection);
+        });
+  }
+
+  /**
+   * Create a publisher on the mapviz node.  Publishing is thread-safe, so this
+   * may be called from the GUI thread.  Arguments are forwarded to
+   * rclcpp::Node::create_publisher().
+   */
+  template <typename MsgT, typename... Args>
+  typename rclcpp::Publisher<MsgT>::SharedPtr Publisher(Args&&... args)
+  {
+    return node_->create_publisher<MsgT>(std::forward<Args>(args)...);
+  }
+
+  /// The mapviz node's logger.  Safe to call from any thread.
+  rclcpp::Logger Logger() const
+  {
+    return node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
+  }
+
+  /// The current time from the mapviz node's clock.
+  rclcpp::Time Now() const { return node_->now(); }
+
+  /// The mapviz node's clock.
+  rclcpp::Clock::SharedPtr Clock() const { return node_->get_clock(); }
+
+  /**
+   * Direct access to the underlying node, for APIs the safe helpers above do
+   * not wrap (image_transport, the select-topic/service dialogs, service
+   * clients, wall timers, node introspection).  You are responsible for the
+   * thread-safety of anything you do with it: in particular, never register a
+   * subscription/timer callback here that touches plugin state, since those
+   * run on the background spin thread -- use Subscribe() instead.
+   */
+  rclcpp::Node::SharedPtr NodeUnsafe() { return node_; }
+
   bool initialized_;
   bool visible_;
 
   QOpenGLWidget* canvas_;
   IconWidget* icon_;
-
-  std::shared_ptr<rclcpp::Node> node_;
 
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_;
@@ -401,6 +522,12 @@ protected:
   }
 
 private:
+  // The mapviz node.  Private so plugins reach it only through the accessors
+  // above (Subscribe(), Publisher(), Logger(), Now(), Clock(), NodeUnsafe()),
+  // which steer subscription callbacks onto the GUI thread and make raw,
+  // thread-unsafe access explicit at the call site.
+  std::shared_ptr<rclcpp::Node> node_;
+
   // Collect basic profiling info to know how much time each plugin
   // spends in Transform(), Paint(), and Draw().
   Stopwatch meas_transform_;
