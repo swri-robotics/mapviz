@@ -65,11 +65,13 @@ namespace mapviz
  * owns this plugin object).  Plugin state, widgets, the GL context, and
  * tf_manager_ may only be touched from that thread.
  *
- * The framework entry points that reach Draw(), Paint(), and Transform()
- * (DrawPlugin(), PaintPlugin(), and SetTargetFrame()) already assert this, so
- * plugin overrides of those methods do not need it.  Use it at the top of any
- * *other* entry point that assumes the GUI thread -- e.g. a QTimer callback or
- * an eventFilter() -- where the caller isn't the mapviz framework.
+ * The framework entry points that reach Draw(), Paint(), Transform(),
+ * LoadConfig(), and SaveConfig() (DrawPlugin(), PaintPlugin(),
+ * SetTargetFrame(), LoadConfigPlugin(), and SaveConfigPlugin()) already
+ * assert this, so plugin overrides of those methods do not need it.  Use it
+ * at the top of any *other* entry point that assumes the GUI thread -- e.g. a
+ * QTimer callback or an eventFilter() -- where the caller isn't the mapviz
+ * framework.
  *
  * Unlike a bare Q_ASSERT (which is compiled out when QT_NO_DEBUG is defined,
  * i.e. in the Release builds that ROS packages ship), this always logs an
@@ -289,6 +291,23 @@ public:
 
   virtual void LoadConfig(const YAML::Node& load, const std::string& path) = 0;
   virtual void SaveConfig(YAML::Emitter& emitter, const std::string& path) = 0;
+
+  /**
+   * The framework's entry points to LoadConfig()/SaveConfig().  Like
+   * DrawPlugin()/PaintPlugin(), these assert the GUI thread on behalf of the
+   * plugin's overrides, which read and write widgets.
+   */
+  void LoadConfigPlugin(const YAML::Node& load, const std::string& path)
+  {
+    MAPVIZ_ASSERT_GUI_THREAD();
+    LoadConfig(load, path);
+  }
+
+  void SaveConfigPlugin(YAML::Emitter& emitter, const std::string& path)
+  {
+    MAPVIZ_ASSERT_GUI_THREAD();
+    SaveConfig(emitter, path);
+  }
 
   virtual QWidget* GetConfigWidget(QWidget* /* parent */) { return nullptr; }
 
