@@ -150,6 +150,7 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::PlanRoute()
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     route_preview_ = sru::RoutePtr();
     bool start_from_vehicle = ui_.start_from_vehicle->isChecked();
     if (waypoints_.size() + start_from_vehicle < 2 || !Visible())
@@ -216,6 +217,7 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::Retry()
   {
+    MAPVIZ_ASSERT_GUI_THREAD();
     PlanRoute();
   }
 
