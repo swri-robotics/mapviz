@@ -8,17 +8,20 @@
 import fnmatch
 import math
 import os
-import pyproj
-import rospy
-import yaml
 from collections import namedtuple
+
+import pyproj
+import rclpy
+import yaml
 from geometry_msgs.msg import PoseStamped
-from gps_common.msg import GPSFix
-from mapviz.srv import AddMapvizDisplay, AddMapvizDisplayRequest
+from gps_msgs.msg import GPSFix
+from mapviz_interfaces.srv import AddMapvizDisplay
 from marti_common_msgs.msg import KeyValue
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile
 
 GeoReference = namedtuple("GeoReference", "path min_lat min_lon max_lat max_lon area")
-_gps_fix = None
+
 
 def distance(lat1, lon1, lat2, lon2):
     x1 = math.radians(lat1)
@@ -27,178 +30,199 @@ def distance(lat1, lon1, lat2, lon2):
     y2 = math.radians(lon2)
     return math.acos(math.sin(x1) * math.sin(x2) + math.cos(x1) * math.cos(x2) * math.cos(y1 - y2))
 
-def gps_callback(data):
-    global _gps_fix
-    _gps_fix = data
 
-def load_tiles():
-    rospy.init_node('mapviz_tile_loader', anonymous=True)
+class MapvizTileLoader(Node):
+    def __init__(self):
+        super().__init__('mapviz_tile_loader')
 
-    base_directory = rospy.get_param('~base_directory', os.path.expanduser('~') + "/.ros")
-    max_search_depth = rospy.get_param('~max_search_depth', 1)
-    rate = max(0.1, rospy.get_param('~rate', 1.0))
-    display_name = rospy.get_param('~display_name', 'satellite')
-    draw_order = rospy.get_param('~draw_order', 1)
-    use_local_xy = rospy.get_param('~use_local_xy', False)
+        self.base_directory = self.declare_parameter(
+            'base_directory', os.path.expanduser('~') + "/.ros").value
+        self.max_search_depth = self.declare_parameter('max_search_depth', 1).value
+        rate = max(0.1, self.declare_parameter('rate', 1.0).value)
+        self.display_name = self.declare_parameter('display_name', 'satellite').value
+        self.draw_order = self.declare_parameter('draw_order', 1).value
+        self.use_local_xy = self.declare_parameter('use_local_xy', False).value
 
-    gps_sub = rospy.Subscriber("gps", GPSFix, gps_callback)
+        self._gps_fix = None
+        self._local_xy = None
+        self._last_path = None
+        self._request_pending = False
 
-    geofiles = []
-    initial_depth = base_directory.count(os.sep)
-    for path, dirs, filenames in os.walk(base_directory):
-        for filename in fnmatch.filter(filenames, '*.geo'):
-            geofiles.append(os.path.join(path, filename))
-        current_depth = path.count(os.sep) - initial_depth
-        if current_depth >= max_search_depth:
-          dirs[:] = []
+        self._gps_sub = self.create_subscription(GPSFix, "gps", self.gps_callback, 10)
 
-    georeferences = []
-    for geofile in geofiles:
-      rospy.loginfo("Parsing %s...", geofile)
-      f = open(geofile)
-      min_lat = 90.0
-      max_lat = -90.0
-      min_lon = 180.0
-      max_lon = -180.0
-      geodata = yaml.safe_load(f)
-      if str(geodata['projection']).lower() == 'utm':
-        rospy.loginfo("  projection: utm")
-        zone = 1
-        band = 'N'
-        if ('utm_zone' in geodata):
-          zone = int(geodata['utm_zone'])
-          if zone >= 1 or zone <= 60:
-            rospy.loginfo("  utm zone: %d", zone)
-          else:
-            rospy.logwarn("  invalid utm zone!")
-            f.close()
-            continue
-        else:
-          rospy.logwarn("  no utm zone!")
-          f.close()
-          continue
-        if ('utm_band' in geodata):
-          band = str(geodata['utm_band'])
-          if band >= 'C' or band <= 'X':
-            rospy.loginfo("  utm band: %s", band)
-          else:
-            rospy.logwarn("  invalid utm band!")
-            f.close()
-            continue
-        else:
-          rospy.logwarn("  no utm band!")
-          f.close()
-          continue
-          
-        utm_proj = pyproj.Proj(proj='utm', zone=zone, ellps='WGS84', south=(band < 'N'))
-          
-        if 'tiepoints' in geodata:
-            if len(geodata['tiepoints']) > 1:
-                for point in geodata['tiepoints']:
-                  easting = point['point'][2]
-                  northing = point['point'][3]
-                  lon, lat = utm_proj(easting, northing, inverse=True)
-                  min_lon = min(lon, min_lon)
-                  max_lon = max(lon, max_lon)
-                  min_lat = min(lat, min_lat)
-                  max_lat = max(lat, max_lat)
+        if self.use_local_xy:
+            # The origin is published latched, so subscribe with transient-local
+            # durability to receive the last value sent before we subscribed.
+            origin_qos = QoSProfile(
+                depth=1,
+                history=HistoryPolicy.KEEP_LAST,
+                durability=DurabilityPolicy.TRANSIENT_LOCAL)
+            self._local_xy_sub = self.create_subscription(
+                PoseStamped, "/local_xy_origin", self.local_xy_callback, origin_qos)
+
+        self.georeferences = self.load_georeferences()
+
+        self._client = self.create_client(AddMapvizDisplay, 'add_mapviz_display')
+        self.get_logger().info(f"waiting for service: {self._client.srv_name} ...")
+        self._client.wait_for_service()
+
+        self._timer = self.create_timer(1.0 / rate, self.on_timer)
+
+    def gps_callback(self, data):
+        self._gps_fix = data
+
+    def local_xy_callback(self, data):
+        self._local_xy = data
+
+    def load_georeferences(self):
+        geofiles = []
+        initial_depth = self.base_directory.count(os.sep)
+        for path, dirs, filenames in os.walk(self.base_directory):
+            for filename in fnmatch.filter(filenames, '*.geo'):
+                geofiles.append(os.path.join(path, filename))
+            current_depth = path.count(os.sep) - initial_depth
+            if current_depth >= self.max_search_depth:
+                dirs[:] = []
+
+        georeferences = []
+        for geofile in geofiles:
+            georef = self.parse_georeference(geofile)
+            if georef is not None:
+                georeferences.append(georef)
+        return georeferences
+
+    def parse_georeference(self, geofile):
+        self.get_logger().info(f"Parsing {geofile}...")
+        min_lat = 90.0
+        max_lat = -90.0
+        min_lon = 180.0
+        max_lon = -180.0
+        with open(geofile) as f:
+            geodata = yaml.safe_load(f)
+        if str(geodata['projection']).lower() == 'utm':
+            self.get_logger().info("  projection: utm")
+            zone = 1
+            band = 'N'
+            if 'utm_zone' in geodata:
+                zone = int(geodata['utm_zone'])
+                if zone >= 1 or zone <= 60:
+                    self.get_logger().info(f"  utm zone: {zone}")
+                else:
+                    self.get_logger().warn("  invalid utm zone!")
+                    return None
             else:
-              rospy.logwarn("  not enough tiepoints!")
-              f.close()
-              continue            
-        else:
-            rospy.logwarn("  no tiepoints!")
-            f.close()
-            continue
-      
-      area = (max_lat - min_lat) * (max_lon - min_lon)
-      
-      georeferences.append(GeoReference(geofile, min_lat, min_lon, max_lat, max_lon, area))
-      rospy.loginfo("  lat/lon bounds: (%lf, %lf) - (%lf, %lf)", min_lat, min_lon, max_lat, max_lon)
-        
-      f.close()
-
-    rospy.loginfo("waiting for service: %s ...", rospy.resolve_name('add_mapviz_display'))
-    rospy.wait_for_service('add_mapviz_display')
-
-    last_path = None
-    while not rospy.is_shutdown():
-        if use_local_xy:
-            if last_path is None and georeferences:
-                # Select the geofile that contains the current local_xy origin point.  If multiple
-                # geo-files contain the point, select the largest.  If no geo-files
-                # contain the point, select the closest one.
-
-                # get local xy origin
-                local_xy = rospy.wait_for_message("/local_xy_origin", PoseStamped)
-                max_area = 0
-                path = None
-                for georef in georeferences:
-                    if local_xy.pose.position.y > georef.min_lat and local_xy.pose.position.y < georef.max_lat and local_xy.pose.position.x > georef.min_lon and local_xy.pose.position.x < georef.max_lon and georef.area > max_area:
-                        path = georef.path
-                        max_area = georef.area
-
-                if path is None:
-                    min_dist = float("inf")
-                    for georef in georeferences:
-                        lat = (georef.min_lat + georef.max_lat) / 2.0
-                        lon = (georef.min_lon + georef.max_lon) / 2.0
-                        dist = distance(lat, lon, local_xy.pose.position.y, local_xy.pose.position.x)
-                        if (dist < min_dist):
-                            min_dist = dist
-                            path = georef.path
-
-                # If the geo-file has changed, call the service for adding/updating
-                # the mapviz display
-                if path is not None and path != last_path:
-                    rospy.loginfo("updating tileset: %s", path);
-                    add_mapviz_display = rospy.ServiceProxy('add_mapviz_display', AddMapvizDisplay)
-                    request = AddMapvizDisplayRequest(type='mapviz_plugins/multires_image', draw_order=draw_order, name=display_name, visible=True)
-                    request.properties.append(KeyValue(key='path', value=path))
-                    response = add_mapviz_display(request)
-                    if response.success:
-                        last_path = path
-                    else:
-                        rospy.logwarn("failed to update tileset: %s", response.message)
-        else:
-            if _gps_fix is not None:
-                # Select the geofile that contains the current GPS point.  If multiple
-                # geo-files contain the point, select the largest.  If no geo-files
-                # contain the point, select the closest one.
-                max_area = 0
-                path = None
-                for georef in georeferences:
-                    if _gps_fix.latitude > georef.min_lat and _gps_fix.latitude < georef.max_lat and _gps_fix.longitude > georef.min_lon and _gps_fix.longitude < georef.max_lon and georef.area > max_area:
-                        path = georef.path
-                        max_area = georef.area
-
-                if path is None:
-                    min_dist = float("inf")
-                    for georef in georeferences:
-                        lat = (georef.min_lat + georef.max_lat) / 2.0
-                        lon = (georef.min_lon + georef.max_lon) / 2.0
-                        dist = distance(lat, lon, _gps_fix.latitude, _gps_fix.longitude)
-                        if (dist < min_dist):
-                             min_dist = dist
-                             path = georef.path
-
-                # If the geo-file has changed, call the service for adding/updating
-                # the mapviz display
-                if path is not None and path != last_path:
-                    rospy.loginfo("updating tileset: %s", path);
-                    add_mapviz_display = rospy.ServiceProxy('add_mapviz_display', AddMapvizDisplay)
-                    request = AddMapvizDisplayRequest(type='mapviz_plugins/multires_image', draw_order=draw_order, name=display_name, visible=True)
-                    request.properties.append(KeyValue(key='path', value=path))
-                    response = add_mapviz_display(request)
-                    if response.success:
-                      last_path = path
-                    else:
-                      rospy.logwarn("failed to update tileset: %s", response.message)
+                self.get_logger().warn("  no utm zone!")
+                return None
+            if 'utm_band' in geodata:
+                band = str(geodata['utm_band'])
+                if band >= 'C' or band <= 'X':
+                    self.get_logger().info(f"  utm band: {band}")
+                else:
+                    self.get_logger().warn("  invalid utm band!")
+                    return None
             else:
-                rospy.loginfo("waiting for gps message: %s", rospy.resolve_name('gps'))
-        rospy.sleep(1.0 / rate)
+                self.get_logger().warn("  no utm band!")
+                return None
+
+            utm_proj = pyproj.Proj(proj='utm', zone=zone, ellps='WGS84', south=(band < 'N'))
+
+            if 'tiepoints' in geodata:
+                if len(geodata['tiepoints']) > 1:
+                    for point in geodata['tiepoints']:
+                        easting = point['point'][2]
+                        northing = point['point'][3]
+                        lon, lat = utm_proj(easting, northing, inverse=True)
+                        min_lon = min(lon, min_lon)
+                        max_lon = max(lon, max_lon)
+                        min_lat = min(lat, min_lat)
+                        max_lat = max(lat, max_lat)
+                else:
+                    self.get_logger().warn("  not enough tiepoints!")
+                    return None
+            else:
+                self.get_logger().warn("  no tiepoints!")
+                return None
+
+        area = (max_lat - min_lat) * (max_lon - min_lon)
+
+        self.get_logger().info(
+            f"  lat/lon bounds: ({min_lat:f}, {min_lon:f}) - ({max_lat:f}, {max_lon:f})")
+        return GeoReference(geofile, min_lat, min_lon, max_lat, max_lon, area)
+
+    def select_tileset(self, lat, lon):
+        # Select the geofile that contains the current point.  If multiple
+        # geo-files contain the point, select the largest.  If no geo-files
+        # contain the point, select the closest one.
+        max_area = 0
+        path = None
+        for georef in self.georeferences:
+            if lat > georef.min_lat and lat < georef.max_lat and \
+                    lon > georef.min_lon and lon < georef.max_lon and georef.area > max_area:
+                path = georef.path
+                max_area = georef.area
+
+        if path is None:
+            min_dist = float("inf")
+            for georef in self.georeferences:
+                clat = (georef.min_lat + georef.max_lat) / 2.0
+                clon = (georef.min_lon + georef.max_lon) / 2.0
+                dist = distance(clat, clon, lat, lon)
+                if dist < min_dist:
+                    min_dist = dist
+                    path = georef.path
+        return path
+
+    def update_tileset(self, path):
+        # If the geo-file has changed, call the service for adding/updating
+        # the mapviz display.
+        if path is None or path == self._last_path or self._request_pending:
+            return
+        self.get_logger().info(f"updating tileset: {path}")
+        request = AddMapvizDisplay.Request()
+        request.type = 'mapviz_plugins/multires_image'
+        request.draw_order = self.draw_order
+        request.name = self.display_name
+        request.visible = True
+        request.properties.append(KeyValue(key='path', value=path))
+        self._request_pending = True
+        future = self._client.call_async(request)
+        future.add_done_callback(lambda f: self.on_tileset_response(f, path))
+
+    def on_tileset_response(self, future, path):
+        self._request_pending = False
+        response = future.result()
+        if response.success:
+            self._last_path = path
+        else:
+            self.get_logger().warn(f"failed to update tileset: {response.message}")
+
+    def on_timer(self):
+        if self.use_local_xy:
+            if self._last_path is None and self.georeferences and self._local_xy is not None:
+                path = self.select_tileset(self._local_xy.pose.position.y,
+                                           self._local_xy.pose.position.x)
+                self.update_tileset(path)
+        else:
+            if self._gps_fix is not None:
+                path = self.select_tileset(self._gps_fix.latitude, self._gps_fix.longitude)
+                self.update_tileset(path)
+            else:
+                self.get_logger().info(
+                    f"waiting for gps message: {self.resolve_topic_name('gps')}")
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = MapvizTileLoader()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
+
 
 if __name__ == '__main__':
-    try:
-        load_tiles()
-    except rospy.ROSInterruptException: pass
+    main()
