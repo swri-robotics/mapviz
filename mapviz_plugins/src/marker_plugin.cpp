@@ -458,6 +458,16 @@ namespace mapviz_plugins
 
   void MarkerPlugin::Draw(double x, double y, double scale)
   {
+    // Marker scale is specified in meters (matching RViz), but glLineWidth and
+    // glPointSize take pixels.  Convert using the view scale (meters/pixel),
+    // clamped to at least one pixel so thin primitives stay visible.  When the
+    // user opts into legacy behavior, scale is treated directly as pixels.
+    const bool pixel_scale = ui_.usePixelScale->isChecked();
+    auto width_in_pixels = [pixel_scale, scale](float size_meters) -> float {
+      float pixels = pixel_scale ? size_meters : static_cast<float>(size_meters / scale);
+      return std::max(1.0f, pixels);
+    };
+
     for (size_t i = 0; i < ui_.nsList->count(); i++)
     {
       if (ui_.nsList->item(i)->checkState() == Qt::Checked)
@@ -497,11 +507,11 @@ namespace mapviz_plugins
       if (marker.display_type == visualization_msgs::msg::Marker::ARROW) {
         if (marker.points.size() == 1) {
           // If the marker only has one point, use scale_y as the arrow width.
-          glLineWidth(marker.scale_y);
+          glLineWidth(width_in_pixels(marker.scale_y));
         } else {
           // If the marker has both start and end points explicitly specified, use
           // scale_x as the shaft diameter.
-          glLineWidth(marker.scale_x);
+          glLineWidth(width_in_pixels(marker.scale_x));
         }
         glBegin(GL_LINES);
 
@@ -530,7 +540,7 @@ namespace mapviz_plugins
 
         glEnd();
       } else if (marker.display_type == visualization_msgs::msg::Marker::LINE_STRIP) {
-        glLineWidth(std::max(1.0f, marker.scale_x));
+        glLineWidth(width_in_pixels(marker.scale_x));
         glBegin(GL_LINE_STRIP);
 
         for (const auto &point : marker.points) {
@@ -543,7 +553,7 @@ namespace mapviz_plugins
 
         glEnd();
       } else if (marker.display_type == visualization_msgs::msg::Marker::LINE_LIST) {
-        glLineWidth(std::max(1.0f, marker.scale_x));
+        glLineWidth(width_in_pixels(marker.scale_x));
         glBegin(GL_LINES);
 
         for (const auto &point : marker.points) {
@@ -556,7 +566,7 @@ namespace mapviz_plugins
 
         glEnd();
       } else if (marker.display_type == visualization_msgs::msg::Marker::POINTS) {
-        glPointSize(std::max(1.0f, marker.scale_x));
+        glPointSize(width_in_pixels(marker.scale_x));
         glBegin(GL_POINTS);
 
         for (const auto &point : marker.points) {
@@ -703,6 +713,10 @@ namespace mapviz_plugins
   void MarkerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
   {
     LoadQosConfig(node, qos_);
+    if (node["use_pixel_scale"])
+    {
+      ui_.usePixelScale->setChecked(node["use_pixel_scale"].as<bool>());
+    }
     if (node["topic"])
     {
       std::string topic = TrimString(node["topic"].as<std::string>());
@@ -719,6 +733,10 @@ namespace mapviz_plugins
       << "topic"
       << YAML::Value
       << trimmed;
+    emitter << YAML::Key
+      << "use_pixel_scale"
+      << YAML::Value
+      << ui_.usePixelScale->isChecked();
     SaveQosConfig(emitter, qos_);
   }
 
