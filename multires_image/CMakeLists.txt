@@ -235,7 +235,10 @@ install(PROGRAMS nodes/mapviz_tile_loader
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
-  FILES_MATCHING PATTERN ".py" PATTERN ".launch"
+  FILES_MATCHING
+    PATTERN "*.launch.xml"
+    PATTERN "*.launch.py"
+    PATTERN "*.launch"
 )
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)

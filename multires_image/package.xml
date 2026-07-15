@@ -30,6 +30,13 @@
   <exec_depend>libqtopengl</exec_depend>
   <exec_depend>rclpy</exec_depend>
 
+  <!-- Runtime dependencies of the mapviz_tile_loader node. -->
+  <exec_depend>gps_msgs</exec_depend>
+  <exec_depend>mapviz_interfaces</exec_depend>
+  <exec_depend>marti_common_msgs</exec_depend>
+  <exec_depend>python3-pyproj</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />

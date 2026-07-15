@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="multires_image" exec="multires_view_node" name="multires_view">
+    <param name="image_path" value="$(find-pkg-share test_data)/track.geo"/>
+  </node>
+
+</launch>
