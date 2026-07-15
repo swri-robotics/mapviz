@@ -86,6 +86,17 @@ find_package(assimp REQUIRED)
 find_package(urdf REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
+# The move_base plugin drives Nav2's NavigateToPose action.  Nav2 is an
+# optional dependency: build the plugin only when nav2_msgs is present, so
+# mapviz_plugins itself does not force a dependency on the Nav2 stack.
+find_package(nav2_msgs QUIET)
+if(nav2_msgs_FOUND)
+  find_package(rclcpp_action REQUIRED)
+  message(STATUS "mapviz_plugins: nav2_msgs found; building the move_base plugin")
+else()
+  message(STATUS "mapviz_plugins: nav2_msgs not found; skipping the move_base plugin")
+endif()
+
 # urdf renamed model.h to model.hpp in some distros (not yet in ROS Humble).
 # Detect which header is actually available rather than assuming by distro.
 include(CheckIncludeFileCXX)
@@ -205,6 +216,13 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/tf_frame_plugin.hpp
   include/${PROJECT_NAME}/topic_select.hpp)
 
+# Append the optional move_base plugin's files only when Nav2 is available.
+if(nav2_msgs_FOUND)
+  list(APPEND UI_FILES ui/move_base_config.ui)
+  list(APPEND SRC_FILES src/move_base_plugin.cpp)
+  list(APPEND HEADER_FILES include/${PROJECT_NAME}/move_base_plugin.hpp)
+endif()
+
 set(MAPVIZ_PLUGINS_QT_LIBRARIES
   Qt${QT_VERSION_MAJOR}::Core
   Qt${QT_VERSION_MAJOR}::Gui
@@ -296,6 +314,13 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
 
+# Link the optional move_base plugin's dependencies when it is being built.
+if(nav2_msgs_FOUND)
+  target_link_libraries(${PROJECT_NAME} PUBLIC
+    ${nav2_msgs_TARGETS}
+    rclcpp_action::rclcpp_action)
+endif()
+
 ### Install the plugins ###
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
@@ -312,6 +337,12 @@ install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib)
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
+
+# Register and export the move_base plugin only when it was built.
+if(nav2_msgs_FOUND)
+  pluginlib_export_plugin_description_file(mapviz move_base_plugin.xml)
+  ament_export_dependencies(nav2_msgs rclcpp_action)
+endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(

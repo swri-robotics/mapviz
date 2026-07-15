@@ -25,10 +25,8 @@
   <class name="mapviz_plugins/textured_marker" type="mapviz_plugins::TexturedMarkerPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Textured marker mapviz plugin.</description>
   </class>
-  <!-- MoveBasePlugin is commented out until the plugin is ported to ROS 2 -->
-  <!--class name="mapviz_plugins/move_base" type="mapviz_plugins::MoveBasePlugin" base_class_type="mapviz::MapvizPlugin">
-    <description>Interface to the [move_base] action server.</description>
-  </class-->
+  <!-- MoveBasePlugin is declared in move_base_plugin.xml and registered only
+       when nav2_msgs is available at build time (see CMakeLists.txt). -->
   <class name="mapviz_plugins/grid" type="mapviz_plugins::GridPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Grid mapviz plugin.</description>
   </class>

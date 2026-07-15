@@ -1,0 +1,13 @@
+<!--
+  Plugin description for the move_base display.  This is a separate file from
+  mapviz_plugins.xml because the plugin is built only when nav2_msgs is
+  available (see CMakeLists.txt); it is registered with pluginlib only in that
+  case, so mapviz does not advertise a display it cannot load.
+-->
+<library path="mapviz_plugins">
+  <class name="mapviz_plugins/move_base"
+         type="mapviz_plugins::MoveBasePlugin"
+         base_class_type="mapviz::MapvizPlugin">
+    <description>Sends navigation goals and initial poses to a Nav2 NavigateToPose action server.</description>
+  </class>
+</library>
