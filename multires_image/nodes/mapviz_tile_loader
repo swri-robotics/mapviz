@@ -63,7 +63,7 @@ class MapvizTileLoader(Node):
         self.georeferences = self.load_georeferences()
 
         self._client = self.create_client(AddMapvizDisplay, 'add_mapviz_display')
-        self.get_logger().info("waiting for service: %s ..." % self._client.srv_name)
+        self.get_logger().info(f"waiting for service: {self._client.srv_name} ...")
         self._client.wait_for_service()
 
         self._timer = self.create_timer(1.0 / rate, self.on_timer)
@@ -92,7 +92,7 @@ class MapvizTileLoader(Node):
         return georeferences
 
     def parse_georeference(self, geofile):
-        self.get_logger().info("Parsing %s..." % geofile)
+        self.get_logger().info(f"Parsing {geofile}...")
         min_lat = 90.0
         max_lat = -90.0
         min_lon = 180.0
@@ -106,7 +106,7 @@ class MapvizTileLoader(Node):
             if 'utm_zone' in geodata:
                 zone = int(geodata['utm_zone'])
                 if zone >= 1 or zone <= 60:
-                    self.get_logger().info("  utm zone: %d" % zone)
+                    self.get_logger().info(f"  utm zone: {zone}")
                 else:
                     self.get_logger().warn("  invalid utm zone!")
                     return None
@@ -116,7 +116,7 @@ class MapvizTileLoader(Node):
             if 'utm_band' in geodata:
                 band = str(geodata['utm_band'])
                 if band >= 'C' or band <= 'X':
-                    self.get_logger().info("  utm band: %s" % band)
+                    self.get_logger().info(f"  utm band: {band}")
                 else:
                     self.get_logger().warn("  invalid utm band!")
                     return None
@@ -145,8 +145,8 @@ class MapvizTileLoader(Node):
 
         area = (max_lat - min_lat) * (max_lon - min_lon)
 
-        self.get_logger().info("  lat/lon bounds: (%lf, %lf) - (%lf, %lf)" %
-                               (min_lat, min_lon, max_lat, max_lon))
+        self.get_logger().info(
+            f"  lat/lon bounds: ({min_lat:f}, {min_lon:f}) - ({max_lat:f}, {max_lon:f})")
         return GeoReference(geofile, min_lat, min_lon, max_lat, max_lon, area)
 
     def select_tileset(self, lat, lon):
@@ -177,7 +177,7 @@ class MapvizTileLoader(Node):
         # the mapviz display.
         if path is None or path == self._last_path or self._request_pending:
             return
-        self.get_logger().info("updating tileset: %s" % path)
+        self.get_logger().info(f"updating tileset: {path}")
         request = AddMapvizDisplay.Request()
         request.type = 'mapviz_plugins/multires_image'
         request.draw_order = self.draw_order
@@ -194,7 +194,7 @@ class MapvizTileLoader(Node):
         if response.success:
             self._last_path = path
         else:
-            self.get_logger().warn("failed to update tileset: %s" % response.message)
+            self.get_logger().warn(f"failed to update tileset: {response.message}")
 
     def on_timer(self):
         if self.use_local_xy:
@@ -207,8 +207,8 @@ class MapvizTileLoader(Node):
                 path = self.select_tileset(self._gps_fix.latitude, self._gps_fix.longitude)
                 self.update_tileset(path)
             else:
-                self.get_logger().info("waiting for gps message: %s" %
-                                       self.resolve_topic_name("gps"))
+                self.get_logger().info(
+                    f"waiting for gps message: {self.resolve_topic_name('gps')}")
 
 
 def main(args=None):
