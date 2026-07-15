@@ -476,6 +476,32 @@ namespace mapviz_plugins
             grid_->info.origin.position.y,
             0.0);
 
+      // Apply the map origin's orientation.  RViz honors this, so ignoring it
+      // here makes maps with a rotated origin (e.g. a non-zero yaw) disagree
+      // with RViz.
+      tf2::Quaternion origin_orientation(
+            grid_->info.origin.orientation.x,
+            grid_->info.origin.orientation.y,
+            grid_->info.origin.orientation.z,
+            grid_->info.origin.orientation.w);
+      // A default-constructed (all-zero) quaternion is invalid; treat it as
+      // identity so maps that leave the orientation unset render as before.
+      if (origin_orientation.length2() < 1.0e-6)
+      {
+        origin_orientation = tf2::Quaternion(0.0, 0.0, 0.0, 1.0);
+      }
+      else
+      {
+        origin_orientation.normalize();
+      }
+
+      tf2Scalar origin_yaw, origin_pitch, origin_roll;
+      tf2::Matrix3x3(origin_orientation).getEulerYPR(origin_yaw, origin_pitch, origin_roll);
+
+      glRotatef(origin_pitch * RAD_TO_DEG, 0, 1, 0);
+      glRotatef(origin_roll  * RAD_TO_DEG, 1, 0, 0);
+      glRotatef(origin_yaw   * RAD_TO_DEG, 0, 0, 1);
+
       glScalef( resolution, resolution, 1.0);
 
       float width  = static_cast<float>(grid_->info.width);
