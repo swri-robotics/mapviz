@@ -37,6 +37,7 @@
 
 // QT libraries
 #include <QApplication>
+#include <QColor>
 #include <QCursor>
 #include <QMouseEvent>
 #include <QPainter>
@@ -55,6 +56,43 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MoveBasePlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
+namespace
+{
+// Geometry of the pose arrow drawn while dragging, in an arrow-local frame
+// (tip on +x, shaft centered on the origin).  Scaled by kArrowScale times the
+// view scale before being rotated to the drag angle and translated to the tail.
+struct ArrowPoint
+{
+  double x;
+  double y;
+};
+
+constexpr std::array<ArrowPoint, 7> kArrowShape = {{
+  {10.0,  0.0},   // tip
+  { 6.0, -2.5},   // barb, one side
+  { 6.5, -1.0},
+  { 0.0, -1.0},   // shaft, one side
+  { 0.0,  1.0},   // shaft, other side
+  { 6.5,  1.0},
+  { 6.0,  2.5}    // barb, other side
+}};
+
+constexpr double kArrowScale = 10.0;
+constexpr float kArrowLineWidth = 2.0F;
+
+// Arrow fill and outline colors.
+constexpr Qt::GlobalColor kArrowFillColor = Qt::green;
+constexpr Qt::GlobalColor kArrowOutlineColor = Qt::darkGreen;
+
+// How often to poll the action server for connectivity, in milliseconds.
+constexpr int kServerPollIntervalMs = 1000;
+
+// Publisher queue depth for /initialpose.
+constexpr int kInitialPoseQueueDepth = 1;
+
+// Throttle for status-label updates, in seconds.
+constexpr double kStatusThrottleSec = 1.0;
+}  // namespace
 
 MoveBasePlugin::MoveBasePlugin()
 : config_widget_(new QWidget())
@@ -100,17 +138,17 @@ MoveBasePlugin::~MoveBasePlugin()
 
 void MoveBasePlugin::PrintError(const std::string& message)
 {
-  PrintErrorHelper(ui_.status, message, 1.0);
+  PrintErrorHelper(ui_.status, message, kStatusThrottleSec);
 }
 
 void MoveBasePlugin::PrintInfo(const std::string& message)
 {
-  PrintInfoHelper(ui_.status, message, 1.0);
+  PrintInfoHelper(ui_.status, message, kStatusThrottleSec);
 }
 
 void MoveBasePlugin::PrintWarning(const std::string& message)
 {
-  PrintWarningHelper(ui_.status, message, 1.0);
+  PrintWarningHelper(ui_.status, message, kStatusThrottleSec);
 }
 
 QWidget* MoveBasePlugin::GetConfigWidget(QWidget* parent)
@@ -128,14 +166,14 @@ bool MoveBasePlugin::Initialize(QOpenGLWidget* canvas)
   canvas->doneCurrent();
 
   init_pose_pub_ = Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
-      "/initialpose", rclcpp::QoS(1));
+      "/initialpose", rclcpp::QoS(kInitialPoseQueueDepth));
   move_base_client_ = rclcpp_action::create_client<NavigateToPose>(
       NodeUnsafe(), "navigate_to_pose");
 
   // A QTimer (not a ROS wall timer) so timerCallback() runs on the GUI thread,
   // which owns the widgets and status it touches.
   QObject::connect(&timer_, &QTimer::timeout, this, &MoveBasePlugin::timerCallback);
-  timer_.start(1000);
+  timer_.start(kServerPollIntervalMs);
 
   initialized_ = true;
   return true;
@@ -194,6 +232,7 @@ void MoveBasePlugin::timerCallback()
       PrintError("Goal aborted by server");
       break;
     case IDLE:
+      // Fallthrough intentional
     default:
       PrintInfo("Ready to send command");
       break;
@@ -279,6 +318,7 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* event)
             status = CANCELED;
             break;
           case rclcpp_action::ResultCode::ABORTED:
+            // Fallthrough intentional
           default:
             status = ABORTED;
             break;
@@ -308,32 +348,24 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* event)
 
 void MoveBasePlugin::Draw(double x, double y, double scale)
 {
-  std::array<QPointF, 7> arrow_points;
-  arrow_points[0] = QPointF(10, 0);
-  arrow_points[1] = QPointF(6, -2.5);
-  arrow_points[2] = QPointF(6.5, -1);
-  arrow_points[3] = QPointF(0, -1);
-  arrow_points[4] = QPointF(0, 1);
-  arrow_points[5] = QPointF(6.5, 1);
-  arrow_points[6] = QPointF(6, 2.5);
-
   if (is_mouse_down_)
   {
     tf2::Quaternion quat;
     quat.setRPY(0.0, 0.0, arrow_angle_);
     tf2::Transform transform(quat);
 
-    QPointF transformed_points[7];
-    for (size_t i = 0; i < 7; i++)
+    std::array<QPointF, kArrowShape.size()> transformed_points;
+    for (size_t i = 0; i < kArrowShape.size(); i++)
     {
-      tf2::Vector3 point(arrow_points[i].x(), arrow_points[i].y(), 0);
-      point *= scale * 10;
+      tf2::Vector3 point(kArrowShape[i].x, kArrowShape[i].y, 0.0);
+      point *= (scale * kArrowScale);
       point = transform * point;
       transformed_points[i] = QPointF(point.x() + arrow_tail_position_.x(),
                                       point.y() + arrow_tail_position_.y());
     }
-    glColor3f(0.1, 0.9, 0.1);
-    glLineWidth(2);
+    const QColor fill_color(kArrowFillColor);
+    glColor3d(fill_color.redF(), fill_color.greenF(), fill_color.blueF());
+    glLineWidth(kArrowLineWidth);
     glBegin(GL_TRIANGLE_FAN);
     for (const QPointF& point : transformed_points)
     {
@@ -341,7 +373,8 @@ void MoveBasePlugin::Draw(double x, double y, double scale)
     }
     glEnd();
 
-    glColor3f(0.0, 0.6, 0.0);
+    const QColor outline_color(kArrowOutlineColor);
+    glColor3d(outline_color.redF(), outline_color.greenF(), outline_color.blueF());
     glBegin(GL_LINE_LOOP);
     for (const QPointF& point : transformed_points)
     {
