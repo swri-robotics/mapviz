@@ -125,6 +125,22 @@
    <item row="4" column="3">
     <widget class="QListWidget" name="nsList"/>
    </item>
+   <item row="6" column="3" colspan="2">
+    <widget class="QCheckBox" name="usePixelScale">
+     <property name="font">
+      <font>
+       <family>Sans Serif</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>When checked, marker scale.x/scale.y are interpreted as pixels (legacy mapviz behavior). When unchecked (default), they are interpreted as meters, matching RViz.</string>
+     </property>
+     <property name="text">
+      <string>Use pixel scale (legacy)</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>
