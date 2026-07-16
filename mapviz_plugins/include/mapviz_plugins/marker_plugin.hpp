@@ -140,6 +140,7 @@ private:
     tf2::Quaternion orientation;
 
     tf2::Vector3 transformed_point;
+    tf2::Quaternion transformed_orientation;
 
     tf2::Vector3 arrow_point;
     tf2::Vector3 transformed_arrow_point;

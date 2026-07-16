@@ -33,6 +33,8 @@
 
 #include <swri_math_util/constants.h>
 
+#include <tf2/utils.hpp>
+
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
 
@@ -303,13 +305,17 @@ namespace mapviz_plugins
           markerData.display_type == visualization_msgs::msg::Marker::TEXT_VIEW_FACING) {
         StampedPoint point;
         point.point = tf2::Vector3(0.0, 0.0, 0.0);
+        point.orientation = orientation;
         point.transformed_point = transform * (markerData.local_transform * point.point);
+        point.transformed_orientation = transform.GetOrientation() * point.orientation;
         point.color = markerData.color;
         markerData.points.push_back(point);
         markerData.text = marker.text;
       } else if (markerData.display_type == visualization_msgs::msg::Marker::CUBE) {
         StampedPoint point;
         point.color = markerData.color;
+        point.orientation = orientation;
+        point.transformed_orientation = transform.GetOrientation() * orientation;
 
         point.point = tf2::Vector3(marker.scale.x / 2, marker.scale.y / 2, 0.0);
         point.transformed_point = transform * (markerData.local_transform * point.point);
@@ -334,6 +340,8 @@ namespace mapviz_plugins
           markerData.display_type == visualization_msgs::msg::Marker::TRIANGLE_LIST) {
         markerData.points.reserve(marker.points.size());
         StampedPoint point;
+        point.orientation = orientation;
+        point.transformed_orientation = transform.GetOrientation() * orientation;
         for (unsigned int i = 0; i < marker.points.size(); i++)
         {
           point.point = tf2::Vector3(marker.points[i].x, marker.points[i].y, marker.points[i].z);
@@ -604,16 +612,23 @@ namespace mapviz_plugins
 
           glVertex2d(marker_x, marker_y);
 
+          // Spheres may be specified w/ only one scale value
+          if (marker.scale_y < 1e-6f) {
+            marker.scale_y = marker.scale_x;
+          }
+
+          double yaw = tf2::getYaw(point.transformed_orientation);
+          double cos_yaw = std::cos(yaw);
+          double sin_yaw = std::sin(yaw);
+
           for (int32_t i = 0; i <= 360; i += 10) {
             double radians =
               static_cast<double>(i) * static_cast<double>(swri_math_util::_deg_2_rad);
-            // Spheres may be specified w/ only one scale value
-            if (marker.scale_y == 0.0) {
-              marker.scale_y = marker.scale_x;
-            }
+            double ellipse_x = std::sin(radians) * marker.scale_x;
+            double ellipse_y = std::cos(radians) * marker.scale_y;
             glVertex2d(
-              marker_x + std::sin(radians) * marker.scale_x,
-              marker_y + std::cos(radians) * marker.scale_y);
+              marker_x + ellipse_x * cos_yaw - ellipse_y * sin_yaw,
+              marker_y + ellipse_x * sin_yaw + ellipse_y * cos_yaw);
           }
 
           glEnd();
@@ -702,6 +717,7 @@ namespace mapviz_plugins
           for (auto &point : marker.points)
           {
             point.transformed_point = transform * (marker.local_transform * point.point);
+            point.transformed_orientation = transform.GetOrientation() * point.orientation;
           }
         }
       } else {
