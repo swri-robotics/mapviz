@@ -202,6 +202,14 @@ namespace mapviz_plugins
           stamped_point.cov_points = swri_image_util::GetEllipsePoints(
               cov_matrix_2d, stamped_point.point, 3, 32);
 
+          // GetEllipsePoints returns points with z set to zero rather than
+          // the center's z; restore the odometry z so the ellipse stays
+          // centered on the point through 3D transforms.
+          for (auto& cov_point : stamped_point.cov_points)
+          {
+            cov_point.setZ(stamped_point.point.z());
+          }
+
           stamped_point.transformed_cov_points = stamped_point.cov_points;
         } else {
           RCLCPP_ERROR(Logger(), "Failed to project x, y, z covariance to xy-plane.");
