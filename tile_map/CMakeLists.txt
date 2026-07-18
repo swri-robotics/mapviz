@@ -33,12 +33,27 @@ find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 
-set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
-set(TILE_MAP_QT_COMPONENTS Core Gui Network OpenGL Widgets)
-if(QT_VERSION_MAJOR EQUAL 6)
-  list(APPEND TILE_MAP_QT_COMPONENTS OpenGLWidgets)
+set(QT_VERSION_MAJOR 5)
+find_package(Qt5 QUIET
+  COMPONENTS
+    Core
+    Gui
+    Network
+    OpenGL
+    Widgets
+)
+if(NOT Qt5_FOUND)
+  set(QT_VERSION_MAJOR 6)
+  find_package(Qt6 REQUIRED
+    COMPONENTS
+      Core
+      Gui
+      Network
+      OpenGL
+      OpenGLWidgets
+      Widgets
+  )
 endif()
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS ${TILE_MAP_QT_COMPONENTS})
 
 find_package(jsoncpp QUIET CONFIG)
 if(NOT TARGET jsoncpp_lib)
