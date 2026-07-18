@@ -53,9 +53,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
 find_package(qt_gui_cpp REQUIRED)
-set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
-find_package(Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}
-  REQUIRED
+
+set(QT_VERSION_MAJOR 5)
+find_package(Qt5 QUIET
   COMPONENTS
     Concurrent
     Core
@@ -63,12 +63,16 @@ find_package(Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}
     OpenGL
     Widgets
 )
-
-if(QT_VERSION_MAJOR EQUAL 6)
-  find_package(Qt6
-    REQUIRED
+if(NOT Qt5_FOUND)
+  set(QT_VERSION_MAJOR 6)
+  find_package(Qt6 REQUIRED
     COMPONENTS
+      Concurrent
+      Core
+      Gui
+      OpenGL
       OpenGLWidgets
+      Widgets
   )
 endif()
 

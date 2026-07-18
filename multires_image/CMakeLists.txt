@@ -27,20 +27,25 @@ find_package(tf2 REQUIRED)
 find_package(swri_transform_util  REQUIRED)
 find_package(swri_math_util REQUIRED)
 
-set(QT_VERSION_MAJOR "${qt_gui_cpp_USE_QT_MAJOR_VERSION}")
-set(MULTIRES_IMAGE_QT_COMPONENTS
-  Core
-  Gui
-  OpenGL
-  Widgets)
-if(QT_VERSION_MAJOR EQUAL 6)
-  list(APPEND MULTIRES_IMAGE_QT_COMPONENTS OpenGLWidgets)
-endif()
-
-find_package(Qt${QT_VERSION_MAJOR}
-  REQUIRED
+set(QT_VERSION_MAJOR 5)
+find_package(Qt5 QUIET
   COMPONENTS
-    ${MULTIRES_IMAGE_QT_COMPONENTS})
+    Core
+    Gui
+    OpenGL
+    Widgets
+)
+if(NOT Qt5_FOUND)
+  set(QT_VERSION_MAJOR 6)
+  find_package(Qt6 REQUIRED
+    COMPONENTS
+      Core
+      Gui
+      OpenGL
+      OpenGLWidgets
+      Widgets
+  )
+endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
