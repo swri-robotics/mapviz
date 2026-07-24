@@ -67,7 +67,7 @@ namespace mapviz_plugins
   void PointDrawingPlugin::ClearHistory()
   {
     RCLCPP_INFO(Logger(), "PointDrawingPlugin::ClearHistory()");
-    points_.clear();
+    ClearPoints();
   }
 
   void PointDrawingPlugin::DrawIcon()
@@ -197,6 +197,11 @@ namespace mapviz_plugins
   void PointDrawingPlugin::ClearPoints()
   {
     points_.clear();
+
+    // cur_point_ is drawn alongside points_ (see DrawLines(), DrawArrows() and
+    // DrawCovariance()), so it has to be reset as well or the last point
+    // received would keep being rendered after a clear.
+    cur_point_ = StampedPoint();
   }
 
   double PointDrawingPlugin::bufferSize() const
