@@ -33,6 +33,7 @@
 // QT libraries
 #include <QDialog>
 #include <QOpenGLWidget>
+#include <QSignalBlocker>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -43,6 +44,7 @@
 
 // C++ standard libraries
 #include <cstdio>
+#include <limits>
 #include <map>
 #include <string>
 #include <utility>
@@ -233,8 +235,6 @@ namespace mapviz_plugins
         &PointCloud2Plugin::DecodeScan,
         [this](std::shared_ptr<Scan> scan) { handleScan(scan); });
       need_new_list_ = true;
-      max_.clear();
-      min_.clear();
     }
   }
 
@@ -247,18 +247,6 @@ namespace mapviz_plugins
     if (num_of_feats_ > 0 && color_transformer > 0)
     {
       val = point.features[transformer_index];
-      if (need_minmax_)
-      {
-        if (val > max_[transformer_index])
-        {
-          max_[transformer_index] = val;
-        }
-
-        if (val < min_[transformer_index])
-        {
-          min_[transformer_index] = val;
-        }
-      }
     } else {
       // No intensity or  (color_transformer == COLOR_FLAT)
       return ui_.min_color->color();
@@ -270,17 +258,14 @@ namespace mapviz_plugins
         return QColor(pixelColor[2], pixelColor[1], pixelColor[0], 255);
     }
 
+    // min_value_/max_value_ are settled before any point is colored -- by the
+    // user in manual mode, by UpdateAutoRange() in auto mode -- so every point
+    // of a given pass is normalized against the same range.
     if (max_value_ > min_value_)
     {
       val = (val - min_value_) / (max_value_ - min_value_);
     }
     val = std::max(0.0f, std::min(val, 1.0f));
-
-    if (ui_.use_automaxmin->isChecked())
-    {
-      max_value_ = max_[transformer_index];
-      min_value_ = min_[transformer_index];
-    }
 
     if (ui_.use_rainbow->isChecked())
     {  // Hue Interpolation
@@ -313,22 +298,26 @@ namespace mapviz_plugins
     return -1;
   }
 
+  void PointCloud2Plugin::ColorScan(Scan& scan)
+  {
+    scan.gl_color.clear();
+    scan.gl_color.reserve(scan.points.size()*4);
+    for (const StampedPoint& point : scan.points)
+    {
+      const QColor color = CalculateColor(point);
+      scan.gl_color.push_back( color.red());
+      scan.gl_color.push_back( color.green());
+      scan.gl_color.push_back( color.blue());
+      scan.gl_color.push_back( static_cast<uint8_t>(alpha_ * 255.0 ) );
+    }
+  }
+
   void PointCloud2Plugin::UpdateColors()
   {
+    UpdateAutoRange();
+    for (Scan& scan : scans_)
     {
-      for (Scan& scan : scans_)
-      {
-        scan.gl_color.clear();
-        scan.gl_color.reserve(scan.points.size()*4);
-        for (const StampedPoint& point : scan.points)
-        {
-          const QColor color = CalculateColor(point);
-          scan.gl_color.push_back( color.red());
-          scan.gl_color.push_back( color.green());
-          scan.gl_color.push_back( color.blue());
-          scan.gl_color.push_back( static_cast<uint8_t>(alpha_ * 255.0 ) );
-        }
-      }
+      ColorScan(scan);
     }
     canvas_->update();
   }
@@ -501,9 +490,6 @@ namespace mapviz_plugins
 
     num_of_feats_ = scan->new_features.size();
 
-    max_.resize(num_of_feats_);
-    min_.resize(num_of_feats_);
-
     int label = 1;
     if (need_new_list_)
     {
@@ -546,19 +532,12 @@ namespace mapviz_plugins
     scan->gl_point.clear();
     scan->gl_point.reserve(scan->points.size()*2);
     scan->gl_color.clear();
-    scan->gl_color.reserve(scan->points.size()*4);
 
     for (const StampedPoint& point : scan->points)
     {
       const tf2::Vector3 transformed_point = transform * point.point;
       scan->gl_point.push_back( transformed_point.getX() );
       scan->gl_point.push_back( transformed_point.getY() );
-
-      const QColor color = CalculateColor(point);
-      scan->gl_color.push_back( color.red());
-      scan->gl_color.push_back( color.green());
-      scan->gl_color.push_back( color.blue());
-      scan->gl_color.push_back( static_cast<uint8_t>(alpha_ * 255.0 ) );
     }
 
     if (buffer_size_ > 0)
@@ -569,6 +548,19 @@ namespace mapviz_plugins
       }
     }
     scans_.push_back( std::move(*scan) );
+
+    // Colors are deferred until the new cloud is in the buffer, so an auto range
+    // covers exactly what is on screen.  A range that moved invalidates every
+    // buffered scan's colors, not just the new one's; otherwise only the scans
+    // still lacking colors need them.
+    const bool range_changed = UpdateAutoRange();
+    for (Scan& buffered : scans_)
+    {
+      if (range_changed || buffered.gl_color.empty())
+      {
+        ColorScan(buffered);
+      }
+    }
 
     canvas_->update();
   }
@@ -856,6 +848,63 @@ namespace mapviz_plugins
     config_widget_->adjustSize();
 
     Q_EMIT SizeChanged();
+  }
+
+  bool PointCloud2Plugin::UpdateAutoRange()
+  {
+    if (!need_minmax_)
+    {
+      // Manual mode: the spin boxes are the source of truth.
+      return false;
+    }
+
+    const int color_transformer = ui_.color_transformer->currentIndex();
+    if (color_transformer <= COLOR_FLAT || num_of_feats_ == 0 ||
+        ui_.unpack_rgb->isChecked())
+    {
+      // Nothing is being scaled against a range, so there is none to report.
+      return false;
+    }
+    const size_t transformer_index = static_cast<size_t>(color_transformer) - 1;
+
+    // Recomputed from scratch over what is currently buffered rather than
+    // accumulated forever, so the range tracks the data on screen and shrinks
+    // again once outliers age out of the buffer.
+    double min = std::numeric_limits<double>::max();
+    double max = -std::numeric_limits<double>::max();
+    for (const Scan& scan : scans_)
+    {
+      for (const StampedPoint& point : scan.points)
+      {
+        // Buffered scans can predate a change in the cloud's field layout.
+        if (transformer_index >= point.features.size())
+        {
+          continue;
+        }
+        const double val = point.features[transformer_index];
+        min = std::min(min, val);
+        max = std::max(max, val);
+      }
+    }
+
+    if (min > max)
+    {
+      // No points contributed; leave the previous range in place.
+      return false;
+    }
+
+    const bool changed = min != min_value_ || max != max_value_;
+    min_value_ = min;
+    max_value_ = max;
+
+    // Blocked so this does not re-enter MinValueChanged()/MaxValueChanged()
+    // and trigger another recolor.
+    const QSignalBlocker block_min(ui_.minValue);
+    const QSignalBlocker block_max(ui_.maxValue);
+    ui_.minValue->setValue(min_value_);
+    ui_.maxValue->setValue(max_value_);
+
+    return changed;
   }
 
   /**

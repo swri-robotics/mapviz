@@ -143,7 +143,15 @@ private:
   void handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
   void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
   QColor CalculateColor(const StampedPoint& point);
+  void ColorScan(Scan& scan);
   void UpdateMinMaxWidgets();
+  // In auto mode, recomputes min_value_/max_value_ over the buffered scans for
+  // the active color transformer and mirrors them into the min/max spin boxes,
+  // so the computed bounds are visible and become the starting point for manual
+  // tuning when "Use Auto Max/Min" is switched back off.  Returns true if the
+  // range moved, which invalidates the colors of every buffered scan.  No-op
+  // returning false unless auto mode is on.
+  bool UpdateAutoRange();
 
   Ui::PointCloud2_config ui_{};
   QWidget* config_widget_;
@@ -160,8 +168,6 @@ private:
   bool need_new_list_;
   std::string saved_color_transformer_;
   bool need_minmax_;
-  std::vector<double> max_;
-  std::vector<double> min_;
   // Use a list instead of a deque for scans to facilitate removing
   // timed-out scans in the middle of the list in case I ever re-implement
   // decay time (evenator)
