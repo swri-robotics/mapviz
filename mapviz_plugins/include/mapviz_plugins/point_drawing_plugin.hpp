@@ -41,6 +41,7 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
+#include <swri_transform_util/transform.h>
 #include <tf2/transform_datatypes.hpp>
 
 // C++ standard libraries
@@ -92,7 +93,12 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctio
   virtual bool DrawLines();
   virtual void CollectLaps();
   virtual bool DrawLapsArrows();
-  virtual bool TransformPoint(StampedPoint& point);
+  // Projects a single point with an already-resolved transform.  Transform()
+  // resolves one transform per pass and applies it to the whole route, so
+  // points no longer each carry the transform that was current when they
+  // arrived.
+  virtual void TransformPoint(StampedPoint& point,
+                              const swri_transform_util::Transform& transform);
   virtual void UpdateColor(QColor base_color, int i);
   virtual void DrawCovariance();
 

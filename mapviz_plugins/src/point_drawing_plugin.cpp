@@ -160,17 +160,10 @@ namespace mapviz_plugins
 
   void PointDrawingPlugin::ResetTransformedPoints()
   {
-    for (std::deque<StampedPoint>& lap : laps_)
-    {
-      for (StampedPoint& point : lap)
-      {
-        point.transformed = false;
-      }
-    }
-    for (StampedPoint& point : points_)
-    {
-      point.transformed = false;
-    }
+    // Transform() re-projects everything from the raw points on every pass, so
+    // there is no cached state left to invalidate first.  Kept because callers
+    // (arrow size, draw style, target frame) need the route re-projected before
+    // the next draw rather than on the next frame.
     Transform();
   }
 
@@ -382,86 +375,111 @@ namespace mapviz_plugins
     }
   }
 
-  bool PointDrawingPlugin::TransformPoint(StampedPoint& point)
+  void PointDrawingPlugin::TransformPoint(
+    StampedPoint& point,
+    const swri_transform_util::Transform& transform)
   {
-    if ( point.transformed )
-    {
-      return true;
-    }
+    point.transformed_point = transform * point.point;
 
-    swri_transform_util::Transform transform;
-    if( GetTransform(point.source_frame, point.stamp, transform))
+    if (draw_style_ == ARROWS)
     {
-      point.transformed_point = transform * point.point;
+      tf2::Transform orientation(tf2::Transform(transform.GetOrientation()) *
+                                point.orientation);
 
-      if (draw_style_ == ARROWS)
+      double size = static_cast<double>(arrow_size_);
+      if (static_arrow_sizes_)
       {
-        tf2::Transform orientation(tf2::Transform(transform.GetOrientation()) *
-                                  point.orientation);
+        size *= scale_;
+      } else {
+        size /= 10.0;
+      }
+      double arrow_width = size / 5.0;
+      double head_length = size * 0.75;
 
-        double size = static_cast<double>(arrow_size_);
-        if (static_arrow_sizes_)
-        {
-          size *= scale_;
-        } else {
-          size /= 10.0;
-        }
-        double arrow_width = size / 5.0;
-        double head_length = size * 0.75;
-
-        // If quaternion malformed, just draw point instead
-        const tf2::Quaternion q(point.orientation);
-        if(std::fabs(q.x()*q.x() + q.y()*q.y() + q.z()*q.z() + q.w()*q.w() - 1) > 0.01)
-        {
-          orientation = tf2::Transform(tf2::Transform(transform.GetOrientation()));
-          arrow_width = 0.0;
-          head_length = 0.0;
-          size = 0;
-        }
-
-        point.transformed_arrow_point =
-            point.transformed_point + orientation * tf2::Vector3(size, 0.0, 0.0);
-        point.transformed_arrow_left =
-            point.transformed_point + orientation * tf2::Vector3(head_length, -arrow_width, 0.0);
-        point.transformed_arrow_right =
-            point.transformed_point + orientation * tf2::Vector3(head_length, arrow_width, 0.0);
+      // If quaternion malformed, just draw point instead
+      const tf2::Quaternion q(point.orientation);
+      if(std::fabs(q.x()*q.x() + q.y()*q.y() + q.z()*q.z() + q.w()*q.w() - 1) > 0.01)
+      {
+        orientation = tf2::Transform(tf2::Transform(transform.GetOrientation()));
+        arrow_width = 0.0;
+        head_length = 0.0;
+        size = 0;
       }
 
-      if (covariance_checked_)
-      {
-        for (uint32_t i = 0; i < point.cov_points.size(); i++)
-        {
-          point.transformed_cov_points[i] = transform * point.cov_points[i];
-        }
-      }
-      point.transformed = true;
-      return true;
+      point.transformed_arrow_point =
+          point.transformed_point + orientation * tf2::Vector3(size, 0.0, 0.0);
+      point.transformed_arrow_left =
+          point.transformed_point + orientation * tf2::Vector3(head_length, -arrow_width, 0.0);
+      point.transformed_arrow_right =
+          point.transformed_point + orientation * tf2::Vector3(head_length, arrow_width, 0.0);
     }
-    point.transformed = false;
-    return false;
+
+    if (covariance_checked_)
+    {
+      for (uint32_t i = 0; i < point.cov_points.size(); i++)
+      {
+        point.transformed_cov_points[i] = transform * point.cov_points[i];
+      }
+    }
+    point.transformed = true;
   }
 
   void PointDrawingPlugin::Transform()
   {
-    bool transformed = false;
+    // The whole route is re-projected with one most-recent transform on every
+    // pass, rather than each point keeping whichever transform happened to be
+    // current when it arrived.  Caching per-point results made the drawn route
+    // depend on arrival timing: any action that invalidated the cache
+    // re-projected the backlog against a single transform and visibly shifted
+    // the route.  Re-projecting every pass keeps the route self-consistent, and
+    // one lookup per pass costs less than the per-point lookups it replaces.
+    // Every point is looked up at the newest stamp, so the route is placed by
+    // where its frame is *now*.  Points of a route normally share one source
+    // frame, making this a single lookup per pass; a frame that changes
+    // mid-route (a tf trail stores its points in the target frame, so retargeting
+    // mapviz leaves older points behind in the previous one) leaves a contiguous
+    // run of older points that this still resolves against their own frame.
+    std::string resolved_frame;
+    swri_transform_util::Transform resolved_transform;
+    bool have_resolved = false;
+    bool resolved_ok = false;
+    bool any_transformed = false;
+
+    auto project = [&](StampedPoint& point)
+    {
+      if (!have_resolved || point.source_frame != resolved_frame)
+      {
+        resolved_frame = point.source_frame;
+        resolved_ok =
+            GetTransform(resolved_frame, cur_point_.stamp, resolved_transform);
+        have_resolved = true;
+      }
+
+      if (resolved_ok)
+      {
+        TransformPoint(point, resolved_transform);
+        any_transformed = true;
+      } else {
+        point.transformed = false;
+      }
+    };
 
     for (auto &pt : points_)
     {
-      transformed = transformed | TransformPoint(pt);
+      project(pt);
     }
 
-    transformed = transformed | TransformPoint(cur_point_);
-    if (!laps_.empty())
+    project(cur_point_);
+
+    for (auto &lap : laps_)
     {
-      for (auto &lap : laps_)
+      for (auto &pt : lap)
       {
-        for (auto &pt : lap)
-        {
-          transformed = transformed | TransformPoint(pt);
-        }
+        project(pt);
       }
     }
-    if (!points_.empty() && !transformed)
+
+    if (!points_.empty() && !any_transformed)
     {
       PrintError("No transform between " + cur_point_.source_frame + " and " +
                  target_frame_);
