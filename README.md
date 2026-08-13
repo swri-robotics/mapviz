@@ -8,6 +8,13 @@ Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in s
 
 ![](https://github.com/swri-robotics/mapviz/wiki/mapviz.png)
 
+v4.0.0 Special Note
+-----
+v4.0.0 introduced several breaking changes.
+
+- Many header files had their extensions changed from `.h` to `.hpp` to conform to ROS conventions.
+- The UI and ROS callbacks were split into separate threads. This significantly impacts the plugin architecture. Please see the documentation for instructions on how to safely apply these changes and for examples of plugins that use the new architecture.
+
 Usage
 -----
 
