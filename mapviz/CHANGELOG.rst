@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.0 (2026-08-12)
+------------------
 * Switching to prefer Qt5 over Qt6 for systems where both are installed (`#899 <https://github.com/swri-robotics/mapviz/issues/899>`_)
 * Add Helper Functions for New Threading Model (`#890 <https://github.com/swri-robotics/mapviz/issues/890>`_)
 * Separate ROS and UI Threads (`#887 <https://github.com/swri-robotics/mapviz/issues/887>`_)

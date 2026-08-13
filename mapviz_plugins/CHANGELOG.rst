@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.0 (2026-08-12)
+------------------
 * Update Drawn Route When Transforms Change (`#902 <https://github.com/swri-robotics/mapviz/issues/902>`_)
 * Improving autocalculation of pointcloud colors (`#901 <https://github.com/swri-robotics/mapviz/issues/901>`_)
 * Clear cur_point\_ when other points are cleared (`#900 <https://github.com/swri-robotics/mapviz/issues/900>`_)
