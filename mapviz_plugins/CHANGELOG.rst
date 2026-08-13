@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.1 (2026-08-13)
+------------------
 * Checking cv_bridge version when setting compile flag instead of ROS_DISTRO (`#904 <https://github.com/swri-robotics/mapviz/issues/904>`_)
 * Contributors: David Anthony
 

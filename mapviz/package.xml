@@ -1,6 +1,6 @@
 <package format="3">
   <name>mapviz</name>
-  <version>4.0.0</version>
+  <version>4.0.1</version>
   <description>
     2D mapping display with extensible data overlays 
   </description>
