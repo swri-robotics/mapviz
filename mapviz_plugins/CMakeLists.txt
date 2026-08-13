@@ -279,8 +279,8 @@ target_compile_definitions(${PROJECT_NAME}
   PRIVATE
     WFlags=WindowFlags)
 
-# Iron and later switched some cv_bridge files to .hpp from .h
-if ("$ENV{ROS_DISTRO}" STRLESS "iron")
+# cv_bridge 3.5.0 (ROS 2 Iron) started transitioning some files from .h to .hpp extensions
+if (cv_bridge_VERSION VERSION_LESS "3.5.0")
   target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CVBRIDGE_H_FILES)
 endif()
 
