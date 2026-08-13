@@ -2,6 +2,16 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Switching to prefer Qt5 over Qt6 for systems where both are installed (`#899 <https://github.com/swri-robotics/mapviz/issues/899>`_)
+* Add Helper Functions for New Threading Model (`#890 <https://github.com/swri-robotics/mapviz/issues/890>`_)
+* Separate ROS and UI Threads (`#887 <https://github.com/swri-robotics/mapviz/issues/887>`_)
+  * Separating ROS and Qt functionality on separate threads. This is an API breaking change, but significantly improves the system responsiveness and performance.
+* Fixing wrong profiling code (`#886 <https://github.com/swri-robotics/mapviz/issues/886>`_)
+* Update for Deprecated Functionality (`#885 <https://github.com/swri-robotics/mapviz/issues/885>`_)
+* Contributors: David Anthony
+
 3.1.0 (2026-07-08)
 ------------------
 * Dual Support for Qt5 and Qt6 (`#873 <https://github.com/swri-robotics/mapviz/issues/873>`_)

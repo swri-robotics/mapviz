@@ -2,6 +2,23 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update Drawn Route When Transforms Change (`#902 <https://github.com/swri-robotics/mapviz/issues/902>`_)
+* Improving autocalculation of pointcloud colors (`#901 <https://github.com/swri-robotics/mapviz/issues/901>`_)
+* Clear cur_point\_ when other points are cleared (`#900 <https://github.com/swri-robotics/mapviz/issues/900>`_)
+* Switching to prefer Qt5 over Qt6 for systems where both are installed (`#899 <https://github.com/swri-robotics/mapviz/issues/899>`_)
+* Use ellipse z when rendering covariance (`#898 <https://github.com/swri-robotics/mapviz/issues/898>`_)
+* Using marker rotation when rendering (`#897 <https://github.com/swri-robotics/mapviz/issues/897>`_)
+* Adding option to display markers scaled to either meters or pixels (`#895 <https://github.com/swri-robotics/mapviz/issues/895>`_)
+* Render Occupancy Grid with Correct Orientation (`#896 <https://github.com/swri-robotics/mapviz/issues/896>`_)
+* Re-Add move_base Plugin (`#893 <https://github.com/swri-robotics/mapviz/issues/893>`_)
+* Add Helper Functions for New Threading Model (`#890 <https://github.com/swri-robotics/mapviz/issues/890>`_)
+* Separate ROS and UI Threads (`#887 <https://github.com/swri-robotics/mapviz/issues/887>`_)
+  * Separating ROS and Qt functionality on separate threads. This is an API breaking change, but significantly improves the system responsiveness and performance.
+* Update for Deprecated Functionality (`#885 <https://github.com/swri-robotics/mapviz/issues/885>`_)
+* Contributors: David Anthony
+
 3.1.0 (2026-07-08)
 ------------------
 * Dual Support for Qt5 and Qt6 (`#873 <https://github.com/swri-robotics/mapviz/issues/873>`_)

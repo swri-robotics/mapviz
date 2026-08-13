@@ -2,6 +2,14 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Switching to prefer Qt5 over Qt6 for systems where both are installed (`#899 <https://github.com/swri-robotics/mapviz/issues/899>`_)
+* Adding ROS 2 Version of multires tile loader (`#894 <https://github.com/swri-robotics/mapviz/issues/894>`_)
+* Add Helper Functions for New Threading Model (`#890 <https://github.com/swri-robotics/mapviz/issues/890>`_)
+* Update for Deprecated Functionality (`#885 <https://github.com/swri-robotics/mapviz/issues/885>`_)
+* Contributors: David Anthony
+
 3.1.0 (2026-07-08)
 ------------------
 * Dual Support for Qt5 and Qt6 (`#873 <https://github.com/swri-robotics/mapviz/issues/873>`_)
