@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.2 (2026-08-15)
+------------------
 * mapviz: Export pkg-config dependency (`#905 <https://github.com/swri-robotics/mapviz/issues/905>`_)
 * Contributors: Michal Sojka
 
