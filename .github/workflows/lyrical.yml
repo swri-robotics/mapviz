@@ -1,0 +1,16 @@
+name: Lyrical
+
+on: [push, pull_request]
+
+jobs:
+  industrial_ci:
+    strategy:
+      matrix:
+        env:
+          - {ROS_DISTRO: lyrical, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: lyrical, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}
