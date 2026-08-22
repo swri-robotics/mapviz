@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.3 (2026-08-22)
+------------------
 * Updating to use new tf2_ros API (`#907 <https://github.com/swri-robotics/mapviz/issues/907>`_)
 * Contributors: David Anthony
 
