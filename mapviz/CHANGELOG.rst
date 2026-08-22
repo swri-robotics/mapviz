@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updating to use new tf2_ros API (`#907 <https://github.com/swri-robotics/mapviz/issues/907>`_)
+* Contributors: David Anthony
+
 4.0.2 (2026-08-15)
 ------------------
 * mapviz: Export pkg-config dependency (`#905 <https://github.com/swri-robotics/mapviz/issues/905>`_)
