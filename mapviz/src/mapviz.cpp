@@ -407,12 +407,22 @@ void Mapviz::Initialize()
     dynamic_tf_qos.durability_volatile();
     tf_buf_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_buf_->setUsingDedicatedThread(true);
+    // tf2_ros 0.46.1 removed the deprecated constructor overload that accepted a
+    // Node::SharedPtr, requiring a bare node reference instead.
+#if USE_NEW_TF2_ROS_CTORS
+    tf_ = std::make_shared<tf2_ros::TransformListener>(
+      *tf_buf_,
+      *node_,
+      false,
+      dynamic_tf_qos);
+#else
     tf_ = std::make_shared<tf2_ros::TransformListener>(
       *tf_buf_,
       node_,
       false,
       dynamic_tf_qos);
-    
+#endif
+
     tf_manager_ = std::make_shared<swri_transform_util::TransformManager>(node_);
     try
     {

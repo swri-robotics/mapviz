@@ -99,6 +99,17 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
+# tf2_ros 0.46.1 removed the deprecated TransformListener constructor overload
+# that accepted a Node::SharedPtr, requiring a bare node reference instead.
+# Older tf2_ros releases (e.g. on Kilted) don't provide tf2_ros/version.h at
+# all, so this has to be a CMake-time check rather than a runtime
+# TF2_ROS_VERSION_GTE macro.
+if("${tf2_ros_VERSION}" VERSION_GREATER_EQUAL "0.46.1")
+  set(USE_NEW_TF2_ROS_CTORS 1)
+else()
+  set(USE_NEW_TF2_ROS_CTORS 0)
+endif()
+
 find_package(OpenCV QUIET CONFIG COMPONENTS core highgui imgcodecs imgproc videoio)
 if(NOT OpenCV_FOUND)
   find_package(PkgConfig REQUIRED)
@@ -221,6 +232,9 @@ if(MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF)
     MAPVIZ_IMAGE_TRANSPORT_TAKES_NODE_REF
   )
 endif()
+target_compile_definitions(${PROJECT_NAME}_core PRIVATE
+  USE_NEW_TF2_ROS_CTORS=${USE_NEW_TF2_ROS_CTORS}
+)
 
 set_target_properties(${PROJECT_NAME}_core PROPERTIES
   AUTOMOC ON
