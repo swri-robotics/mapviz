@@ -168,6 +168,15 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(test_${PROJECT_NAME}_view test/test_${PROJECT_NAME}_view.cpp)
+  if(TARGET test_${PROJECT_NAME}_view)
+    target_link_libraries(test_${PROJECT_NAME}_view ${PROJECT_NAME})
+  endif()
+endif()
+
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   mapviz
