@@ -60,8 +60,16 @@ namespace tile_map
     std::vector<tf2::Vector3> points_t;
   };
 
+  class TileMapViewTest;
+
   class TileMapView : protected QOpenGLFunctions_1_1
   {
+    /// The tile geometry and the transform applied to it belong to the render
+    /// thread; they are deliberately not reachable through the public API. The
+    /// unit test fixture is a friend so that it can check what SetTransform()
+    /// applied without opening them up to anything else.
+    friend class TileMapViewTest;
+
   public:
     explicit TileMapView(rclcpp::Logger logger = rclcpp::get_logger("tile_map::TileMapView"));
 
