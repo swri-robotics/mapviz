@@ -166,6 +166,7 @@ namespace mapviz_plugins
   void RoutePlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
+    connectRouteCallback(topic, qos_);
   }
 
   void RoutePlugin::connectRouteCallback(const std::string& topic, const rmw_qos_profile_t& qos)
@@ -211,7 +212,7 @@ namespace mapviz_plugins
         position_topic_ = topic;
         position_qos_ = qos;
         Subscribe<marti_nav_msgs::msg::RoutePosition>(
-          topic_, qos, position_sub_,
+          position_topic_, qos, position_sub_,
           [this](marti_nav_msgs::msg::RoutePosition::ConstSharedPtr msg) {
             handleRoutePosition(msg);
           });
