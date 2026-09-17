@@ -133,19 +133,35 @@ namespace mapviz_plugins
 
   void PlanRoutePlugin::PublishRoute()
   {
-    if (route_preview_)
+    if (!route_preview_)
     {
-      if (route_topic_ != ui_.topic->text().toStdString())
-      {
-        route_topic_ = ui_.topic->text().toStdString();
-        route_pub_.reset();
-        route_pub_ = Publisher<marti_nav_msgs::msg::Route>(
-          route_topic_,
-          rclcpp::QoS(1));
-      }
-
-      route_pub_->publish(*route_preview_->toMsgPtr());
+      return;
     }
+
+    const std::string topic = ui_.topic->text().trimmed().toStdString();
+    if (topic.empty())
+    {
+      // create_publisher() rejects an empty topic name, and without a
+      // publisher there is nothing to publish to.
+      route_pub_.reset();
+      route_topic_.clear();
+      PrintError("Route topic may not be empty.");
+      return;
+    }
+
+    // Also rebuild the publisher when it is missing; route_topic_ starts out
+    // empty, so an empty topic field used to skip this block entirely and
+    // leave route_pub_ null.
+    if (route_topic_ != topic || !route_pub_)
+    {
+      route_topic_ = topic;
+      route_pub_.reset();
+      route_pub_ = Publisher<marti_nav_msgs::msg::Route>(
+        route_topic_,
+        rclcpp::QoS(1));
+    }
+
+    route_pub_->publish(*route_preview_->toMsgPtr());
   }
 
   void PlanRoutePlugin::PlanRoute()

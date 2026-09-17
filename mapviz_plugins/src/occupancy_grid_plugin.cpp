@@ -273,8 +273,12 @@ namespace mapviz_plugins
           });
         if(ui_.checkbox_update->isChecked())
         {
+          // Updates are published on a sibling "<topic>_updates" topic (the
+          // nav2/RViz convention the checkbox label refers to).  Subscribing
+          // OccupancyGridUpdate to the grid topic itself can never match the
+          // grid publisher, so updates were silently never received.
           Subscribe<map_msgs::msg::OccupancyGridUpdate>(
-            topic, qos, update_sub_,
+            topic + "_updates", qos, update_sub_,
             [this](map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg) {
               handleGridUpdate(msg);
             });
@@ -289,12 +293,15 @@ namespace mapviz_plugins
     const std::string topic = ui_.topic_grid->text().trimmed().toStdString();
     update_sub_.reset();
 
-    if (ui_.checkbox_update)
+    // Only subscribe while the box is actually checked; testing the widget
+    // pointer here is always true, so unchecking it used to re-subscribe
+    // immediately.  Subscribe() also rejects an empty topic name.
+    if (ui_.checkbox_update->isChecked() && !topic.empty())
     {
       rmw_qos_profile_t update_qos = rmw_qos_profile_default;
       update_qos.depth = 10;
       Subscribe<map_msgs::msg::OccupancyGridUpdate>(
-        topic, update_qos, update_sub_,
+        topic + "_updates", update_qos, update_sub_,
         [this](map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr msg) {
           handleGridUpdate(msg);
         });
