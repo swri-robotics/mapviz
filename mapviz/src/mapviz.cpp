@@ -551,7 +551,22 @@ void Mapviz::SpinOnce()
     executor_.spin_some();
     meas_spin_.stop();
   } else {
-    QApplication::exit();
+    // ROS was shut down out from under us, most commonly by SIGINT (Ctrl-C).
+    // Stop the timer first so that this only runs once.
+    spin_timer_.stop();
+
+    if (is_standalone_) {
+      // close() delivers a QCloseEvent, so closeEvent() auto-saves the
+      // configuration and tears the plugins down before the event loop ends.
+      // Leaving via QApplication::exit() would skip all of that, losing any
+      // configuration changes made since the last periodic auto-save.
+      close();
+    } else {
+      // Embedded in rqt, which owns the application lifecycle; save the
+      // configuration directly since closeEvent() won't run here.
+      AutoSave();
+      QApplication::exit();
+    }
   }
 }
 
