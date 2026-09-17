@@ -329,6 +329,7 @@ namespace mapviz_plugins
   void FloatPlugin::TopicEdited()
   {
     std::string topic = ui_.topic->text().trimmed().toStdString();
+    connectCallback(topic, qos_);
   }
 
   void FloatPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
