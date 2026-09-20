@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.4 (2026-09-17)
+------------------
+* Fixing SIGINT termination (`#917 <https://github.com/swri-robotics/mapviz/issues/917>`_)
+* Contributors: David Anthony
+
 4.0.3 (2026-08-22)
 ------------------
 * Updating to use new tf2_ros API (`#907 <https://github.com/swri-robotics/mapviz/issues/907>`_)

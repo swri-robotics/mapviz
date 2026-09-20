@@ -2,6 +2,12 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.4 (2026-09-17)
+------------------
+* Fixing various bugs related to selecting a plugin topic (`#919 <https://github.com/swri-robotics/mapviz/issues/919>`_)
+* Fixing route topic not updating correctly (`#916 <https://github.com/swri-robotics/mapviz/issues/916>`_)
+* Contributors: David Anthony
+
 4.0.3 (2026-08-22)
 ------------------
 

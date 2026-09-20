@@ -2,6 +2,12 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.4 (2026-09-17)
+------------------
+* Fixing tile map drawn in degrees when the local origin is at lat/lon 0,0 (`#910 <https://github.com/swri-robotics/mapviz/issues/910>`_)
+* Fixing tile subdivision grid spanning more than one tile at low zoom (`#912 <https://github.com/swri-robotics/mapviz/issues/912>`_)
+* Contributors: David Anthony
+
 4.0.3 (2026-08-22)
 ------------------
 
