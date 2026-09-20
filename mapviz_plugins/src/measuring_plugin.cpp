@@ -235,18 +235,16 @@ void MeasuringPlugin::DistanceCalculation()
 {
   double distance_instant = -1;   // measurement between last two points
   double distance_sum = 0;  // sum of distance from all points
-  tf2::Vector3 last_position_(0, 0, 0);
-  std::string frame = target_frame_;
   measurements_.clear();
-  for (auto vertex : vertices_)
+  // One measurement per segment, so that measurements_[i] always describes the
+  // segment between vertices_[i] and vertices_[i + 1].  Indexing off the
+  // previous vertex rather than tracking it in a sentinel-valued variable keeps
+  // that invariant even when a vertex lands exactly on the origin.
+  for (size_t i = 1; i < vertices_.size(); i++)
   {
-      if (last_position_ != tf2::Vector3(0, 0, 0))
-      {
-          distance_instant = last_position_.distance(vertex);
-          distance_sum = distance_sum + distance_instant;
-          measurements_.push_back(distance_instant);
-      }
-      last_position_ = vertex;
+    distance_instant = vertices_[i - 1].distance(vertices_[i]);
+    distance_sum = distance_sum + distance_instant;
+    measurements_.push_back(distance_instant);
   }
   measurements_.push_back(distance_sum);
 
