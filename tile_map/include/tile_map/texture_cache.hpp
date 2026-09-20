@@ -69,6 +69,10 @@ namespace tile_map
 
     void Clear();
 
+    /// The image cache lives for as long as this texture cache does, so callers
+    /// may connect to its signals once and keep the connection.
+    ImageCachePtr GetImageCache() { return image_cache_; }
+
   private:
     QCache<size_t, TexturePtr> cache_;
 

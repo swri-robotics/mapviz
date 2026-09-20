@@ -37,6 +37,8 @@
 #include <mapviz/mapviz_plugin.hpp>
 
 // QT libraries
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
@@ -85,13 +87,53 @@ namespace tile_map
     void SaveCustomSource();
     void ResetTileCache();
 
+    /// Marks the URL/zoom fields as edited but not yet applied.
+    void SourceEdited();
+    /// Fetches a single tile from the current source and reports the result.
+    void TestTileSource();
+    /// Result of the request started by TestTileSource().
+    void HandleTestReply(QNetworkReply* reply);
+    /// A tile request failed; remembered so the status label can report it.
+    void HandleTileFailure(QString url, QString error_string);
+
   private:
     void selectTileSource(const std::shared_ptr<TileSource>& tile_source);
-    void startCustomEditing();
-    void stopCustomEditing();
+
+    /// Single place that decides which controls are usable for the selected
+    /// source, replacing the enable/disable calls that used to be scattered
+    /// between SelectSource() and the editing helpers.
+    void UpdateControlState();
+
+    /// Single place that decides what the status label says.  Draw()/Transform()
+    /// run every frame, so without this a tile error is overwritten immediately.
+    void UpdateStatus();
+
+    /// True when base_url_text or max_zoom_spin_box hold values that have not
+    /// been applied to a tile source yet.
+    bool IsDirty() const;
+
+    /// The source currently named by the combo box, or nullptr for the
+    /// "Custom WMTS Source..." placeholder.
+    std::shared_ptr<TileSource> CurrentSource() const;
 
     Ui::tile_map_config ui_;
     QWidget* config_widget_;
+
+    /// Used only by the Test button; tile fetching has its own manager.
+    QNetworkAccessManager test_network_manager_;
+
+    /// Message from the most recent failed tile request, and when it arrived.
+    /// The message ages out so that a source which starts working clears it
+    /// without needing a success signal for every tile.
+    std::string tile_error_;
+    qint64 tile_error_time_;
+
+    /// Status text set by Transform(), shown when no tile error is current.
+    std::string transform_status_;
+    bool transform_ok_;
+
+    /// Set while the user has typed a URL or zoom that has not been saved.
+    bool dirty_;
 
     swri_transform_util::Transform transform_;
     swri_transform_util::Transform inverse_transform_;

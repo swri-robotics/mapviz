@@ -30,6 +30,8 @@
 
 #include <tile_map/wmts_source.hpp>
 
+#include <QStringList>
+
 namespace tile_map
 {
   const QString WmtsSource::WMTS_TYPE = "wmts";
@@ -61,9 +63,44 @@ namespace tile_map
   {
     QString url(base_url_);
     url.replace(QString::fromStdString("{level}"), QString::number(level));
+    // "{z}" is what most tile servers call this in their own documentation, so
+    // accept it rather than requesting a URL with a literal "{z}" in it.
+    url.replace(QString::fromStdString("{z}"), QString::number(level));
     url.replace(QString::fromStdString("{x}"), QString::number(x));
     url.replace(QString::fromStdString("{y}"), QString::number(y));
 
     return url;
+  }
+
+  QString WmtsSource::ValidateBaseUrl(const QString& base_url)
+  {
+    if (base_url.trimmed().isEmpty())
+    {
+      return "The base URL is empty.";
+    }
+
+    QStringList missing;
+    if (!base_url.contains("{level}") && !base_url.contains("{z}"))
+    {
+      missing << "{level}";
+    }
+    if (!base_url.contains("{x}"))
+    {
+      missing << "{x}";
+    }
+    if (!base_url.contains("{y}"))
+    {
+      missing << "{y}";
+    }
+
+    if (missing.isEmpty())
+    {
+      return "";
+    }
+
+    return "The base URL is missing " + missing.join(", ") +
+      ".  Without them every tile resolves to the same image.  A URL looks "
+      "like http://localhost/osm_tiles/{level}/{x}/{y}.png ({z} also works "
+      "in place of {level}).";
   }
 }

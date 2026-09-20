@@ -92,6 +92,14 @@ namespace tile_map
 
     void Draw();
 
+    /// The image cache is created once and outlives every tile source set on
+    /// this view, so its signals can be connected a single time.
+    ImageCachePtr GetImageCache();
+
+    /// The tile the view is currently centred on, so a source can be probed
+    /// without guessing coordinates.  False before the first SetView().
+    bool GetCenterTile(int32_t& level, int64_t& x, int64_t& y) const;
+
   private:
     void DrawTiles(std::vector<Tile> &tiles ,int priority);
 

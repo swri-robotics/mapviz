@@ -61,6 +61,26 @@ namespace tile_map
     tile_cache_->Clear();
   }
 
+  ImageCachePtr TileMapView::GetImageCache()
+  {
+    return tile_cache_->GetImageCache();
+  }
+
+  bool TileMapView::GetCenterTile(int32_t& level, int64_t& x, int64_t& y) const
+  {
+    // level_ is reset to -1 whenever the source changes and is only assigned a
+    // real value by SetView().
+    if (level_ < 0)
+    {
+      return false;
+    }
+
+    level = level_;
+    x = center_x_;
+    y = center_y_;
+    return true;
+  }
+
   void TileMapView::SetLogger(rclcpp::Logger logger)
   {
     logger_ = logger;

@@ -115,6 +115,14 @@ namespace tile_map
 
     void SetLogger(rclcpp::Logger logger);
 
+  Q_SIGNALS:
+    /// Emitted for every tile request that comes back with a network error.
+    /// Raised from ProcessReply(), which QNetworkAccessManager invokes on the
+    /// thread owning this cache -- the GUI thread -- so an ordinary connection
+    /// is direct.  The arguments are passed by value so that this stays correct
+    /// if the cache is ever moved to a thread of its own.
+    void RequestFailed(QString url, QString error_string);
+
   public Q_SLOTS:
     void ProcessRequest(QString uri);
     void ProcessReply(QNetworkReply* reply);

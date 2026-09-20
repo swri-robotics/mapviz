@@ -38,6 +38,9 @@
 #include <QOpenGLWidget>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QUrl>
+#include <QNetworkRequest>
+#include <QDateTime>
 #include <QPalette>
 
 // ROS libraries
@@ -68,10 +71,17 @@ namespace tile_map
   QString TileMapPlugin::OSM_NAME = "OpenStreetMap";
   QString TileMapPlugin::USGS_NAME = "USGS Satellite";
 
+  // How long a failed tile request keeps the status label.  There is no
+  // per-tile success signal, so the message ages out rather than being cleared.
+  constexpr qint64 TILE_ERROR_TIMEOUT_MS = 5000;
+
   TileMapPlugin::TileMapPlugin()
   : MapvizPlugin()
   , ui_()
   , config_widget_(new QWidget())
+  , tile_error_time_(0)
+  , transform_ok_(false)
+  , dirty_(false)
   , transformed_(false)
   , last_center_x_(0.0)
   , last_center_y_(0.0)
@@ -135,6 +145,22 @@ namespace tile_map
     QObject::connect(ui_.source_combo, SIGNAL(activated(const QString&)), this, SLOT(SelectSource(const QString&)));
     QObject::connect(ui_.save_button, SIGNAL(clicked()), this, SLOT(SaveCustomSource()));
     QObject::connect(ui_.reset_cache_button, SIGNAL(clicked()), this, SLOT(ResetTileCache()));
+    QObject::connect(ui_.test_button, SIGNAL(clicked()), this, SLOT(TestTileSource()));
+    // Without these, typing a URL into an enabled-looking field did nothing at
+    // all and gave no sign that Save was required to apply it.
+    QObject::connect(ui_.base_url_text, SIGNAL(textEdited(const QString&)),
+                     this, SLOT(SourceEdited()));
+    QObject::connect(ui_.max_zoom_spin_box, SIGNAL(valueChanged(int)),
+                     this, SLOT(SourceEdited()));
+    QObject::connect(&test_network_manager_, SIGNAL(finished(QNetworkReply*)),
+                     this, SLOT(HandleTestReply(QNetworkReply*)));
+    // The image cache is created once by TileMapView and outlives every source
+    // set on it, so this connection is made a single time.
+    QObject::connect(tile_map_.GetImageCache().get(),
+                     SIGNAL(RequestFailed(QString, QString)),
+                     this, SLOT(HandleTileFailure(QString, QString)));
+
+    UpdateControlState();
   }
 
   void TileMapPlugin::DeleteTileSource()
@@ -160,54 +186,182 @@ namespace tile_map
 
   void TileMapPlugin::SelectSource(const QString& source)
   {
-    if (source == CARTO_NAME ||
-        source == STAMEN_TERRAIN_NAME ||
-        source == STAMEN_TONER_NAME ||
-        source == STAMEN_WATERCOLOR_NAME ||
-        source == OSM_NAME ||
-        source == USGS_NAME ||
-        source == BING_NAME)
-    {
-      stopCustomEditing();
-    }
-    else
-    {
-      startCustomEditing();
-    }
-
     std::map<QString, std::shared_ptr<TileSource> >::iterator iter = tile_sources_.find(source);
 
-    // If the previously selected source was Bing or Stadia, these will have been changed, so
-    // they should be changed back.  There's not an easy way to know here what the
-    // previously selected item was, so just always change them.
-    ui_.url_label->setText("Base URL:");
-    ui_.save_button->setText("Save...");
     if (iter != tile_sources_.end())
     {
       selectTileSource(iter->second);
       initialized_ = true;
-      // For the Bing and Stadia map types, change a couple of the fields to have more appropriate
-      // labels.  There should probably be a cleaner way to do this if we end up adding
-      // more tile source types....
-      if (iter->second->GetType() == BingSource::BING_TYPE)
+    }
+
+    // Switching sources discards whatever was typed but not saved.
+    dirty_ = false;
+    tile_error_.clear();
+    tile_error_time_ = 0;
+
+    UpdateControlState();
+    UpdateStatus();
+  }
+
+  std::shared_ptr<TileSource> TileMapPlugin::CurrentSource() const
+  {
+    auto iter = tile_sources_.find(ui_.source_combo->currentText());
+    if (iter == tile_sources_.end())
+    {
+      return {};
+    }
+    return iter->second;
+  }
+
+  bool TileMapPlugin::IsDirty() const
+  {
+    return dirty_;
+  }
+
+  void TileMapPlugin::SourceEdited()
+  {
+    std::shared_ptr<TileSource> source = CurrentSource();
+
+    // Editing an API key applies on Save and is not a "source" edit, but it
+    // still has to enable Save so the key can be submitted.
+    dirty_ = true;
+
+    if (source && !source->IsCustom() &&
+        source->GetType() != BingSource::BING_TYPE &&
+        source->GetType() != StadiaSource::STADIA_TYPE)
+    {
+      // Built-in WMTS sources are read-only; nothing to apply.
+      dirty_ = false;
+    }
+
+    UpdateControlState();
+    UpdateStatus();
+  }
+
+  void TileMapPlugin::UpdateControlState()
+  {
+    std::shared_ptr<TileSource> source = CurrentSource();
+    // No entry in tile_sources_ means the "Custom WMTS Source..." placeholder is
+    // selected: the user is composing a brand new source.
+    const bool is_new_custom = !source;
+    const bool is_custom = source && source->IsCustom();
+    const bool is_bing = source && source->GetType() == BingSource::BING_TYPE;
+    const bool is_stadia = source && source->GetType() == StadiaSource::STADIA_TYPE;
+    const bool is_key = is_bing || is_stadia;
+    const bool editable = is_new_custom || is_custom || is_key;
+
+    ui_.url_label->setText(is_bing ? "Bing API Key:"
+                                   : (is_stadia ? "Stadia API Key:" : "Base URL:"));
+    // The ellipsis is the convention for "this opens a dialog", which saving a
+    // custom source does and submitting an API key does not.
+    ui_.save_button->setText(is_key ? "Save" : "Save...");
+
+    ui_.base_url_text->setEnabled(editable);
+    ui_.max_zoom_spin_box->setEnabled(is_new_custom || is_custom);
+    ui_.delete_button->setEnabled(is_custom);
+    // Save is the only thing that applies a custom URL, so leave it live while
+    // there is something to apply and grey it out once there is not.
+    ui_.save_button->setEnabled(editable && (IsDirty() || is_new_custom));
+    // Testing a source the user has not applied yet would probe the old URL.
+    ui_.test_button->setEnabled(source && !IsDirty());
+  }
+
+  void TileMapPlugin::UpdateStatus()
+  {
+    // A tile error is the most specific thing we know, but it must not stick
+    // around after the source starts working; there is no per-tile success
+    // signal, so age it out instead.
+    if (!tile_error_.empty())
+    {
+      if (QDateTime::currentMSecsSinceEpoch() - tile_error_time_ < TILE_ERROR_TIMEOUT_MS)
       {
-        ui_.url_label->setText("Bing API Key:");
-        ui_.save_button->setText("Save");
-        ui_.base_url_text->setEnabled(true);
-        ui_.save_button->setEnabled(true);
+        PrintError(tile_error_);
+        return;
       }
-      else if (iter->second->GetType() == StadiaSource::STADIA_TYPE)
-      {
-        ui_.url_label->setText("Stadia API Key:");
-        ui_.save_button->setText("Save");
-        ui_.base_url_text->setEnabled(true);
-        ui_.save_button->setEnabled(true);
-      }
+      tile_error_.clear();
+    }
+
+    if (IsDirty())
+    {
+      PrintWarning("Unsaved changes.  Click Save to apply them.");
+      return;
+    }
+
+    if (!transform_status_.empty() && !transform_ok_)
+    {
+      PrintError(transform_status_);
+      return;
+    }
+
+    if (!CurrentSource())
+    {
+      PrintWarning("Enter a tile URL and click Save to create this source.");
+      return;
+    }
+
+    PrintInfo("OK");
+  }
+
+  void TileMapPlugin::HandleTileFailure(QString url, QString error_string)
+  {
+    tile_error_ = "Tile request failed: " + error_string.toStdString() +
+      " (" + url.toStdString() + ")";
+    tile_error_time_ = QDateTime::currentMSecsSinceEpoch();
+    UpdateStatus();
+  }
+
+  void TileMapPlugin::TestTileSource()
+  {
+    std::shared_ptr<TileSource> source = CurrentSource();
+    if (!source)
+    {
+      return;
+    }
+
+    // Probe the tile the view actually wants; falling back to the top of the
+    // pyramid only when nothing has been drawn yet.
+    int32_t level = 0;
+    int64_t x = 0;
+    int64_t y = 0;
+    if (!tile_map_.GetCenterTile(level, x, y))
+    {
+      level = 1;
+    }
+
+    QString url = source->GenerateTileUrl(level, x, y);
+    ui_.test_button->setEnabled(false);
+    PrintWarning("Testing " + url.toStdString() + " ...");
+    test_network_manager_.get(QNetworkRequest(QUrl(url)));
+  }
+
+  void TileMapPlugin::HandleTestReply(QNetworkReply* reply)
+  {
+    const QString url = reply->url().toString();
+    const QVariant status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    const qint64 size = reply->bytesAvailable();
+
+    if (reply->error() == QNetworkReply::NoError)
+    {
+      std::string detail = status.isValid()
+        ? "HTTP " + std::to_string(status.toInt())
+        : std::string("ok");
+      // A server that answers 200 with an error page is a common failure for
+      // hand-rolled tile servers, so report the size rather than just success.
+      tile_error_.clear();
+      PrintInfo("Test succeeded: " + detail + ", " +
+        std::to_string(static_cast<long long>(size)) + " bytes from " + url.toStdString());
     }
     else
     {
-      ui_.delete_button->setEnabled(false);
+      std::string detail = status.isValid()
+        ? "HTTP " + std::to_string(status.toInt()) + ": "
+        : std::string();
+      PrintError("Test failed: " + detail + reply->errorString().toStdString() +
+        " (" + url.toStdString() + ")");
     }
+
+    reply->deleteLater();
+    ui_.test_button->setEnabled(true);
   }
 
   void TileMapPlugin::SaveCustomSource()
@@ -232,6 +386,9 @@ namespace tile_map
         // saving a custom map source, just updating the API key
         BingSource* bing_source = dynamic_cast<BingSource*>(iter->second.get());
         bing_source->SetApiKey(ui_.base_url_text->text());
+        dirty_ = false;
+        UpdateControlState();
+        UpdateStatus();
         return;
       }
       else if (iter->second->GetType() == StadiaSource::STADIA_TYPE)
@@ -247,6 +404,23 @@ namespace tile_map
             stadia_source->SetApiKey(api_key);
           }
         }
+        dirty_ = false;
+        UpdateControlState();
+        UpdateStatus();
+        return;
+      }
+    }
+
+    QString problem = WmtsSource::ValidateBaseUrl(ui_.base_url_text->text());
+    if (!problem.isEmpty())
+    {
+      QMessageBox mbox;
+      mbox.setText(problem);
+      mbox.setIcon(QMessageBox::Warning);
+      mbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+      mbox.setDefaultButton(QMessageBox::Cancel);
+      if (mbox.exec() != QMessageBox::Save)
+      {
         return;
       }
     }
@@ -374,12 +548,18 @@ namespace tile_map
     if (tf_manager_->GetTransform(target_frame_, source_frame_, to_target))
     {
       tile_map_.SetTransform(to_target);
-      PrintInfo("OK");
+      transform_ok_ = true;
+      transform_status_.clear();
     }
     else
     {
-      PrintError("No transform between " + source_frame_ + " and " + target_frame_);
+      transform_ok_ = false;
+      transform_status_ = "No transform between " + source_frame_ + " and " + target_frame_;
     }
+
+    // Transform() runs every frame.  Route through UpdateStatus() so that a
+    // tile error or an unsaved edit is not overwritten a frame later.
+    UpdateStatus();
   }
 
   void TileMapPlugin::LoadConfig(const YAML::Node& node, const std::string&)
@@ -508,22 +688,6 @@ namespace tile_map
       ui_.base_url_text->setText(tile_source->GetBaseUrl());
     }
     ui_.max_zoom_spin_box->setValue(tile_source->GetMaxZoom());
-  }
-
-  void TileMapPlugin::startCustomEditing()
-  {
-    ui_.base_url_text->setEnabled(true);
-    ui_.delete_button->setEnabled(true);
-    ui_.max_zoom_spin_box->setEnabled(true);
-    ui_.save_button->setEnabled(true);
-  }
-
-  void TileMapPlugin::stopCustomEditing()
-  {
-    ui_.base_url_text->setEnabled(false);
-    ui_.delete_button->setEnabled(false);
-    ui_.max_zoom_spin_box->setEnabled(false);
-    ui_.save_button->setEnabled(false);
   }
 
   void TileMapPlugin::SetNode(rclcpp::Node& node)

@@ -59,6 +59,21 @@ namespace tile_map
     virtual size_t GenerateTileHash(int32_t level, int64_t x, int64_t y);
 
     /**
+     * Describes what is wrong with a base URL, if anything.
+     *
+     * Most tile servers document their URLs with "{z}" for the zoom level, so
+     * that spelling is accepted as an alias for "{level}" rather than treated
+     * as an error.  A URL with no coordinate placeholders at all resolves to
+     * the same image for every tile, which is never what anyone wants, so it is
+     * reported instead of being silently accepted.
+     *
+     * @param[in] base_url The URL to inspect
+     * @return An empty string if the URL is usable, otherwise a message
+     *   suitable for showing to the user
+     */
+    static QString ValidateBaseUrl(const QString& base_url);
+
+    /**
      * Given a zoom level and x and y coordinates appropriate for the tile source's
      * projection, this will generate a URL that points to an image tile for that
      * location.
