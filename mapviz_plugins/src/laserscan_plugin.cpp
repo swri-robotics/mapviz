@@ -149,6 +149,10 @@ namespace mapviz_plugins
         SIGNAL(TargetFrameChanged(const std::string&)),
         this,
         SLOT(ResetTransformedScans()));
+    QObject::connect(ui_.buttonResetBuffer,
+        SIGNAL(clicked()),
+        this,
+        SLOT(ClearHistory()));
 
   }
 
