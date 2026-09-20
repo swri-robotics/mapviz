@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.10...3.17)
+cmake_minimum_required(VERSION 3.14.4)
+
+project(mapviz_interfaces)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-project(mapviz_interfaces)
 
 find_package(ament_cmake REQUIRED)
 find_package(marti_common_msgs REQUIRED)
