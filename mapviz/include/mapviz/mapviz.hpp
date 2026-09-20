@@ -133,6 +133,8 @@ public Q_SLOTS:
   void Force480p(bool on);
   void SetResizable(bool on);
   void SelectBackgroundColor(const QColor &color);
+  void SetMinViewScale(double scale);
+  void SetMaxViewScale(double scale);
   void SetCaptureDirectory();
   void Hover(double x, double y, double scale);
   void Recenter();
