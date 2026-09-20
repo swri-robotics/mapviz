@@ -81,7 +81,7 @@
   <widget class="QDockWidget" name="configdock">
    <property name="minimumSize">
     <size>
-     <width>332</width>
+     <width>380</width>
      <height>301</height>
     </size>
    </property>
@@ -156,7 +156,7 @@
          </widget>
         </item>
         <item row="4" column="0">
-         <widget class="QLabel" name="label_zoom_limits">
+         <widget class="QLabel" name="label_min_view_scale">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
@@ -170,66 +170,68 @@
            </font>
           </property>
           <property name="text">
-           <string>Zoom Limits (m/px):</string>
+           <string>Min Zoom (m/px):</string>
           </property>
          </widget>
         </item>
         <item row="4" column="1" colspan="2">
-         <layout class="QHBoxLayout" name="horizontalLayoutZoomLimits">
-          <item>
-           <widget class="QDoubleSpinBox" name="min_view_scale">
-            <property name="toolTip">
-             <string>Smallest view scale, in meters per pixel.  Limits how far the view can zoom in.</string>
-            </property>
-            <property name="decimals">
-             <number>5</number>
-            </property>
-            <property name="minimum">
-             <double>0.000010000000000</double>
-            </property>
-            <property name="maximum">
-             <double>100000.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.000010000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_zoom_limits_to">
-            <property name="font">
-             <font>
-              <family>Sans Serif</family>
-              <pointsize>9</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>to</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QDoubleSpinBox" name="max_view_scale">
-            <property name="toolTip">
-             <string>Largest view scale, in meters per pixel.  Limits how far the view can zoom out.</string>
-            </property>
-            <property name="decimals">
-             <number>5</number>
-            </property>
-            <property name="minimum">
-             <double>0.000010000000000</double>
-            </property>
-            <property name="maximum">
-             <double>100000.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>100000.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QDoubleSpinBox" name="min_view_scale">
+          <property name="toolTip">
+           <string>Smallest view scale, in meters per pixel.  Limits how far the view can zoom in.</string>
+          </property>
+          <property name="decimals">
+           <number>5</number>
+          </property>
+          <property name="minimum">
+           <double>0.000010000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.000010000000000</double>
+          </property>
+         </widget>
         </item>
         <item row="5" column="0">
+         <widget class="QLabel" name="label_max_view_scale">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Sans Serif</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Max Zoom (m/px):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1" colspan="2">
+         <widget class="QDoubleSpinBox" name="max_view_scale">
+          <property name="toolTip">
+           <string>Largest view scale, in meters per pixel.  Limits how far the view can zoom out.</string>
+          </property>
+          <property name="decimals">
+           <number>5</number>
+          </property>
+          <property name="minimum">
+           <double>0.000010000000000</double>
+          </property>
+          <property name="maximum">
+           <double>100000.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>100000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
          <widget class="QLabel" name="label_3">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -248,7 +250,7 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="2">
+        <item row="6" column="2">
          <spacer name="horizontalSpacer_bg">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -261,7 +263,7 @@
           </property>
          </spacer>
         </item>
-        <item row="5" column="1">
+        <item row="6" column="1">
          <widget class="mapviz::ColorButton" name="bg_color">
           <property name="maximumSize">
            <size>
@@ -400,12 +402,32 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="duplicatebutton">
+          <property name="toolTip">
+           <string>Duplicate the selected display (Ctrl + D)</string>
+          </property>
+          <property name="text">
+           <string>Duplicate</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="removebutton">
           <property name="toolTip">
            <string>Remove the selected display (Ctrl + X)</string>
           </property>
           <property name="text">
            <string>Remove</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="renamebutton">
+          <property name="toolTip">
+           <string>Rename the selected display (Ctrl + R)</string>
+          </property>
+          <property name="text">
+           <string>Rename</string>
           </property>
          </widget>
         </item>
@@ -593,6 +615,18 @@
   <include location="resources/icons.qrc"/>
  </resources>
  <connections>
+  <connection>
+   <sender>duplicatebutton</sender>
+   <signal>clicked()</signal>
+   <receiver>mapviz</receiver>
+   <slot>DuplicateDisplay()</slot>
+  </connection>
+  <connection>
+   <sender>renamebutton</sender>
+   <signal>clicked()</signal>
+   <receiver>mapviz</receiver>
+   <slot>RenameDisplay()</slot>
+  </connection>
   <connection>
    <sender>addbutton</sender>
    <signal>clicked()</signal>
