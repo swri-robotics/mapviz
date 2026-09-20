@@ -137,9 +137,17 @@ Or at least a frame that has a valid transform to that frame through the TF tree
 
 Replace the Base URL with your own path: `file:///some/path/to/created/tile/map/dir/{level}/{x}/{y}.png`
 
+`{z}` is accepted as an alias for `{level}`, so a URL copied from another tile
+server's documentation will work unchanged.
+
 Set the max zoom to the max zoom specified in previous steps.
 Save the WMTS source to your mapviz current config.
-**You may need to use the dropdown menu to switch to the saved config to trigger mapviz to reload.**
+
+Nothing is loaded until you click **Save** and the status line will read
+`Unsaved changes.  Click Save to apply them.` until you do.  Once a source is
+saved, the **Test** button requests a single tile and reports the result, which
+is the quickest way to tell a wrong URL from a server that is not answering.
+Failed tile requests are reported on the status line as they happen.
 
 ![Add plugin]({{ site.baseurl | append: '/assets/images/' }}configure-wmts-source.png)
 

@@ -81,6 +81,25 @@
      </property>
     </widget>
    </item>
+   <item row="5" column="2">
+    <widget class="QPushButton" name="test_button">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Request a single tile from this source and report the result below.</string>
+     </property>
+     <property name="text">
+      <string>Test</string>
+     </property>
+    </widget>
+   </item>
    <item row="5" column="3">
     <widget class="QPushButton" name="reset_cache_button">
      <property name="sizePolicy">
@@ -153,7 +172,13 @@
       <bool>false</bool>
      </property>
      <property name="text">
-      <string>http://tile.stamen.com/terrain/</string>
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>http://localhost/osm_tiles/{level}/{x}/{y}.png</string>
+     </property>
+     <property name="toolTip">
+      <string>Tile URL template.  {level} (or {z}), {x} and {y} are replaced with the tile coordinates.  file:// URLs work for tiles on disk.</string>
      </property>
     </widget>
    </item>
@@ -213,8 +238,17 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="toolTip">
+      <string>Deepest zoom level this source provides tiles for.</string>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>22</number>
+     </property>
      <property name="value">
-      <number>15</number>
+      <number>19</number>
      </property>
     </widget>
    </item>

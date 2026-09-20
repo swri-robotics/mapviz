@@ -280,6 +280,7 @@ namespace tile_map
           "tile_map: network error for %s: %s",
           url.toStdString().c_str(), reply->errorString().toStdString().c_str());
         image->AddFailure();
+        Q_EMIT RequestFailed(url, reply->errorString());
       }
       image->SetLoading(false);
     }
