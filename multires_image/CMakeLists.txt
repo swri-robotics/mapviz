@@ -1,17 +1,16 @@
-cmake_minimum_required(VERSION 3.10...3.17)
+cmake_minimum_required(VERSION 3.14.4)
 
-if (NOT CMAKE_CXX_STANDARD)
+project(multires_image)
+
+if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-
-project(multires_image
-  LANGUAGES CXX)
 
 set(MULTIRES_WIDGET_AUTOGEN_INCLUDE_DIR
   ${CMAKE_CURRENT_BINARY_DIR}/multires_widget_autogen/include)
@@ -21,11 +20,10 @@ set(MULTIRES_PLUGIN_AUTOGEN_INCLUDE_DIR
 find_package(ament_cmake REQUIRED)
 find_package(mapviz REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(qt_gui_cpp REQUIRED)
-find_package(rclcpp  REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(swri_transform_util  REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(swri_math_util REQUIRED)
+find_package(swri_transform_util REQUIRED)
+find_package(tf2 REQUIRED)
 
 set(QT_VERSION_MAJOR 5)
 find_package(Qt5 QUIET
@@ -99,13 +97,12 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ${mapviz_TARGETS}
-  pluginlib::pluginlib
   ${MULTIRES_IMAGE_QT_LIBRARIES}
-  rclcpp::rclcpp
-  ${swri_math_util_TARGETS}
   ${swri_transform_util_TARGETS}
   tf2::tf2
+)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  ${swri_math_util_TARGETS}
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE
   WFlags=WindowFlags
@@ -140,9 +137,12 @@ target_include_directories(multires_widget
     $<BUILD_INTERFACE:${MULTIRES_WIDGET_AUTOGEN_INCLUDE_DIR}>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
-target_link_libraries(multires_widget
+target_link_libraries(multires_widget PUBLIC
   ${PROJECT_NAME}
   ${MULTIRES_IMAGE_QT_LIBRARIES}
+)
+target_link_libraries(multires_widget PRIVATE
+  ${mapviz_TARGETS}
 )
 target_compile_definitions(multires_widget PRIVATE
   WFlags=WindowFlags
@@ -163,7 +163,7 @@ set_target_properties(multires_view_node PROPERTIES
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
   QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
-target_link_libraries(multires_view_node PUBLIC
+target_link_libraries(multires_view_node PRIVATE
   multires_widget
   rclcpp::rclcpp
 )
@@ -202,6 +202,10 @@ target_link_libraries(${PROJECT_NAME}_plugin PUBLIC
   ${PROJECT_NAME}
   multires_widget
   ${mapviz_TARGETS}
+)
+target_link_libraries(${PROJECT_NAME}_plugin PRIVATE
+  pluginlib::pluginlib
+  rclcpp::rclcpp
 )
 target_compile_definitions(${PROJECT_NAME}_plugin PRIVATE
   WFlags=WindowFlags
@@ -251,14 +255,9 @@ pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   mapviz
-  pluginlib
   ${MULTIRES_IMAGE_QT_EXPORT_DEPENDENCIES}
   rclcpp
-  swri_math_util
   swri_transform_util
   tf2
-)
-ament_export_include_directories(
-  include/${PROJECT_NAME}
 )
 ament_package()

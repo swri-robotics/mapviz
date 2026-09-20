@@ -1,17 +1,16 @@
-cmake_minimum_required(VERSION 3.10...3.17)
+cmake_minimum_required(VERSION 3.14.4)
 
-if (NOT CMAKE_CXX_STANDARD)
+project(tile_map)
+
+if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-
-project(tile_map
-  LANGUAGES CXX)
 
 function(tile_map_ensure_interface_alias alias_target dependency_target)
   if(TARGET ${alias_target})
@@ -27,7 +26,6 @@ endfunction()
 find_package(ament_cmake REQUIRED)
 find_package(mapviz REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(qt_gui_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
@@ -130,14 +128,13 @@ target_include_directories(${PROJECT_NAME}
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
     
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  jsoncpp_lib
-  ${mapviz_TARGETS}
   ${TILE_MAP_QT_LIBRARIES}
-  pluginlib::pluginlib
   rclcpp::rclcpp
   ${swri_transform_util_TARGETS}
-  tf2::tf2
-  yaml-cpp)
+  tf2::tf2)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  jsoncpp_lib
+  ${swri_math_util_TARGETS})
 
 set(PLUGIN_SRC_FILES
   src/${PROJECT_NAME}_plugin.cpp)
@@ -152,7 +149,12 @@ set_target_properties(${PROJECT_NAME}_plugin PROPERTIES
   AUTOUIC ON
   AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/src"
   QT_MAJOR_VERSION ${QT_VERSION_MAJOR})
-target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_plugin PUBLIC
+  ${PROJECT_NAME}
+  ${mapviz_TARGETS})
+target_link_libraries(${PROJECT_NAME}_plugin PRIVATE
+  pluginlib::pluginlib
+  yaml-cpp)
 
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
@@ -173,6 +175,7 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_${PROJECT_NAME}_view test/test_${PROJECT_NAME}_view.cpp)
   if(TARGET test_${PROJECT_NAME}_view)
+    # ament_add_gtest() already used the plain signature on this target.
     target_link_libraries(test_${PROJECT_NAME}_view ${PROJECT_NAME})
   endif()
 endif()
@@ -180,7 +183,6 @@ endif()
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   mapviz
-  pluginlib
   rclcpp
   swri_transform_util
   tf2

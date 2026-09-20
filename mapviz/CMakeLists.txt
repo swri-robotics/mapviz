@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.10...3.17)
+cmake_minimum_required(VERSION 3.14.4)
+
+project(mapviz)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -6,13 +8,9 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_ID MATCHES "Clang")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-
-project(mapviz 
-  DESCRIPTION "Mapviz is a ROS based visualization tool with a plug-in system similar to RVIZ focused on visualizing 2D data."
-  LANGUAGES CXX)
 
 function(mapviz_ensure_interface_alias alias_target dependency_target)
   if(TARGET ${alias_target})
@@ -57,7 +55,6 @@ find_package(qt_gui_cpp REQUIRED)
 set(QT_VERSION_MAJOR 5)
 find_package(Qt5 QUIET
   COMPONENTS
-    Concurrent
     Core
     Gui
     OpenGL
@@ -67,7 +64,6 @@ if(NOT Qt5_FOUND)
   set(QT_VERSION_MAJOR 6)
   find_package(Qt6 REQUIRED
     COMPONENTS
-      Concurrent
       Core
       Gui
       OpenGL
@@ -165,7 +161,6 @@ set(SRC_FILES
 )
 
 set(MAPVIZ_QT_LIBRARIES
-  Qt${QT_VERSION_MAJOR}::Concurrent
   Qt${QT_VERSION_MAJOR}::Core
   Qt${QT_VERSION_MAJOR}::Gui
   Qt${QT_VERSION_MAJOR}::OpenGL
@@ -177,7 +172,6 @@ if(QT_VERSION_MAJOR EQUAL 6)
 endif()
 
 set(MAPVIZ_QT_EXPORT_DEPENDENCIES
-  Qt${QT_VERSION_MAJOR}Concurrent
   Qt${QT_VERSION_MAJOR}Core
   Qt${QT_VERSION_MAJOR}Gui
   Qt${QT_VERSION_MAJOR}OpenGL
@@ -202,7 +196,6 @@ target_include_directories(${PROJECT_NAME}_core
 )
 
 target_link_libraries(${PROJECT_NAME}_core PUBLIC
-  ${geometry_msgs_TARGETS}
   opencv_core
   opencv_highgui
   ${mapviz_interfaces_TARGETS}
@@ -217,6 +210,7 @@ target_link_libraries(${PROJECT_NAME}_core PUBLIC
   yaml-cpp
 )
 target_link_libraries(${PROJECT_NAME}_core PRIVATE
+  ${geometry_msgs_TARGETS}
   image_transport::image_transport
   opencv_imgcodecs
   opencv_imgproc
@@ -250,6 +244,7 @@ add_library(rqt_${PROJECT_NAME} SHARED
 )
 target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
   ${PROJECT_NAME}_core
+  qt_gui_cpp::qt_gui_cpp
   rqt_gui_cpp::rqt_gui_cpp
 )
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
@@ -308,11 +303,9 @@ pluginlib_export_plugin_description_file(rqt_gui "plugin.xml")
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
-  geometry_msgs
-  image_transport
-  pluginlib
   ${MAPVIZ_QT_EXPORT_DEPENDENCIES}
   mapviz_interfaces
+  pluginlib
   rclcpp
   std_srvs
   swri_transform_util
