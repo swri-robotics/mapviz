@@ -151,6 +151,7 @@ set(UI_FILES
   ui/pose_config.ui
   ui/robot_image_config.ui
   ui/route_config.ui
+  ui/speedometer_config.ui
   ui/string_config.ui
   ui/textured_marker_config.ui
   ui/robot_model_config.ui
@@ -186,6 +187,7 @@ set(SRC_FILES
   src/robot_model_plugin.cpp
   src/robot_image_plugin.cpp
   src/route_plugin.cpp
+  src/speedometer_plugin.cpp
   src/string_plugin.cpp
   src/textured_marker_plugin.cpp
   src/tf_frame_plugin.cpp
@@ -219,6 +221,7 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/robot_model_plugin.hpp
   include/${PROJECT_NAME}/robot_image_plugin.hpp
   include/${PROJECT_NAME}/route_plugin.hpp
+  include/${PROJECT_NAME}/speedometer_plugin.hpp
   include/${PROJECT_NAME}/string_plugin.hpp
   include/${PROJECT_NAME}/textured_marker_plugin.hpp
   include/${PROJECT_NAME}/tf_frame_plugin.hpp
