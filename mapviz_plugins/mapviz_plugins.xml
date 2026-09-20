@@ -36,6 +36,9 @@
   <class name="mapviz_plugins/disparity" type="mapviz_plugins::DisparityPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Disparity mapviz plugin.</description>
   </class>
+  <class name="mapviz_plugins/speedometer" type="mapviz_plugins::SpeedometerPlugin" base_class_type="mapviz::MapvizPlugin">
+    <description>Displays vehicle speed from a nav_msgs/Odometry topic on a dial.</description>
+  </class>
   <class name="mapviz_plugins/draw_marker" type="mapviz_plugins::DrawMarkerPlugin" base_class_type="mapviz::MapvizPlugin">
     <description>Plugin for drawing features on the map and publishing them as a visualization_msgs/Marker.</description>
   </class>

@@ -151,6 +151,7 @@ set(UI_FILES
   ui/pose_config.ui
   ui/robot_image_config.ui
   ui/route_config.ui
+  ui/speedometer_config.ui
   ui/string_config.ui
   ui/textured_marker_config.ui
   ui/robot_model_config.ui
@@ -186,6 +187,7 @@ set(SRC_FILES
   src/robot_model_plugin.cpp
   src/robot_image_plugin.cpp
   src/route_plugin.cpp
+  src/speedometer_plugin.cpp
   src/string_plugin.cpp
   src/textured_marker_plugin.cpp
   src/tf_frame_plugin.cpp
@@ -219,6 +221,7 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/robot_model_plugin.hpp
   include/${PROJECT_NAME}/robot_image_plugin.hpp
   include/${PROJECT_NAME}/route_plugin.hpp
+  include/${PROJECT_NAME}/speedometer_plugin.hpp
   include/${PROJECT_NAME}/string_plugin.hpp
   include/${PROJECT_NAME}/textured_marker_plugin.hpp
   include/${PROJECT_NAME}/tf_frame_plugin.hpp
@@ -336,6 +339,24 @@ install(TARGETS ${PROJECT_NAME}
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 pluginlib_export_plugin_description_file(mapviz move_base_plugin.xml)
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  # The plugins build Qt widgets in their constructors, so the test needs a
+  # platform plugin that works without a display.
+  ament_add_gtest(test_plugin_config test/test_plugin_config.cpp
+    ENV QT_QPA_PLATFORM=offscreen)
+  if(TARGET test_plugin_config)
+    # ament_add_gtest() already used the plain signature on this target.
+    target_link_libraries(test_plugin_config ${PROJECT_NAME})
+    # The plugin headers include their AUTOUIC generated ui_*.h, which land in
+    # the library target's autogen directory rather than on its usage
+    # requirements.
+    target_include_directories(test_plugin_config
+      PRIVATE ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR})
+  endif()
+endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
