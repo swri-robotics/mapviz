@@ -132,6 +132,7 @@ set(UI_FILES
   ui/attitude_indicator_config.ui
   ui/coordinate_picker_config.ui
   ui/disparity_config.ui
+  ui/draw_marker_config.ui
   ui/draw_polygon_config.ui
   ui/float_config.ui
   ui/gps_config.ui
@@ -162,6 +163,7 @@ set(SRC_FILES
   src/canvas_click_filter.cpp
   src/coordinate_picker_plugin.cpp
   src/disparity_plugin.cpp
+  src/draw_marker_plugin.cpp
   src/draw_polygon_plugin.cpp
   src/float_plugin.cpp
   src/gps_plugin.cpp
@@ -194,6 +196,7 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/canvas_click_filter.hpp
   include/${PROJECT_NAME}/coordinate_picker_plugin.hpp
   include/${PROJECT_NAME}/disparity_plugin.hpp
+  include/${PROJECT_NAME}/draw_marker_plugin.hpp
   include/${PROJECT_NAME}/draw_polygon_plugin.hpp
   include/${PROJECT_NAME}/float_plugin.hpp
   include/${PROJECT_NAME}/gps_plugin.hpp
