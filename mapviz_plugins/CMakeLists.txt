@@ -340,6 +340,24 @@ install(TARGETS ${PROJECT_NAME}
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 pluginlib_export_plugin_description_file(mapviz move_base_plugin.xml)
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  # The plugins build Qt widgets in their constructors, so the test needs a
+  # platform plugin that works without a display.
+  ament_add_gtest(test_plugin_config test/test_plugin_config.cpp
+    ENV QT_QPA_PLATFORM=offscreen)
+  if(TARGET test_plugin_config)
+    # ament_add_gtest() already used the plain signature on this target.
+    target_link_libraries(test_plugin_config ${PROJECT_NAME})
+    # The plugin headers include their AUTOUIC generated ui_*.h, which land in
+    # the library target's autogen directory rather than on its usage
+    # requirements.
+    target_include_directories(test_plugin_config
+      PRIVATE ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR})
+  endif()
+endif()
+
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   cv_bridge
