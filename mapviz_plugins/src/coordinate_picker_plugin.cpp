@@ -107,7 +107,7 @@ bool CoordinatePickerPlugin::Initialize(QOpenGLWidget* canvas)
   return true;
 }
 
-bool CoordinatePickerPlugin::eventFilter(QObject* object, QEvent* event)
+bool CoordinatePickerPlugin::eventFilter(QObject* /*object*/, QEvent* event)
 {
   if(!this->Visible())
   {
@@ -205,13 +205,13 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   return false;
 }
 
-bool CoordinatePickerPlugin::handleMouseRelease(QMouseEvent* event)
+bool CoordinatePickerPlugin::handleMouseRelease(QMouseEvent* /*event*/)
 {
   // Let other plugins process this event too
   return false;
 }
 
-bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent* event)
+bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent* /*event*/)
 {
   // Let other plugins process this event too
   return false;
@@ -254,11 +254,11 @@ void CoordinatePickerPlugin::ClearCoordList()
   ui_.coordTextEdit->setPlainText(QString());
 }
 
-void CoordinatePickerPlugin::Draw(double x, double y, double scale)
+void CoordinatePickerPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 {
 }
 
-void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
 {
   if (node["frame"])
   {
@@ -280,7 +280,7 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
   }
 }
 
-void CoordinatePickerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+void CoordinatePickerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
 {
   std::string frame = ui_.frame->text().toStdString();
   emitter << YAML::Key << "frame" << YAML::Value << frame;

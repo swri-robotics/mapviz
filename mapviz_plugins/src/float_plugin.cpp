@@ -52,15 +52,15 @@ namespace mapviz_plugins
     MapvizPlugin(),
     ui_(),
     config_widget_(new QWidget()),
+    topic_(""),
+    qos_(rmw_qos_profile_default),
     anchor_(TOP_LEFT),
     units_(PIXELS),
     offset_x_(0),
     offset_y_(0),
     has_message_(false),
     has_painted_(false),
-    color_(Qt::black),
-    qos_(rmw_qos_profile_default),
-    topic_("")
+    color_(Qt::black)
   {
     ui_.setupUi(config_widget_);
     // Set background white
@@ -196,7 +196,7 @@ namespace mapviz_plugins
     painter->drawStaticText(ulPoint, message_);
   }
 
-  void FloatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void FloatPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     if (node[TOPIC_KEY])
@@ -251,7 +251,7 @@ namespace mapviz_plugins
     }
   }
 
-  void FloatPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void FloatPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << FONT_KEY << YAML::Value << font_.toString().toStdString();
     emitter << YAML::Key << COLOR_KEY << YAML::Value << color_.name().toStdString();

@@ -40,8 +40,8 @@
 namespace tile_map
 {
   Texture::Texture(std::unique_ptr<QOpenGLTexture> texture, size_t hash) :
-    texture_(std::move(texture)),
-    url_hash(hash)
+    url_hash(hash),
+    texture_(std::move(texture))
   {
   }
 

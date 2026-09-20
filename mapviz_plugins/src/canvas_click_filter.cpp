@@ -54,7 +54,7 @@ namespace mapviz_plugins
     max_distance_ = max_distance;
   }
 
-  bool CanvasClickFilter::eventFilter(QObject* object, QEvent* event)
+  bool CanvasClickFilter::eventFilter(QObject* /*object*/, QEvent* event)
   {
     if (event->type() == QEvent::MouseButtonPress)
     {

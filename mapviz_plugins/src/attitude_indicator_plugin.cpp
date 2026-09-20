@@ -112,11 +112,11 @@ namespace mapviz_plugins
   }  // namespace
 
   AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
+    MapvizPlugin(),
+    config_widget_(new QWidget()),
     topic_(""),
     qos_(rmw_qos_profile_default),
-    MapvizPlugin(),
-    ui_(),
-    config_widget_(new QWidget())
+    ui_()
   {
     ui_.setupUi(config_widget_);
 
@@ -329,7 +329,7 @@ namespace mapviz_plugins
     glDisable(GL_DEPTH_TEST);
   }
 
-  void AttitudeIndicatorPlugin::Draw(double x, double y, double scale)
+  void AttitudeIndicatorPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glMatrixMode(GL_PROJECTION);
@@ -413,7 +413,7 @@ namespace mapviz_plugins
     glEnd();
   }
 
-  void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
 
@@ -455,7 +455,7 @@ namespace mapviz_plugins
     TopicEdited();
   }
 
-  void AttitudeIndicatorPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void AttitudeIndicatorPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
 

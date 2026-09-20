@@ -255,7 +255,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void RobotImagePlugin::Draw(double x, double y, double scale)
+  void RobotImagePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     if (texture_loaded_ && transformed_)
     {
@@ -314,8 +314,11 @@ namespace mapviz_plugins
       const std::string prefix = "$(find ";
       std::string real_filename;
       size_t spos = filename_.find(prefix);
-      bool has_close = spos != -1 ? filename_.find(')', spos) != -1: false;
-      if (spos != -1 && spos + prefix.length() < filename_.size() && has_close)
+      bool has_close = spos != std::string::npos
+        ? filename_.find(')', spos) != std::string::npos
+        : false;
+      if (spos != std::string::npos &&
+          spos + prefix.length() < filename_.size() && has_close)
       {
         std::string package = filename_.substr(spos + prefix.length());
         package = package.substr(0, package.find(')'));
@@ -393,7 +396,7 @@ namespace mapviz_plugins
     }
   }
 
-  void RobotImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void RobotImagePlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     if (node["frame"])
     {
@@ -448,7 +451,7 @@ namespace mapviz_plugins
     FrameEdited();
   }
 
-  void RobotImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void RobotImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->text().toStdString();
     emitter << YAML::Key << "image" << YAML::Value << ui_.image->text().toStdString();

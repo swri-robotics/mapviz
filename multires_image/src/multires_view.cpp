@@ -77,7 +77,7 @@ namespace mapviz_plugins
     }
   }
 
-  void MultiresView::SetView(double x, double y, double radius, double scale)
+  void MultiresView::SetView(double x, double y, double /*radius*/, double scale)
   {
     int layer = 0;
     while (min_scale_ * std::pow(2.0, layer + 1) < scale) layer++;

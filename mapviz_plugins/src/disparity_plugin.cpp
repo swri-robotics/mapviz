@@ -63,6 +63,8 @@ namespace mapviz_plugins
     MapvizPlugin(),
     ui_(),
     config_widget_(new QWidget()),
+    topic_(""),
+    qos_(rmw_qos_profile_default),
     anchor_(TOP_LEFT),
     units_(PIXELS),
     offset_x_(0),
@@ -72,9 +74,7 @@ namespace mapviz_plugins
     has_image_(false),
     last_width_(0),
     last_height_(0),
-    has_message_(false),
-    topic_(""),
-    qos_(rmw_qos_profile_default)
+    has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -362,7 +362,7 @@ namespace mapviz_plugins
     PrintInfo("OK");
   }
 
-  void DisparityPlugin::Draw(double x, double y, double scale)
+  void DisparityPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     // Calculate the correct offsets and dimensions
     double x_offset = offset_x_;
@@ -431,7 +431,7 @@ namespace mapviz_plugins
     last_height_ = height;
   }
 
-  void DisparityPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void DisparityPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     if (node["topic"])
     {
@@ -481,7 +481,7 @@ namespace mapviz_plugins
     LoadQosConfig(node, qos_);
   }
 
-  void DisparityPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void DisparityPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "anchor" << YAML::Value << AnchorToString(anchor_);

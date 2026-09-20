@@ -55,6 +55,8 @@ namespace mapviz_plugins
     MapvizPlugin(),
     ui_(),
     config_widget_(new QWidget()),
+    topic_(""),
+    qos_(rmw_qos_profile_default),
     anchor_(TOP_LEFT),
     units_(PIXELS),
     offset_x_(0),
@@ -68,9 +70,7 @@ namespace mapviz_plugins
     last_width_(0),
     last_height_(0),
     original_aspect_ratio_(1.0),
-    has_message_(false),
-    topic_(""),
-    qos_(rmw_qos_profile_default)
+    has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -483,7 +483,7 @@ namespace mapviz_plugins
     PrintInfo("OK");
   }
 
-  void ImagePlugin::Draw(double x, double y, double scale)
+  void ImagePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     // Calculate the correct offsets and dimensions
     double x_offset = offset_x_;
@@ -558,7 +558,7 @@ namespace mapviz_plugins
     last_height_ = height;
   }
 
-  void ImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void ImagePlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     // Note that image_transport should be loaded before the
@@ -643,7 +643,7 @@ namespace mapviz_plugins
     }
   }
 
-  void ImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void ImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "anchor" << YAML::Value << AnchorToString(anchor_);

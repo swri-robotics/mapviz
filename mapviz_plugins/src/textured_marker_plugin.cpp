@@ -58,12 +58,12 @@ namespace mapviz_plugins
 {
 TexturedMarkerPlugin::TexturedMarkerPlugin() :
   MapvizPlugin(),
-  ui_(),
   alphaVal_(1.0f),
+  ui_(),
   config_widget_(new QWidget()),
-  has_message_(false),
   topic_(""),
-  qos_(rmw_qos_profile_default)
+  qos_(rmw_qos_profile_default),
+  has_message_(false)
 {
   ui_.setupUi(config_widget_);
 
@@ -441,7 +441,7 @@ bool TexturedMarkerPlugin::Initialize(QOpenGLWidget * canvas)
   return true;
 }
 
-void TexturedMarkerPlugin::Draw(double x, double y, double scale)
+void TexturedMarkerPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 {
   rclcpp::Time now = rclcpp::Time();
 
@@ -511,7 +511,7 @@ void TexturedMarkerPlugin::Transform()
   }
 }
 
-void TexturedMarkerPlugin::LoadConfig(const YAML::Node & node, const std::string & path)
+void TexturedMarkerPlugin::LoadConfig(const YAML::Node & node, const std::string & /*path*/)
 {
   LoadQosConfig(node, qos_);
   if (node["topic"]) {
@@ -522,7 +522,7 @@ void TexturedMarkerPlugin::LoadConfig(const YAML::Node & node, const std::string
   TopicEdited();
 }
 
-void TexturedMarkerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & path)
+void TexturedMarkerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & /*path*/)
 {
   std::string topic = TrimString(ui_.topic->text().toStdString());
   emitter << YAML::Key << "topic" << YAML::Value << topic;

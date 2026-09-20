@@ -61,9 +61,9 @@ namespace mapviz_plugins
     PointDrawingPlugin(),
     ui_(),
     config_widget_(new QWidget()),
-    has_message_(false),
     topic_(""),
-    qos_(rmw_qos_profile_default)
+    qos_(rmw_qos_profile_default),
+    has_message_(false)
   {
     ui_.setupUi(config_widget_);
     ui_.color->setColor(Qt::green);
@@ -253,7 +253,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void OdometryPlugin::Draw(double x, double y, double scale)
+  void OdometryPlugin::Draw(double /*x*/, double /*y*/, double scale)
   {
     if (ui_.show_covariance->isChecked())
     {
@@ -265,7 +265,7 @@ namespace mapviz_plugins
     }
   }
 
-  void OdometryPlugin::Paint(QPainter* painter, double x, double y, double scale)
+  void OdometryPlugin::Paint(QPainter* painter, double /*x*/, double /*y*/, double /*scale*/)
   {
     // dont render any timestamps if the show_timestamps is set to 0
     int interval = ui_.show_timestamps->value();
@@ -303,7 +303,7 @@ namespace mapviz_plugins
   }
 
   void OdometryPlugin::LoadConfig(const YAML::Node& node,
-                                  const std::string& path)
+                                  const std::string& /*path*/)
   {
     if (node["topic"])
     {
@@ -396,7 +396,7 @@ namespace mapviz_plugins
   }
 
   void OdometryPlugin::SaveConfig(YAML::Emitter& emitter,
-                                  const std::string& path)
+                                  const std::string& /*path*/)
   {
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;

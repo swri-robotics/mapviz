@@ -311,7 +311,7 @@ QRectF PlaceableWindowProxy::resizeHelper(const QRectF &rect,
 }
 
 
-bool PlaceableWindowProxy::handleResize(QResizeEvent *event)
+bool PlaceableWindowProxy::handleResize(QResizeEvent */*event*/)
 {
   // We always want to pass the resize event along to other widgets.
   return false;
@@ -330,11 +330,11 @@ void PlaceableWindowProxy::timerEvent(QTimerEvent *event)
   }
 }
 
-void PlaceableWindowProxy::rectResize(int dx, int dy)
+void PlaceableWindowProxy::rectResize(int /*dx*/, int /*dy*/)
 {
 }
 
-void PlaceableWindowProxy::winResize(const QSize &size)
+void PlaceableWindowProxy::winResize(const QSize &/*size*/)
 {
 }
 

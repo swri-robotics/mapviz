@@ -163,7 +163,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void TfFramePlugin::Draw(double x, double y, double scale)
+  void TfFramePlugin::Draw(double /*x*/, double /*y*/, double scale)
   {
     if (DrawPoints(scale))
     {
@@ -171,7 +171,7 @@ namespace mapviz_plugins
     }
   }
   void TfFramePlugin::LoadConfig(const YAML::Node& node,
-                                 const std::string& path)
+                                 const std::string& /*path*/)
   {
     if (node["frame"])
     {
@@ -236,7 +236,7 @@ namespace mapviz_plugins
   }
 
   void TfFramePlugin::SaveConfig(YAML::Emitter& emitter,
-                                 const std::string& path)
+                                 const std::string& /*path*/)
   {
     emitter << YAML::Key << "frame" << YAML::Value
             << ui_.frame->text().toStdString();

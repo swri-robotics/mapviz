@@ -65,10 +65,11 @@ namespace mapviz_plugins
   RoutePlugin::RoutePlugin() :
     MapvizPlugin(),
     ui_(),
-    config_widget_(new QWidget()), draw_style_(LINES),
+    config_widget_(new QWidget()),
+    draw_style_(LINES),
     topic_(""),
-    position_topic_(""),
     qos_(rmw_qos_profile_default),
+    position_topic_(""),
     position_qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);
@@ -269,7 +270,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void RoutePlugin::Draw(double x, double y, double scale)
+  void RoutePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     if (!src_route_.valid())
     {
@@ -382,7 +383,7 @@ namespace mapviz_plugins
     glEnd();
   }
 
-  void RoutePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void RoutePlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_, "route");
     LoadQosConfig(node, position_qos_, "position");
@@ -425,7 +426,7 @@ namespace mapviz_plugins
     PositionTopicEdited();
   }
 
-  void RoutePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void RoutePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     std::string route_topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << route_topic;

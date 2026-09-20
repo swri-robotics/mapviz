@@ -50,9 +50,9 @@ namespace mapviz_plugins
     PointDrawingPlugin(),
     ui_(),
     config_widget_(new QWidget()),
-    has_message_(false),
     topic_(""),
-    qos_(rmw_qos_profile_default)
+    qos_(rmw_qos_profile_default),
+    has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -201,7 +201,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void GpsPlugin::Draw(double x, double y, double scale)
+  void GpsPlugin::Draw(double /*x*/, double /*y*/, double scale)
   {
     if (DrawPoints(scale))
     {
@@ -209,7 +209,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GpsPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void GpsPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     if (node["topic"])
@@ -281,7 +281,7 @@ namespace mapviz_plugins
     TopicEdited();
   }
 
-  void GpsPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void GpsPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;

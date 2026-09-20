@@ -128,7 +128,7 @@ bool MeasuringPlugin::Initialize(QOpenGLWidget* canvas)
   return true;
 }
 
-bool MeasuringPlugin::eventFilter(QObject* object, QEvent* event)
+bool MeasuringPlugin::eventFilter(QObject* /*object*/, QEvent* event)
 {
   if(!this->Visible())
   {
@@ -289,7 +289,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent* event)
   return false;
 }
 
-void MeasuringPlugin::Draw(double x, double y, double scale)
+void MeasuringPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 {
   glLineWidth(1);
   const QColor color = ui_.main_color->color();
@@ -322,7 +322,7 @@ void MeasuringPlugin::Draw(double x, double y, double scale)
   PrintInfo("OK");
 }
 
-void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
+void MeasuringPlugin::Paint(QPainter* painter, double /*x*/, double /*y*/, double /*scale*/)
 {
   bool show_measurements = ui_.show_measurements->isChecked();
   if (!show_measurements || vertices_.empty())
@@ -348,7 +348,7 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   std::vector<MeasurementBox> tags;
 
   // (midpoint positioned) measurements
-  for (int i = 0; i < vertices_.size()-1; i++)
+  for (size_t i = 0; i + 1 < vertices_.size(); i++)
   {
     tf2::Vector3 v1 = vertices_[i];
     tf2::Vector3 v2 = vertices_[i+1];
@@ -370,9 +370,9 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   tags.push_back(mb);
 
   // prevent text overlapping
-  for (int i = 0; i < tags.size(); i++)
+  for (size_t i = 0; i < tags.size(); i++)
   {
-    for (int j = 0; j < tags.size(); j++)
+    for (size_t j = 0; j < tags.size(); j++)
     {
       if (i != j && tags[i].rect.intersects(tags[j].rect))
       {
@@ -402,7 +402,7 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   painter->restore();
 }
 
-void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
 {
   if (node["main_color"])
   {
@@ -445,7 +445,7 @@ void MeasuringPlugin::LoadConfig(const YAML::Node& node, const std::string& path
   }
 }
 
-void MeasuringPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+void MeasuringPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
 {
   emitter << YAML::Key
     << "main_color"
