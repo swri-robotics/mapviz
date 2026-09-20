@@ -305,6 +305,17 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     this,
     SLOT(SelectBackgroundColor(const QColor &)));
 
+  connect(
+    ui_.min_view_scale,
+    SIGNAL(valueChanged(double)),
+    this,
+    SLOT(SetMinViewScale(double)));
+  connect(
+    ui_.max_view_scale,
+    SIGNAL(valueChanged(double)),
+    this,
+    SLOT(SetMaxViewScale(double)));
+
   connect(recenter_button_, SIGNAL(clicked()), this, SLOT(Recenter()));
   connect(rec_button_, SIGNAL(toggled(bool)), this, SLOT(ToggleRecord(bool)));
   connect(stop_button_, SIGNAL(clicked()), this, SLOT(StopRecord()));
@@ -819,6 +830,16 @@ void Mapviz::Open(const std::string& filename)
       resize(width(), window_height);
     }
 
+    if (doc["min_view_scale"]) {
+      double scale = doc["min_view_scale"].as<double>();
+      ui_.min_view_scale->setValue(scale);
+    }
+
+    if (doc["max_view_scale"]) {
+      double scale = doc["max_view_scale"].as<double>();
+      ui_.max_view_scale->setValue(scale);
+    }
+
     if (doc["view_scale"]) {
       float scale = doc["view_scale"].as<float>();
       canvas_->SetViewScale(scale);
@@ -981,6 +1002,8 @@ void Mapviz::Save(const std::string& filename)
   out << YAML::Key << "window_height" << YAML::Value << height();
   out << YAML::Key << "panel_width" << YAML::Value << ui_.configdock->width();
   out << YAML::Key << "view_scale" << YAML::Value << canvas_->ViewScale();
+  out << YAML::Key << "min_view_scale" << YAML::Value << canvas_->MinViewScale();
+  out << YAML::Key << "max_view_scale" << YAML::Value << canvas_->MaxViewScale();
   out << YAML::Key << "offset_x" << YAML::Value << canvas_->OffsetX();
   out << YAML::Key << "offset_y" << YAML::Value << canvas_->OffsetY();
   out << YAML::Key
@@ -1804,6 +1827,22 @@ void Mapviz::ReorderDisplays()
     plugins_[ui_.configs->item(i)]->SetDrawOrder(i);
   }
   canvas_->ReorderDisplays();
+}
+
+void Mapviz::SetMinViewScale(double scale)
+{
+  // Each spin box bounds the other, so the pair can never ask the canvas for an
+  // inverted range.  Update the sibling's bound before the canvas so that if
+  // raising this value drags the other one up, the canvas sees the widened
+  // maximum first and never has to reject the pair.
+  ui_.max_view_scale->setMinimum(scale);
+  canvas_->SetMinViewScale(static_cast<float>(scale));
+}
+
+void Mapviz::SetMaxViewScale(double scale)
+{
+  ui_.min_view_scale->setMaximum(scale);
+  canvas_->SetMaxViewScale(static_cast<float>(scale));
 }
 
 void Mapviz::SelectBackgroundColor(const QColor &color)

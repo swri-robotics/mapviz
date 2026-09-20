@@ -40,6 +40,7 @@
 
 
 // C++ standard libraries
+#include <algorithm>
 #include <cmath>
 #include <list>
 #include <memory>
@@ -50,6 +51,14 @@ namespace mapviz
 {
 namespace
 {
+// Default bounds on the view scale, in meters per pixel.  At 1e-5 a 1000 pixel
+// wide window spans a centimeter; at 1e5 it spans about two and a half times
+// the circumference of the earth.  Neither end is a view anyone can use, so
+// these change nothing in practice; they keep view_scale_ finite and non-zero
+// so that the 1.0 / view_scale_ taken in UpdateView() stays representable.
+constexpr float kDefaultMinViewScale = 1.0e-5f;
+constexpr float kDefaultMaxViewScale = 1.0e5f;
+
 QSurfaceFormat CreateMapCanvasFormat(bool enable_antialiasing)
 {
   QSurfaceFormat format;
@@ -123,6 +132,8 @@ MapCanvas::MapCanvas(QWidget* parent) :
   view_center_x_(0),
   view_center_y_(0),
   view_scale_(1),
+  min_view_scale_(kDefaultMinViewScale),
+  max_view_scale_(kDefaultMaxViewScale),
   view_left_(-25),
   view_right_(25),
   view_top_(10),
@@ -347,8 +358,41 @@ void MapCanvas::wheelEvent(QWheelEvent* e)
 
 void MapCanvas::Zoom(float factor)
 {
-  view_scale_ *= std::pow(1.1, factor);
-  UpdateView();
+  SetViewScale(view_scale_ * std::pow(1.1f, factor));
+}
+
+float MapCanvas::ClampViewScale(float scale) const
+{
+  if (!std::isfinite(scale) || scale <= 0.0f) {
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Invalid view scale: %f meters/pixel", scale);
+    return view_scale_;
+  }
+
+  return std::min(max_view_scale_, std::max(min_view_scale_, scale));
+}
+
+void MapCanvas::SetMinViewScale(float scale)
+{
+  if (!std::isfinite(scale) || scale <= 0.0f || scale > max_view_scale_) {
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"),
+      "Invalid minimum view scale: %f meters/pixel", scale);
+    return;
+  }
+
+  min_view_scale_ = scale;
+  SetViewScale(view_scale_);
+}
+
+void MapCanvas::SetMaxViewScale(float scale)
+{
+  if (!std::isfinite(scale) || scale <= 0.0f || scale < min_view_scale_) {
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"),
+      "Invalid maximum view scale: %f meters/pixel", scale);
+    return;
+  }
+
+  max_view_scale_ = scale;
+  SetViewScale(view_scale_);
 }
 
 void MapCanvas::mousePressEvent(QMouseEvent* e)

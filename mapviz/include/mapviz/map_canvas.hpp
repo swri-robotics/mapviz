@@ -95,9 +95,19 @@ public:
 
   void SetViewScale(float scale)
   {
-    view_scale_ = scale;
+    view_scale_ = ClampViewScale(scale);
     UpdateView();
   }
+
+  float MinViewScale() const { return min_view_scale_; }
+  float MaxViewScale() const { return max_view_scale_; }
+
+  // Set the zoom limits, in meters per pixel.  A limit that is not positive,
+  // not finite, or that would invert the range is rejected with an error and
+  // leaves the existing limit in place.  The current view scale is re-clamped
+  // into the new range.
+  void SetMinViewScale(float scale);
+  void SetMaxViewScale(float scale);
 
   void SetOffsetX(float x)
   {
@@ -222,12 +232,22 @@ protected:
   double drag_x_;
   double drag_y_;
 
+  float ClampViewScale(float scale) const;
+
   // The center of the view
   float view_center_x_;
   float view_center_y_;
 
   // View scale in meters per pixel
   float view_scale_;
+
+  // Bounds on view_scale_, in meters per pixel.  Every write to view_scale_
+  // goes through SetViewScale(), so these bound the zoom no matter which
+  // plugins are loaded.  The defaults are deliberately far outside any usable
+  // range; they exist to keep the scale finite and non-zero, not to second
+  // guess the user.  Tighten them to restrict how far the view can zoom.
+  float min_view_scale_;
+  float max_view_scale_;
 
   // The bounds of the view
   float view_left_;
