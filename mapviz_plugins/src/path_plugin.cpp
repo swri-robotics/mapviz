@@ -75,6 +75,8 @@ namespace mapviz_plugins
     connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
     connect(ui_.path_color, SIGNAL(colorEdited(const QColor&)), this,
             SLOT(SetColor(const QColor&)));
+    QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
+                     SLOT(ClearPoints()));
   }
 
   void PathPlugin::SelectTopic()

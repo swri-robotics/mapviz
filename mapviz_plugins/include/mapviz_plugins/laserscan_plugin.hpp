@@ -71,8 +71,6 @@ class LaserScanPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
     bool Initialize(QOpenGLWidget* canvas) override;
     void Shutdown() override {}
 
-    void ClearHistory() override;
-
     QWidget* GetConfigWidget(QWidget* parent) override;
 
   protected:
@@ -89,6 +87,7 @@ class LaserScanPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
     void PrintWarning(const std::string& message) override;
 
   protected Q_SLOTS:
+    void ClearHistory() override;
     void SelectTopic();
     void TopicEdited();
     void AlphaEdited(double val);
