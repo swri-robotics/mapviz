@@ -92,10 +92,14 @@ namespace mapviz
 constexpr int VERTICAL_LABEL_PADDING_VERTICAL = 4;
 constexpr int VERTICAL_LABEL_PADDING_HORIZONTAL = 8;
 
-// Minimum width for config panel when pinned. Set to 332 pixels to accommodate
-// the UI layout including labels, spinboxes, and buttons while maintaining
-// usability with reasonable display resolutions and DPI scaling
-constexpr int CONFIG_PANEL_PINNED_WIDTH = 332;
+// Minimum width for config panel when pinned.  This has to cover the widest row
+// the dock lays out, otherwise Qt quietly overrides it: a QLayout never shrinks
+// below its own minimum, so asking for less than the contents need leaves
+// resizeDocks() and setMinimumWidth() with no effect.  The Add/Duplicate/Remove/
+// Rename row is the widest at roughly 370 pixels; the settings grid above it
+// needs about 305.  Both grow with display DPI and font scaling, so this is a
+// floor rather than an exact fit.
+constexpr int CONFIG_PANEL_PINNED_WIDTH = 380;
 // Minimum width for collapsed state, set to accommodate the vertical label 
 constexpr int CONFIG_PANEL_COLLAPSED_WIDTH = 28;  
 
