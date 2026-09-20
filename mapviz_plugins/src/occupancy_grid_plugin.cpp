@@ -148,14 +148,14 @@ namespace mapviz_plugins
     ui_(),
     config_widget_(new QWidget()),
     transformed_(false),
+    topic_(""),
+    qos_(rmw_qos_profile_default),
     texture_(nullptr),
     texture_x_(0.0),
     texture_y_(0.0),
     texture_size_(0),
     map_palette_(makeMapPalette()),
-    costmap_palette_( makeCostmapPalette()),
-    topic_(""),
-    qos_(rmw_qos_profile_default)
+    costmap_palette_( makeCostmapPalette())
   {
     ui_.setupUi(config_widget_);
 
@@ -391,8 +391,8 @@ namespace mapviz_plugins
   void OccupancyGridPlugin::handleGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg)
   {
     grid_ = msg;
-    const int width  = grid_->info.width;
-    const int height = grid_->info.height;
+    const size_t width  = grid_->info.width;
+    const size_t height = grid_->info.height;
     initialized_ = true;
     source_frame_ = grid_->header.frame_id;
     transformed_ = GetTransform( source_frame_, grid_->header.stamp, transform_);
@@ -401,7 +401,7 @@ namespace mapviz_plugins
       PrintError("No transform between " + source_frame_ + " and " + target_frame_);
     }
 
-    int32_t max_dimension = std::max(height, width);
+    size_t max_dimension = std::max(height, width);
 
     texture_size_ = 2;
     while (texture_size_ < max_dimension){

@@ -112,11 +112,11 @@ namespace mapviz_plugins
   }  // namespace
 
   AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
+    MapvizPlugin(),
+    config_widget_(new QWidget()),
     topic_(""),
     qos_(rmw_qos_profile_default),
-    MapvizPlugin(),
-    ui_(),
-    config_widget_(new QWidget())
+    ui_()
   {
     ui_.setupUi(config_widget_);
 

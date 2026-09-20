@@ -65,10 +65,11 @@ namespace mapviz_plugins
   RoutePlugin::RoutePlugin() :
     MapvizPlugin(),
     ui_(),
-    config_widget_(new QWidget()), draw_style_(LINES),
+    config_widget_(new QWidget()),
+    draw_style_(LINES),
     topic_(""),
-    position_topic_(""),
     qos_(rmw_qos_profile_default),
+    position_topic_(""),
     position_qos_(rmw_qos_profile_default)
   {
     ui_.setupUi(config_widget_);

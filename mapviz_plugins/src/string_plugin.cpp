@@ -54,6 +54,7 @@ namespace mapviz_plugins
     MapvizPlugin(),
     ui_(),
     config_widget_(new QWidget()),
+    qos_(rmw_qos_profile_default),
     anchor_(TOP_LEFT),
     units_(PIXELS),
     offset_x_(0),
@@ -61,8 +62,7 @@ namespace mapviz_plugins
     has_message_(false),
     has_painted_(false),
     color_(Qt::black),
-    font_(),
-    qos_(rmw_qos_profile_default)
+    font_()
   {
     ui_.setupUi(config_widget_);
     // Set background white

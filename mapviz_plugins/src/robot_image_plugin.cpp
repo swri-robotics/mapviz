@@ -314,8 +314,11 @@ namespace mapviz_plugins
       const std::string prefix = "$(find ";
       std::string real_filename;
       size_t spos = filename_.find(prefix);
-      bool has_close = spos != -1 ? filename_.find(')', spos) != -1: false;
-      if (spos != -1 && spos + prefix.length() < filename_.size() && has_close)
+      bool has_close = spos != std::string::npos
+        ? filename_.find(')', spos) != std::string::npos
+        : false;
+      if (spos != std::string::npos &&
+          spos + prefix.length() < filename_.size() && has_close)
       {
         std::string package = filename_.substr(spos + prefix.length());
         package = package.substr(0, package.find(')'));

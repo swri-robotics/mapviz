@@ -58,12 +58,12 @@ namespace mapviz_plugins
 {
 TexturedMarkerPlugin::TexturedMarkerPlugin() :
   MapvizPlugin(),
-  ui_(),
   alphaVal_(1.0f),
+  ui_(),
   config_widget_(new QWidget()),
-  has_message_(false),
   topic_(""),
-  qos_(rmw_qos_profile_default)
+  qos_(rmw_qos_profile_default),
+  has_message_(false)
 {
   ui_.setupUi(config_widget_);
 

@@ -50,10 +50,10 @@ namespace mapviz_plugins
     MapvizPlugin(),
     ui_(),
     config_widget_(new QWidget()),
-    connected_(false),
-    has_message_(false),
     topic_(""),
-    qos_(rmw_qos_profile_default)
+    qos_(rmw_qos_profile_default),
+    connected_(false),
+    has_message_(false)
   {
     ui_.setupUi(config_widget_);
 
@@ -476,7 +476,7 @@ namespace mapviz_plugins
       return std::max(1.0f, pixels);
     };
 
-    for (size_t i = 0; i < ui_.nsList->count(); i++)
+    for (int i = 0; i < ui_.nsList->count(); i++)
     {
       if (ui_.nsList->item(i)->checkState() == Qt::Checked)
       {

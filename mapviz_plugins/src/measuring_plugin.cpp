@@ -348,7 +348,7 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   std::vector<MeasurementBox> tags;
 
   // (midpoint positioned) measurements
-  for (int i = 0; i < vertices_.size()-1; i++)
+  for (size_t i = 0; i + 1 < vertices_.size(); i++)
   {
     tf2::Vector3 v1 = vertices_[i];
     tf2::Vector3 v2 = vertices_[i+1];
@@ -370,9 +370,9 @@ void MeasuringPlugin::Paint(QPainter* painter, double x, double y, double scale)
   tags.push_back(mb);
 
   // prevent text overlapping
-  for (int i = 0; i < tags.size(); i++)
+  for (size_t i = 0; i < tags.size(); i++)
   {
-    for (int j = 0; j < tags.size(); j++)
+    for (size_t j = 0; j < tags.size(); j++)
     {
       if (i != j && tags[i].rect.intersects(tags[j].rect))
       {

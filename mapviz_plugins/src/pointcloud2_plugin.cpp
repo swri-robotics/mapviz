@@ -59,6 +59,7 @@ namespace mapviz_plugins
     ui_(),
     config_widget_(new QWidget()),
     topic_(""),
+    qos_(rmw_qos_profile_default),
     alpha_(1.0),
     max_value_(100.0),
     min_value_(0.0),
@@ -68,7 +69,6 @@ namespace mapviz_plugins
     num_of_feats_(0),
     need_new_list_(true),
     need_minmax_(false),
-    qos_(rmw_qos_profile_default),
     point_buffer_(QOpenGLBuffer::VertexBuffer),
     color_buffer_(QOpenGLBuffer::VertexBuffer)
   {

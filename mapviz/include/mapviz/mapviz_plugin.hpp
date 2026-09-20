@@ -508,12 +508,12 @@ protected:
     visible_(true),
     canvas_(nullptr),
     icon_(nullptr),
-    node_(nullptr),
     tf_(),
     target_frame_(""),
     source_frame_(""),
     use_latest_transforms_(false),
-    draw_order_(0)
+    draw_order_(0),
+    node_(nullptr)
   {}
 
   void LoadQosConfig(const YAML::Node& node, rmw_qos_profile_t& qos, const std::string prefix = "") const

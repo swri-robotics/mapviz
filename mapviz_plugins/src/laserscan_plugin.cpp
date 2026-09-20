@@ -57,6 +57,7 @@ namespace mapviz_plugins
     ui_(),
     config_widget_(new QWidget()),
     topic_(""),
+    qos_(rmw_qos_profile_default),
     alpha_(1.0),
     min_value_(0.0),
     max_value_(100.0),
@@ -65,8 +66,7 @@ namespace mapviz_plugins
     has_message_(false),
     prev_ranges_size_(0),
     prev_angle_min_(0.0),
-    prev_increment_(0.0),
-    qos_(rmw_qos_profile_default)
+    prev_increment_(0.0)
   {
     ui_.setupUi(config_widget_);
 
