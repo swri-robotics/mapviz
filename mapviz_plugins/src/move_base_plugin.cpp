@@ -179,7 +179,7 @@ bool MoveBasePlugin::Initialize(QOpenGLWidget* canvas)
   return true;
 }
 
-bool MoveBasePlugin::eventFilter(QObject* object, QEvent* event)
+bool MoveBasePlugin::eventFilter(QObject* /*object*/, QEvent* event)
 {
   switch (event->type())
   {
@@ -269,7 +269,7 @@ bool MoveBasePlugin::handleMouseMove(QMouseEvent* event)
   return false;
 }
 
-bool MoveBasePlugin::handleMouseRelease(QMouseEvent* event)
+bool MoveBasePlugin::handleMouseRelease(QMouseEvent* /*event*/)
 {
   if (!is_mouse_down_)
   {
@@ -346,7 +346,7 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* event)
   return true;
 }
 
-void MoveBasePlugin::Draw(double x, double y, double scale)
+void MoveBasePlugin::Draw(double /*x*/, double /*y*/, double scale)
 {
   if (is_mouse_down_)
   {

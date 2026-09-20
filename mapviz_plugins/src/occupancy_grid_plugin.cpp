@@ -458,7 +458,7 @@ namespace mapviz_plugins
     }
   }
 
-  void OccupancyGridPlugin::Draw(double x, double y, double scale)
+  void OccupancyGridPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     glPushMatrix();
 
@@ -564,7 +564,7 @@ namespace mapviz_plugins
     }
   }
 
-  void OccupancyGridPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void OccupancyGridPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     if (node["topic"])
@@ -599,7 +599,7 @@ namespace mapviz_plugins
     TopicGridEdited();
   }
 
-  void OccupancyGridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void OccupancyGridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "alpha"  << YAML::Value << ui_.alpha->value();
     emitter << YAML::Key << "topic"  << YAML::Value << ui_.topic_grid->text().toStdString();

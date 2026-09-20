@@ -483,7 +483,7 @@ namespace mapviz_plugins
     PrintInfo("OK");
   }
 
-  void ImagePlugin::Draw(double x, double y, double scale)
+  void ImagePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     // Calculate the correct offsets and dimensions
     double x_offset = offset_x_;
@@ -558,7 +558,7 @@ namespace mapviz_plugins
     last_height_ = height;
   }
 
-  void ImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void ImagePlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     // Note that image_transport should be loaded before the
@@ -643,7 +643,7 @@ namespace mapviz_plugins
     }
   }
 
-  void ImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void ImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key << "anchor" << YAML::Value << AnchorToString(anchor_);

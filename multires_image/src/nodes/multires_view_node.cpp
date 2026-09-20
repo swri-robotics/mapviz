@@ -80,7 +80,7 @@ namespace multires_image
     }
   }
 
-  void MultiresViewNode::showEvent(QShowEvent* event)
+  void MultiresViewNode::showEvent(QShowEvent* /*event*/)
   {
     Initialize();
   }

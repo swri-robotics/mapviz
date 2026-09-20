@@ -52,13 +52,13 @@ namespace mapviz
   {
   }
 
-  void RqtMapviz::saveSettings(qt_gui_cpp::Settings& plugin_settings,
-                               qt_gui_cpp::Settings& instance_settings) const
+  void RqtMapviz::saveSettings(qt_gui_cpp::Settings& /*plugin_settings*/,
+                               qt_gui_cpp::Settings& /*instance_settings*/) const
   {
   }
 
-  void RqtMapviz::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
-                                  const qt_gui_cpp::Settings& instance_settings)
+  void RqtMapviz::restoreSettings(const qt_gui_cpp::Settings& /*plugin_settings*/,
+                                  const qt_gui_cpp::Settings& /*instance_settings*/)
   {
   }
 }   // namespace mapviz

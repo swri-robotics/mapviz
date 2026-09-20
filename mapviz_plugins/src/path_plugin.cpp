@@ -176,7 +176,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void PathPlugin::Draw(double x, double y, double scale)
+  void PathPlugin::Draw(double /*x*/, double /*y*/, double scale)
   {
     bool lines;
     bool points;
@@ -194,7 +194,7 @@ namespace mapviz_plugins
     }
   }
 
-  void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     if (node["topic"])
@@ -213,7 +213,7 @@ namespace mapviz_plugins
     }
   }
 
-  void PathPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void PathPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     std::string topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << topic;

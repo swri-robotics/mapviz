@@ -270,7 +270,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void RoutePlugin::Draw(double x, double y, double scale)
+  void RoutePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     if (!src_route_.valid())
     {
@@ -383,7 +383,7 @@ namespace mapviz_plugins
     glEnd();
   }
 
-  void RoutePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void RoutePlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_, "route");
     LoadQosConfig(node, position_qos_, "position");
@@ -426,7 +426,7 @@ namespace mapviz_plugins
     PositionTopicEdited();
   }
 
-  void RoutePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void RoutePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     std::string route_topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "topic" << YAML::Value << route_topic;

@@ -218,7 +218,7 @@ void MapCanvas::initGlBlending()
   glDisable(GL_DEPTH_TEST);
 }
 
-void MapCanvas::resizeGL(int w, int h)
+void MapCanvas::resizeGL(int /*w*/, int /*h*/)
 {
   UpdateView();
 }
@@ -382,7 +382,7 @@ QPointF MapCanvas::FixedFrameToMapGlCoord(const QPointF& point)
   return qtransform_.map(point);
 }
 
-void MapCanvas::mouseReleaseEvent(QMouseEvent* e)
+void MapCanvas::mouseReleaseEvent(QMouseEvent* /*e*/)
 {
   mouse_button_ = Qt::NoButton;
   mouse_pressed_ = false;
@@ -437,7 +437,7 @@ void MapCanvas::mouseMoveEvent(QMouseEvent* e)
   Q_EMIT Hover(point_out.point.x, point_out.point.y, view_scale_);
 }
 
-void MapCanvas::leaveEvent(QEvent* e)
+void MapCanvas::leaveEvent(QEvent* /*e*/)
 {
   mouse_hovering_ = false;
   Q_EMIT Hover(0, 0, 0);

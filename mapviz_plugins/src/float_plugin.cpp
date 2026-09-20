@@ -196,7 +196,7 @@ namespace mapviz_plugins
     painter->drawStaticText(ulPoint, message_);
   }
 
-  void FloatPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void FloatPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     if (node[TOPIC_KEY])
@@ -251,7 +251,7 @@ namespace mapviz_plugins
     }
   }
 
-  void FloatPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void FloatPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << FONT_KEY << YAML::Value << font_.toString().toStdString();
     emitter << YAML::Key << COLOR_KEY << YAML::Value << color_.name().toStdString();

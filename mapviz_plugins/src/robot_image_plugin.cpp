@@ -255,7 +255,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void RobotImagePlugin::Draw(double x, double y, double scale)
+  void RobotImagePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     if (texture_loaded_ && transformed_)
     {
@@ -396,7 +396,7 @@ namespace mapviz_plugins
     }
   }
 
-  void RobotImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void RobotImagePlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     if (node["frame"])
     {
@@ -451,7 +451,7 @@ namespace mapviz_plugins
     FrameEdited();
   }
 
-  void RobotImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void RobotImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "frame" << YAML::Value << ui_.frame->text().toStdString();
     emitter << YAML::Key << "image" << YAML::Value << ui_.image->text().toStdString();

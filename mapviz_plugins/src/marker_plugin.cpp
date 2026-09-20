@@ -464,7 +464,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void MarkerPlugin::Draw(double x, double y, double scale)
+  void MarkerPlugin::Draw(double /*x*/, double /*y*/, double scale)
   {
     // Marker scale is specified in meters (matching RViz), but glLineWidth and
     // glPointSize take pixels.  Convert using the view scale (meters/pixel),
@@ -649,7 +649,7 @@ namespace mapviz_plugins
     }
   }
 
-  void MarkerPlugin::Paint(QPainter* painter, double x, double y, double scale)
+  void MarkerPlugin::Paint(QPainter* painter, double /*x*/, double /*y*/, double /*scale*/)
   {
     // Most of the marker drawing is done using OpenGL commands, but text labels
     // are rendered using a QPainter.  This is intended primarily as an example
@@ -726,7 +726,7 @@ namespace mapviz_plugins
     }
   }
 
-  void MarkerPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void MarkerPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     if (node["use_pixel_scale"])
@@ -742,7 +742,7 @@ namespace mapviz_plugins
     }
   }
 
-  void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void MarkerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     std::string trimmed = TrimString(ui_.topic->text().toStdString());
     emitter << YAML::Key
@@ -756,7 +756,7 @@ namespace mapviz_plugins
     SaveQosConfig(emitter, qos_);
   }
 
-  void MarkerPlugin::timerEvent(QTimerEvent *event)
+  void MarkerPlugin::timerEvent(QTimerEvent */*event*/)
   {
     bool new_connected = (marker_sub_ && marker_sub_->get_publisher_count() > 0) ||
         (marker_array_sub_ && marker_array_sub_->get_publisher_count() > 0);

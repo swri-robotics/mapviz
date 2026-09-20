@@ -170,7 +170,7 @@ void QGLMap::initializeGL()
   m_initialized = true;
 }
 
-void QGLMap::resizeGL(int w, int h)
+void QGLMap::resizeGL(int /*w*/, int /*h*/)
 {
   UpdateView();
 }
@@ -195,12 +195,12 @@ void QGLMap::mousePressEvent(QMouseEvent* e)
   update();
 }
 
-void QGLMap::mouseDoubleClickEvent(QMouseEvent* e)
+void QGLMap::mouseDoubleClickEvent(QMouseEvent* /*e*/)
 {
   update();
 }
 
-void QGLMap::mouseReleaseEvent(QMouseEvent* e)
+void QGLMap::mouseReleaseEvent(QMouseEvent* /*e*/)
 {
   m_mouseDown = false;
 

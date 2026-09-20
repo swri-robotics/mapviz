@@ -204,7 +204,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void GridPlugin::Draw(double x, double y, double scale)
+  void GridPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     if (transformed_) {
       QColor color = ui_.color->color();
@@ -306,7 +306,7 @@ namespace mapviz_plugins
     }
   }
 
-  void GridPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void GridPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     if (node["color"])
     {
@@ -359,7 +359,7 @@ namespace mapviz_plugins
     FrameEdited();
   }
 
-  void GridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void GridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "color" << YAML::Value << ui_.color->color().name().toStdString();
 

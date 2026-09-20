@@ -283,7 +283,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  bool PlanRoutePlugin::eventFilter(QObject *object, QEvent* event)
+  bool PlanRoutePlugin::eventFilter(QObject */*object*/, QEvent* event)
   {
     switch (event->type())
     {
@@ -423,7 +423,7 @@ namespace mapviz_plugins
     return false;
   }
 
-  void PlanRoutePlugin::Draw(double x, double y, double scale)
+  void PlanRoutePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     stu::Transform transform;
     if (tf_manager_->GetTransform(target_frame_, stu::_wgs84_frame, transform))
@@ -467,7 +467,7 @@ namespace mapviz_plugins
     }
   }
 
-  void PlanRoutePlugin::Paint(QPainter* painter, double x, double y, double scale)
+  void PlanRoutePlugin::Paint(QPainter* painter, double /*x*/, double /*y*/, double /*scale*/)
   {
     painter->save();
     painter->resetTransform();
@@ -496,7 +496,7 @@ namespace mapviz_plugins
     painter->restore();
   }
 
-  void PlanRoutePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void PlanRoutePlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     if (node["route_topic"])
     {
@@ -522,7 +522,7 @@ namespace mapviz_plugins
     PlanRoute();
   }
 
-  void PlanRoutePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void PlanRoutePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     std::string route_topic = ui_.topic->text().toStdString();
     emitter << YAML::Key << "route_topic" << YAML::Value << route_topic;

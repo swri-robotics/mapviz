@@ -185,7 +185,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  bool DrawPolygonPlugin::eventFilter(QObject *object, QEvent* event)
+  bool DrawPolygonPlugin::eventFilter(QObject */*object*/, QEvent* event)
   {
     switch (event->type())
     {
@@ -339,7 +339,7 @@ namespace mapviz_plugins
     return false;
   }
 
-  void DrawPolygonPlugin::Draw(double x, double y, double scale)
+  void DrawPolygonPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     stu::Transform transform;
     std::string frame = ui_.frame->text().toStdString();
@@ -393,7 +393,7 @@ namespace mapviz_plugins
     PrintInfo("OK");
   }
 
-  void DrawPolygonPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void DrawPolygonPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     if (node["frame"])
     {
@@ -413,7 +413,7 @@ namespace mapviz_plugins
     }
   }
 
-  void DrawPolygonPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void DrawPolygonPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     std::string frame = ui_.frame->text().toStdString();
     emitter << YAML::Key << "frame" << YAML::Value << frame;

@@ -463,7 +463,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void LaserScanPlugin::Draw(double x, double y, double scale)
+  void LaserScanPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     glPointSize(point_size_);
     glBegin(GL_POINTS);
@@ -540,7 +540,7 @@ namespace mapviz_plugins
   }
 
   void LaserScanPlugin::LoadConfig(const YAML::Node& node,
-      const std::string& path)
+      const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
     if (node["topic"])
@@ -667,7 +667,7 @@ namespace mapviz_plugins
   }
 
   void LaserScanPlugin::SaveConfig(YAML::Emitter& emitter,
-      const std::string& path)
+      const std::string& /*path*/)
   {
     std::string trimmed = TrimString(ui_.topic->text().toStdString());
 

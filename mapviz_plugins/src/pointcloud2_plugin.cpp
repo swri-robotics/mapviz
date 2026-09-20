@@ -628,7 +628,7 @@ namespace mapviz_plugins
     return true;
   }
 
-  void PointCloud2Plugin::Draw(double x, double y, double scale)
+  void PointCloud2Plugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
     if (!point_buffer_.isCreated()) {
       point_buffer_.create();
@@ -672,7 +672,7 @@ namespace mapviz_plugins
     PrintInfo("OK");
   }
 
-  void PointCloud2Plugin::UseRainbowChanged(int check_state)
+  void PointCloud2Plugin::UseRainbowChanged(int /*check_state*/)
   {
     UpdateMinMaxWidgets();
     UpdateColors();
@@ -730,7 +730,7 @@ namespace mapviz_plugins
   }
 
   void PointCloud2Plugin::LoadConfig(const YAML::Node& node,
-                                     const std::string& path)
+                                     const std::string& /*path*/)
   {
     LoadQosConfig(node, qos_);
 
@@ -916,7 +916,7 @@ namespace mapviz_plugins
   }
   
   void PointCloud2Plugin::SaveConfig(YAML::Emitter& emitter,
-                                     const std::string& path)
+                                     const std::string& /*path*/)
   {
     std::string topic = TrimString(ui_.topic->text().toStdString());
     emitter << YAML::Key << "topic" <<

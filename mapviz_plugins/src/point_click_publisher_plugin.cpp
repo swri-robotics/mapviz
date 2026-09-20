@@ -78,11 +78,11 @@ namespace mapviz_plugins
     return true;
   }
 
-  void PointClickPublisherPlugin::Draw(double x, double y, double scale)
+  void PointClickPublisherPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   {
   }
 
-  void PointClickPublisherPlugin::LoadConfig(const YAML::Node& node, const std::string& path)
+  void PointClickPublisherPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
   {
     std::string tmp;
     if (node["topic"])
@@ -99,7 +99,7 @@ namespace mapviz_plugins
     }
   }
 
-  void PointClickPublisherPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
+  void PointClickPublisherPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
   {
     emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
     emitter << YAML::Key
