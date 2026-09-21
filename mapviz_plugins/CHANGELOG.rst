@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.0 (2026-09-20)
+------------------
 * Removing highgui so that Qt5 libraries are not transitively pulled in (`#935 <https://github.com/swri-robotics/mapviz/issues/935>`_)
 * Add speedometer plugin (`#931 <https://github.com/swri-robotics/mapviz/issues/931>`_)
   * Adding speedometer plugin

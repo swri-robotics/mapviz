@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.0 (2026-09-20)
+------------------
 * Removing highgui so that Qt5 libraries are not transitively pulled in (`#935 <https://github.com/swri-robotics/mapviz/issues/935>`_)
 * Fixing how Qt signals were wired (`#932 <https://github.com/swri-robotics/mapviz/issues/932>`_)
 * Adding Duplicate and Rename plugin buttons (`#928 <https://github.com/swri-robotics/mapviz/issues/928>`_)
