@@ -1,4 +1,4 @@
-name: Humble
+name: Kilted (testing)
 
 on: [push, pull_request]
 
@@ -8,8 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         env:
-          - {ROS_DISTRO: humble, ROS_REPO: testing}
-          - {ROS_DISTRO: humble, ROS_REPO: main}
+          - {ROS_DISTRO: kilted, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
