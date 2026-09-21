@@ -616,18 +616,6 @@
  </resources>
  <connections>
   <connection>
-   <sender>duplicatebutton</sender>
-   <signal>clicked()</signal>
-   <receiver>mapviz</receiver>
-   <slot>DuplicateDisplay()</slot>
-  </connection>
-  <connection>
-   <sender>renamebutton</sender>
-   <signal>clicked()</signal>
-   <receiver>mapviz</receiver>
-   <slot>RenameDisplay()</slot>
-  </connection>
-  <connection>
    <sender>addbutton</sender>
    <signal>clicked()</signal>
    <receiver>mapviz</receiver>

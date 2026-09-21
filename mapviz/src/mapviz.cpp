@@ -309,6 +309,9 @@ Mapviz::Mapviz(bool is_standalone, int argc, char** argv, QWidget *parent, Qt::W
     this,
     SLOT(SelectBackgroundColor(const QColor &)));
 
+  connect(ui_.duplicatebutton, SIGNAL(clicked()), this, SLOT(DuplicateDisplay()));
+  connect(ui_.renamebutton, SIGNAL(clicked()), this, SLOT(RenameDisplay()));
+
   connect(
     ui_.min_view_scale,
     SIGNAL(valueChanged(double)),
