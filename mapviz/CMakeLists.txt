@@ -106,12 +106,12 @@ else()
   set(USE_NEW_TF2_ROS_CTORS 0)
 endif()
 
-find_package(OpenCV QUIET CONFIG COMPONENTS core highgui imgcodecs imgproc videoio)
+find_package(OpenCV QUIET CONFIG COMPONENTS core imgcodecs imgproc videoio)
 if(NOT OpenCV_FOUND)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(OpenCV REQUIRED IMPORTED_TARGET opencv4)
 endif()
-foreach(component IN ITEMS core highgui imgcodecs imgproc videoio)
+foreach(component IN ITEMS core imgcodecs imgproc videoio)
   mapviz_ensure_opencv_component(${component})
 endforeach()
 
@@ -197,7 +197,6 @@ target_include_directories(${PROJECT_NAME}_core
 
 target_link_libraries(${PROJECT_NAME}_core PUBLIC
   opencv_core
-  opencv_highgui
   ${mapviz_interfaces_TARGETS}
   pluginlib::pluginlib
   ${MAPVIZ_QT_LIBRARIES}

@@ -46,7 +46,6 @@
 #else
 #include <cv_bridge/cv_bridge.hpp>
 #endif
-#include <opencv2/highgui.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <stereo_msgs/msg/disparity_image.hpp>
 #include <tf2/transform_datatypes.hpp>

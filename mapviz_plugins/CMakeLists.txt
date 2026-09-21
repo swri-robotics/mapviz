@@ -114,12 +114,12 @@ if(NOT Qt5_FOUND)
   )
 endif()
 
-find_package(OpenCV QUIET CONFIG COMPONENTS core imgproc highgui)
+find_package(OpenCV QUIET CONFIG COMPONENTS core imgcodecs imgproc)
 if(NOT OpenCV_FOUND)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(OpenCV REQUIRED IMPORTED_TARGET opencv4)
 endif()
-foreach(component IN ITEMS core imgproc highgui)
+foreach(component IN ITEMS core imgcodecs imgproc)
   mapviz_plugins_ensure_opencv_component(${component})
 endforeach()
 
@@ -299,7 +299,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     ${nav2_msgs_TARGETS}
     ${nav_msgs_TARGETS}
     opencv_core
-    opencv_highgui
     ${MAPVIZ_PLUGINS_QT_LIBRARIES}
     rclcpp::rclcpp
     rclcpp_action::rclcpp_action
@@ -314,6 +313,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ament_index_cpp::ament_index_cpp
     assimp::assimp
+    opencv_imgcodecs
     opencv_imgproc
     pluginlib::pluginlib
     sensor_msgs::sensor_msgs_library
