@@ -38,7 +38,7 @@
 #include <string>
 
 #ifndef Q_MOC_RUN
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/videoio.hpp>
 #endif
 
 namespace mapviz

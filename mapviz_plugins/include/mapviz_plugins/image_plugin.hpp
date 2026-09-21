@@ -44,7 +44,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/transform_datatypes.hpp>
 #include <sensor_msgs/msg/image.hpp>
-#include <opencv2/highgui.hpp>
 #ifdef USE_CVBRIDGE_H_FILES
 #include <cv_bridge/cv_bridge.h>
 #else
