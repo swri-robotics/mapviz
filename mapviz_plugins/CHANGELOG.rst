@@ -2,6 +2,20 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removing highgui so that Qt5 libraries are not transitively pulled in (`#935 <https://github.com/swri-robotics/mapviz/issues/935>`_)
+* Add speedometer plugin (`#931 <https://github.com/swri-robotics/mapviz/issues/931>`_)
+  * Adding speedometer plugin
+  * Updating defaults in the UI
+  * Adding test case
+* Adding marker drawing plugin (`#930 <https://github.com/swri-robotics/mapviz/issues/930>`_)
+* Adding ability to clear paths and laser scans (`#926 <https://github.com/swri-robotics/mapviz/issues/926>`_)
+* Fixing measurement text when clicking at 0, 0 (`#925 <https://github.com/swri-robotics/mapviz/issues/925>`_)
+* Fix build warnings (`#923 <https://github.com/swri-robotics/mapviz/issues/923>`_)
+* Cleaning up dependencies, versions, scopes, etc. (`#920 <https://github.com/swri-robotics/mapviz/issues/920>`_)
+* Contributors: David Anthony
+
 4.0.4 (2026-09-17)
 ------------------
 * Fixing various bugs related to selecting a plugin topic (`#919 <https://github.com/swri-robotics/mapviz/issues/919>`_)

@@ -2,6 +2,13 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Making it easier to build a local tilemap (`#929 <https://github.com/swri-robotics/mapviz/issues/929>`_)
+* Fix build warnings (`#923 <https://github.com/swri-robotics/mapviz/issues/923>`_)
+* Cleaning up dependencies, versions, scopes, etc. (`#920 <https://github.com/swri-robotics/mapviz/issues/920>`_)
+* Contributors: David Anthony
+
 4.0.4 (2026-09-17)
 ------------------
 * Fixing tile map drawn in degrees when the local origin is at lat/lon 0,0 (`#910 <https://github.com/swri-robotics/mapviz/issues/910>`_)

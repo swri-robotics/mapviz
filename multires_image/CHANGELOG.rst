@@ -2,6 +2,12 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix build warnings (`#923 <https://github.com/swri-robotics/mapviz/issues/923>`_)
+* Cleaning up dependencies, versions, scopes, etc. (`#920 <https://github.com/swri-robotics/mapviz/issues/920>`_)
+* Contributors: David Anthony
+
 4.0.4 (2026-09-17)
 ------------------
 

@@ -2,6 +2,16 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removing highgui so that Qt5 libraries are not transitively pulled in (`#935 <https://github.com/swri-robotics/mapviz/issues/935>`_)
+* Fixing how Qt signals were wired (`#932 <https://github.com/swri-robotics/mapviz/issues/932>`_)
+* Adding Duplicate and Rename plugin buttons (`#928 <https://github.com/swri-robotics/mapviz/issues/928>`_)
+* Adding ability to clamp zoom scale (`#927 <https://github.com/swri-robotics/mapviz/issues/927>`_)
+* Fix build warnings (`#923 <https://github.com/swri-robotics/mapviz/issues/923>`_)
+* Cleaning up dependencies, versions, scopes, etc. (`#920 <https://github.com/swri-robotics/mapviz/issues/920>`_)
+* Contributors: David Anthony
+
 4.0.4 (2026-09-17)
 ------------------
 * Fixing SIGINT termination (`#917 <https://github.com/swri-robotics/mapviz/issues/917>`_)
