@@ -11,6 +11,8 @@
   <url>https://github.com/swri-robotics/mapviz</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <!-- Provides ROS_DISTRO for the nav2_msgs conditions below. -->
+  <buildtool_depend>ros_environment</buildtool_depend>
 
   <build_depend>ament_index_cpp</build_depend>
   <build_depend>assimp</build_depend>
@@ -25,7 +27,7 @@
   <build_depend>marti_nav_msgs</build_depend>
   <build_depend>marti_sensor_msgs</build_depend>
   <build_depend>marti_visualization_msgs</build_depend>
-  <build_depend>nav2_msgs</build_depend>
+  <build_depend condition="$ROS_DISTRO != 'rolling'">nav2_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>qt-base-dev</build_depend>
@@ -56,7 +58,7 @@
   <build_export_depend>marti_nav_msgs</build_export_depend>
   <build_export_depend>marti_sensor_msgs</build_export_depend>
   <build_export_depend>marti_visualization_msgs</build_export_depend>
-  <build_export_depend>nav2_msgs</build_export_depend>
+  <build_export_depend condition="$ROS_DISTRO != 'rolling'">nav2_msgs</build_export_depend>
   <build_export_depend>nav_msgs</build_export_depend>
   <build_export_depend>qt-base-dev</build_export_depend>
   <build_export_depend>rclcpp</build_export_depend>
@@ -86,7 +88,7 @@
   <exec_depend>marti_sensor_msgs</exec_depend>
   <exec_depend>marti_visualization_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
-  <exec_depend>nav2_msgs</exec_depend>
+  <exec_depend condition="$ROS_DISTRO != 'rolling'">nav2_msgs</exec_depend>
   <exec_depend>pluginlib</exec_depend>
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>rclcpp_action</exec_depend>

@@ -68,7 +68,11 @@ find_package(marti_common_msgs REQUIRED)
 find_package(marti_nav_msgs REQUIRED)
 find_package(marti_sensor_msgs REQUIRED)
 find_package(marti_visualization_msgs REQUIRED)
-find_package(nav2_msgs REQUIRED)
+# Optional: nav2_msgs is not released for every distro (see package.xml).
+find_package(nav2_msgs QUIET)
+if(NOT nav2_msgs_FOUND)
+  message(STATUS "nav2_msgs not found; the move_base plugin will not be built")
+endif()
 find_package(nav_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -155,7 +159,6 @@ set(UI_FILES
   ui/string_config.ui
   ui/textured_marker_config.ui
   ui/robot_model_config.ui
-  ui/move_base_config.ui
   ui/tf_frame_config.ui
   ui/topicselect.ui)
 
@@ -173,7 +176,6 @@ set(SRC_FILES
   src/laserscan_plugin.cpp
   src/marker_plugin.cpp
   src/measuring_plugin.cpp
-  src/move_base_plugin.cpp
   src/navsat_plugin.cpp
   src/occupancy_grid_plugin.cpp
   src/odometry_plugin.cpp
@@ -207,7 +209,6 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/laserscan_plugin.hpp
   include/${PROJECT_NAME}/marker_plugin.hpp
   include/${PROJECT_NAME}/measuring_plugin.hpp
-  include/${PROJECT_NAME}/move_base_plugin.hpp
   include/${PROJECT_NAME}/navsat_plugin.hpp
   include/${PROJECT_NAME}/occupancy_grid_plugin.hpp
   include/${PROJECT_NAME}/odometry_plugin.hpp
@@ -252,6 +253,12 @@ add_library(${PROJECT_NAME} SHARED
     ${SRC_FILES}
     ${UI_FILES}
 )
+if(nav2_msgs_FOUND)
+  target_sources(${PROJECT_NAME} PRIVATE
+    include/${PROJECT_NAME}/move_base_plugin.hpp
+    src/move_base_plugin.cpp
+    ui/move_base_config.ui)
+endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
   AUTOUIC ON
@@ -296,7 +303,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     ${marti_nav_msgs_TARGETS}
     ${marti_sensor_msgs_TARGETS}
     ${marti_visualization_msgs_TARGETS}
-    ${nav2_msgs_TARGETS}
     ${nav_msgs_TARGETS}
     opencv_core
     ${MAPVIZ_PLUGINS_QT_LIBRARIES}
@@ -309,6 +315,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     ${swri_transform_util_TARGETS}
     tf2::tf2
     ${visualization_msgs_TARGETS})
+
+if(nav2_msgs_FOUND)
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${nav2_msgs_TARGETS})
+endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ament_index_cpp::ament_index_cpp
@@ -323,9 +333,16 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${urdf_TARGETS})
 
 ### Install the plugins ###
-install(DIRECTORY include/
-  DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.hpp")
+if(nav2_msgs_FOUND)
+  install(DIRECTORY include/
+    DESTINATION include/${PROJECT_NAME}
+    FILES_MATCHING PATTERN "*.hpp")
+else()
+  install(DIRECTORY include/
+    DESTINATION include/${PROJECT_NAME}
+    FILES_MATCHING PATTERN "*.hpp"
+    PATTERN "move_base_plugin.hpp" EXCLUDE)
+endif()
 
 install(DIRECTORY ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR}/
   DESTINATION include/${PROJECT_NAME}
@@ -338,7 +355,9 @@ install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib)
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
-pluginlib_export_plugin_description_file(mapviz move_base_plugin.xml)
+if(nav2_msgs_FOUND)
+  pluginlib_export_plugin_description_file(mapviz move_base_plugin.xml)
+endif()
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
@@ -371,7 +390,6 @@ ament_export_dependencies(
   marti_sensor_msgs
   marti_visualization_msgs
   nav_msgs
-  nav2_msgs
   ${MAPVIZ_PLUGINS_QT_EXPORT_DEPENDENCIES}
   rclcpp
   rclcpp_action
@@ -382,4 +400,7 @@ ament_export_dependencies(
   swri_transform_util
   tf2
   visualization_msgs)
+if(nav2_msgs_FOUND)
+  ament_export_dependencies(nav2_msgs)
+endif()
 ament_package(CONFIG_EXTRAS cmake/mapviz_plugins-extras.cmake)
