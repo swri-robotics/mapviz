@@ -10,7 +10,14 @@ jobs:
         env:
           - {ROS_DISTRO: lyrical, ROS_REPO: testing, PIP_BREAK_SYSTEM_PACKAGES: True}
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{matrix.env}}
+
+      - name: Refresh Ubuntu package indexes
+        run: |
+          sudo apt-get update \
+            -o Acquire::Retries=3
+
+      - uses: ros-industrial/industrial_ci@master
+        env: ${{ matrix.env }}
