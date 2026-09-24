@@ -1,6 +1,6 @@
 <package format="3">
   <name>tile_map</name>
-  <version>4.1.0</version>
+  <version>4.1.1</version>
   <description>
      Tile map provides a slippy map style interface for visualizing 
      OpenStreetMap and GoogleMap tiles.  A mapviz visualization plug-in is also

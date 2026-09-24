@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.1 (2026-09-24)
+------------------
 * Make nav2_msgs an optional dependency for Rolling because it has not been released there yet (`#937 <https://github.com/swri-robotics/mapviz/issues/937>`_)
 * Contributors: David Anthony
 
