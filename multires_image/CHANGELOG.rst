@@ -2,6 +2,9 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 4.1.0 (2026-09-20)
 ------------------
 * Fix build warnings (`#923 <https://github.com/swri-robotics/mapviz/issues/923>`_)

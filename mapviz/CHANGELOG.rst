@@ -2,6 +2,9 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 4.1.0 (2026-09-20)
 ------------------
 * Removing highgui so that Qt5 libraries are not transitively pulled in (`#935 <https://github.com/swri-robotics/mapviz/issues/935>`_)

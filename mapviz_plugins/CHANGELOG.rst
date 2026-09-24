@@ -2,6 +2,11 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make nav2_msgs an optional dependency for Rolling because it has not been released there yet (`#937 <https://github.com/swri-robotics/mapviz/issues/937>`_)
+* Contributors: David Anthony
+
 4.1.0 (2026-09-20)
 ------------------
 * Removing highgui so that Qt5 libraries are not transitively pulled in (`#935 <https://github.com/swri-robotics/mapviz/issues/935>`_)

@@ -2,6 +2,9 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 4.1.0 (2026-09-20)
 ------------------
 * Making it easier to build a local tilemap (`#929 <https://github.com/swri-robotics/mapviz/issues/929>`_)
