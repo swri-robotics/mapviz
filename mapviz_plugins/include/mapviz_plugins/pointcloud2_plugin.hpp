@@ -86,7 +86,7 @@ public:
     QColor color;
     std::vector<StampedPoint> points;
     std::string source_frame;
-    bool transformed;
+    bool transformed = false;
     std::map<std::string, FieldInfo> new_features;
 
     std::vector<float> gl_point;
