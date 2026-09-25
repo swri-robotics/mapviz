@@ -34,73 +34,69 @@
 
 namespace tile_map
 {
-  const QString WmtsSource::WMTS_TYPE = "wmts";
+const QString WmtsSource::WMTS_TYPE = "wmts";
 
-  WmtsSource::WmtsSource(const QString& name,
-                         const QString& base_url,
-                         bool is_custom,
-                         int32_t max_zoom) :
-                         TileSource()
-  {
-    name_ = name;
-    base_url_ = base_url;
-    is_custom_ = is_custom;
-    max_zoom_ = max_zoom;
-    min_zoom_ = 1;
+WmtsSource::WmtsSource(
+  const QString & name,
+  const QString & base_url,
+  bool is_custom,
+  int32_t max_zoom)
+: TileSource()
+{
+  name_ = name;
+  base_url_ = base_url;
+  is_custom_ = is_custom;
+  max_zoom_ = max_zoom;
+  min_zoom_ = 1;
+}
+
+QString WmtsSource::GetType() const
+{
+  return WMTS_TYPE;
+}
+
+size_t WmtsSource::GenerateTileHash(int32_t level, int64_t x, int64_t y)
+{
+  return hash_(GenerateTileUrl(level, x, y).toStdString());
+}
+
+QString WmtsSource::GenerateTileUrl(int32_t level, int64_t x, int64_t y)
+{
+  QString url(base_url_);
+  url.replace(QString::fromStdString("{level}"), QString::number(level));
+  // "{z}" is what most tile servers call this in their own documentation, so
+  // accept it rather than requesting a URL with a literal "{z}" in it.
+  url.replace(QString::fromStdString("{z}"), QString::number(level));
+  url.replace(QString::fromStdString("{x}"), QString::number(x));
+  url.replace(QString::fromStdString("{y}"), QString::number(y));
+
+  return url;
+}
+
+QString WmtsSource::ValidateBaseUrl(const QString & base_url)
+{
+  if (base_url.trimmed().isEmpty()) {
+    return "The base URL is empty.";
   }
 
-  QString WmtsSource::GetType() const
-  {
-    return WMTS_TYPE;
+  QStringList missing;
+  if (!base_url.contains("{level}") && !base_url.contains("{z}")) {
+    missing << "{level}";
+  }
+  if (!base_url.contains("{x}")) {
+    missing << "{x}";
+  }
+  if (!base_url.contains("{y}")) {
+    missing << "{y}";
   }
 
-  size_t WmtsSource::GenerateTileHash(int32_t level, int64_t x, int64_t y)
-  {
-    return hash_(GenerateTileUrl(level, x, y).toStdString());
+  if (missing.isEmpty()) {
+    return "";
   }
 
-  QString WmtsSource::GenerateTileUrl(int32_t level, int64_t x, int64_t y)
-  {
-    QString url(base_url_);
-    url.replace(QString::fromStdString("{level}"), QString::number(level));
-    // "{z}" is what most tile servers call this in their own documentation, so
-    // accept it rather than requesting a URL with a literal "{z}" in it.
-    url.replace(QString::fromStdString("{z}"), QString::number(level));
-    url.replace(QString::fromStdString("{x}"), QString::number(x));
-    url.replace(QString::fromStdString("{y}"), QString::number(y));
-
-    return url;
-  }
-
-  QString WmtsSource::ValidateBaseUrl(const QString& base_url)
-  {
-    if (base_url.trimmed().isEmpty())
-    {
-      return "The base URL is empty.";
-    }
-
-    QStringList missing;
-    if (!base_url.contains("{level}") && !base_url.contains("{z}"))
-    {
-      missing << "{level}";
-    }
-    if (!base_url.contains("{x}"))
-    {
-      missing << "{x}";
-    }
-    if (!base_url.contains("{y}"))
-    {
-      missing << "{y}";
-    }
-
-    if (missing.isEmpty())
-    {
-      return "";
-    }
-
-    return "The base URL is missing " + missing.join(", ") +
-      ".  Without them every tile resolves to the same image.  A URL looks "
-      "like http://localhost/osm_tiles/{level}/{x}/{y}.png ({z} also works "
-      "in place of {level}).";
-  }
+  return "The base URL is missing " + missing.join(", ") +
+         ".  Without them every tile resolves to the same image.  A URL looks "
+         "like http://localhost/osm_tiles/{level}/{x}/{y}.png ({z} also works "
+         "in place of {level}).";
+}
 }

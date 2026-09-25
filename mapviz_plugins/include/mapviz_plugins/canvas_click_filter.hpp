@@ -55,10 +55,10 @@ public:
   void setMaxClickMovement(qreal max_distance);
 
 Q_SIGNALS:
-  void pointClicked(const QPointF&);
+  void pointClicked(const QPointF &);
 
 protected:
-  bool eventFilter(QObject *object, QEvent* event) override;
+  bool eventFilter(QObject * object, QEvent * event) override;
 
 private:
   bool is_mouse_down_;

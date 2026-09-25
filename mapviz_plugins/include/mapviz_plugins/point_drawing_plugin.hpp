@@ -56,10 +56,11 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctio
 {
   Q_OBJECT
 
-  public:
+public:
   struct StampedPoint
   {
-    StampedPoint(): transformed(false) {}
+    StampedPoint()
+    : transformed(false) {}
 
     tf2::Vector3 point;
     tf2::Quaternion orientation;
@@ -88,7 +89,7 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctio
 
   virtual bool DrawPoints(double scale);
   virtual bool DrawArrows();
-  virtual bool DrawArrow(const StampedPoint& point);
+  virtual bool DrawArrow(const StampedPoint & point);
   virtual bool DrawLaps();
   virtual bool DrawLines();
   virtual void CollectLaps();
@@ -97,15 +98,16 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctio
   // resolves one transform per pass and applies it to the whole route, so
   // points no longer each carry the transform that was current when they
   // arrived.
-  virtual void TransformPoint(StampedPoint& point,
-                              const swri_transform_util::Transform& transform);
+  virtual void TransformPoint(
+    StampedPoint & point,
+    const swri_transform_util::Transform & transform);
   virtual void UpdateColor(QColor base_color, int i);
   virtual void DrawCovariance();
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
   virtual void BufferSizeChanged(int value);
   void DrawIcon() override;
-  virtual void SetColor(const QColor& color);
+  virtual void SetColor(const QColor & color);
   virtual void SetDrawStyle(QString style);
   virtual void SetDrawStyle(DrawStyle style);
   virtual void SetStaticArrowSizes(bool isChecked);
@@ -117,15 +119,15 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctio
   void ResetTransformedPoints();
   void ClearPoints();
 
-  protected:
+protected:
   void Transform() override;
 
   void pushPoint(StampedPoint point);
   double bufferSize() const;
   double positionTolerance() const;
-  const std::deque<StampedPoint>& points() const;
+  const std::deque<StampedPoint> & points() const;
 
-  private:
+private:
   int arrow_size_;
   DrawStyle draw_style_;
   StampedPoint cur_point_;
@@ -141,8 +143,8 @@ class PointDrawingPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctio
   double scale_;
   bool static_arrow_sizes_;
 
-  private:
-  std::vector<std::deque<StampedPoint> > laps_;
+private:
+  std::vector<std::deque<StampedPoint>> laps_;
   bool got_begin_;
   tf2::Vector3 begin_;
 };

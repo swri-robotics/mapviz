@@ -57,109 +57,110 @@
 
 namespace mapviz_plugins
 {
-  class FloatPlugin : public mapviz::MapvizPlugin
+class FloatPlugin : public mapviz::MapvizPlugin
+{
+  Q_OBJECT
+
+public:
+  enum Anchor
   {
-    Q_OBJECT
-
-  public:
-    enum Anchor {
-      TOP_LEFT,
-      TOP_CENTER,
-      TOP_RIGHT,
-      CENTER_LEFT,
-      CENTER,
-      CENTER_RIGHT,
-      BOTTOM_LEFT,
-      BOTTOM_CENTER,
-      BOTTOM_RIGHT
-    };
-
-    enum Units {
-      PIXELS,
-      PERCENT
-    };
-
-    FloatPlugin();
-    ~FloatPlugin() override = default;
-
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override {}
-
-    QWidget* GetConfigWidget(QWidget* parent) override;
-
-    bool SupportsPainting() override
-    {
-      return true;
-    }
-
-  protected:
-    void Draw(double x, double y, double scale) override;
-
-    void Paint(QPainter* painter, double x, double y, double scale) override;
-
-    void Transform() override {}
-
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
-
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
-    void PaintText(QPainter* painter);
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
-
-  protected Q_SLOTS:
-    void SelectColor();
-    void SelectFont();
-    void SelectTopic();
-    void TopicEdited();
-    void SetAnchor(QString anchor);
-    void SetUnits(QString units);
-    void SetOffsetX(int offset);
-    void SetOffsetY(int offset);
-    void PostfixEdited();
-
-
-  private:
-    Ui::float_config ui_;
-    QWidget* config_widget_;
-
-    std::string topic_;
-    rmw_qos_profile_t qos_;
-    std::string postfix_;
-    Anchor anchor_;
-    Units units_;
-    int offset_x_;
-    int offset_y_;
-
-    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr float32_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr float64_sub_;
-    rclcpp::Subscription<marti_common_msgs::msg::Float32Stamped>::SharedPtr float32_stamped_sub_;
-    rclcpp::Subscription<marti_common_msgs::msg::Float64Stamped>::SharedPtr float64_stamped_sub_;
-    rclcpp::Subscription<marti_sensor_msgs::msg::Velocity>::SharedPtr velocity_sub_;
-    bool has_message_;
-    bool has_painted_;
-
-    QColor color_;
-    QFont font_;
-    QStaticText message_;
-
-    // Called on the GUI thread by Subscribe(); owns all plugin state.
-    void handleFloat(double value);
-    void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-
-    std::string AnchorToString(Anchor anchor);
-    std::string UnitsToString(Units units);
-
-    static const char* ANCHOR_KEY;
-    static const char* COLOR_KEY;
-    static const char* FONT_KEY;
-    static const char* OFFSET_X_KEY;
-    static const char* OFFSET_Y_KEY;
-    static const char* TOPIC_KEY;
-    static const char* UNITS_KEY;
-    static const char* POSTFIX_KEY;
+    TOP_LEFT,
+    TOP_CENTER,
+    TOP_RIGHT,
+    CENTER_LEFT,
+    CENTER,
+    CENTER_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_CENTER,
+    BOTTOM_RIGHT
   };
+
+  enum Units
+  {
+    PIXELS,
+    PERCENT
+  };
+
+  FloatPlugin();
+  ~FloatPlugin() override = default;
+
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
+
+  QWidget * GetConfigWidget(QWidget * parent) override;
+
+  bool SupportsPainting() override
+  {
+    return true;
+  }
+
+protected:
+  void Draw(double x, double y, double scale) override;
+
+  void Paint(QPainter * painter, double x, double y, double scale) override;
+
+  void Transform() override {}
+
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
+
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
+
+  void PaintText(QPainter * painter);
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
+
+protected Q_SLOTS:
+  void SelectColor();
+  void SelectFont();
+  void SelectTopic();
+  void TopicEdited();
+  void SetAnchor(QString anchor);
+  void SetUnits(QString units);
+  void SetOffsetX(int offset);
+  void SetOffsetY(int offset);
+  void PostfixEdited();
+
+private:
+  Ui::float_config ui_;
+  QWidget * config_widget_;
+
+  std::string topic_;
+  rmw_qos_profile_t qos_;
+  std::string postfix_;
+  Anchor anchor_;
+  Units units_;
+  int offset_x_;
+  int offset_y_;
+
+  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr float32_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr float64_sub_;
+  rclcpp::Subscription<marti_common_msgs::msg::Float32Stamped>::SharedPtr float32_stamped_sub_;
+  rclcpp::Subscription<marti_common_msgs::msg::Float64Stamped>::SharedPtr float64_stamped_sub_;
+  rclcpp::Subscription<marti_sensor_msgs::msg::Velocity>::SharedPtr velocity_sub_;
+  bool has_message_;
+  bool has_painted_;
+
+  QColor color_;
+  QFont font_;
+  QStaticText message_;
+
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
+  void handleFloat(double value);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
+
+  std::string AnchorToString(Anchor anchor);
+  std::string UnitsToString(Units units);
+
+  static const char * ANCHOR_KEY;
+  static const char * COLOR_KEY;
+  static const char * FONT_KEY;
+  static const char * OFFSET_X_KEY;
+  static const char * OFFSET_Y_KEY;
+  static const char * TOPIC_KEY;
+  static const char * UNITS_KEY;
+  static const char * POSTFIX_KEY;
+};
 }
 
 

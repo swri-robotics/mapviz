@@ -58,45 +58,44 @@ class PathPlugin : public mapviz_plugins::PointDrawingPlugin
 {
   Q_OBJECT
 
-  public:
-    PathPlugin();
-    ~PathPlugin() override = default;
+public:
+  PathPlugin();
+  ~PathPlugin() override = default;
 
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override {}
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
-    void Draw(double x, double y, double scale) override;
+protected:
+  void Draw(double x, double y, double scale) override;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected Q_SLOTS:
-    void SelectTopic();
-    void TopicEdited();
+protected Q_SLOTS:
+  void SelectTopic();
+  void TopicEdited();
 
+private Q_SLOTS:
+  void handlePath(const nav_msgs::msg::Path::ConstSharedPtr msg);
 
-  private Q_SLOTS:
-    void handlePath(const nav_msgs::msg::Path::ConstSharedPtr msg);
+private:
+  Ui::path_config ui_;
+  QWidget * config_widget_;
 
-  private:
-    Ui::path_config ui_;
-    QWidget* config_widget_;
+  std::string topic_;
+  rmw_qos_profile_t qos_;
 
-    std::string topic_;
-    rmw_qos_profile_t qos_;
+  rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub_;
+  bool has_message_;
 
-    rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub_;
-    bool has_message_;
-
-    void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
 };
 }   // namespace mapviz_plugins
 

@@ -51,120 +51,120 @@
 
 namespace tile_map
 {
-  class TileSource;
+class TileSource;
 
-  class TileMapPlugin : public mapviz::MapvizPlugin
-  {
-    Q_OBJECT
+class TileMapPlugin : public mapviz::MapvizPlugin
+{
+  Q_OBJECT
 
-  public:
-    TileMapPlugin();
-    ~TileMapPlugin() override = default;
+public:
+  TileMapPlugin();
+  ~TileMapPlugin() override = default;
 
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override {}
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-    void SetNode(rclcpp::Node& node) override;
+  void SetNode(rclcpp::Node & node) override;
 
-  protected:
-    void Draw(double x, double y, double scale) override;
+protected:
+  void Draw(double x, double y, double scale) override;
 
-    void Transform() override;
+  void Transform() override;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  protected Q_SLOTS:
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
+protected Q_SLOTS:
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-    void DeleteTileSource();
-    void SelectSource(const QString& source_name);
-    void SaveCustomSource();
-    void ResetTileCache();
+  void DeleteTileSource();
+  void SelectSource(const QString & source_name);
+  void SaveCustomSource();
+  void ResetTileCache();
 
-    /// Marks the URL/zoom fields as edited but not yet applied.
-    void SourceEdited();
-    /// Fetches a single tile from the current source and reports the result.
-    void TestTileSource();
-    /// Result of the request started by TestTileSource().
-    void HandleTestReply(QNetworkReply* reply);
-    /// A tile request failed; remembered so the status label can report it.
-    void HandleTileFailure(QString url, QString error_string);
+  /// Marks the URL/zoom fields as edited but not yet applied.
+  void SourceEdited();
+  /// Fetches a single tile from the current source and reports the result.
+  void TestTileSource();
+  /// Result of the request started by TestTileSource().
+  void HandleTestReply(QNetworkReply * reply);
+  /// A tile request failed; remembered so the status label can report it.
+  void HandleTileFailure(QString url, QString error_string);
 
-  private:
-    void selectTileSource(const std::shared_ptr<TileSource>& tile_source);
+private:
+  void selectTileSource(const std::shared_ptr<TileSource> & tile_source);
 
-    /// Single place that decides which controls are usable for the selected
-    /// source, replacing the enable/disable calls that used to be scattered
-    /// between SelectSource() and the editing helpers.
-    void UpdateControlState();
+  /// Single place that decides which controls are usable for the selected
+  /// source, replacing the enable/disable calls that used to be scattered
+  /// between SelectSource() and the editing helpers.
+  void UpdateControlState();
 
-    /// Single place that decides what the status label says.  Draw()/Transform()
-    /// run every frame, so without this a tile error is overwritten immediately.
-    void UpdateStatus();
+  /// Single place that decides what the status label says.  Draw()/Transform()
+  /// run every frame, so without this a tile error is overwritten immediately.
+  void UpdateStatus();
 
-    /// True when base_url_text or max_zoom_spin_box hold values that have not
-    /// been applied to a tile source yet.
-    bool IsDirty() const;
+  /// True when base_url_text or max_zoom_spin_box hold values that have not
+  /// been applied to a tile source yet.
+  bool IsDirty() const;
 
-    /// The source currently named by the combo box, or nullptr for the
-    /// "Custom WMTS Source..." placeholder.
-    std::shared_ptr<TileSource> CurrentSource() const;
+  /// The source currently named by the combo box, or nullptr for the
+  /// "Custom WMTS Source..." placeholder.
+  std::shared_ptr<TileSource> CurrentSource() const;
 
-    Ui::tile_map_config ui_;
-    QWidget* config_widget_;
+  Ui::tile_map_config ui_;
+  QWidget * config_widget_;
 
-    /// Used only by the Test button; tile fetching has its own manager.
-    QNetworkAccessManager test_network_manager_;
+  /// Used only by the Test button; tile fetching has its own manager.
+  QNetworkAccessManager test_network_manager_;
 
-    /// Message from the most recent failed tile request, and when it arrived.
-    /// The message ages out so that a source which starts working clears it
-    /// without needing a success signal for every tile.
-    std::string tile_error_;
-    qint64 tile_error_time_;
+  /// Message from the most recent failed tile request, and when it arrived.
+  /// The message ages out so that a source which starts working clears it
+  /// without needing a success signal for every tile.
+  std::string tile_error_;
+  qint64 tile_error_time_;
 
-    /// Status text set by Transform(), shown when no tile error is current.
-    std::string transform_status_;
-    bool transform_ok_;
+  /// Status text set by Transform(), shown when no tile error is current.
+  std::string transform_status_;
+  bool transform_ok_;
 
-    /// Set while the user has typed a URL or zoom that has not been saved.
-    bool dirty_;
+  /// Set while the user has typed a URL or zoom that has not been saved.
+  bool dirty_;
 
-    swri_transform_util::Transform transform_;
-    swri_transform_util::Transform inverse_transform_;
+  swri_transform_util::Transform transform_;
+  swri_transform_util::Transform inverse_transform_;
 
-    bool transformed_;
+  bool transformed_;
 
-    TileMapView tile_map_;
-    std::map<QString, std::shared_ptr<TileSource> > tile_sources_;
+  TileMapView tile_map_;
+  std::map<QString, std::shared_ptr<TileSource>> tile_sources_;
 
-    double last_center_x_;
-    double last_center_y_;
-    double last_scale_;
-    int32_t last_height_;
-    int32_t last_width_;
+  double last_center_x_;
+  double last_center_y_;
+  double last_scale_;
+  int32_t last_height_;
+  int32_t last_width_;
 
-    static std::string BASE_URL_KEY;
-    static std::string BING_API_KEY;
-    static std::string STADIA_API_KEY;
-    static std::string CUSTOM_SOURCES_KEY;
-    static std::string MAX_ZOOM_KEY;
-    static std::string NAME_KEY;
-    static std::string SOURCE_KEY;
-    static std::string TYPE_KEY;
-    static QString BING_NAME;
-    static QString CARTO_NAME;
-    static QString STAMEN_TERRAIN_NAME;
-    static QString STAMEN_TONER_NAME;
-    static QString STAMEN_WATERCOLOR_NAME;
-    static QString OSM_NAME;
-    static QString USGS_NAME;
-  };
+  static std::string BASE_URL_KEY;
+  static std::string BING_API_KEY;
+  static std::string STADIA_API_KEY;
+  static std::string CUSTOM_SOURCES_KEY;
+  static std::string MAX_ZOOM_KEY;
+  static std::string NAME_KEY;
+  static std::string SOURCE_KEY;
+  static std::string TYPE_KEY;
+  static QString BING_NAME;
+  static QString CARTO_NAME;
+  static QString STAMEN_TERRAIN_NAME;
+  static QString STAMEN_TONER_NAME;
+  static QString STAMEN_WATERCOLOR_NAME;
+  static QString OSM_NAME;
+  static QString USGS_NAME;
+};
 }
 
 #endif  // TILE_MAP_TILE_MAP_PLUGIN_HPP_

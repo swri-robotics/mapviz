@@ -49,76 +49,70 @@
 
 namespace multires_image
 {
-  MultiresViewNode::MultiresViewNode(int argc, char **argv, QWidget *parent, Qt::WindowFlags flags)
-  : QMainWindow(parent, flags)
+MultiresViewNode::MultiresViewNode(int argc, char ** argv, QWidget * parent, Qt::WindowFlags flags)
+: QMainWindow(parent, flags)
   , argc_(argc)
   , argv_(argv)
   , node_(nullptr)
   , thread_{}
   , initialized_(false)
   , tile_set_(nullptr)
-  {
-    setCentralWidget(new QGLMap());
-    this->setMinimumSize(640, 480);
-  }
+{
+  setCentralWidget(new QGLMap());
+  this->setMinimumSize(640, 480);
+}
 
-  void MultiresViewNode::Spin()
-  {
-    if (!thread_)
-    {
-      thread_ = new std::thread(&MultiresViewNode::SpinLoop, this);
-    }
-  }
-
-  void MultiresViewNode::SpinLoop()
-  {
-    while (rclcpp::ok())
-    {
-      executor_.spin_some();
-
-      usleep(10);
-    }
-  }
-
-  void MultiresViewNode::showEvent(QShowEvent* /*event*/)
-  {
-    Initialize();
-  }
-
-  void MultiresViewNode::Initialize()
-  {
-    if (!initialized_)
-    {
-      rclcpp::init(argc_, argv_);
-
-      node_ = std::make_shared<rclcpp::Node>("multires_view_node");
-      executor_.add_node(node_);
-
-      node_->declare_parameter("image_path", "");
-
-      node_->get_parameter("image_path", image_path_);
-
-      tile_set_ = new TileSet(image_path_);
-
-      if (tile_set_->Load())
-      {
-        QGLMap* glMap = reinterpret_cast<QGLMap*>(centralWidget());
-        glMap->SetTiles(tile_set_);
-        glMap->UpdateView();
-      }
-      else
-      {
-        QMessageBox::warning(this, "Error", "Failed to load tiles.");
-      }
-
-      Spin();
-
-      initialized_ = true;
-    }
+void MultiresViewNode::Spin()
+{
+  if (!thread_) {
+    thread_ = new std::thread(&MultiresViewNode::SpinLoop, this);
   }
 }
 
-int main(int argc, char **argv)
+void MultiresViewNode::SpinLoop()
+{
+  while (rclcpp::ok()) {
+    executor_.spin_some();
+
+    usleep(10);
+  }
+}
+
+void MultiresViewNode::showEvent(QShowEvent * /*event*/)
+{
+  Initialize();
+}
+
+void MultiresViewNode::Initialize()
+{
+  if (!initialized_) {
+    rclcpp::init(argc_, argv_);
+
+    node_ = std::make_shared<rclcpp::Node>("multires_view_node");
+    executor_.add_node(node_);
+
+    node_->declare_parameter("image_path", "");
+
+    node_->get_parameter("image_path", image_path_);
+
+    tile_set_ = new TileSet(image_path_);
+
+    if (tile_set_->Load()) {
+      QGLMap * glMap = reinterpret_cast<QGLMap *>(centralWidget());
+      glMap->SetTiles(tile_set_);
+      glMap->UpdateView();
+    } else {
+      QMessageBox::warning(this, "Error", "Failed to load tiles.");
+    }
+
+    Spin();
+
+    initialized_ = true;
+  }
+}
+}
+
+int main(int argc, char ** argv)
 {
   // Initialize QT
   QApplication app(argc, argv);

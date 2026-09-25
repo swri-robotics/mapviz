@@ -94,7 +94,7 @@ protected Q_SLOTS:
   void ProcessMarker(marti_visualization_msgs::msg::TexturedMarker marker);
 
 private:
-  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
   float alphaVal_;
 
   struct MarkerData

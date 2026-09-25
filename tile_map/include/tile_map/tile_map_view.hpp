@@ -43,93 +43,93 @@
 
 namespace tile_map
 {
-  class TileSource;
+class TileSource;
 
-  struct Tile
-  {
-  public:
-    QString url;
-    size_t url_hash;
-    int32_t level;
-    int32_t subdiv_count;
-    double subwidth;
+struct Tile
+{
+public:
+  QString url;
+  size_t url_hash;
+  int32_t level;
+  int32_t subdiv_count;
+  double subwidth;
 
-    TexturePtr texture;
+  TexturePtr texture;
 
-    std::vector<tf2::Vector3> points;
-    std::vector<tf2::Vector3> points_t;
-  };
+  std::vector<tf2::Vector3> points;
+  std::vector<tf2::Vector3> points_t;
+};
 
-  class TileMapViewTest;
+class TileMapViewTest;
 
-  class TileMapView : protected QOpenGLFunctions_1_1
-  {
-    /// The tile geometry and the transform applied to it belong to the render
-    /// thread; they are deliberately not reachable through the public API. The
-    /// unit test fixture is a friend so that it can check what SetTransform()
-    /// applied without opening them up to anything else.
-    friend class TileMapViewTest;
+class TileMapView : protected QOpenGLFunctions_1_1
+{
+  /// The tile geometry and the transform applied to it belong to the render
+  /// thread; they are deliberately not reachable through the public API. The
+  /// unit test fixture is a friend so that it can check what SetTransform()
+  /// applied without opening them up to anything else.
+  friend class TileMapViewTest;
 
-  public:
-    explicit TileMapView(rclcpp::Logger logger = rclcpp::get_logger("tile_map::TileMapView"));
+public:
+  explicit TileMapView(rclcpp::Logger logger = rclcpp::get_logger("tile_map::TileMapView"));
 
-    bool IsReady();
+  bool IsReady();
 
-    void ResetCache();
+  void ResetCache();
 
-    void SetLogger(rclcpp::Logger logger);
+  void SetLogger(rclcpp::Logger logger);
 
-    void SetTileSource(const std::shared_ptr<TileSource>& tile_source);
+  void SetTileSource(const std::shared_ptr<TileSource> & tile_source);
 
-    void SetTransform(const swri_transform_util::Transform& transform);
+  void SetTransform(const swri_transform_util::Transform & transform);
 
-    void SetView(
-      double latitude,
-      double longitude,
-      double scale,
-      int32_t width,
-      int32_t height);
+  void SetView(
+    double latitude,
+    double longitude,
+    double scale,
+    int32_t width,
+    int32_t height);
 
-    void Draw();
+  void Draw();
 
-    /// The image cache is created once and outlives every tile source set on
-    /// this view, so its signals can be connected a single time.
-    ImageCachePtr GetImageCache();
+  /// The image cache is created once and outlives every tile source set on
+  /// this view, so its signals can be connected a single time.
+  ImageCachePtr GetImageCache();
 
-    /// The tile the view is currently centred on, so a source can be probed
-    /// without guessing coordinates.  False before the first SetView().
-    bool GetCenterTile(int32_t& level, int64_t& x, int64_t& y) const;
+  /// The tile the view is currently centred on, so a source can be probed
+  /// without guessing coordinates.  False before the first SetView().
+  bool GetCenterTile(int32_t & level, int64_t & x, int64_t & y) const;
 
-  private:
-    void DrawTiles(std::vector<Tile> &tiles ,int priority);
+private:
+  void DrawTiles(std::vector<Tile> & tiles, int priority);
 
-    std::shared_ptr<TileSource> tile_source_;
+  std::shared_ptr<TileSource> tile_source_;
 
-    swri_transform_util::Transform transform_;
+  swri_transform_util::Transform transform_;
 
-    int32_t level_;
+  int32_t level_;
 
-    int64_t center_x_;
-    int64_t center_y_;
+  int64_t center_x_;
+  int64_t center_y_;
 
-    int64_t size_;
+  int64_t size_;
 
-    int32_t width_;
-    int32_t height_;
+  int32_t width_;
+  int32_t height_;
 
-    std::vector<Tile> tiles_;
-    std::vector<Tile> precache_;
+  std::vector<Tile> tiles_;
+  std::vector<Tile> precache_;
 
-    TextureCachePtr tile_cache_;
+  TextureCachePtr tile_cache_;
 
-    bool gl_initialized_ = false;
+  bool gl_initialized_ = false;
 
-    rclcpp::Logger logger_;
+  rclcpp::Logger logger_;
 
-    void ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude);
+  void ToLatLon(int32_t level, double x, double y, double & latitude, double & longitude);
 
-    void InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile, int priority);
-  };
+  void InitializeTile(int32_t level, int64_t x, int64_t y, Tile & tile, int priority);
+};
 }
 
 #endif  // TILE_MAP_TILE_MAP_VIEW_HPP_

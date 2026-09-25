@@ -50,45 +50,45 @@ class CoordinatePickerPlugin : public mapviz::MapvizPlugin
 {
   Q_OBJECT
 
-  public:
-    CoordinatePickerPlugin();
-    ~CoordinatePickerPlugin() override;
+public:
+  CoordinatePickerPlugin();
+  ~CoordinatePickerPlugin() override;
 
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override { }
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected:
-    void Draw(double x, double y, double scale) override;
+protected:
+  void Draw(double x, double y, double scale) override;
 
-    void Transform() override { }
+  void Transform() override {}
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-    bool eventFilter(QObject* object, QEvent* event) override;
-    bool handleMousePress(QMouseEvent*);
-    bool handleMouseRelease(QMouseEvent*);
-    bool handleMouseMove(QMouseEvent*);
+  bool eventFilter(QObject * object, QEvent * event) override;
+  bool handleMousePress(QMouseEvent *);
+  bool handleMouseRelease(QMouseEvent *);
+  bool handleMouseMove(QMouseEvent *);
 
-  protected Q_SLOTS:
-    void SelectFrame();
-    void FrameEdited();
-    void ToggleCopyOnClick(int state);
-    void ClearCoordList();
+protected Q_SLOTS:
+  void SelectFrame();
+  void FrameEdited();
+  void ToggleCopyOnClick(int state);
+  void ClearCoordList();
 
-  private:
-    Ui::coordinate_picker_config ui_;
-    QWidget* config_widget_;
-    mapviz::MapCanvas* map_canvas_;
+private:
+  Ui::coordinate_picker_config ui_;
+  QWidget * config_widget_;
+  mapviz::MapCanvas * map_canvas_;
 
-    bool copy_on_click_;
+  bool copy_on_click_;
 };
 }   // namespace mapviz_plugins
 

@@ -34,6 +34,11 @@ repos:
         entry: ament_pep257
         language: system
         types: [python]
+      - id: ament_uncrustify
+        name: ament_uncrustify
+        entry: ament_uncrustify --language CPP
+        language: system
+        files: \.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
       - id: ament_xmllint
         name: ament_xmllint
         entry: ament_xmllint

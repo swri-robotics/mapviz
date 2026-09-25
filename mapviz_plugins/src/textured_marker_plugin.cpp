@@ -56,8 +56,8 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TexturedMarkerPlugin, mapviz::MapvizPlugi
 
 namespace mapviz_plugins
 {
-TexturedMarkerPlugin::TexturedMarkerPlugin() :
-  MapvizPlugin(),
+TexturedMarkerPlugin::TexturedMarkerPlugin()
+: MapvizPlugin(),
   alphaVal_(1.0f),
   ui_(),
   config_widget_(new QWidget()),
@@ -130,7 +130,7 @@ void TexturedMarkerPlugin::TopicEdited()
   connectCallback(topic, qos_);
 }
 
-void TexturedMarkerPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
+void TexturedMarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_profile_t & qos)
 {
   ui_.topic->setText(QString::fromStdString(topic));
 
@@ -162,24 +162,23 @@ void TexturedMarkerPlugin::connectCallback(const std::string& topic, const rmw_q
               }
             });
           RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
-        }
-        else if(topic_type == "marti_visualization_msgs/msg/TexturedMarker") {
+        } else if (topic_type == "marti_visualization_msgs/msg/TexturedMarker") {
           Subscribe<marti_visualization_msgs::msg::TexturedMarker>(
             topic_, qos, marker_sub_,
             [this](marti_visualization_msgs::msg::TexturedMarker::ConstSharedPtr marker) {
               ProcessMarker(*marker);
             });
           RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
+        } else {
+          RCLCPP_ERROR(
+            Logger(),
+            "Unable to subscribe to topic %s (unsupported type %s).",
+            topic_.c_str(), topic_type.c_str());
         }
-        else {
-          RCLCPP_ERROR(Logger(),
-              "Unable to subscribe to topic %s (unsupported type %s).",
-              topic_.c_str(), topic_type.c_str());
-        }
-      }
-      else {
-        RCLCPP_ERROR(Logger(),
-            "Unable to subscribe to topic %s, (does not exist).", topic_.c_str());
+      } else {
+        RCLCPP_ERROR(
+          Logger(),
+          "Unable to subscribe to topic %s, (does not exist).", topic_.c_str());
       }
     }
   }
@@ -292,15 +291,18 @@ void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::Te
       size_t bpp = 0;
       if (markerData.encoding_ == sensor_msgs::image_encodings::BGRA8) {
         bpp = 4;
-        markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ *
+        markerData.texture_.resize(
+          static_cast<size_t>(markerData.texture_size_ *
           markerData.texture_size_ * 4));
       } else if (markerData.encoding_ == sensor_msgs::image_encodings::BGR8) {
         bpp = 3;
-        markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ *
+        markerData.texture_.resize(
+          static_cast<size_t>(markerData.texture_size_ *
           markerData.texture_size_ * 3));
       } else if (markerData.encoding_ == sensor_msgs::image_encodings::MONO8) {
         bpp = 1;
-        markerData.texture_.resize(static_cast<size_t>(markerData.texture_size_ *
+        markerData.texture_.resize(
+          static_cast<size_t>(markerData.texture_size_ *
           markerData.texture_size_));
       } else {
         RCLCPP_WARN(Logger(), "Unsupported encoding: %s", markerData.encoding_.c_str());

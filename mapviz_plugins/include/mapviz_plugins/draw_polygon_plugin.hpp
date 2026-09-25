@@ -61,42 +61,42 @@ class DrawPolygonPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunction
 {
   Q_OBJECT
 
-  public:
+public:
   DrawPolygonPlugin();
   ~DrawPolygonPlugin() override;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
+protected:
   void Draw(double x, double y, double scale) override;
 
-  void Transform() override {};
+  void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
-  bool eventFilter(QObject *object, QEvent* event) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
+  bool eventFilter(QObject * object, QEvent * event) override;
   bool handleMousePress(QMouseEvent *);
   bool handleMouseRelease(QMouseEvent *);
   bool handleMouseMove(QMouseEvent *);
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
   void PublishPolygon();
   void Clear();
   void SelectFrame();
   void FrameEdited();
 
-  private:
+private:
   Ui::draw_polygon_config ui_;
-  QWidget* config_widget_;
-  mapviz::MapCanvas* map_canvas_;
+  QWidget * config_widget_;
+  mapviz::MapCanvas * map_canvas_;
 
   std::string polygon_topic_;
   rclcpp::Publisher<geometry_msgs::msg::PolygonStamped>::SharedPtr polygon_pub_;

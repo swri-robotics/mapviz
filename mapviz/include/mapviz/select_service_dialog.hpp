@@ -63,12 +63,13 @@ namespace mapviz
 class ServiceUpdaterThread : public QThread
 {
   Q_OBJECT
+
 public:
   ServiceUpdaterThread(
     std::function<TopicSource::NamesAndTypes()> services,
-    const std::string& allowed_datatype,
-    QObject* parent) :
-    QThread(parent),
+    const std::string & allowed_datatype,
+    QObject * parent)
+  : QThread(parent),
     services_(std::move(services)),
     allowed_datatype_(allowed_datatype)
   {
@@ -81,7 +82,7 @@ Q_SIGNALS:
 
 private:
   std::function<TopicSource::NamesAndTypes()> services_;
-  const std::string& allowed_datatype_;
+  const std::string & allowed_datatype_;
 };
 
 /**
@@ -91,6 +92,7 @@ private:
 class SelectServiceDialog : public QDialog
 {
   Q_OBJECT
+
 public:
   /**
    * Convenience function for creating a dialog that will prompt the user to select
@@ -103,7 +105,7 @@ public:
    * @return The name of the selected service, or an empty string if there was none.
    */
   static std::string selectService(
-    const TopicSource& source, const std::string& datatype, QWidget* parent = 0);
+    const TopicSource & source, const std::string & datatype, QWidget * parent = 0);
 
   /**
    * Constructs a new SelectServiceDialog and automatically starts a timer that
@@ -112,9 +114,10 @@ public:
    *                     the user a list of all services.
    * @param[in] parent The dialog's parent widget.
    */
-  explicit SelectServiceDialog(const TopicSource& source,
-      const std::string& datatype = "",
-      QWidget* parent = nullptr);
+  explicit SelectServiceDialog(
+    const TopicSource & source,
+    const std::string & datatype = "",
+    QWidget * parent = nullptr);
   ~SelectServiceDialog() override;
 
   /**
@@ -123,7 +126,7 @@ public:
    * all available topics.
    * @param[in] datatype The type of service to search for.
    */
-  void setDatatypeFilter(const std::string& datatype);
+  void setDatatypeFilter(const std::string & datatype);
 
   /**
    * Gets the service the user had selected, or an empty string if there was
@@ -151,7 +154,7 @@ private Q_SLOTS:
    * Displays a message box indicating that there was an error and stops our
    * update timer.
    */
-  void displayUpdateError(const QString&);
+  void displayUpdateError(const QString &);
 
 private:
   std::vector<std::string> filterServices();
@@ -166,10 +169,10 @@ private:
 
   int fetch_services_timer_id_;
 
-  QPushButton *cancel_button_;
-  QListWidget *list_widget_;
-  QLineEdit *name_filter_;
-  QPushButton *ok_button_;
+  QPushButton * cancel_button_;
+  QListWidget * list_widget_;
+  QLineEdit * name_filter_;
+  QPushButton * ok_button_;
   std::shared_ptr<ServiceUpdaterThread> worker_thread_;
 };
 }   //  namespace mapviz

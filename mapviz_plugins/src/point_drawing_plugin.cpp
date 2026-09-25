@@ -43,8 +43,8 @@
 
 namespace mapviz_plugins
 {
-  PointDrawingPlugin::PointDrawingPlugin()
-  : MapvizPlugin()
+PointDrawingPlugin::PointDrawingPlugin()
+: MapvizPlugin()
   , arrow_size_(25)
   , draw_style_(LINES)
   , position_tolerance_(0.0)
@@ -57,406 +57,390 @@ namespace mapviz_plugins
   , scale_(1.0)
   , static_arrow_sizes_(false)
   , got_begin_(false)
+{
+  QObject::connect(
+    this,
+    SIGNAL(TargetFrameChanged(const std::string&)),
+    this,
+    SLOT(ResetTransformedPoints()));
+}
+
+void PointDrawingPlugin::ClearHistory()
+{
+  RCLCPP_INFO(Logger(), "PointDrawingPlugin::ClearHistory()");
+  ClearPoints();
+}
+
+void PointDrawingPlugin::DrawIcon()
+{
+  if (icon_) {
+    QPixmap icon(16, 16);
+    icon.fill(Qt::transparent);
+
+    QPainter painter(&icon);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    QPen pen(color_);
+
+    if (draw_style_ == POINTS) {
+      pen.setWidth(7);
+      pen.setCapStyle(Qt::RoundCap);
+      painter.setPen(pen);
+      painter.drawPoint(8, 8);
+    } else if (draw_style_ == LINES) {
+      pen.setWidth(3);
+      pen.setCapStyle(Qt::FlatCap);
+      painter.setPen(pen);
+      painter.drawLine(1, 14, 14, 1);
+    } else if (draw_style_ == ARROWS) {
+      pen.setWidth(2);
+      pen.setCapStyle(Qt::SquareCap);
+      painter.setPen(pen);
+      painter.drawLine(2, 13, 13, 2);
+      painter.drawLine(13, 2, 13, 8);
+      painter.drawLine(13, 2, 7, 2);
+    }
+
+    icon_->SetPixmap(icon);
+  }
+}
+
+void PointDrawingPlugin::SetArrowSize(int arrowSize)
+{
+  arrow_size_ = arrowSize;
+  ResetTransformedPoints();
+}
+
+void PointDrawingPlugin::SetDrawStyle(QString style)
+{
+  if (style == "lines") {
+    draw_style_ = LINES;
+  } else if (style == "points") {
+    draw_style_ = POINTS;
+  } else if (style == "arrows") {
+    draw_style_ = ARROWS;
+  }
+  ResetTransformedPoints();
+  DrawIcon();
+}
+
+void PointDrawingPlugin::SetDrawStyle(PointDrawingPlugin::DrawStyle style)
+{
+  draw_style_ = style;
+  DrawIcon();
+}
+
+void PointDrawingPlugin::SetStaticArrowSizes(bool isChecked)
+{
+  static_arrow_sizes_ = isChecked;
+  ResetTransformedPoints();
+}
+
+void PointDrawingPlugin::PositionToleranceChanged(double value)
+{
+  position_tolerance_ = value;
+}
+
+void PointDrawingPlugin::LapToggled(bool checked)
+{
+  lap_checked_ = checked;
+}
+
+void PointDrawingPlugin::CovariancedToggled(bool checked)
+{
+  covariance_checked_ = checked;
+}
+
+void PointDrawingPlugin::ShowAllCovariancesToggled(bool checked)
+{
+  show_all_covariances_checked_ = checked;
+}
+
+void PointDrawingPlugin::ResetTransformedPoints()
+{
+  // Transform() re-projects everything from the raw points on every pass, so
+  // there is no cached state left to invalidate first.  Kept because callers
+  // (arrow size, draw style, target frame) need the route re-projected before
+  // the next draw rather than on the next frame.
+  Transform();
+}
+
+void PointDrawingPlugin::pushPoint(StampedPoint point)
+{
+  cur_point_ = point;
+
+  if (points_.empty() ||
+    (point.point.distance(points_.back().point)) >=
+    (position_tolerance_))
   {
-    QObject::connect(this,
-                     SIGNAL(TargetFrameChanged(const std::string&)),
-                     this,
-                     SLOT(ResetTransformedPoints()));
+    points_.push_back(std::move(point));
   }
 
-  void PointDrawingPlugin::ClearHistory()
-  {
-    RCLCPP_INFO(Logger(), "PointDrawingPlugin::ClearHistory()");
-    ClearPoints();
+  if (buffer_size_ > 0) {
+    while (static_cast<int>(points_.size()) >= buffer_size_) {
+      points_.pop_front();
+    }
+  }
+}
+
+void PointDrawingPlugin::ClearPoints()
+{
+  points_.clear();
+
+  // cur_point_ is drawn alongside points_ (see DrawLines(), DrawArrows() and
+  // DrawCovariance()), so it has to be reset as well or the last point
+  // received would keep being rendered after a clear.
+  cur_point_ = StampedPoint();
+}
+
+double PointDrawingPlugin::bufferSize() const
+{
+  if (!lap_checked_) {
+    return buffer_size_;
+  } else {
+    return buffer_holder_;
+  }
+}
+
+double PointDrawingPlugin::positionTolerance() const
+{
+  return position_tolerance_;
+}
+
+const std::deque<PointDrawingPlugin::StampedPoint> & PointDrawingPlugin::points() const
+{
+  return points_;
+}
+
+void PointDrawingPlugin::BufferSizeChanged(int value)
+{
+  buffer_size_ = value;
+
+  if (buffer_size_ > 0) {
+    while (static_cast<int>(points_.size()) >= buffer_size_) {
+      points_.pop_front();
+    }
+  }
+}
+
+bool PointDrawingPlugin::DrawPoints(double scale)
+{
+  bool transformed = true;
+
+  if (scale_ != scale && draw_style_ == ARROWS && static_arrow_sizes_) {
+    ResetTransformedPoints();
+  }
+  scale_ = scale;
+  if (lap_checked_) {
+    CollectLaps();
+
+    if (draw_style_ == ARROWS) {
+      transformed &= DrawLapsArrows();
+    } else {
+      transformed &= DrawLaps();
+    }
+  } else if (buffer_size_ == INT_MAX) {
+    buffer_size_ = buffer_holder_;
+    laps_.clear();
+    got_begin_ = false;
+  }
+  if (draw_style_ == ARROWS) {
+    transformed &= DrawArrows();
+  } else {
+    transformed &= DrawLines();
   }
 
-  void PointDrawingPlugin::DrawIcon()
+  return transformed;
+}
+
+void PointDrawingPlugin::CollectLaps()
+{
+  if (!got_begin_) {
+    begin_ = cur_point_.point;
+    points_.clear();
+    buffer_holder_ = buffer_size_;
+    buffer_size_ = INT_MAX;
+    got_begin_ = true;
+  }
+  tf2::Vector3 check = begin_ - cur_point_.point;
+  if (((std::fabs(check.x()) <= 3) && (std::fabs(check.y()) <= 3)) &&
+    !new_lap_)
   {
-    if (icon_)
-    {
-      QPixmap icon(16, 16);
-      icon.fill(Qt::transparent);
-
-      QPainter painter(&icon);
-      painter.setRenderHint(QPainter::Antialiasing, true);
-
-      QPen pen(color_);
-
-      if (draw_style_ == POINTS)
-      {
-        pen.setWidth(7);
-        pen.setCapStyle(Qt::RoundCap);
-        painter.setPen(pen);
-        painter.drawPoint(8, 8);
-      } else if (draw_style_ == LINES) {
-        pen.setWidth(3);
-        pen.setCapStyle(Qt::FlatCap);
-        painter.setPen(pen);
-        painter.drawLine(1, 14, 14, 1);
-      } else if (draw_style_ == ARROWS) {
-        pen.setWidth(2);
-        pen.setCapStyle(Qt::SquareCap);
-        painter.setPen(pen);
-        painter.drawLine(2, 13, 13, 2);
-        painter.drawLine(13, 2, 13, 8);
-        painter.drawLine(13, 2, 7, 2);
-      }
-
-      icon_->SetPixmap(icon);
+    new_lap_ = true;
+    if (!points_.empty()) {
+      laps_.push_back(points_);
+      laps_[0].pop_back();
+      points_.clear();
+      points_.push_back(cur_point_);
     }
   }
 
-  void PointDrawingPlugin::SetArrowSize(int arrowSize)
+  if (((std::fabs(check.x()) > 25) && (std::fabs(check.y()) > 25)) &&
+    new_lap_)
   {
-    arrow_size_ = arrowSize;
-    ResetTransformedPoints();
+    new_lap_ = false;
+  }
+}
+
+bool PointDrawingPlugin::DrawLines()
+{
+  bool success = cur_point_.transformed;
+  glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
+  if (draw_style_ == LINES && !points_.empty()) {
+    glLineWidth(3);
+    glBegin(GL_LINE_STRIP);
+  } else {
+    glPointSize(6);
+    glBegin(GL_POINTS);
   }
 
-  void PointDrawingPlugin::SetDrawStyle(QString style)
-  {
-    if (style == "lines")
-    {
-      draw_style_ = LINES;
-    } else if (style == "points") {
-      draw_style_ = POINTS;
-    } else if (style == "arrows") {
-      draw_style_ = ARROWS;
+  for (const auto & pt : points_) {
+    success &= pt.transformed;
+    if (pt.transformed) {
+      glVertex2d(pt.transformed_point.getX(), pt.transformed_point.getY());
     }
-    ResetTransformedPoints();
+  }
+
+  if (cur_point_.transformed) {
+    glVertex2d(
+      cur_point_.transformed_point.getX(),
+      cur_point_.transformed_point.getY());
+  }
+
+  glEnd();
+
+  return success;
+}
+
+bool PointDrawingPlugin::DrawArrow(const StampedPoint & it)
+{
+  if (it.transformed) {
+    glVertex2d(
+      it.transformed_point.getX(),
+      it.transformed_point.getY());
+
+    glVertex2d(
+      it.transformed_arrow_point.getX(),
+      it.transformed_arrow_point.getY());
+
+    glVertex2d(
+      it.transformed_arrow_point.getX(),
+      it.transformed_arrow_point.getY());
+    glVertex2d(
+      it.transformed_arrow_left.getX(),
+      it.transformed_arrow_left.getY());
+
+    glVertex2d(
+      it.transformed_arrow_point.getX(),
+      it.transformed_arrow_point.getY());
+    glVertex2d(
+      it.transformed_arrow_right.getX(),
+      it.transformed_arrow_right.getY());
+    return true;
+  }
+  return false;
+}
+
+bool PointDrawingPlugin::DrawArrows()
+{
+  bool success = true;
+  glLineWidth(4);
+  glBegin(GL_LINES);
+  glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
+  for (const auto & pt : points_) {
+    success &= DrawArrow(pt);
+  }
+
+  success &= DrawArrow(cur_point_);
+
+  glEnd();
+
+  return success;
+}
+
+void PointDrawingPlugin::SetColor(const QColor & color)
+{
+  if (color != color_) {
+    color_ = color;
     DrawIcon();
   }
+}
 
-  void PointDrawingPlugin::SetDrawStyle(PointDrawingPlugin::DrawStyle style)
-  {
-     draw_style_ = style;
-     DrawIcon();
-  }
+void PointDrawingPlugin::TransformPoint(
+  StampedPoint & point,
+  const swri_transform_util::Transform & transform)
+{
+  point.transformed_point = transform * point.point;
 
-  void PointDrawingPlugin::SetStaticArrowSizes(bool isChecked)
-  {
-    static_arrow_sizes_ = isChecked;
-    ResetTransformedPoints();
-  }
+  if (draw_style_ == ARROWS) {
+    tf2::Transform orientation(tf2::Transform(transform.GetOrientation()) *
+      point.orientation);
 
-  void PointDrawingPlugin::PositionToleranceChanged(double value)
-  {
-    position_tolerance_ = value;
-  }
-
-  void PointDrawingPlugin::LapToggled(bool checked)
-  {
-    lap_checked_ = checked;
-  }
-
-  void PointDrawingPlugin::CovariancedToggled(bool checked)
-  {
-    covariance_checked_ = checked;
-  }
-
-  void PointDrawingPlugin::ShowAllCovariancesToggled(bool checked)
-  {
-    show_all_covariances_checked_ = checked;
-  }
-
-  void PointDrawingPlugin::ResetTransformedPoints()
-  {
-    // Transform() re-projects everything from the raw points on every pass, so
-    // there is no cached state left to invalidate first.  Kept because callers
-    // (arrow size, draw style, target frame) need the route re-projected before
-    // the next draw rather than on the next frame.
-    Transform();
-  }
-
-  void PointDrawingPlugin::pushPoint(StampedPoint point)
-  {
-    cur_point_ = point;
-
-    if (points_.empty() ||
-        (point.point.distance(points_.back().point)) >=
-        (position_tolerance_))
-    {
-      points_.push_back(std::move(point));
-    }
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) >= buffer_size_)
-      {
-        points_.pop_front();
-      }
-    }
-  }
-
-  void PointDrawingPlugin::ClearPoints()
-  {
-    points_.clear();
-
-    // cur_point_ is drawn alongside points_ (see DrawLines(), DrawArrows() and
-    // DrawCovariance()), so it has to be reset as well or the last point
-    // received would keep being rendered after a clear.
-    cur_point_ = StampedPoint();
-  }
-
-  double PointDrawingPlugin::bufferSize() const
-  {
-    if (!lap_checked_)
-    {
-      return buffer_size_;
+    double size = static_cast<double>(arrow_size_);
+    if (static_arrow_sizes_) {
+      size *= scale_;
     } else {
-      return buffer_holder_;
+      size /= 10.0;
     }
+    double arrow_width = size / 5.0;
+    double head_length = size * 0.75;
+
+    // If quaternion malformed, just draw point instead
+    const tf2::Quaternion q(point.orientation);
+    if (std::fabs(q.x() * q.x() + q.y() * q.y() + q.z() * q.z() + q.w() * q.w() - 1) > 0.01) {
+      orientation = tf2::Transform(tf2::Transform(transform.GetOrientation()));
+      arrow_width = 0.0;
+      head_length = 0.0;
+      size = 0;
+    }
+
+    point.transformed_arrow_point =
+      point.transformed_point + orientation * tf2::Vector3(size, 0.0, 0.0);
+    point.transformed_arrow_left =
+      point.transformed_point + orientation * tf2::Vector3(head_length, -arrow_width, 0.0);
+    point.transformed_arrow_right =
+      point.transformed_point + orientation * tf2::Vector3(head_length, arrow_width, 0.0);
   }
 
-  double PointDrawingPlugin::positionTolerance() const
-  {
-    return position_tolerance_;
-  }
-
-  const std::deque<PointDrawingPlugin::StampedPoint> &PointDrawingPlugin::points() const
-  {
-    return points_;
-  }
-
-  void PointDrawingPlugin::BufferSizeChanged(int value)
-  {
-    buffer_size_ = value;
-
-    if (buffer_size_ > 0)
-    {
-      while (static_cast<int>(points_.size()) >= buffer_size_)
-      {
-        points_.pop_front();
-      }
+  if (covariance_checked_) {
+    for (uint32_t i = 0; i < point.cov_points.size(); i++) {
+      point.transformed_cov_points[i] = transform * point.cov_points[i];
     }
   }
+  point.transformed = true;
+}
 
-  bool PointDrawingPlugin::DrawPoints(double scale)
-  {
-    bool transformed = true;
+void PointDrawingPlugin::Transform()
+{
+  // The whole route is re-projected with one most-recent transform on every
+  // pass, rather than each point keeping whichever transform happened to be
+  // current when it arrived.  Caching per-point results made the drawn route
+  // depend on arrival timing: any action that invalidated the cache
+  // re-projected the backlog against a single transform and visibly shifted
+  // the route.  Re-projecting every pass keeps the route self-consistent, and
+  // one lookup per pass costs less than the per-point lookups it replaces.
+  // Every point is looked up at the newest stamp, so the route is placed by
+  // where its frame is *now*.  Points of a route normally share one source
+  // frame, making this a single lookup per pass; a frame that changes
+  // mid-route (a tf trail stores its points in the target frame, so retargeting
+  // mapviz leaves older points behind in the previous one) leaves a contiguous
+  // run of older points that this still resolves against their own frame.
+  std::string resolved_frame;
+  swri_transform_util::Transform resolved_transform;
+  bool have_resolved = false;
+  bool resolved_ok = false;
+  bool any_transformed = false;
 
-    if (scale_ != scale && draw_style_ == ARROWS && static_arrow_sizes_) {
-      ResetTransformedPoints();
-    }
-    scale_ = scale;
-    if (lap_checked_) {
-      CollectLaps();
-
-      if (draw_style_ == ARROWS) {
-        transformed &= DrawLapsArrows();
-      } else {
-        transformed &= DrawLaps();
-      }
-    } else if (buffer_size_ == INT_MAX) {
-      buffer_size_ = buffer_holder_;
-      laps_.clear();
-      got_begin_ = false;
-    }
-    if (draw_style_ == ARROWS) {
-      transformed &= DrawArrows();
-    } else {
-      transformed &= DrawLines();
-    }
-
-    return transformed;
-  }
-
-  void PointDrawingPlugin::CollectLaps()
-  {
-    if (!got_begin_)
+  auto project = [&](StampedPoint & point)
     {
-      begin_ = cur_point_.point;
-      points_.clear();
-      buffer_holder_ = buffer_size_;
-      buffer_size_ = INT_MAX;
-      got_begin_ = true;
-    }
-    tf2::Vector3 check = begin_ - cur_point_.point;
-    if (((std::fabs(check.x()) <= 3) && (std::fabs(check.y()) <= 3)) &&
-        !new_lap_)
-    {
-      new_lap_ = true;
-      if (!points_.empty())
-      {
-        laps_.push_back(points_);
-        laps_[0].pop_back();
-        points_.clear();
-        points_.push_back(cur_point_);
-      }
-    }
-
-    if (((std::fabs(check.x()) > 25) && (std::fabs(check.y()) > 25)) &&
-        new_lap_)
-    {
-      new_lap_ = false;
-    }
-  }
-
-  bool PointDrawingPlugin::DrawLines()
-  {
-    bool success = cur_point_.transformed;
-    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
-    if (draw_style_ == LINES && !points_.empty())
-    {
-      glLineWidth(3);
-      glBegin(GL_LINE_STRIP);
-    } else {
-      glPointSize(6);
-      glBegin(GL_POINTS);
-    }
-
-    for (const auto& pt : points_)
-    {
-      success &= pt.transformed;
-      if (pt.transformed)
-      {
-        glVertex2d(pt.transformed_point.getX(), pt.transformed_point.getY());
-      }
-    }
-
-    if (cur_point_.transformed)
-    {
-      glVertex2d(cur_point_.transformed_point.getX(),
-                 cur_point_.transformed_point.getY());
-    }
-
-    glEnd();
-
-    return success;
-  }
-
-  bool PointDrawingPlugin::DrawArrow(const StampedPoint& it)
-  {
-      if (it.transformed)
-      {
-        glVertex2d(it.transformed_point.getX(),
-                   it.transformed_point.getY());
-
-        glVertex2d(it.transformed_arrow_point.getX(),
-                   it.transformed_arrow_point.getY());
-
-        glVertex2d(it.transformed_arrow_point.getX(),
-                   it.transformed_arrow_point.getY());
-        glVertex2d(it.transformed_arrow_left.getX(),
-                   it.transformed_arrow_left.getY());
-
-        glVertex2d(it.transformed_arrow_point.getX(),
-                   it.transformed_arrow_point.getY());
-        glVertex2d(it.transformed_arrow_right.getX(),
-                   it.transformed_arrow_right.getY());
-        return true;
-       }
-      return false;
-  }
-
-  bool PointDrawingPlugin::DrawArrows()
-  {
-    bool success = true;
-    glLineWidth(4);
-    glBegin(GL_LINES);
-    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
-    for (const auto &pt : points_)
-    {
-      success &= DrawArrow(pt);
-    }
-
-    success &= DrawArrow(cur_point_);
-
-    glEnd();
-
-    return success;
-  }
-
-  void PointDrawingPlugin::SetColor(const QColor& color)
-  {
-    if (color != color_)
-    {
-      color_ = color;
-      DrawIcon();
-    }
-  }
-
-  void PointDrawingPlugin::TransformPoint(
-    StampedPoint& point,
-    const swri_transform_util::Transform& transform)
-  {
-    point.transformed_point = transform * point.point;
-
-    if (draw_style_ == ARROWS)
-    {
-      tf2::Transform orientation(tf2::Transform(transform.GetOrientation()) *
-                                point.orientation);
-
-      double size = static_cast<double>(arrow_size_);
-      if (static_arrow_sizes_)
-      {
-        size *= scale_;
-      } else {
-        size /= 10.0;
-      }
-      double arrow_width = size / 5.0;
-      double head_length = size * 0.75;
-
-      // If quaternion malformed, just draw point instead
-      const tf2::Quaternion q(point.orientation);
-      if(std::fabs(q.x()*q.x() + q.y()*q.y() + q.z()*q.z() + q.w()*q.w() - 1) > 0.01)
-      {
-        orientation = tf2::Transform(tf2::Transform(transform.GetOrientation()));
-        arrow_width = 0.0;
-        head_length = 0.0;
-        size = 0;
-      }
-
-      point.transformed_arrow_point =
-          point.transformed_point + orientation * tf2::Vector3(size, 0.0, 0.0);
-      point.transformed_arrow_left =
-          point.transformed_point + orientation * tf2::Vector3(head_length, -arrow_width, 0.0);
-      point.transformed_arrow_right =
-          point.transformed_point + orientation * tf2::Vector3(head_length, arrow_width, 0.0);
-    }
-
-    if (covariance_checked_)
-    {
-      for (uint32_t i = 0; i < point.cov_points.size(); i++)
-      {
-        point.transformed_cov_points[i] = transform * point.cov_points[i];
-      }
-    }
-    point.transformed = true;
-  }
-
-  void PointDrawingPlugin::Transform()
-  {
-    // The whole route is re-projected with one most-recent transform on every
-    // pass, rather than each point keeping whichever transform happened to be
-    // current when it arrived.  Caching per-point results made the drawn route
-    // depend on arrival timing: any action that invalidated the cache
-    // re-projected the backlog against a single transform and visibly shifted
-    // the route.  Re-projecting every pass keeps the route self-consistent, and
-    // one lookup per pass costs less than the per-point lookups it replaces.
-    // Every point is looked up at the newest stamp, so the route is placed by
-    // where its frame is *now*.  Points of a route normally share one source
-    // frame, making this a single lookup per pass; a frame that changes
-    // mid-route (a tf trail stores its points in the target frame, so retargeting
-    // mapviz leaves older points behind in the previous one) leaves a contiguous
-    // run of older points that this still resolves against their own frame.
-    std::string resolved_frame;
-    swri_transform_util::Transform resolved_transform;
-    bool have_resolved = false;
-    bool resolved_ok = false;
-    bool any_transformed = false;
-
-    auto project = [&](StampedPoint& point)
-    {
-      if (!have_resolved || point.source_frame != resolved_frame)
-      {
+      if (!have_resolved || point.source_frame != resolved_frame) {
         resolved_frame = point.source_frame;
         resolved_ok =
-            GetTransform(resolved_frame, cur_point_.stamp, resolved_transform);
+          GetTransform(resolved_frame, cur_point_.stamp, resolved_transform);
         have_resolved = true;
       }
 
-      if (resolved_ok)
-      {
+      if (resolved_ok) {
         TransformPoint(point, resolved_transform);
         any_transformed = true;
       } else {
@@ -464,60 +448,35 @@ namespace mapviz_plugins
       }
     };
 
-    for (auto &pt : points_)
-    {
+  for (auto & pt : points_) {
+    project(pt);
+  }
+
+  project(cur_point_);
+
+  for (auto & lap : laps_) {
+    for (auto & pt : lap) {
       project(pt);
-    }
-
-    project(cur_point_);
-
-    for (auto &lap : laps_)
-    {
-      for (auto &pt : lap)
-      {
-        project(pt);
-      }
-    }
-
-    if (!points_.empty() && !any_transformed)
-    {
-      PrintError("No transform between " + cur_point_.source_frame + " and " +
-                 target_frame_);
     }
   }
 
-  bool PointDrawingPlugin::DrawLaps()
-  {
-    bool transformed = !points_.empty();
-    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
-    glLineWidth(3);
-    QColor base_color = color_;
+  if (!points_.empty() && !any_transformed) {
+    PrintError(
+      "No transform between " + cur_point_.source_frame + " and " +
+      target_frame_);
+  }
+}
 
-    for (size_t i = 0; i < laps_.size(); i++)
-    {
-      UpdateColor(base_color, static_cast<int>(i));
-      if (draw_style_ == LINES)
-      {
-        glLineWidth(3);
-        glBegin(GL_LINE_STRIP);
-      } else {
-        glPointSize(6);
-        glBegin(GL_POINTS);
-      }
+bool PointDrawingPlugin::DrawLaps()
+{
+  bool transformed = !points_.empty();
+  glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
+  glLineWidth(3);
+  QColor base_color = color_;
 
-      for (const auto& pt : laps_[i])
-      {
-        if (pt.transformed)
-        {
-          glVertex2d(pt.transformed_point.getX(),
-                     pt.transformed_point.getY());
-        }
-      }
-      glEnd();
-    }
-
-    if (draw_style_ == LINES)
-    {
+  for (size_t i = 0; i < laps_.size(); i++) {
+    UpdateColor(base_color, static_cast<int>(i));
+    if (draw_style_ == LINES) {
       glLineWidth(3);
       glBegin(GL_LINE_STRIP);
     } else {
@@ -525,120 +484,131 @@ namespace mapviz_plugins
       glBegin(GL_POINTS);
     }
 
-    glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(), 0.5);
-
-    if (!points_.empty())
-    {
-      for (const auto &pt : points_)
-      {
-        transformed &= pt.transformed;
-        if (pt.transformed)
-        {
-          glVertex2d(pt.transformed_point.getX(),
-                     pt.transformed_point.getY());
-        }
+    for (const auto & pt : laps_[i]) {
+      if (pt.transformed) {
+        glVertex2d(
+          pt.transformed_point.getX(),
+          pt.transformed_point.getY());
       }
     }
-
     glEnd();
-    return transformed;
   }
 
-  void PointDrawingPlugin::UpdateColor(QColor base_color, int i)
-  {
-      int hue = static_cast<int>(color_.hue() + (i + 1.0) * 10.0 * M_PI);
-      if (hue > 360)
-      {
-        hue %= 360;
-      }
-      int sat = color_.saturation();
-      int v = color_.value();
-      base_color.setHsv(hue, sat, v);
-      glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(),
-                0.5);
+  if (draw_style_ == LINES) {
+    glLineWidth(3);
+    glBegin(GL_LINE_STRIP);
+  } else {
+    glPointSize(6);
+    glBegin(GL_POINTS);
   }
 
-  void PointDrawingPlugin::DrawCovariance()
-  {
-    glLineWidth(4);
+  glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(), 0.5);
 
-    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
-
-    if (show_all_covariances_checked_)
-    {
-      for (const auto &pt : points_)
-      {
-        if (!pt.transformed || pt.transformed_cov_points.empty())
-        {
-          continue;
-        }
-        glBegin(GL_LINE_STRIP);
-
-        for (const auto & transformed_cov_point : pt.transformed_cov_points)
-        {
-          glVertex2d(transformed_cov_point.getX(),
-                     transformed_cov_point.getY());
-        }
-
-        glVertex2d(pt.transformed_cov_points.front().getX(),
-                   pt.transformed_cov_points.front().getY());
-
-        glEnd();
+  if (!points_.empty()) {
+    for (const auto & pt : points_) {
+      transformed &= pt.transformed;
+      if (pt.transformed) {
+        glVertex2d(
+          pt.transformed_point.getX(),
+          pt.transformed_point.getY());
       }
-    } else if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty()) {
+    }
+  }
+
+  glEnd();
+  return transformed;
+}
+
+void PointDrawingPlugin::UpdateColor(QColor base_color, int i)
+{
+  int hue = static_cast<int>(color_.hue() + (i + 1.0) * 10.0 * M_PI);
+  if (hue > 360) {
+    hue %= 360;
+  }
+  int sat = color_.saturation();
+  int v = color_.value();
+  base_color.setHsv(hue, sat, v);
+  glColor4d(
+    base_color.redF(), base_color.greenF(), base_color.blueF(),
+    0.5);
+}
+
+void PointDrawingPlugin::DrawCovariance()
+{
+  glLineWidth(4);
+
+  glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 1.0);
+
+  if (show_all_covariances_checked_) {
+    for (const auto & pt : points_) {
+      if (!pt.transformed || pt.transformed_cov_points.empty()) {
+        continue;
+      }
       glBegin(GL_LINE_STRIP);
 
-      for (auto & transformed_cov_point : cur_point_.transformed_cov_points)
-      {
-        glVertex2d(transformed_cov_point.getX(),
-                   transformed_cov_point.getY());
+      for (const auto & transformed_cov_point : pt.transformed_cov_points) {
+        glVertex2d(
+          transformed_cov_point.getX(),
+          transformed_cov_point.getY());
       }
 
-      glVertex2d(cur_point_.transformed_cov_points.front().getX(),
-                 cur_point_.transformed_cov_points.front().getY());
+      glVertex2d(
+        pt.transformed_cov_points.front().getX(),
+        pt.transformed_cov_points.front().getY());
 
       glEnd();
     }
+  } else if (cur_point_.transformed && !cur_point_.transformed_cov_points.empty()) {
+    glBegin(GL_LINE_STRIP);
+
+    for (auto & transformed_cov_point : cur_point_.transformed_cov_points) {
+      glVertex2d(
+        transformed_cov_point.getX(),
+        transformed_cov_point.getY());
+    }
+
+    glVertex2d(
+      cur_point_.transformed_cov_points.front().getX(),
+      cur_point_.transformed_cov_points.front().getY());
+
+    glEnd();
   }
+}
 
-  bool PointDrawingPlugin::DrawLapsArrows()
-  {
-    bool success = !laps_.empty() && !points_.empty();
-    glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
-    glLineWidth(2);
-    QColor base_color = color_;
-    if (!laps_.empty())
-    {
-      for (size_t i = 0; i < laps_.size(); i++)
-      {
-        UpdateColor(base_color, static_cast<int>(i));
-        for (const auto &pt : laps_[i])
-        {
-          glBegin(GL_LINE_STRIP);
-          success &= DrawArrow(pt);
-          glEnd();
-        }
-      }
-      glEnd();
-
-      int hue = static_cast<int>(color_.hue() + laps_.size() * 10.0 * M_PI);
-      int sat = color_.saturation();
-      int v = color_.value();
-      base_color.setHsv(hue, sat, v);
-      glColor4d(base_color.redF(), base_color.greenF(), base_color.blueF(),
-                0.5);
-    }
-
-    if (!points_.empty())
-    {
-      for (const auto& pt : points_)
-      {
+bool PointDrawingPlugin::DrawLapsArrows()
+{
+  bool success = !laps_.empty() && !points_.empty();
+  glColor4d(color_.redF(), color_.greenF(), color_.blueF(), 0.5);
+  glLineWidth(2);
+  QColor base_color = color_;
+  if (!laps_.empty()) {
+    for (size_t i = 0; i < laps_.size(); i++) {
+      UpdateColor(base_color, static_cast<int>(i));
+      for (const auto & pt : laps_[i]) {
         glBegin(GL_LINE_STRIP);
         success &= DrawArrow(pt);
         glEnd();
       }
     }
+    glEnd();
 
-    return success;
+    int hue = static_cast<int>(color_.hue() + laps_.size() * 10.0 * M_PI);
+    int sat = color_.saturation();
+    int v = color_.value();
+    base_color.setHsv(hue, sat, v);
+    glColor4d(
+      base_color.redF(), base_color.greenF(), base_color.blueF(),
+      0.5);
   }
+
+  if (!points_.empty()) {
+    for (const auto & pt : points_) {
+      glBegin(GL_LINE_STRIP);
+      success &= DrawArrow(pt);
+      glEnd();
+    }
+  }
+
+  return success;
+}
 }   // namespace mapviz_plugins
