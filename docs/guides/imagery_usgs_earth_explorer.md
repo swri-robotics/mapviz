@@ -30,7 +30,7 @@ Zoom to area and draw geometry on the map as needed. See coordinates populate on
 ## Extra search criteria (optional)
 
 If you need a certain date it can be supplied. Generally I leave this blank and choose the latest.
-Cloud cover can be good if using raw data products, like Landsat, that have not had clouds filtered out yet. 
+Cloud cover can be good if using raw data products, like Landsat, that have not had clouds filtered out yet.
 Once done click on the Data Sets button below:
 
 ## Choose data sets

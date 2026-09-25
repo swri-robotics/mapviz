@@ -691,4 +691,3 @@ inline void MapvizPlugin::PrintWarningHelper(QLabel *status_label, const std::st
 }   // namespace mapviz
 
 #endif  // MAPVIZ__MAPVIZ_PLUGIN_HPP_
-

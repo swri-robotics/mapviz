@@ -100,8 +100,8 @@ constexpr int VERTICAL_LABEL_PADDING_HORIZONTAL = 8;
 // needs about 305.  Both grow with display DPI and font scaling, so this is a
 // floor rather than an exact fit.
 constexpr int CONFIG_PANEL_PINNED_WIDTH = 380;
-// Minimum width for collapsed state, set to accommodate the vertical label 
-constexpr int CONFIG_PANEL_COLLAPSED_WIDTH = 28;  
+// Minimum width for collapsed state, set to accommodate the vertical label
+constexpr int CONFIG_PANEL_COLLAPSED_WIDTH = 28;
 
 // A label that paints its text rotated 90° clockwise (reads top-to-bottom)
 class VerticalLabel : public QWidget
@@ -1569,7 +1569,7 @@ void Mapviz::ToggleRecord(bool on)
       canvas_->CaptureFrames(true);
       auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
       std::stringstream time_stream;
-      time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S"); 
+      time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S");
       std::string posix_time = time_stream.str();
       std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".avi";
       if (filename.front() == '~')
@@ -1684,7 +1684,7 @@ void Mapviz::Screenshot()
 
     auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::stringstream time_stream;
-    time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S"); 
+    time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S");
     std::string posix_time = time_stream.str();
     std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
     if (filename.front() == '~')

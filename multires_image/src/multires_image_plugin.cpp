@@ -362,4 +362,3 @@ namespace mapviz_plugins
     emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
   }
 }
-

@@ -278,7 +278,7 @@ target_compile_definitions(${PROJECT_NAME}
     WFlags=WindowFlags)
 
 # cv_bridge 3.5.0 (ROS 2 Iron) started transitioning some files from .h to .hpp extensions
-if (cv_bridge_VERSION VERSION_LESS "3.5.0")
+if(cv_bridge_VERSION VERSION_LESS "3.5.0")
   target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CVBRIDGE_H_FILES)
 endif()
 
@@ -360,6 +360,16 @@ if(nav2_msgs_FOUND)
 endif()
 
 if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # TODO(#938): Enable the remaining linters once the code complies with them.
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cppcheck_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  set(ament_cmake_flake8_FOUND TRUE)
+  set(ament_cmake_pep257_FOUND TRUE)
+  set(ament_cmake_uncrustify_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+
   find_package(ament_cmake_gtest REQUIRED)
 
   # The plugins build Qt widgets in their constructors, so the test needs a

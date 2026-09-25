@@ -176,4 +176,3 @@ namespace multires_image
     glDisable(GL_TEXTURE_2D);
   }
 }
-

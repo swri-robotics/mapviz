@@ -4,10 +4,10 @@
   <description>
      ROS interfaces used by Mapviz
   </description>
-  <author>P. J. Reed</author>
   <maintainer email="swri-robotics@swri.org">Southwest Research Institute</maintainer>
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
+  <author>P. J. Reed</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
@@ -16,6 +16,9 @@
 
   <exec_depend>marti_common_msgs</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 

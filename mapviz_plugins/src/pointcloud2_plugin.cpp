@@ -914,7 +914,7 @@ namespace mapviz_plugins
   {
     alpha_ = std::max(0.0f, std::min(static_cast<float>(value), 1.0f));
   }
-  
+
   void PointCloud2Plugin::SaveConfig(YAML::Emitter& emitter,
                                      const std::string& /*path*/)
   {

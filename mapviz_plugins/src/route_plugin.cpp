@@ -150,7 +150,7 @@ namespace mapviz_plugins
       connectRouteCallback(topic, qos);
     }
   }
-  
+
   void RoutePlugin::SelectPositionTopic()
   {
     auto [topic, qos] = SelectTopicDialog::selectTopic(

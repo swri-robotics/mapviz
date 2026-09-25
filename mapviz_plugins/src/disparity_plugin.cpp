@@ -794,4 +794,3 @@ namespace mapviz_plugins
       255,  0, 0,
     };
 }   // namespace mapviz_plugins
-
