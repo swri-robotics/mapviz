@@ -43,98 +43,99 @@
 
 namespace tile_map
 {
-  class BingSource : public TileSource
-  {
-    Q_OBJECT
-  public:
-    /**
-     * Initializes a Bing map source with a given name.
-     *
-     * Note that currently, only a single, hard-coded Bing map source is supported.
-     * There's only one Bing Maps, after all.
-     * In the future, though, it would probably make sense to extend its
-     * functionality to allow pulling different tile sets from Bing.
-     * @param name The name the source will appear as in the combo box.
-     */
-    explicit BingSource(const QString& name);
+class BingSource : public TileSource
+{
+  Q_OBJECT
 
-    /**
-     * Generates a unique hash that identifies the tile as the given coordinates.
-     *
-     * Note that Bing Maps tiles could potentially be pulled from one of many
-     * different servers, depending on the subdomain list given to us after we
-     * authenticate with our API Key.  That means the exact URL to any given tile
-     * should not be used as part of the hash, because there are many valid URLs
-     * for a tile.
-     * @param level The zoom level
-     * @param x The X coordinate
-     * @param y The Y coordinate
-     * @return A hash that uniquely identifies this tile
-     */
-    size_t GenerateTileHash(int32_t level, int64_t x, int64_t y) override;
+public:
+  /**
+   * Initializes a Bing map source with a given name.
+   *
+   * Note that currently, only a single, hard-coded Bing map source is supported.
+   * There's only one Bing Maps, after all.
+   * In the future, though, it would probably make sense to extend its
+   * functionality to allow pulling different tile sets from Bing.
+   * @param name The name the source will appear as in the combo box.
+   */
+  explicit BingSource(const QString & name);
 
-    /**
-     * Generates a URL that will retrieve a tile for the given coordinates.
-     *
-     * Since Bing can give us a list of subdomains to pull tiles from, the
-     * exact subdomain for a tile is chosen at random every time this function
-     * is called.  That means you are not guaranteed to get the same URL for a
-     * tile every time you call this function.
-     * @param level The zoom level
-     * @param x The X coordinate
-     * @param y The Y coordinate
-     * @return A URL that points to this tile
-     */
-    QString GenerateTileUrl(int32_t level, int64_t x, int64_t y) override;
+  /**
+   * Generates a unique hash that identifies the tile as the given coordinates.
+   *
+   * Note that Bing Maps tiles could potentially be pulled from one of many
+   * different servers, depending on the subdomain list given to us after we
+   * authenticate with our API Key.  That means the exact URL to any given tile
+   * should not be used as part of the hash, because there are many valid URLs
+   * for a tile.
+   * @param level The zoom level
+   * @param x The X coordinate
+   * @param y The Y coordinate
+   * @return A hash that uniquely identifies this tile
+   */
+  size_t GenerateTileHash(int32_t level, int64_t x, int64_t y) override;
 
-    QString GetType() const override;
+  /**
+   * Generates a URL that will retrieve a tile for the given coordinates.
+   *
+   * Since Bing can give us a list of subdomains to pull tiles from, the
+   * exact subdomain for a tile is chosen at random every time this function
+   * is called.  That means you are not guaranteed to get the same URL for a
+   * tile every time you call this function.
+   * @param level The zoom level
+   * @param x The X coordinate
+   * @param y The Y coordinate
+   * @return A URL that points to this tile
+   */
+  QString GenerateTileUrl(int32_t level, int64_t x, int64_t y) override;
 
-    QString GetApiKey() const;
+  QString GetType() const override;
 
-    /**
-     * Bing requires an API key in order to access its tiles.  The key provided
-     * will determine the URL we use to retrieve map tiles, so setting the API
-     * key will also cause this object to make a network request to the Bing Map
-     * server to get the appropriate URL.
-     *
-     * More information about getting an API key:
-     * https://msdn.microsoft.com/en-us/library/ff428642.aspx
-     * @param api_key A valid Bing Maps key
-     */
-    void SetApiKey(const QString& api_key);
+  QString GetApiKey() const;
 
-    static const QString BING_TYPE;
+  /**
+   * Bing requires an API key in order to access its tiles.  The key provided
+   * will determine the URL we use to retrieve map tiles, so setting the API
+   * key will also cause this object to make a network request to the Bing Map
+   * server to get the appropriate URL.
+   *
+   * More information about getting an API key:
+   * https://msdn.microsoft.com/en-us/library/ff428642.aspx
+   * @param api_key A valid Bing Maps key
+   */
+  void SetApiKey(const QString & api_key);
 
-  protected Q_SLOTS:
-    void ReplyFinished(QNetworkReply* reply);
+  static const QString BING_TYPE;
 
-  protected:
-    /**
-     * Bing Maps identifies tiles using a quadkey that is generated from the zoom
-     * level and x and y coordinates.  Details on how the quadkey is generated can
-     * be found here:
-     * https://msdn.microsoft.com/en-us/library/bb259689.aspx
-     *
-     * @param level The zoom level
-     * @param x The X coordinate
-     * @param y The Y coordinate
-     * @return The quadkey that represents the tile at the requested location
-     */
-    QString GenerateQuadKey(int32_t level, int64_t x, int64_t y) const;
+protected Q_SLOTS:
+  void ReplyFinished(QNetworkReply * reply);
 
-    QString api_key_;
-    std::hash<std::string> hash_;
-    QNetworkAccessManager network_manager_;
-    std::mt19937 rng_;
-    std::vector<QString> subdomains_;
-    QString tile_url_;
+protected:
+  /**
+   * Bing Maps identifies tiles using a quadkey that is generated from the zoom
+   * level and x and y coordinates.  Details on how the quadkey is generated can
+   * be found here:
+   * https://msdn.microsoft.com/en-us/library/bb259689.aspx
+   *
+   * @param level The zoom level
+   * @param x The X coordinate
+   * @param y The Y coordinate
+   * @return The quadkey that represents the tile at the requested location
+   */
+  QString GenerateQuadKey(int32_t level, int64_t x, int64_t y) const;
 
-    static const std::string BING_IMAGE_URL_KEY;
-    static const std::string BING_IMAGE_URL_SUBDOMAIN_KEY;
-    static const std::string BING_RESOURCE_SET_KEY;
-    static const std::string BING_RESOURCE_KEY;
-    static const std::string BING_STATUS_CODE_KEY;
-  };
+  QString api_key_;
+  std::hash<std::string> hash_;
+  QNetworkAccessManager network_manager_;
+  std::mt19937 rng_;
+  std::vector<QString> subdomains_;
+  QString tile_url_;
+
+  static const std::string BING_IMAGE_URL_KEY;
+  static const std::string BING_IMAGE_URL_SUBDOMAIN_KEY;
+  static const std::string BING_RESOURCE_SET_KEY;
+  static const std::string BING_RESOURCE_KEY;
+  static const std::string BING_STATUS_CODE_KEY;
+};
 }
 
 #endif //TILE_MAP_BING_SOURCE_H

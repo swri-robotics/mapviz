@@ -55,24 +55,24 @@ class ConfigItem : public QWidget
   Q_OBJECT
 
 public:
-  explicit ConfigItem(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+  explicit ConfigItem(QWidget * parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
   ~ConfigItem() override = default;
 
   void SetName(QString name);
   void SetType(QString type);
-  void SetWidget(QWidget* widget);
+  void SetWidget(QWidget * widget);
 
-  void SetListItem(QListWidgetItem* item) { item_ = item; }
-  bool Collapsed() const { return ui_.content->isHidden(); }
-  QString Name() const { return name_; }
+  void SetListItem(QListWidgetItem * item) {item_ = item;}
+  bool Collapsed() const {return ui_.content->isHidden();}
+  QString Name() const {return name_;}
 
   Ui::configitem ui_;
 
 Q_SIGNALS:
   void UpdateSizeHint();
-  void ToggledDraw(QListWidgetItem* plugin, bool visible);
-  void DuplicateRequest(QListWidgetItem* plugin);
-  void RemoveRequest(QListWidgetItem* plugin);
+  void ToggledDraw(QListWidgetItem * plugin, bool visible);
+  void DuplicateRequest(QListWidgetItem * plugin);
+  void RemoveRequest(QListWidgetItem * plugin);
 
 public Q_SLOTS:
   void Hide();
@@ -82,18 +82,18 @@ public Q_SLOTS:
   void ToggleDraw(bool toggled);
 
 private:
-  void contextMenuEvent(QContextMenuEvent *event) override;
-  void resizeEvent(QResizeEvent* event) override;
+  void contextMenuEvent(QContextMenuEvent * event) override;
+  void resizeEvent(QResizeEvent * event) override;
   void updateNameLabel();
 
 protected:
-  QListWidgetItem* item_;
+  QListWidgetItem * item_;
   QString name_;
   QString type_;
   QString full_label_text_;
-  QAction* edit_name_action_;
-  QAction* duplicate_item_action_;
-  QAction* remove_item_action_;
+  QAction * edit_name_action_;
+  QAction * duplicate_item_action_;
+  QAction * remove_item_action_;
   bool visible_;
 };
 }   // namespace mapviz

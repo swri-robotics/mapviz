@@ -85,10 +85,11 @@ class Mapviz : public QMainWindow
   Q_OBJECT
 
 public:
-  Mapviz(bool is_standalone,
+  Mapviz(
+    bool is_standalone,
     int argc,
-    char** argv,
-    QWidget *parent = 0,
+    char ** argv,
+    QWidget * parent = 0,
     Qt::WindowFlags flags = Qt::WindowFlags());
   ~Mapviz();
 
@@ -103,14 +104,14 @@ public Q_SLOTS:
   void ClearConfig();
   void SelectNewDisplay();
   void RemoveDisplay();
-  void RemoveDisplay(QListWidgetItem* item);
+  void RemoveDisplay(QListWidgetItem * item);
   void DuplicateDisplay();
-  void DuplicateDisplay(QListWidgetItem *item);
+  void DuplicateDisplay(QListWidgetItem * item);
   void RenameDisplay();
-  void RenameDisplay(QListWidgetItem* item);
+  void RenameDisplay(QListWidgetItem * item);
   void ReorderDisplays();
-  void FixedFrameSelected(const QString& text);
-  void TargetFrameSelected(const QString& text);
+  void FixedFrameSelected(const QString & text);
+  void TargetFrameSelected(const QString & text);
   void ToggleUseLatestTransforms(bool on);
   void UpdateFrames();
   void SpinOnce();
@@ -122,9 +123,9 @@ public Q_SLOTS:
   void ToggleFixOrientation(bool on);
   void ToggleRotate90(bool on);
   void ToggleEnableAntialiasing(bool on);
-  void ToggleShowPlugin(QListWidgetItem* item, bool visible);
+  void ToggleShowPlugin(QListWidgetItem * item, bool visible);
   void ToggleRecord(bool on);
-  void SetImageTransport(QAction* transport_action);
+  void SetImageTransport(QAction * transport_action);
   void UpdateImageTransportMenu();
   void CaptureVideoFrame();
   void StopRecord();
@@ -132,7 +133,7 @@ public Q_SLOTS:
   void Force720p(bool on);
   void Force480p(bool on);
   void SetResizable(bool on);
-  void SelectBackgroundColor(const QColor &color);
+  void SelectBackgroundColor(const QColor & color);
   void SetMinViewScale(double scale);
   void SetMaxViewScale(double scale);
   void SetCaptureDirectory();
@@ -152,15 +153,15 @@ Q_SIGNALS:
   void ImageTransportChanged();
 
 protected:
-  void Open(const std::string& filename);
-  void Save(const std::string& filename);
+  void Open(const std::string & filename);
+  void Save(const std::string & filename);
 
   MapvizPluginPtr CreateNewDisplay(
-      const std::string& name,
-      const std::string& type,
-      bool visible,
-      bool collapsed,
-      int draw_order = 0);
+    const std::string & name,
+    const std::string & type,
+    bool visible,
+    bool collapsed,
+    int draw_order = 0);
 
   void AddDisplay(
     const mapviz_interfaces::srv::AddMapvizDisplay::Request::SharedPtr req,
@@ -171,9 +172,9 @@ protected:
 
   QString GetDefaultConfigPath();
 
-  virtual void showEvent(QShowEvent* event);
-  virtual void closeEvent(QCloseEvent* event);
-  bool eventFilter(QObject* object, QEvent* event) override;
+  virtual void showEvent(QShowEvent * event);
+  virtual void closeEvent(QCloseEvent * event);
+  bool eventFilter(QObject * object, QEvent * event) override;
 
   static const QString ROS_WORKSPACE_VAR;
   static const QString MAPVIZ_CONFIG_FILE;
@@ -181,7 +182,7 @@ protected:
 
   Ui::mapviz ui_;
 
-  QMenu* image_transport_menu_;
+  QMenu * image_transport_menu_;
 
   QTimer frame_timer_;
   QTimer spin_timer_;
@@ -189,19 +190,19 @@ protected:
   QTimer record_timer_;
   QTimer profile_timer_;
 
-  QLabel* xy_pos_label_;
-  QLabel* lat_lon_pos_label_;
+  QLabel * xy_pos_label_;
+  QLabel * lat_lon_pos_label_;
 
-  QWidget* spacer1_;
-  QWidget* spacer2_;
-  QWidget* spacer3_;
-  QPushButton* recenter_button_;
-  QPushButton* rec_button_;
-  QPushButton* stop_button_;
-  QPushButton* screenshot_button_;
+  QWidget * spacer1_;
+  QWidget * spacer2_;
+  QWidget * spacer3_;
+  QPushButton * recenter_button_;
+  QPushButton * rec_button_;
+  QPushButton * stop_button_;
+  QPushButton * screenshot_button_;
 
-  int    argc_;
-  char** argv_;
+  int argc_;
+  char ** argv_;
 
   bool is_standalone_;
   bool initialized_;
@@ -212,7 +213,7 @@ protected:
 
   std::string capture_directory_;
   QThread video_thread_;
-  VideoWriter* vid_writer_;
+  VideoWriter * vid_writer_;
 
   bool updating_frames_;
 
@@ -242,14 +243,14 @@ protected:
   std::shared_ptr<tf2_ros::TransformListener> tf_;
   swri_transform_util::TransformManagerPtr tf_manager_;
 
-  pluginlib::ClassLoader<MapvizPlugin>* loader_;
-  MapCanvas* canvas_;
-  std::map<QListWidgetItem*, MapvizPluginPtr> plugins_;
+  pluginlib::ClassLoader<MapvizPlugin> * loader_;
+  MapCanvas * canvas_;
+  std::map<QListWidgetItem *, MapvizPluginPtr> plugins_;
 
   // Config dock pin/auto-hide
-  QToolButton* pin_button_ = nullptr;
-  QLabel* title_label_ = nullptr;
-  QWidget* collapsed_label_ = nullptr;
+  QToolButton * pin_button_ = nullptr;
+  QLabel * title_label_ = nullptr;
+  QWidget * collapsed_label_ = nullptr;
   bool config_panel_pinned_ = false;
   int pinned_panel_width_;
 

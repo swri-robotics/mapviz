@@ -62,43 +62,46 @@ namespace mapviz_plugins
 {
 
 CoordinatePickerPlugin::CoordinatePickerPlugin()
-  : MapvizPlugin()
+: MapvizPlugin()
   , config_widget_(new QWidget())
   , map_canvas_(nullptr)
   , copy_on_click_(false)
 {
   ui_.setupUi(config_widget_);
 
-  QObject::connect(ui_.selectframe, SIGNAL(clicked()),
-                   this, SLOT(SelectFrame()));
-  QObject::connect(ui_.frame, SIGNAL(editingFinished()),
-                   this, SLOT(FrameEdited()));
-  QObject::connect(ui_.copyCheckBox, SIGNAL(stateChanged(int)),
-                   this, SLOT(ToggleCopyOnClick(int)));
-  QObject::connect(ui_.clearListButton, SIGNAL(clicked()),
-                   this, SLOT(ClearCoordList()));
+  QObject::connect(
+    ui_.selectframe, SIGNAL(clicked()),
+    this, SLOT(SelectFrame()));
+  QObject::connect(
+    ui_.frame, SIGNAL(editingFinished()),
+    this, SLOT(FrameEdited()));
+  QObject::connect(
+    ui_.copyCheckBox, SIGNAL(stateChanged(int)),
+    this, SLOT(ToggleCopyOnClick(int)));
+  QObject::connect(
+    ui_.clearListButton, SIGNAL(clicked()),
+    this, SLOT(ClearCoordList()));
 
   ui_.coordTextEdit->setPlaceholderText(tr("Click on the map; coordinates appear here"));
 }
 
 CoordinatePickerPlugin::~CoordinatePickerPlugin()
 {
-  if (map_canvas_)
-  {
+  if (map_canvas_) {
     map_canvas_->removeEventFilter(this);
   }
 }
 
-QWidget* CoordinatePickerPlugin::GetConfigWidget(QWidget* parent)
+QWidget * CoordinatePickerPlugin::GetConfigWidget(QWidget * parent)
 {
   config_widget_->setParent(parent);
 
   return config_widget_;
 }
 
-bool CoordinatePickerPlugin::Initialize(QOpenGLWidget* canvas)
+bool CoordinatePickerPlugin::Initialize(QOpenGLWidget * canvas)
 {
-  map_canvas_ = dynamic_cast< mapviz::MapCanvas* >(canvas);
+  map_canvas_ = dynamic_cast<mapviz::MapCanvas *>(canvas);
   map_canvas_->installEventFilter(this);
 
   initialized_ = true;
@@ -107,36 +110,33 @@ bool CoordinatePickerPlugin::Initialize(QOpenGLWidget* canvas)
   return true;
 }
 
-bool CoordinatePickerPlugin::eventFilter(QObject* /*object*/, QEvent* event)
+bool CoordinatePickerPlugin::eventFilter(QObject * /*object*/, QEvent * event)
 {
-  if(!this->Visible())
-  {
+  if (!this->Visible()) {
     RCLCPP_DEBUG(Logger(), "Ignoring mouse event, since coordinate picker plugin is hidden");
     return false;
   }
 
-  switch (event->type())
-  {
+  switch (event->type()) {
     case QEvent::MouseButtonPress:
-      return handleMousePress(dynamic_cast< QMouseEvent* >(event));
+      return handleMousePress(dynamic_cast<QMouseEvent *>(event));
     case QEvent::MouseButtonRelease:
-      return handleMouseRelease(dynamic_cast< QMouseEvent* >(event));
+      return handleMouseRelease(dynamic_cast<QMouseEvent *>(event));
     case QEvent::MouseMove:
-      return handleMouseMove(dynamic_cast< QMouseEvent* >(event));
+      return handleMouseMove(dynamic_cast<QMouseEvent *>(event));
     default:
       return false;
   }
 }
 
-bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
+bool CoordinatePickerPlugin::handleMousePress(QMouseEvent * event)
 {
   QPointF point = mapviz::MouseEventPosition(event);
   RCLCPP_DEBUG(Logger(), "Map point: %f %f", point.x(), point.y());
 
   swri_transform_util::Transform transform;
   std::string frame = ui_.frame->text().toStdString();
-  if (frame.empty())
-  {
+  if (frame.empty()) {
     frame = target_frame_;
   }
 
@@ -145,14 +145,15 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   // fixed frame, we get it in the `target_frame_` frame.
   //
   // Then we translate from that frame into *our* target frame, `frame`.
-  if (tf_manager_->GetTransform(frame, target_frame_, transform))
-  {
-    RCLCPP_DEBUG(Logger(),
-              "Transforming from fixed frame '%s' to (plugin) target frame '%s'",
-              target_frame_.c_str(),
-              frame.c_str());
+  if (tf_manager_->GetTransform(frame, target_frame_, transform)) {
+    RCLCPP_DEBUG(
+      Logger(),
+      "Transforming from fixed frame '%s' to (plugin) target frame '%s'",
+      target_frame_.c_str(),
+      frame.c_str());
     QPointF transformed = map_canvas_->MapGlCoordToFixedFrame(point);
-    RCLCPP_DEBUG(Logger(),
+    RCLCPP_DEBUG(
+      Logger(),
       "Point in fixed frame: %f %f",
       transformed.x(),
       transformed.y());
@@ -165,35 +166,32 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   } else {
     QString warning;
     QTextStream(&warning) << "No available transform from '"
-      << QString::fromStdString(target_frame_)
-      << "' to '"
-      << QString::fromStdString(frame)
-      << "'";
+                          << QString::fromStdString(target_frame_)
+                          << "' to '"
+                          << QString::fromStdString(frame)
+                          << "'";
     PrintWarning(warning.toStdString());
     return false;
   }
 
 
-  RCLCPP_DEBUG(Logger(),
+  RCLCPP_DEBUG(
+    Logger(),
     "Transformed point in frame '%s': %f %f",
     frame.c_str(),
     point.x(),
     point.y());
   QString new_point;
   QTextStream stream(&new_point);
-  if (swri_transform_util::FrameIdsEqual(frame, swri_transform_util::_wgs84_frame))
-  {
+  if (swri_transform_util::FrameIdsEqual(frame, swri_transform_util::_wgs84_frame)) {
     stream.setRealNumberPrecision(9);
-  }
-  else
-  {
+  } else {
     stream.setRealNumberPrecision(4);
   }
   stream << point.x() << ", " << point.y();
 
-  if (copy_on_click_)
-  {
-    QClipboard* clipboard = QGuiApplication::clipboard();
+  if (copy_on_click_) {
+    QClipboard * clipboard = QGuiApplication::clipboard();
     clipboard->setText(new_point);
   }
 
@@ -205,13 +203,13 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent* event)
   return false;
 }
 
-bool CoordinatePickerPlugin::handleMouseRelease(QMouseEvent* /*event*/)
+bool CoordinatePickerPlugin::handleMouseRelease(QMouseEvent * /*event*/)
 {
   // Let other plugins process this event too
   return false;
 }
 
-bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent* /*event*/)
+bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent * /*event*/)
 {
   // Let other plugins process this event too
   return false;
@@ -220,8 +218,7 @@ bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent* /*event*/)
 void CoordinatePickerPlugin::SelectFrame()
 {
   std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
-  if (!frame.empty())
-  {
+  if (!frame.empty()) {
     ui_.frame->setText(QString::fromStdString(frame));
     FrameEdited();
   }
@@ -229,15 +226,15 @@ void CoordinatePickerPlugin::SelectFrame()
 
 void CoordinatePickerPlugin::FrameEdited()
 {
-  RCLCPP_INFO(Logger(),
+  RCLCPP_INFO(
+    Logger(),
     "Setting target frame to %s",
     ui_.frame->text().toStdString().c_str());
 }
 
 void CoordinatePickerPlugin::ToggleCopyOnClick(int state)
 {
-  switch (state)
-  {
+  switch (state) {
     case Qt::Checked:
       copy_on_click_ = true;
       break;
@@ -258,21 +255,18 @@ void CoordinatePickerPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 {
 }
 
-void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
+void CoordinatePickerPlugin::LoadConfig(const YAML::Node & node, const std::string & /*path*/)
 {
-  if (node["frame"])
-  {
+  if (node["frame"]) {
     std::string frame;
     frame = node["frame"].as<std::string>();
     ui_.frame->setText(QString::fromStdString(frame));
   }
 
-  if (node["copy"])
-  {
+  if (node["copy"]) {
     bool copy;
     copy = node["copy"].as<bool>();
-    if (copy)
-    {
+    if (copy) {
       ui_.copyCheckBox->setCheckState(Qt::Checked);
     } else {
       ui_.copyCheckBox->setCheckState(Qt::Unchecked);
@@ -280,7 +274,7 @@ void CoordinatePickerPlugin::LoadConfig(const YAML::Node& node, const std::strin
   }
 }
 
-void CoordinatePickerPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
+void CoordinatePickerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & /*path*/)
 {
   std::string frame = ui_.frame->text().toStdString();
   emitter << YAML::Key << "frame" << YAML::Value << frame;
@@ -289,17 +283,17 @@ void CoordinatePickerPlugin::SaveConfig(YAML::Emitter& emitter, const std::strin
   emitter << YAML::Key << "copy" << YAML::Value << copy_on_click;
 }
 
-void CoordinatePickerPlugin::PrintError(const std::string& message)
+void CoordinatePickerPlugin::PrintError(const std::string & message)
 {
   PrintErrorHelper(ui_.status, message, 1.0);
 }
 
-void CoordinatePickerPlugin::PrintInfo(const std::string& message)
+void CoordinatePickerPlugin::PrintInfo(const std::string & message)
 {
   PrintInfoHelper(ui_.status, message, 1.0);
 }
 
-void CoordinatePickerPlugin::PrintWarning(const std::string& message)
+void CoordinatePickerPlugin::PrintWarning(const std::string & message)
 {
   PrintWarningHelper(ui_.status, message, 1.0);
 }

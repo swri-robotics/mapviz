@@ -36,7 +36,7 @@
 
 namespace tile_map
 {
-  /**
+/**
    * Represents a network source for map tiles; contains information about how to
    * connect to the source and how to retrieve tiles from it.
    *
@@ -44,79 +44,80 @@ namespace tile_map
    * WMS, WMTS, or TMS, and implement the appropriate methods for retrieiving tiles
    * from those servers.
    */
-  class TileSource : public QObject
-  {
+class TileSource : public QObject
+{
   Q_OBJECT
-  public:
-    ~TileSource() override = default;
 
-    virtual const QString& GetBaseUrl() const;
+public:
+  ~TileSource() override = default;
 
-    virtual void SetBaseUrl(const QString& base_url);
+  virtual const QString & GetBaseUrl() const;
 
-    virtual bool IsCustom() const;
+  virtual void SetBaseUrl(const QString & base_url);
 
-    virtual bool IsReady() const { return is_ready_; };
+  virtual bool IsCustom() const;
 
-    virtual void SetCustom(bool is_custom);
+  virtual bool IsReady() const {return is_ready_;}
 
-    virtual int32_t GetMaxZoom() const;
+  virtual void SetCustom(bool is_custom);
 
-    virtual void SetMaxZoom(int32_t max_zoom);
+  virtual int32_t GetMaxZoom() const;
 
-    virtual int32_t GetMinZoom() const;
+  virtual void SetMaxZoom(int32_t max_zoom);
 
-    virtual void SetMinZoom(int32_t min_zoom);
+  virtual int32_t GetMinZoom() const;
 
-    virtual const QString& GetName() const;
+  virtual void SetMinZoom(int32_t min_zoom);
 
-    virtual void SetName(const QString& name);
+  virtual const QString & GetName() const;
 
-    /**
-     * Generates a hash that uniquely identifies the tile from this source at the
-     * specified level and coordinates.
-     * @param level The zoom level
-     * @param x The X coordinate
-     * @param y The Y coordinate
-     * @return A hash identifying the tile
-     */
-    virtual size_t GenerateTileHash(int32_t level, int64_t x, int64_t y) = 0;
+  virtual void SetName(const QString & name);
 
-    /**
-     * Generates an HTTP or HTTPS URL that refers to a map tile from this source
-     * at the given level and x and y coordinates.
-     * @param level The zoom level
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @return A URL referring to the map tile
-     */
-    virtual QString GenerateTileUrl(int32_t level, int64_t x, int64_t y) = 0;
+  /**
+   * Generates a hash that uniquely identifies the tile from this source at the
+   * specified level and coordinates.
+   * @param level The zoom level
+   * @param x The X coordinate
+   * @param y The Y coordinate
+   * @return A hash identifying the tile
+   */
+  virtual size_t GenerateTileHash(int32_t level, int64_t x, int64_t y) = 0;
 
-    /**
-     * Returns a string identifying the type of map source ("wmts", "bing", etc.)
-     * @return
-     */
-    virtual QString GetType() const = 0;
+  /**
+   * Generates an HTTP or HTTPS URL that refers to a map tile from this source
+   * at the given level and x and y coordinates.
+   * @param level The zoom level
+   * @param x The x coordinate
+   * @param y The y coordinate
+   * @return A URL referring to the map tile
+   */
+  virtual QString GenerateTileUrl(int32_t level, int64_t x, int64_t y) = 0;
 
-  Q_SIGNALS:
-    void ErrorMessage(const std::string& error_msg) const;
-    void InfoMessage(const std::string& info_msg) const;
+  /**
+   * Returns a string identifying the type of map source ("wmts", "bing", etc.)
+   * @return
+   */
+  virtual QString GetType() const = 0;
 
-  protected:
-    TileSource() :
-      is_custom_(false),
-      is_ready_(true),
-      max_zoom_(20),
-      min_zoom_(0)
-    {};
+Q_SIGNALS:
+  void ErrorMessage(const std::string & error_msg) const;
+  void InfoMessage(const std::string & info_msg) const;
 
-    QString base_url_;
-    bool is_custom_;
-    bool is_ready_;
-    int32_t max_zoom_;
-    int32_t min_zoom_;
-    QString name_;
-  };
+protected:
+  TileSource()
+  : is_custom_(false),
+    is_ready_(true),
+    max_zoom_(20),
+    min_zoom_(0)
+  {}
+
+  QString base_url_;
+  bool is_custom_;
+  bool is_ready_;
+  int32_t max_zoom_;
+  int32_t min_zoom_;
+  QString name_;
+};
 }
 
 #endif //TILE_MAP_TILE_SOURCE_H

@@ -57,82 +57,82 @@
 
 namespace mapviz_plugins
 {
-  class MoveBasePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
+class MoveBasePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
+{
+  Q_OBJECT
+
+public:
+  using NavigateToPose = nav2_msgs::action::NavigateToPose;
+  using GoalHandle = rclcpp_action::ClientGoalHandle<NavigateToPose>;
+
+  MoveBasePlugin();
+  ~MoveBasePlugin() override;
+
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
+
+  QWidget * GetConfigWidget(QWidget * parent) override;
+
+protected:
+  void Draw(double x, double y, double scale) override;
+  void Paint(QPainter * /*painter*/, double /*x*/, double /*y*/, double /*scale*/) override {}
+  void Transform() override {}
+
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
+
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
+  bool eventFilter(QObject * object, QEvent * event) override;
+
+  bool handleMousePress(QMouseEvent *);
+  bool handleMouseRelease(QMouseEvent *);
+  bool handleMouseMove(QMouseEvent *);
+
+Q_SIGNALS:
+  // Emitted from the ROS spin thread by the action-client callbacks;
+  // delivered to handleActionStatus() as a queued connection on the GUI
+  // thread, which owns action_status_ and the widgets.
+  void ActionStatusChanged(int status);
+
+private Q_SLOTS:
+  void on_pushButtonInitialPose_toggled(bool checked);
+  void on_pushButtonGoalPose_toggled(bool checked);
+  void on_pushButtonAbort_clicked();
+
+  // Runs on the GUI thread (QTimer::timeout); polls server connectivity and
+  // reflects the latest goal status in the status label.
+  void timerCallback();
+  void handleActionStatus(int status);
+
+private:
+  // Lifecycle of the most recently sent navigation goal.  Owned by the GUI
+  // thread; updated only through handleActionStatus().
+  enum ActionStatus
   {
-    Q_OBJECT
-
-   public:
-    using NavigateToPose = nav2_msgs::action::NavigateToPose;
-    using GoalHandle = rclcpp_action::ClientGoalHandle<NavigateToPose>;
-
-    MoveBasePlugin();
-    ~MoveBasePlugin() override;
-
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override {}
-
-    QWidget* GetConfigWidget(QWidget* parent) override;
-
-   protected:
-    void Draw(double x, double y, double scale) override;
-    void Paint(QPainter* /*painter*/, double /*x*/, double /*y*/, double /*scale*/) override {}
-    void Transform() override {}
-
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
-
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
-    bool eventFilter(QObject* object, QEvent* event) override;
-
-    bool handleMousePress(QMouseEvent*);
-    bool handleMouseRelease(QMouseEvent*);
-    bool handleMouseMove(QMouseEvent*);
-
-   Q_SIGNALS:
-    // Emitted from the ROS spin thread by the action-client callbacks;
-    // delivered to handleActionStatus() as a queued connection on the GUI
-    // thread, which owns action_status_ and the widgets.
-    void ActionStatusChanged(int status);
-
-   private Q_SLOTS:
-    void on_pushButtonInitialPose_toggled(bool checked);
-    void on_pushButtonGoalPose_toggled(bool checked);
-    void on_pushButtonAbort_clicked();
-
-    // Runs on the GUI thread (QTimer::timeout); polls server connectivity and
-    // reflects the latest goal status in the status label.
-    void timerCallback();
-    void handleActionStatus(int status);
-
-   private:
-    // Lifecycle of the most recently sent navigation goal.  Owned by the GUI
-    // thread; updated only through handleActionStatus().
-    enum ActionStatus
-    {
-      IDLE,
-      ACTIVE,
-      SUCCEEDED,
-      ABORTED,
-      REJECTED,
-      CANCELED
-    };
-
-    Ui::move_base_config ui_;
-    QWidget* config_widget_;
-    mapviz::MapCanvas* map_canvas_;
-
-    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr init_pose_pub_;
-    rclcpp_action::Client<NavigateToPose>::SharedPtr move_base_client_;
-
-    QTimer timer_;
-    ActionStatus action_status_;
-
-    bool is_mouse_down_;
-    QPointF arrow_tail_position_;
-    float arrow_angle_;
+    IDLE,
+    ACTIVE,
+    SUCCEEDED,
+    ABORTED,
+    REJECTED,
+    CANCELED
   };
+
+  Ui::move_base_config ui_;
+  QWidget * config_widget_;
+  mapviz::MapCanvas * map_canvas_;
+
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr init_pose_pub_;
+  rclcpp_action::Client<NavigateToPose>::SharedPtr move_base_client_;
+
+  QTimer timer_;
+  ActionStatus action_status_;
+
+  bool is_mouse_down_;
+  QPointF arrow_tail_position_;
+  float arrow_angle_;
+};
 }   // namespace mapviz_plugins
 
 #endif  // MAPVIZ_PLUGINS__MOVE_BASE_PLUGIN_HPP_

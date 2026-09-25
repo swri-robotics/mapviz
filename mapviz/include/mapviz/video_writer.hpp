@@ -48,12 +48,12 @@ class VideoWriter : public QObject
   Q_OBJECT
 
 public:
-  VideoWriter() :
-    height_(0),
+  VideoWriter()
+  : height_(0),
     width_(0)
   {}
 
-  bool initializeWriter(const std::string& directory, int width, int height);
+  bool initializeWriter(const std::string & directory, int width, int height);
   bool isRecording();
   void stop();
 

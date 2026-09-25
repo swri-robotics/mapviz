@@ -61,31 +61,31 @@
 namespace mapviz_plugins
 {
 class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin,
-                                protected QOpenGLFunctions_1_1
+  protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 
- public:
+public:
   AttitudeIndicatorPlugin();
   ~AttitudeIndicatorPlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
- protected:
+protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
   void drawBackground();
   void drawBall();
@@ -93,23 +93,23 @@ class AttitudeIndicatorPlugin : public mapviz::MapvizPlugin,
 
   void timerEvent(QTimerEvent *) override;
 
- protected Q_SLOTS:
-   void SelectTopic();
-   void TopicEdited();
+protected Q_SLOTS:
+  void SelectTopic();
+  void TopicEdited();
 
- private:
+private:
   // Called on the GUI thread by Subscribe(); owns all plugin state.
   void handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
   void handleOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
   void handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose);
-  void applyAttitudeOrientation(const geometry_msgs::msg::Quaternion &orientation);
-  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+  void applyAttitudeOrientation(const geometry_msgs::msg::Quaternion & orientation);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
 
   double pitch_;
   double roll_;
   double yaw_;
   PlaceableWindowProxy placer_;
-  QWidget* config_widget_;
+  QWidget * config_widget_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;

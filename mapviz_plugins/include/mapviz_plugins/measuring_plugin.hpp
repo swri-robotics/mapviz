@@ -54,67 +54,67 @@ class MeasuringPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
 {
   Q_OBJECT
 
-  public:
-    MeasuringPlugin();
-    ~MeasuringPlugin() override;
+public:
+  MeasuringPlugin();
+  ~MeasuringPlugin() override;
 
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override { }
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
 
-    void DistanceCalculation();
+  void DistanceCalculation();
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-    bool SupportsPainting() override
-    {
-      return true;
-    }
+  bool SupportsPainting() override
+  {
+    return true;
+  }
 
-  protected:
-    void Paint(QPainter* painter, double x, double y, double scale) override;
+protected:
+  void Paint(QPainter * painter, double x, double y, double scale) override;
 
-    void Draw(double x, double y, double scale) override;
+  void Draw(double x, double y, double scale) override;
 
-    void Transform() override { }
+  void Transform() override {}
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-    bool eventFilter(QObject* object, QEvent* event) override;
-    bool handleMousePress(QMouseEvent*);
-    bool handleMouseRelease(QMouseEvent*);
-    bool handleMouseMove(QMouseEvent*);
+  bool eventFilter(QObject * object, QEvent * event) override;
+  bool handleMousePress(QMouseEvent *);
+  bool handleMouseRelease(QMouseEvent *);
+  bool handleMouseMove(QMouseEvent *);
 
-  protected Q_SLOTS:
-    void Clear();
-    void BkgndColorToggled(bool) { }
-    void MeasurementsToggled(bool) { }
-    void FontSizeChanged(int) { }
-    void AlphaChanged(double) { }
+protected Q_SLOTS:
+  void Clear();
+  void BkgndColorToggled(bool) {}
+  void MeasurementsToggled(bool) {}
+  void FontSizeChanged(int) {}
+  void AlphaChanged(double) {}
 
-  private:
-    Ui::measuring_config ui_;
-    QWidget* config_widget_;
+private:
+  Ui::measuring_config ui_;
+  QWidget * config_widget_;
 
-    mapviz::MapCanvas* map_canvas_;
-    tf2::Vector3 last_position_;
+  mapviz::MapCanvas * map_canvas_;
+  tf2::Vector3 last_position_;
 
-    std::vector<tf2::Vector3> vertices_;
-    std::vector<tf2::Vector3> transformed_vertices_;
+  std::vector<tf2::Vector3> vertices_;
+  std::vector<tf2::Vector3> transformed_vertices_;
 
-    int selected_point_;
-    bool is_mouse_down_;
-    QPointF mouse_down_pos_;
-    qint64 mouse_down_time_;
+  int selected_point_;
+  bool is_mouse_down_;
+  QPointF mouse_down_pos_;
+  qint64 mouse_down_time_;
 
-    qint64 max_ms_;
-    qreal max_distance_;
-    std::vector<double> measurements_;
+  qint64 max_ms_;
+  qreal max_distance_;
+  std::vector<double> measurements_;
 };
 
 struct MeasurementBox

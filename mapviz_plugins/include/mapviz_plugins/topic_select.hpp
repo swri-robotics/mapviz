@@ -50,12 +50,12 @@ QT_END_NAMESPACE
 
 namespace mapviz_plugins
 {
-inline bool qosEqual(const rmw_qos_profile_t& lhs, const rmw_qos_profile_t& rhs)
+inline bool qosEqual(const rmw_qos_profile_t & lhs, const rmw_qos_profile_t & rhs)
 {
-  if (lhs.depth != rhs.depth) { return false; }
-  if (lhs.history != rhs.history) { return false; }
-  if (lhs.durability != rhs.durability) { return false; }
-  if (lhs.reliability != rhs.reliability) { return false; }
+  if (lhs.depth != rhs.depth) {return false;}
+  if (lhs.history != rhs.history) {return false;}
+  if (lhs.durability != rhs.durability) {return false;}
+  if (lhs.reliability != rhs.reliability) {return false;}
   return true;
 }
 
@@ -68,7 +68,7 @@ class SelectTopicDialog : public QDialog
 {
   Q_OBJECT
 
- public:
+public:
   /**
    * Present the user with a dialog to select a single topic and configure
    * QoS settings.  This is convenience wrapper for the common case where
@@ -78,10 +78,10 @@ class SelectTopicDialog : public QDialog
    * selection, the topic will be empty and the QoS will be the RMW default.
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
-    const mapviz::TopicSource& source,
-    const std::string& datatype,
-    const rmw_qos_profile_t& qos,
-    QWidget* parent = nullptr);
+    const mapviz::TopicSource & source,
+    const std::string & datatype,
+    const rmw_qos_profile_t & qos,
+    QWidget * parent = nullptr);
 
   /**
    * Present the user with a dialog to select a single topic and configure QoS
@@ -93,11 +93,11 @@ class SelectTopicDialog : public QDialog
    * info will be empty, and the QoS will be the RMW defaults.
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
-    const mapviz::TopicSource& source,
-    const std::string& datatype1,
-    const std::string& datatype2,
-    const rmw_qos_profile_t& qos,
-    QWidget* parent = nullptr);
+    const mapviz::TopicSource & source,
+    const std::string & datatype1,
+    const std::string & datatype2,
+    const rmw_qos_profile_t & qos,
+    QWidget * parent = nullptr);
 
   /**
    * Present the user with a dialog to select a single topic and configure QoS
@@ -107,10 +107,10 @@ class SelectTopicDialog : public QDialog
    * selection, the topic will be an empty string the QoS will be RMW defaults.
    */
   static std::pair<std::string, rmw_qos_profile_t> selectTopic(
-    const mapviz::TopicSource& source,
-    const std::vector<std::string>& datatypes,
-    const rmw_qos_profile_t& qos,
-    QWidget* parent = nullptr);
+    const mapviz::TopicSource & source,
+    const std::vector<std::string> & datatypes,
+    const rmw_qos_profile_t & qos,
+    QWidget * parent = nullptr);
 
   /**
    * Present the user with a dialog to select a multiple topics and configure QoS
@@ -121,10 +121,10 @@ class SelectTopicDialog : public QDialog
    * returned vector will be empty, and the QoS will be the RMW default.
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
-    const mapviz::TopicSource& source,
-    const std::string& datatype,
-    const rmw_qos_profile_t& qos,
-    QWidget* parent = nullptr);
+    const mapviz::TopicSource & source,
+    const std::string & datatype,
+    const rmw_qos_profile_t & qos,
+    QWidget * parent = nullptr);
 
   /**
    * Present the user with a dialog to select a multiple topics and configure QoS.
@@ -136,11 +136,11 @@ class SelectTopicDialog : public QDialog
    * the RMW default.
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
-    const mapviz::TopicSource& source,
-    const std::string& datatype1,
-    const std::string& datatype2,
-    const rmw_qos_profile_t& qos,
-    QWidget* parent = nullptr);
+    const mapviz::TopicSource & source,
+    const std::string & datatype1,
+    const std::string & datatype2,
+    const rmw_qos_profile_t & qos,
+    QWidget * parent = nullptr);
 
   /**
    * Present the user with a dialog to select a multiple topics and configure
@@ -151,18 +151,18 @@ class SelectTopicDialog : public QDialog
    * RMW defaults.
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
-    const mapviz::TopicSource& source,
-    const std::vector<std::string>& datatypes,
-    const rmw_qos_profile_t& qos,
-    QWidget* parent = nullptr);
+    const mapviz::TopicSource & source,
+    const std::vector<std::string> & datatypes,
+    const rmw_qos_profile_t & qos,
+    QWidget * parent = nullptr);
 
   /**
    * Constructor for the SelectTopicDialog.
    */
   explicit SelectTopicDialog(
-    const mapviz::TopicSource& source,
-    const rmw_qos_profile_t& qos,
-    QWidget* parent = nullptr);
+    const mapviz::TopicSource & source,
+    const rmw_qos_profile_t & qos,
+    QWidget * parent = nullptr);
 
   /**
    * Choose whether the user can select one (allow=false) or multiple
@@ -175,7 +175,7 @@ class SelectTopicDialog : public QDialog
    * types.  If the vector is empty (default), the dialog will display
    * all available topics.
    */
-  void setDatatypeFilter(const std::vector<std::string> &datatypes);
+  void setDatatypeFilter(const std::vector<std::string> & datatypes);
 
   /**
    * Returns the currently selected topic and QoS profile. If multiple
@@ -191,24 +191,24 @@ class SelectTopicDialog : public QDialog
    */
   std::pair<std::vector<std::string>, rmw_qos_profile_t> selectedTopics() const;
 
- private:
+private:
   void timerEvent(QTimerEvent *) override;
   void closeEvent(QCloseEvent *) override;
 
   std::vector<std::string> filterTopics(
     const std::map<std::string, std::vector<std::string>> &) const;
 
- private Q_SLOTS:
+private Q_SLOTS:
   void fetchTopics();
   void updateDisplayedTopics();
 
- private:
+private:
   std::set<std::string> allowed_datatypes_;
   std::map<std::string, std::vector<std::string>> known_topics_;
 
   std::vector<std::string> displayed_topics_;
   int fetch_topics_timer_id_;
-  Ui::TopicSelect *ui_;
+  Ui::TopicSelect * ui_;
 
   mapviz::TopicSource source_;
 };  // class SelectTopicDialog

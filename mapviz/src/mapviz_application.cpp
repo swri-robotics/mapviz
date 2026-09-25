@@ -34,31 +34,31 @@
 
 namespace mapviz
 {
-  MapvizApplication::MapvizApplication(int& argc, char** argv, rclcpp::Logger logger) :
-    QApplication(argc, argv),
-    logger_(logger)
-  {
+MapvizApplication::MapvizApplication(int & argc, char ** argv, rclcpp::Logger logger)
+: QApplication(argc, argv),
+  logger_(logger)
+{
+}
+
+bool MapvizApplication::notify(QObject * receiver, QEvent * event)
+{
+  try {
+    return QApplication::notify(receiver, event);
+  } catch (const rclcpp::exceptions::RCLError & e) {
+    RCLCPP_ERROR(
+      logger_,
+      "Unhandled RCLError in Qt event loop: %s", e.what());
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(
+      logger_,
+      "Unhandled std::exception in Qt event loop: %s", e.what());
   }
 
-  bool MapvizApplication::notify(QObject* receiver, QEvent* event)
-  {
-    try {
-      return QApplication::notify(receiver, event);
-    }
-    catch (const rclcpp::exceptions::RCLError& e) {
-      RCLCPP_ERROR(logger_,
-        "Unhandled RCLError in Qt event loop: %s", e.what());
-    }
-    catch (const std::exception& e) {
-      RCLCPP_ERROR(logger_,
-        "Unhandled std::exception in Qt event loop: %s", e.what());
-    }
+  return false;
+}
 
-    return false;
-  }
-
-  void MapvizApplication::setLogger(const rclcpp::Logger &logger)
-  {
-    logger_ = logger;
-  }
+void MapvizApplication::setLogger(const rclcpp::Logger & logger)
+{
+  logger_ = logger;
+}
 }   // namespace mapviz

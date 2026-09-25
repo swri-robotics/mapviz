@@ -52,62 +52,62 @@
 
 namespace mapviz_plugins
 {
-  class MultiresImagePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
-  {
-    Q_OBJECT
+class MultiresImagePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
+{
+  Q_OBJECT
 
-  public:
-    MultiresImagePlugin();
-    ~MultiresImagePlugin() override;
+public:
+  MultiresImagePlugin();
+  ~MultiresImagePlugin() override;
 
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override {}
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
-    void Draw(double x, double y, double scale) override;
+protected:
+  void Draw(double x, double y, double scale) override;
 
-    void Transform() override;
+  void Transform() override;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected Q_SLOTS:
-    void SelectFile();
-    void AcceptConfiguration();
-    void SetXOffset(double long_offset);
-    void SetYOffset(double latitude_offset);
+protected Q_SLOTS:
+  void SelectFile();
+  void AcceptConfiguration();
+  void SetXOffset(double long_offset);
+  void SetYOffset(double latitude_offset);
 
-  private:
-    bool     loaded_;
-    double center_x_;
-    double center_y_;
-    double offset_x_;
-    double offset_y_;
+private:
+  bool loaded_;
+  double center_x_;
+  double center_y_;
+  double offset_x_;
+  double offset_y_;
 
-    multires_image::TileSet* tile_set_;
-    MultiresView* tile_view_;
+  multires_image::TileSet * tile_set_;
+  MultiresView * tile_view_;
 
-    Ui::multires_config ui_;
-    QWidget* config_widget_;
+  Ui::multires_config ui_;
+  QWidget * config_widget_;
 
-    swri_transform_util::Transform transform_;
-    swri_transform_util::Transform inverse_transform_;
+  swri_transform_util::Transform transform_;
+  swri_transform_util::Transform inverse_transform_;
 
-    bool transformed_;
+  bool transformed_;
 
-    void GetCenterPoint(double x, double y);
+  void GetCenterPoint(double x, double y);
 
-    std::filesystem::path MakePathRelative(
-      const std::filesystem::path& path,
-      const std::filesystem::path& base);
-  };
+  std::filesystem::path MakePathRelative(
+    const std::filesystem::path & path,
+    const std::filesystem::path & base);
+};
 }
 
 #endif  // MAPVIZ_PLUGINS_MULTIRES_IMAGE_PLUGIN_HPP_

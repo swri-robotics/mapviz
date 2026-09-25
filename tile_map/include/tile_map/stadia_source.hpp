@@ -39,28 +39,30 @@
 
 namespace tile_map
 {
-  class StadiaSource : public TileSource
-  {
+class StadiaSource : public TileSource
+{
   Q_OBJECT
-  public:
-    explicit StadiaSource(const QString& name,
-                          const QString& base_url,
-                          bool is_custom,
-                          int32_t max_zoom);
 
-    size_t GenerateTileHash(int32_t level, int64_t x, int64_t y) override;
-    QString GenerateTileUrl(int32_t level, int64_t x, int64_t y) override;
-    QString GetType() const override;
+public:
+  explicit StadiaSource(
+    const QString & name,
+    const QString & base_url,
+    bool is_custom,
+    int32_t max_zoom);
 
-    QString GetApiKey() const;
-    void SetApiKey(const QString& api_key);
+  size_t GenerateTileHash(int32_t level, int64_t x, int64_t y) override;
+  QString GenerateTileUrl(int32_t level, int64_t x, int64_t y) override;
+  QString GetType() const override;
 
-    static const QString STADIA_TYPE;
+  QString GetApiKey() const;
+  void SetApiKey(const QString & api_key);
 
-  private:
-    std::hash<std::string> hash_;
-    QString api_key_;
-  };
+  static const QString STADIA_TYPE;
+
+private:
+  std::hash<std::string> hash_;
+  QString api_key_;
+};
 }
 
 #endif //TILE_MAP_STADIA_SOURCE_H

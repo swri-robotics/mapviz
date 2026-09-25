@@ -58,47 +58,47 @@ class OdometryPlugin : public mapviz_plugins::PointDrawingPlugin
 {
   Q_OBJECT
 
-  public:
-    OdometryPlugin();
-    ~OdometryPlugin() override = default;
+public:
+  OdometryPlugin();
+  ~OdometryPlugin() override = default;
 
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override {}
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-    bool SupportsPainting() override
-    {
-      return true;
-    }
+  bool SupportsPainting() override
+  {
+    return true;
+  }
 
-  protected:
-    void Paint(QPainter* painter, double x, double y, double scale) override;
+protected:
+  void Paint(QPainter * painter, double x, double y, double scale) override;
 
-    void Draw(double x, double y, double scale) override;
+  void Draw(double x, double y, double scale) override;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected Q_SLOTS:
-    void SelectTopic();
-    void TopicEdited();
+protected Q_SLOTS:
+  void SelectTopic();
+  void TopicEdited();
 
-  private:
-    Ui::odometry_config ui_;
-    QWidget* config_widget_;
-    std::string topic_;
-    rmw_qos_profile_t qos_;
-    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
-    bool has_message_;
-    // Called on the GUI thread by Subscribe(); owns all plugin state.
-    void handleOdometry(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-    void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+private:
+  Ui::odometry_config ui_;
+  QWidget * config_widget_;
+  std::string topic_;
+  rmw_qos_profile_t qos_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
+  bool has_message_;
+  // Called on the GUI thread by Subscribe(); owns all plugin state.
+  void handleOdometry(nav_msgs::msg::Odometry::ConstSharedPtr odometry);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
 };
 }   // namespace mapviz_plugins
 

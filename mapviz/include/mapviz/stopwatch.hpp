@@ -44,10 +44,9 @@ namespace mapviz
  */
 class Stopwatch
 {
- public:
+public:
   Stopwatch()
-    :
-    count_(0),
+  : count_(0),
     clock(),
     total_time_(0, 0),
     max_time_(0, 0),
@@ -73,7 +72,7 @@ class Stopwatch
   }
 
   /* Return the number of intervals measured. */
-  int count() const { return count_; }
+  int count() const {return count_;}
 
   /* Returns the longest observed duration. */
   rclcpp::Duration maxTime() const {return max_time_;}
@@ -82,31 +81,33 @@ class Stopwatch
   rclcpp::Duration avgTime() const
   {
     if (count_) {
-      return total_time_*(1.0/count_);
+      return total_time_ * (1.0 / count_);
     } else {
       return rclcpp::Duration(0, 0);
     }
   }
 
   /* Print measurement info to the ROS console. */
-  void printInfo(rclcpp::Logger logger, const std::string &name) const
+  void printInfo(rclcpp::Logger logger, const std::string & name) const
   {
     if (count_) {
-      RCLCPP_INFO(logger,
-                "%s -- calls: %d, avg time: %.2fms, max time: %.2fms",
-                name.c_str(),
-                count_,
-                avgTime().seconds()*1000.0,
-                maxTime().seconds()*1000.0);
+      RCLCPP_INFO(
+        logger,
+        "%s -- calls: %d, avg time: %.2fms, max time: %.2fms",
+        name.c_str(),
+        count_,
+        avgTime().seconds() * 1000.0,
+        maxTime().seconds() * 1000.0);
     } else {
-      RCLCPP_INFO(logger,
-                "%s -- calls: %d, avg time: --ms, max time: --ms",
-                name.c_str(),
-                count_);
+      RCLCPP_INFO(
+        logger,
+        "%s -- calls: %d, avg time: --ms, max time: --ms",
+        name.c_str(),
+        count_);
     }
   }
 
- private:
+private:
   int count_;
   rclcpp::Clock clock;
   rclcpp::Duration total_time_;

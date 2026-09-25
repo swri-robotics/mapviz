@@ -60,15 +60,15 @@ class MapCanvas : public QOpenGLWidget, protected QOpenGLFunctions_1_5
   Q_OBJECT
 
 public:
-  explicit MapCanvas(QWidget *parent = nullptr);
+  explicit MapCanvas(QWidget * parent = nullptr);
   ~MapCanvas() override;
 
   void InitializeTf(std::shared_ptr<tf2_ros::Buffer> tf);
 
   void AddPlugin(MapvizPluginPtr plugin, int order);
   void RemovePlugin(MapvizPluginPtr plugin);
-  void SetFixedFrame(const std::string& frame);
-  void SetTargetFrame(const std::string& frame);
+  void SetFixedFrame(const std::string & frame);
+  void SetTargetFrame(const std::string & frame);
   void ToggleFixOrientation(bool on);
   void ToggleRotate90(bool on);
   void ToggleEnableAntialiasing(bool on);
@@ -76,14 +76,14 @@ public:
   void UpdateView();
   void ReorderDisplays();
   void ResetLocation();
-  QPointF MapGlCoordToFixedFrame(const QPointF& point);
-  QPointF FixedFrameToMapGlCoord(const QPointF& point);
+  QPointF MapGlCoordToFixedFrame(const QPointF & point);
+  QPointF FixedFrameToMapGlCoord(const QPointF & point);
 
   double frameRate() const;
 
-  float ViewScale() const { return view_scale_; }
-  float OffsetX() const { return offset_x_; }
-  float OffsetY() const { return offset_y_; }
+  float ViewScale() const {return view_scale_;}
+  float OffsetX() const {return offset_x_;}
+  float OffsetY() const {return offset_y_;}
 
 
   void setCanvasAbleToMove(bool assigning)
@@ -91,7 +91,7 @@ public:
     canvas_able_to_move_ = assigning;
   }
 
-  void leaveEvent(QEvent* e) override;
+  void leaveEvent(QEvent * e) override;
 
   void SetViewScale(float scale)
   {
@@ -99,8 +99,8 @@ public:
     UpdateView();
   }
 
-  float MinViewScale() const { return min_view_scale_; }
-  float MaxViewScale() const { return max_view_scale_; }
+  float MinViewScale() const {return min_view_scale_;}
+  float MaxViewScale() const {return max_view_scale_;}
 
   // Set the zoom limits, in meters per pixel.  A limit that is not positive,
   // not finite, or that would invert the range is rejected with an error and
@@ -121,7 +121,7 @@ public:
     UpdateView();
   }
 
-  void SetBackground(const QColor& color)
+  void SetBackground(const QColor & color)
   {
     bg_color_ = color;
     update();
@@ -140,7 +140,7 @@ public:
    * @param buffer An initialize buffer to copy data into
    * @return false if the current capture buffer is empty
    */
-  bool CopyCaptureBuffer(uchar* buffer)
+  bool CopyCaptureBuffer(uchar * buffer)
   {
     if (!capture_buffer_.empty()) {
       memcpy(&buffer[0], &capture_buffer_[0], capture_buffer_.size());
@@ -156,7 +156,7 @@ public:
    * @param buffer A vector to copy the capture buffer into.
    * @return false if the current capture buffer is empty
    */
-  bool CopyCaptureBuffer(std::vector<uint8_t>& buffer)
+  bool CopyCaptureBuffer(std::vector<uint8_t> & buffer)
   {
     buffer.clear();
     if (!capture_buffer_.empty()) {
@@ -185,14 +185,14 @@ protected:
   void popGlMatrices();
   void resizeGL(int w, int h) override;
   void paintGL() override;
-  void wheelEvent(QWheelEvent* e) override;
-  void mousePressEvent(QMouseEvent* e) override;
-  void mouseReleaseEvent(QMouseEvent* e) override;
-  void mouseMoveEvent(QMouseEvent* e) override;
-  void keyPressEvent(QKeyEvent* e) override;
+  void wheelEvent(QWheelEvent * e) override;
+  void mousePressEvent(QMouseEvent * e) override;
+  void mouseReleaseEvent(QMouseEvent * e) override;
+  void mouseMoveEvent(QMouseEvent * e) override;
+  void keyPressEvent(QKeyEvent * e) override;
 
   void Recenter();
-  void TransformTarget(QPainter* painter);
+  void TransformTarget(QPainter * painter);
   void Zoom(float factor);
 
   void InitializePixelBuffers();

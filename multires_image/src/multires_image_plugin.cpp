@@ -47,8 +47,8 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MultiresImagePlugin, mapviz::MapvizPlugin
 
 namespace mapviz_plugins
 {
-  MultiresImagePlugin::MultiresImagePlugin()
-  : MapvizPlugin()
+MultiresImagePlugin::MultiresImagePlugin()
+: MapvizPlugin()
   , loaded_(false)
   , center_x_(0.0)
   , center_y_(0.0)
@@ -59,306 +59,283 @@ namespace mapviz_plugins
   , ui_()
   , config_widget_(new QWidget())
   , transformed_(false)
-  {
-    ui_.setupUi(config_widget_);
+{
+  ui_.setupUi(config_widget_);
 
-    QPalette p(config_widget_->palette());
-    p.setColor(QPalette::Window, Qt::white);
-    config_widget_->setPalette(p);
+  QPalette p(config_widget_->palette());
+  p.setColor(QPalette::Window, Qt::white);
+  config_widget_->setPalette(p);
 
-    QPalette p2(ui_.status->palette());
-    p2.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p2);
+  QPalette p2(ui_.status->palette());
+  p2.setColor(QPalette::Text, Qt::red);
+  ui_.status->setPalette(p2);
 
-    QObject::connect(ui_.browse, SIGNAL(clicked()), this, SLOT(SelectFile()));
-    QObject::connect(ui_.path, SIGNAL(editingFinished()), this, SLOT(AcceptConfiguration()));
-    QObject::connect(ui_.x_offset_spin_box, SIGNAL(valueChanged(double)), this, SLOT(SetXOffset(double)));
-    QObject::connect(ui_.y_offset_spin_box, SIGNAL(valueChanged(double)), this, SLOT(SetYOffset(double)));
+  QObject::connect(ui_.browse, SIGNAL(clicked()), this, SLOT(SelectFile()));
+  QObject::connect(ui_.path, SIGNAL(editingFinished()), this, SLOT(AcceptConfiguration()));
+  QObject::connect(
+    ui_.x_offset_spin_box, SIGNAL(valueChanged(double)), this,
+    SLOT(SetXOffset(double)));
+  QObject::connect(
+    ui_.y_offset_spin_box, SIGNAL(valueChanged(double)), this,
+    SLOT(SetYOffset(double)));
 
-    source_frame_ = "/";
+  source_frame_ = "/";
+}
+
+MultiresImagePlugin::~MultiresImagePlugin()
+{
+  delete tile_view_;
+  delete tile_set_;
+}
+
+void MultiresImagePlugin::PrintError(const std::string & message)
+{
+  if (message == ui_.status->text().toStdString()) {
+    return;
   }
 
-  MultiresImagePlugin::~MultiresImagePlugin()
-  {
-    delete tile_view_;
+  RCLCPP_ERROR(Logger(), "Error: %s", message.c_str());
+  QPalette p(ui_.status->palette());
+  p.setColor(QPalette::Text, Qt::red);
+  ui_.status->setPalette(p);
+  ui_.status->setText(message.c_str());
+}
+
+void MultiresImagePlugin::PrintInfo(const std::string & message)
+{
+  if (message == ui_.status->text().toStdString()) {
+    return;
+  }
+
+  RCLCPP_INFO(Logger(), "%s", message.c_str());
+  QPalette p(ui_.status->palette());
+  p.setColor(QPalette::Text, Qt::green);
+  ui_.status->setPalette(p);
+  ui_.status->setText(message.c_str());
+}
+
+void MultiresImagePlugin::PrintWarning(const std::string & message)
+{
+  if (message == ui_.status->text().toStdString()) {
+    return;
+  }
+
+  RCLCPP_WARN(Logger(), "%s", message.c_str());
+  QPalette p(ui_.status->palette());
+  p.setColor(QPalette::Text, Qt::darkYellow);
+  ui_.status->setPalette(p);
+  ui_.status->setText(message.c_str());
+}
+
+void MultiresImagePlugin::AcceptConfiguration()
+{
+  RCLCPP_INFO(Logger(), "Accept multires image configuration.");
+  if (tile_set_ != NULL && tile_set_->GeoReference().GeoPath() == ui_.path->text().toStdString()) {
+    // Nothing to do.
+  } else {
+    loaded_ = false;
     delete tile_set_;
-  }
+    delete tile_view_;
+    tile_set_ = new multires_image::TileSet(ui_.path->text().toStdString());
 
-  void MultiresImagePlugin::PrintError(const std::string& message)
-  {
-    if (message == ui_.status->text().toStdString()) {
-      return;
-    }
+    if (tile_set_->Load()) {
+      loaded_ = true;
 
-    RCLCPP_ERROR(Logger(), "Error: %s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
-  }
+      source_frame_ = tile_set_->GeoReference().Projection();
+      if (source_frame_.empty() || source_frame_[0] != '/') {
+        source_frame_ = std::string("/") + source_frame_;
+      }
 
-  void MultiresImagePlugin::PrintInfo(const std::string& message)
-  {
-    if (message == ui_.status->text().toStdString()) {
-      return;
-    }
+      QPalette p(ui_.status->palette());
+      p.setColor(QPalette::Text, Qt::green);
+      ui_.status->setPalette(p);
+      ui_.status->setText("OK");
 
-    RCLCPP_INFO(Logger(), "%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::green);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
-  }
+      initialized_ = true;
 
-  void MultiresImagePlugin::PrintWarning(const std::string& message)
-  {
-    if (message == ui_.status->text().toStdString()) {
-      return;
-    }
-
-    RCLCPP_WARN(Logger(), "%s", message.c_str());
-    QPalette p(ui_.status->palette());
-    p.setColor(QPalette::Text, Qt::darkYellow);
-    ui_.status->setPalette(p);
-    ui_.status->setText(message.c_str());
-  }
-
-  void MultiresImagePlugin::AcceptConfiguration()
-  {
-    RCLCPP_INFO(Logger(), "Accept multires image configuration.");
-    if (tile_set_ != NULL && tile_set_->GeoReference().GeoPath() == ui_.path->text().toStdString())
-    {
-      // Nothing to do.
-    }
-    else
-    {
-      loaded_ = false;
+      MultiresView * view = new MultiresView(tile_set_, canvas_);
+      tile_view_ = view;
+    } else {
+      PrintError("Failed to load image.");
       delete tile_set_;
-      delete tile_view_;
-      tile_set_ = new multires_image::TileSet(ui_.path->text().toStdString());
+      tile_set_ = 0;
+      tile_view_ = 0;
+    }
+  }
+}
 
-      if (tile_set_->Load())
-      {
-        loaded_ = true;
+void MultiresImagePlugin::SelectFile()
+{
+  QFileDialog dialog(config_widget_, "Select Multires Image");
+  dialog.setFileMode(QFileDialog::ExistingFile);
+  dialog.setNameFilter(tr("Geo Files (*.geo)"));
 
-        source_frame_ = tile_set_->GeoReference().Projection();
-        if (source_frame_.empty() || source_frame_[0] != '/')
-        {
-          source_frame_ = std::string("/") + source_frame_;
-        }
+  dialog.exec();
 
-        QPalette p(ui_.status->palette());
-        p.setColor(QPalette::Text, Qt::green);
-        ui_.status->setPalette(p);
-        ui_.status->setText("OK");
+  if (dialog.result() == QDialog::Accepted && dialog.selectedFiles().count() == 1) {
+    ui_.path->setText(dialog.selectedFiles().first());
+    AcceptConfiguration();
+  }
+}
 
-        initialized_ = true;
 
-        MultiresView* view = new MultiresView(tile_set_, canvas_);
-        tile_view_ = view;
-      }
-      else
-      {
-        PrintError("Failed to load image.");
-        delete tile_set_;
-        tile_set_ = 0;
-        tile_view_ = 0;
+void MultiresImagePlugin::SetXOffset(double offset_x)
+{
+  offset_x_ = offset_x;
+}
+
+void MultiresImagePlugin::SetYOffset(double offset_y)
+{
+  offset_y_ = offset_y;
+}
+
+QWidget * MultiresImagePlugin::GetConfigWidget(QWidget * parent)
+{
+  config_widget_->setParent(parent);
+
+  return config_widget_;
+}
+
+bool MultiresImagePlugin::Initialize(QOpenGLWidget * canvas)
+{
+  canvas_ = canvas;
+
+  return true;
+}
+
+void MultiresImagePlugin::GetCenterPoint(double x, double y)
+{
+  tf2::Vector3 point(x, y, 0);
+  tf2::Vector3 center = inverse_transform_ * point;
+  center_x_ = center.getX();
+  center_y_ = center.getY();
+}
+
+void MultiresImagePlugin::Draw(double x, double y, double scale)
+{
+  if (transformed_ && tile_set_ != NULL && tile_view_ != NULL) {
+    GetCenterPoint(x, y);
+    tile_view_->SetView(center_x_, center_y_, 1, scale);
+
+    tile_view_->Draw();
+
+    PrintInfo("OK");
+  }
+}
+
+void MultiresImagePlugin::Transform()
+{
+  transformed_ = false;
+
+  if (!loaded_) {
+    return;
+  }
+
+  if (!tf_manager_->GetTransform(target_frame_, source_frame_, transform_)) {
+    PrintError("Failed transform from " + source_frame_ + " to " + target_frame_);
+    return;
+  }
+
+  if (!tf_manager_->GetTransform(source_frame_, target_frame_, inverse_transform_)) {
+    PrintError("Failed inverse transform from " + target_frame_ + " to " + source_frame_);
+    return;
+  }
+
+  // Add in user-specified offset to map
+  swri_transform_util::Transform offset(
+    tf2::Transform(
+      tf2::Quaternion(0, 0, 0, 1),
+      tf2::Vector3(offset_x_, offset_y_, 0.0)));
+
+  // Set relative positions of tile points based on tf transform
+  for (int i = 0; i < tile_set_->LayerCount(); i++) {
+    multires_image::TileSetLayer * layer = tile_set_->GetLayer(i);
+    for (int r = 0; r < layer->RowCount(); r++) {
+      for (int c = 0; c < layer->ColumnCount(); c++) {
+        multires_image::Tile * tile = layer->GetTile(c, r);
+
+        tile->Transform(transform_, offset);
       }
     }
   }
 
-  void MultiresImagePlugin::SelectFile()
-  {
-    QFileDialog dialog(config_widget_, "Select Multires Image");
-    dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setNameFilter(tr("Geo Files (*.geo)"));
+  transformed_ = true;
+}
 
-    dialog.exec();
+std::filesystem::path MultiresImagePlugin::MakePathRelative(
+  const std::filesystem::path & path,
+  const std::filesystem::path & base)
+{
+  if (path.has_root_path()) {
+    if (path.root_path() != base.root_path()) {
+      return path;
+    } else {
+      return MakePathRelative(path.relative_path(), base.relative_path());
+    }
+  } else {
+    if (base.has_root_path()) {
+      RCLCPP_WARN(Logger(), "Cannot uncomplete a path relative path from a rooted base.");
+      return path;
+    } else {
+      typedef std::filesystem::path::const_iterator path_iterator;
+      path_iterator path_it = path.begin();
+      path_iterator base_it = base.begin();
+      while (path_it != path.end() && base_it != base.end()) {
+        if (*path_it != *base_it) {
+          break;
+        }
+        ++path_it;
+        ++base_it;
+      }
+      std::filesystem::path result;
+      for (; base_it != base.end(); ++base_it) {
+        result /= "..";
+      }
+      for (; path_it != path.end(); ++path_it) {
+        result /= *path_it;
+      }
+      return result;
+    }
+  }
+}
 
-    if (dialog.result() == QDialog::Accepted && dialog.selectedFiles().count() == 1)
-    {
-      ui_.path->setText(dialog.selectedFiles().first());
+void MultiresImagePlugin::LoadConfig(const YAML::Node & node, const std::string & path)
+{
+  if (node["path"]) {
+    std::string path_string = node["path"].as<std::string>();
+
+    if (!path_string.empty()) {
+      std::filesystem::path image_path(path_string);
+      if (!image_path.is_absolute()) {
+        std::filesystem::path base_path(path);
+        path_string =
+          (path / image_path.relative_path()).lexically_normal().string();
+      }
+
+      ui_.path->setText(path_string.c_str());
+
       AcceptConfiguration();
     }
   }
 
-
-  void MultiresImagePlugin::SetXOffset(double offset_x)
-  {
-      offset_x_ = offset_x;
+  if (node["offset_x"]) {
+    offset_x_ = node["offset_x"].as<double>();
+    ui_.x_offset_spin_box->setValue(offset_x_);
   }
-
-  void MultiresImagePlugin::SetYOffset(double offset_y)
-  {
-      offset_y_ = offset_y;
+  if (node["offset_y"]) {
+    offset_y_ = node["offset_y"].as<double>();
+    ui_.y_offset_spin_box->setValue(offset_y_);
   }
+}
 
-  QWidget* MultiresImagePlugin::GetConfigWidget(QWidget* parent)
-  {
-    config_widget_->setParent(parent);
+void MultiresImagePlugin::SaveConfig(YAML::Emitter & emitter, const std::string & path)
+{
+  std::filesystem::path abs_path(ui_.path->text().toStdString());
+  std::filesystem::path base_path(path);
+  std::filesystem::path rel_path = MakePathRelative(abs_path, base_path);
 
-    return config_widget_;
-  }
-
-  bool MultiresImagePlugin::Initialize(QOpenGLWidget* canvas)
-  {
-    canvas_ = canvas;
-
-    return true;
-  }
-
-  void MultiresImagePlugin::GetCenterPoint(double x, double y)
-  {
-      tf2::Vector3 point(x, y, 0);
-      tf2::Vector3 center = inverse_transform_ * point;
-      center_x_ = center.getX();
-      center_y_ = center.getY();
-  }
-
-  void MultiresImagePlugin::Draw(double x, double y, double scale)
-  {
-    if (transformed_ && tile_set_ != NULL && tile_view_ != NULL)
-    {
-      GetCenterPoint(x, y);
-      tile_view_->SetView(center_x_, center_y_, 1, scale);
-
-      tile_view_->Draw();
-
-      PrintInfo("OK");
-    }
-  }
-
-  void MultiresImagePlugin::Transform()
-  {
-    transformed_ = false;
-
-    if (!loaded_)
-      return;
-
-    if (!tf_manager_->GetTransform(target_frame_, source_frame_, transform_))
-    {
-      PrintError("Failed transform from " + source_frame_ + " to " + target_frame_);
-      return;
-    }
-
-    if (!tf_manager_->GetTransform(source_frame_, target_frame_, inverse_transform_))
-    {
-      PrintError("Failed inverse transform from " + target_frame_ + " to " + source_frame_);
-      return;
-    }
-
-    // Add in user-specified offset to map
-    swri_transform_util::Transform offset(
-                tf2::Transform(
-                    tf2::Quaternion(0, 0, 0, 1),
-                    tf2::Vector3(offset_x_, offset_y_, 0.0)));
-
-    // Set relative positions of tile points based on tf transform
-    for (int i = 0; i < tile_set_->LayerCount(); i++)
-    {
-      multires_image::TileSetLayer* layer = tile_set_->GetLayer(i);
-      for (int r = 0; r < layer->RowCount(); r++)
-      {
-        for (int c = 0; c < layer->ColumnCount(); c++)
-        {
-          multires_image::Tile* tile = layer->GetTile(c, r);
-
-          tile->Transform(transform_, offset);
-        }
-      }
-    }
-
-    transformed_ = true;
-  }
-
-  std::filesystem::path MultiresImagePlugin::MakePathRelative(const std::filesystem::path& path, const std::filesystem::path& base)
-  {
-    if (path.has_root_path())
-    {
-      if (path.root_path() != base.root_path())
-      {
-        return path;
-      }
-      else
-      {
-        return MakePathRelative(path.relative_path(), base.relative_path());
-      }
-    }
-    else
-    {
-      if (base.has_root_path())
-      {
-        RCLCPP_WARN(Logger(), "Cannot uncomplete a path relative path from a rooted base.");
-        return path;
-      }
-      else
-      {
-        typedef std::filesystem::path::const_iterator path_iterator;
-        path_iterator path_it = path.begin();
-        path_iterator base_it = base.begin();
-        while (path_it != path.end() && base_it != base.end())
-        {
-          if (*path_it != *base_it)
-            break;
-          ++path_it;
-          ++base_it;
-        }
-        std::filesystem::path result;
-        for (; base_it != base.end(); ++base_it)
-        {
-          result /= "..";
-        }
-        for (; path_it != path.end(); ++path_it)
-        {
-          result /= *path_it;
-        }
-        return result;
-      }
-    }
-  }
-
-  void MultiresImagePlugin::LoadConfig(const YAML::Node& node, const std::string& path)
-  {
-    if (node["path"])
-    {
-      std::string path_string = node["path"].as<std::string>();
-
-      if (!path_string.empty())
-      {
-        std::filesystem::path image_path(path_string);
-        if (!image_path.is_absolute())
-        {
-          std::filesystem::path base_path(path);
-          path_string =
-            (path / image_path.relative_path()).lexically_normal().string();
-        }
-
-        ui_.path->setText(path_string.c_str());
-
-        AcceptConfiguration();
-      }
-    }
-
-    if (node["offset_x"])
-    {
-        offset_x_ = node["offset_x"].as<double>();
-        ui_.x_offset_spin_box->setValue(offset_x_);
-    }
-    if (node["offset_y"])
-    {
-        offset_y_ = node["offset_y"].as<double>();
-        ui_.y_offset_spin_box->setValue(offset_y_);
-    }
-  }
-
-  void MultiresImagePlugin::SaveConfig(YAML::Emitter& emitter, const std::string& path)
-  {
-    std::filesystem::path abs_path(ui_.path->text().toStdString());
-    std::filesystem::path base_path(path);
-    std::filesystem::path rel_path = MakePathRelative(abs_path, base_path);
-
-    emitter << YAML::Key << "path" << YAML::Value << rel_path.string();
-    emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
-    emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
-  }
+  emitter << YAML::Key << "path" << YAML::Value << rel_path.string();
+  emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
+  emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
+}
 }

@@ -37,65 +37,67 @@
 
 namespace tile_map
 {
-  class WmtsSource : public TileSource
-  {
+class WmtsSource : public TileSource
+{
   Q_OBJECT
-  public:
-    /**
-     * Creates a new tile source from a set of known parameters.
-     *
-     * @param[in] name A user-friendly display name
-     * @param[in] base_url The base HTTP URL of the data source; e. g.:
-     *   "http://tile.stamen.com/terrain/"
-     * @param[in] is_custom If this is a custom (i. e. not one of the default)
-     *   tile source; custom sources are saved and loaded from our settings
-     * @param[in] max_zoom The maximum zoom level
-     */
-    explicit WmtsSource(const QString& name,
-               const QString& base_url,
-               bool is_custom,
-               int32_t max_zoom);
 
-    virtual size_t GenerateTileHash(int32_t level, int64_t x, int64_t y);
+public:
+  /**
+   * Creates a new tile source from a set of known parameters.
+   *
+   * @param[in] name A user-friendly display name
+   * @param[in] base_url The base HTTP URL of the data source; e. g.:
+   *   "http://tile.stamen.com/terrain/"
+   * @param[in] is_custom If this is a custom (i. e. not one of the default)
+   *   tile source; custom sources are saved and loaded from our settings
+   * @param[in] max_zoom The maximum zoom level
+   */
+  explicit WmtsSource(
+    const QString & name,
+    const QString & base_url,
+    bool is_custom,
+    int32_t max_zoom);
 
-    /**
-     * Describes what is wrong with a base URL, if anything.
-     *
-     * Most tile servers document their URLs with "{z}" for the zoom level, so
-     * that spelling is accepted as an alias for "{level}" rather than treated
-     * as an error.  A URL with no coordinate placeholders at all resolves to
-     * the same image for every tile, which is never what anyone wants, so it is
-     * reported instead of being silently accepted.
-     *
-     * @param[in] base_url The URL to inspect
-     * @return An empty string if the URL is usable, otherwise a message
-     *   suitable for showing to the user
-     */
-    static QString ValidateBaseUrl(const QString& base_url);
+  virtual size_t GenerateTileHash(int32_t level, int64_t x, int64_t y);
 
-    /**
-     * Given a zoom level and x and y coordinates appropriate for the tile source's
-     * projection, this will generate a URL that points to an image tile for that
-     * location.
-     *
-     * This expects the URL to have three strings in it, "{level}", "{x}", and "{y}",
-     * which will be replaced with the passed values.  See tile_map_plugin.cpp for
-     * example URLs.
-     *
-     * @param[in] level The zoom level
-     * @param[in] x The X coordinate of the tile
-     * @param[in] y The Y coordinate of the tile
-     * @return A URL that references that tile
-     */
-    virtual QString GenerateTileUrl(int32_t level, int64_t x, int64_t y);
+  /**
+   * Describes what is wrong with a base URL, if anything.
+   *
+   * Most tile servers document their URLs with "{z}" for the zoom level, so
+   * that spelling is accepted as an alias for "{level}" rather than treated
+   * as an error.  A URL with no coordinate placeholders at all resolves to
+   * the same image for every tile, which is never what anyone wants, so it is
+   * reported instead of being silently accepted.
+   *
+   * @param[in] base_url The URL to inspect
+   * @return An empty string if the URL is usable, otherwise a message
+   *   suitable for showing to the user
+   */
+  static QString ValidateBaseUrl(const QString & base_url);
 
-    virtual QString GetType() const;
+  /**
+   * Given a zoom level and x and y coordinates appropriate for the tile source's
+   * projection, this will generate a URL that points to an image tile for that
+   * location.
+   *
+   * This expects the URL to have three strings in it, "{level}", "{x}", and "{y}",
+   * which will be replaced with the passed values.  See tile_map_plugin.cpp for
+   * example URLs.
+   *
+   * @param[in] level The zoom level
+   * @param[in] x The X coordinate of the tile
+   * @param[in] y The Y coordinate of the tile
+   * @return A URL that references that tile
+   */
+  virtual QString GenerateTileUrl(int32_t level, int64_t x, int64_t y);
 
-    static const QString WMTS_TYPE;
+  virtual QString GetType() const;
 
-  private:
-    std::hash<std::string> hash_;
-  };
+  static const QString WMTS_TYPE;
+
+private:
+  std::hash<std::string> hash_;
+};
 }
 
 #endif //TILE_MAP_WMTS_SOURCE_H

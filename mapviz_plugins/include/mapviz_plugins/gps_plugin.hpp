@@ -51,46 +51,45 @@ class GpsPlugin : public mapviz_plugins::PointDrawingPlugin
 {
   Q_OBJECT
 
-  public:
-    GpsPlugin();
-    ~GpsPlugin() override = default;
+public:
+  GpsPlugin();
+  ~GpsPlugin() override = default;
 
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override {}
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
-    void Draw(double x, double y, double scale) override;
+protected:
+  void Draw(double x, double y, double scale) override;
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected Q_SLOTS:
-    void SelectTopic();
-    void TopicEdited();
+protected Q_SLOTS:
+  void SelectTopic();
+  void TopicEdited();
 
+private Q_SLOTS:
+  void handleGpsFix(const gps_msgs::msg::GPSFix::ConstSharedPtr msg);
 
-  private Q_SLOTS:
-    void handleGpsFix(const gps_msgs::msg::GPSFix::ConstSharedPtr msg);
+private:
+  Ui::gps_config ui_;
+  QWidget * config_widget_;
 
-  private:
-    Ui::gps_config ui_;
-    QWidget* config_widget_;
+  std::string topic_;
+  rmw_qos_profile_t qos_;
 
-    std::string topic_;
-    rmw_qos_profile_t qos_;
+  // ros::Subscriber gps_sub_;
+  rclcpp::Subscription<gps_msgs::msg::GPSFix>::SharedPtr gps_sub_;
+  bool has_message_;
 
-    // ros::Subscriber gps_sub_;
-    rclcpp::Subscription<gps_msgs::msg::GPSFix>::SharedPtr gps_sub_;
-    bool has_message_;
-
-    void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
 };
 }   // namespace mapviz_plugins
 
