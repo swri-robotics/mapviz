@@ -28,11 +28,12 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/disparity_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
 #include <QOpenGLWidget>
+
+#include <mapviz_plugins/topic_select.hpp>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -40,20 +41,20 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #ifdef USE_CVBRIDGE_H_FILES
-#include <cv_bridge/cv_bridge.h>
+#include "cv_bridge/cv_bridge.h"
 #else
 #include <cv_bridge/cv_bridge.hpp>
 #endif
 
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
 #include <algorithm>
 #include <cstdio>
 #include <string>
 #include <vector>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DisparityPlugin, mapviz::MapvizPlugin)
 

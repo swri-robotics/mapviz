@@ -27,20 +27,20 @@
 //
 // *****************************************************************************
 
-#include <algorithm>
 #include <mapviz_plugins/marker_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
-#include <swri_math_util/constants.h>
-
-#include <tf2/utils.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
+#include <algorithm>
 
 // C++ Standard Libraries
 #include <string>
 #include <utility>
+
+#include <mapviz_plugins/topic_select.hpp>
+#include "swri_math_util/constants.h"
+#include <tf2/utils.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MarkerPlugin, mapviz::MapvizPlugin)
 
@@ -123,8 +123,9 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
   marker_sub_.reset();
   marker_array_sub_.reset();
   if (!topic_.empty()) {
-    // ROS 2 does not allow for a simple way to subscribe to a general type of message (i.e. Marker and MarkerArray)
-    // That would require a way to de-serialize the data for mapviz to consume (based on message type)
+    // ROS 2 does not allow for a simple way to subscribe to a general type of message
+    // (i.e. Marker and MarkerArray). That would require a way to de-serialize the data
+    // for mapviz to consume (based on message type)
     // The code below checks for the topic type and subscribes in the appropriate manner
 
     auto known_topics = TopicSource().topics();
@@ -286,7 +287,8 @@ void MarkerPlugin::processMarker(const visualization_msgs::msg::Marker & marker)
       }
 
       transformArrow(markerData, transform);
-    } else if (markerData.display_type == visualization_msgs::msg::Marker::CYLINDER ||
+    } else if (  // NOLINT(readability/braces)
+      markerData.display_type == visualization_msgs::msg::Marker::CYLINDER ||
       markerData.display_type == visualization_msgs::msg::Marker::SPHERE ||
       markerData.display_type == visualization_msgs::msg::Marker::TEXT_VIEW_FACING)
     {
@@ -319,7 +321,8 @@ void MarkerPlugin::processMarker(const visualization_msgs::msg::Marker & marker)
       point.point = tf2::Vector3(marker.scale.x / 2, -marker.scale.y / 2, 0.0);
       point.transformed_point = transform * (markerData.local_transform * point.point);
       markerData.points.push_back(point);
-    } else if (markerData.display_type == visualization_msgs::msg::Marker::LINE_STRIP ||
+    } else if (  // NOLINT(readability/braces)
+      markerData.display_type == visualization_msgs::msg::Marker::LINE_STRIP ||
       markerData.display_type == visualization_msgs::msg::Marker::LINE_LIST ||
       markerData.display_type == visualization_msgs::msg::Marker::CUBE_LIST ||
       markerData.display_type == visualization_msgs::msg::Marker::SPHERE_LIST ||
@@ -580,7 +583,8 @@ void MarkerPlugin::Draw(double /*x*/, double /*y*/, double scale)
       }
 
       glEnd();
-    } else if (marker.display_type == visualization_msgs::msg::Marker::CYLINDER ||
+    } else if (  // NOLINT(readability/braces)
+      marker.display_type == visualization_msgs::msg::Marker::CYLINDER ||
       marker.display_type == visualization_msgs::msg::Marker::SPHERE ||
       marker.display_type == visualization_msgs::msg::Marker::SPHERE_LIST)
     {
@@ -616,7 +620,8 @@ void MarkerPlugin::Draw(double /*x*/, double /*y*/, double scale)
 
         glEnd();
       }
-    } else if (marker.display_type == visualization_msgs::msg::Marker::CUBE ||
+    } else if (  // NOLINT(readability/braces)
+      marker.display_type == visualization_msgs::msg::Marker::CUBE ||
       marker.display_type == visualization_msgs::msg::Marker::CUBE_LIST)
     {
       glBegin(GL_TRIANGLE_FAN);
@@ -737,7 +742,7 @@ void MarkerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & /*pat
   SaveQosConfig(emitter, qos_);
 }
 
-void MarkerPlugin::timerEvent(QTimerEvent */*event*/)
+void MarkerPlugin::timerEvent([[maybe_unused]] QTimerEvent * event)
 {
   bool new_connected = (marker_sub_ && marker_sub_->get_publisher_count() > 0) ||
     (marker_array_sub_ && marker_array_sub_->get_publisher_count() > 0);

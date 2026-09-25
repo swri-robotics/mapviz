@@ -29,10 +29,10 @@
 #ifndef MAPVIZ__STOPWATCH_HPP_
 #define MAPVIZ__STOPWATCH_HPP_
 
-#include <rclcpp/rclcpp.hpp>
-
 #include <algorithm>
 #include <string>
+
+#include <rclcpp/rclcpp.hpp>
 
 
 namespace mapviz

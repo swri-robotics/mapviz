@@ -27,12 +27,14 @@
 //
 // *****************************************************************************
 
-#include <chrono>
 #include <mapviz/mapviz.hpp>
 
 // C++ standard libraries
 #include <algorithm>
+#include <chrono>
+#include <cinttypes>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <filesystem>
@@ -67,18 +69,16 @@
 #include <QHBoxLayout>
 #include <QPainter>
 #include <QVBoxLayout>
-
-// Other Project libraries
-#include <swri_math_util/constants.h>
-#include <swri_transform_util/frames.h>
-
-#include <mapviz/config_item.hpp>
 #include <QtGui/QtGui>
-
-#include <image_transport/image_transport.hpp>
 
 // YAML libraries
 #include <yaml-cpp/yaml.h>
+
+// Other Project libraries
+#include "swri_math_util/constants.h"
+#include "swri_transform_util/frames.h"
+#include <mapviz/config_item.hpp>
+#include <image_transport/image_transport.hpp>
 
 // OpenCV libraries
 #include <opencv2/core/core.hpp>
@@ -171,7 +171,9 @@ Mapviz::Mapviz(bool is_standalone, int argc, char ** argv, QWidget * parent, Qt:
   std::stringstream name;
   name << "mapviz";
   char buf[200];
-  std::snprintf(buf, sizeof(buf), "_%llu", (unsigned long long)rclcpp::Clock().now().nanoseconds());
+  std::snprintf(
+    buf, sizeof(buf), "_%" PRIu64,
+    static_cast<uint64_t>(rclcpp::Clock().now().nanoseconds()));
   name << buf;
   node_ = std::make_shared<rclcpp::Node>(name.str());
 
@@ -306,9 +308,9 @@ Mapviz::Mapviz(bool is_standalone, int argc, char ** argv, QWidget * parent, Qt:
 
   connect(
     canvas_,
-    SIGNAL(Hover(double,double,double)),
+    SIGNAL(Hover(double,double,double)),  // NOLINT(whitespace/comma)
     this,
-    SLOT(Hover(double,double,double)));
+    SLOT(Hover(double,double,double)));  // NOLINT(whitespace/comma)
   connect(ui_.configs, SIGNAL(ItemsMoved()), this, SLOT(ReorderDisplays()));
   connect(ui_.actionExit, SIGNAL(triggered()), this, SLOT(close()));
   connect(ui_.actionClear, SIGNAL(triggered()), this, SLOT(ClearConfig()));
@@ -379,12 +381,12 @@ rclcpp::Node::SharedPtr Mapviz::GetNode()
   return node_;
 }
 
-void Mapviz::showEvent(QShowEvent * /*event*/)
+void Mapviz::showEvent([[maybe_unused]] QShowEvent * event)
 {
   Initialize();
 }
 
-void Mapviz::closeEvent(QCloseEvent * /*event*/)
+void Mapviz::closeEvent([[maybe_unused]] QCloseEvent * event)
 {
   AutoSave();
 
@@ -1376,9 +1378,9 @@ MapvizPluginPtr Mapviz::CreateNewDisplay(
   connect(config_item, SIGNAL(UpdateSizeHint()), this, SLOT(UpdateSizeHints()));
   connect(
     config_item,
-    SIGNAL(ToggledDraw(QListWidgetItem*,bool)),
+    SIGNAL(ToggledDraw(QListWidgetItem*,bool)),  // NOLINT(whitespace/comma)
     this,
-    SLOT(ToggleShowPlugin(QListWidgetItem*,bool)));
+    SLOT(ToggleShowPlugin(QListWidgetItem*,bool)));  // NOLINT(whitespace/comma)
   connect(
     config_item,
     SIGNAL(RemoveRequest(QListWidgetItem*)),

@@ -28,12 +28,6 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/move_base_plugin.hpp>
-#include <mapviz/qt_mouse_event_compat.hpp>
-
-// C++ standard libraries
-#include <array>
-#include <cstdio>
-#include <string>
 
 // QT libraries
 #include <QApplication>
@@ -43,6 +37,13 @@
 #include <QPainter>
 #include <QPalette>
 #include <QPixmap>
+
+// C++ standard libraries
+#include <array>
+#include <cstdio>
+#include <string>
+
+#include <mapviz/qt_mouse_event_compat.hpp>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -267,7 +268,7 @@ bool MoveBasePlugin::handleMouseMove(QMouseEvent * event)
   return false;
 }
 
-bool MoveBasePlugin::handleMouseRelease(QMouseEvent * /*event*/)
+bool MoveBasePlugin::handleMouseRelease([[maybe_unused]] QMouseEvent * event)
 {
   if (!is_mouse_down_) {
     return false;

@@ -28,11 +28,18 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/image_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
 #include <QOpenGLWidget>
+
+// C++ standard libraries
+#include <cmath>
+#include <cstdio>
+#include <string>
+#include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
 
 // ROS libraries
 #include <sensor_msgs/image_encodings.hpp>
@@ -40,12 +47,6 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
-
-// C++ standard libraries
-#include <cmath>
-#include <cstdio>
-#include <string>
-#include <vector>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::ImagePlugin, mapviz::MapvizPlugin)
 

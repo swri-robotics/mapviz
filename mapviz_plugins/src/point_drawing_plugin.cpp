@@ -33,13 +33,12 @@
 #include <QPalette>
 #include <QPainter>
 
-#include <opencv2/core/core.hpp>
-
-#include <swri_transform_util/transform_util.h>
-
 #include <deque>
 #include <list>
 #include <string>
+
+#include <opencv2/core/core.hpp>
+#include "swri_transform_util/transform_util.h"
 
 namespace mapviz_plugins
 {

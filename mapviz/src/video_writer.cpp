@@ -29,12 +29,11 @@
 
 #include <mapviz/video_writer.hpp>
 
-#include <rclcpp/rclcpp.hpp>
-
-#include <opencv2/imgproc/imgproc.hpp>
-
 #include <memory>
 #include <string>
+
+#include <rclcpp/rclcpp.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 namespace mapviz
 {

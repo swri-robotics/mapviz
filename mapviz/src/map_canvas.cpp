@@ -28,16 +28,11 @@
 // *****************************************************************************
 
 
+#include <mapviz/map_canvas.hpp>
+
 #include <QOpenGLContext>
 #include <QPainter>
 #include <QSurfaceFormat>
-
-#include <mapviz/map_canvas.hpp>
-#include <mapviz/qt_mouse_event_compat.hpp>
-
-#include <geometry_msgs/msg/point.h>
-#include <swri_math_util/constants.h>
-
 
 // C++ standard libraries
 #include <algorithm>
@@ -45,6 +40,10 @@
 #include <list>
 #include <memory>
 #include <string>
+
+#include <mapviz/qt_mouse_event_compat.hpp>
+#include "geometry_msgs/msg/point.h"
+#include "swri_math_util/constants.h"
 
 
 namespace mapviz
@@ -429,7 +428,7 @@ QPointF MapCanvas::FixedFrameToMapGlCoord(const QPointF & point)
   return qtransform_.map(point);
 }
 
-void MapCanvas::mouseReleaseEvent(QMouseEvent * /*e*/)
+void MapCanvas::mouseReleaseEvent([[maybe_unused]] QMouseEvent * e)
 {
   mouse_button_ = Qt::NoButton;
   mouse_pressed_ = false;
@@ -484,7 +483,7 @@ void MapCanvas::mouseMoveEvent(QMouseEvent * e)
   Q_EMIT Hover(point_out.point.x, point_out.point.y, view_scale_);
 }
 
-void MapCanvas::leaveEvent(QEvent * /*e*/)
+void MapCanvas::leaveEvent([[maybe_unused]] QEvent * e)
 {
   mouse_hovering_ = false;
   Q_EMIT Hover(0, 0, 0);

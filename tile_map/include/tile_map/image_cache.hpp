@@ -27,12 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_IMAGE_CACHE_HPP_
-#define TILE_MAP_IMAGE_CACHE_HPP_
-
-#include <string>
-
-#include <rclcpp/logger.hpp>
+#ifndef TILE_MAP__IMAGE_CACHE_HPP_
+#define TILE_MAP__IMAGE_CACHE_HPP_
 
 #include <QByteArray>
 #include <QCache>
@@ -44,7 +40,12 @@
 #include <QSemaphore>
 #include <QSet>
 #include <QThread>
+
+#include <memory>
+#include <string>
 #include <set>
+
+#include <rclcpp/logger.hpp>
 
 namespace tile_map
 {
@@ -180,6 +181,6 @@ private:
 
 
 typedef std::shared_ptr<ImageCache> ImageCachePtr;
-}
+}  // namespace tile_map
 
-#endif  // TILE_MAP_IMAGE_CACHE_HPP_
+#endif  // TILE_MAP__IMAGE_CACHE_HPP_

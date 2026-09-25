@@ -29,11 +29,11 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/float_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
-
-#include <pluginlib/class_list_macros.hpp>
 
 #include <QFontDialog>
+
+#include <mapviz_plugins/topic_select.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::FloatPlugin, mapviz::MapvizPlugin)
 
@@ -138,14 +138,18 @@ void FloatPlugin::PaintText(QPainter * painter)
   int x_offset = offset_x_;
   int y_offset = offset_y_;
   if (units_ == PERCENT) {
-    x_offset = static_cast<int>((float)(offset_x_ * canvas_->width()) / 100.0);
-    y_offset = static_cast<int>((float)(offset_y_ * canvas_->height()) / 100.0);
+    x_offset = static_cast<int>(static_cast<float>(offset_x_ * canvas_->width()) / 100.0);
+    y_offset = static_cast<int>(static_cast<float>(offset_y_ * canvas_->height()) / 100.0);
   }
 
-  int right = static_cast<int>((float)canvas_->width() - message_.size().width()) - x_offset;
-  int bottom = static_cast<int>((float)canvas_->height() - message_.size().height()) - y_offset;
-  int yCenter = static_cast<int>((float)canvas_->height() / 2.0 - message_.size().height() / 2.0);
-  int xCenter = static_cast<int>((float)canvas_->width() / 2.0 - message_.size().width() / 2.0);
+  int right = static_cast<int>(static_cast<float>(canvas_->width()) - message_.size().width()) -
+    x_offset;
+  int bottom = static_cast<int>(static_cast<float>(canvas_->height()) - message_.size().height()) -
+    y_offset;
+  int yCenter = static_cast<int>(static_cast<float>(canvas_->height()) / 2.0 -
+    message_.size().height() / 2.0);
+  int xCenter = static_cast<int>(static_cast<float>(canvas_->width()) / 2.0 -
+    message_.size().width() / 2.0);
 
   QPoint ulPoint;
 
@@ -364,7 +368,6 @@ void FloatPlugin::connectCallback(const std::string & topic, const rmw_qos_profi
         });
     }
   }
-
 }
 
 void FloatPlugin::SetAnchor(QString anchor)
@@ -411,7 +414,6 @@ void FloatPlugin::SetOffsetY(int offset)
 
 void FloatPlugin::handleFloat(double value)
 {
-
   std::string str = std::to_string(value);
   str += postfix_;
   message_.setText(QString(str.c_str()));
@@ -462,4 +464,4 @@ std::string FloatPlugin::UnitsToString(FloatPlugin::Units units)
 
   return units_string;
 }
-}
+}  // namespace mapviz_plugins

@@ -28,26 +28,26 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/attitude_indicator_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDebug>
 #include <QDialog>
 #include <QOpenGLWidget>
 
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-
-#include <mapviz/select_frame_dialog.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cmath>
 #include <cstdio>
 #include <string>
 #include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include <mapviz/select_frame_dialog.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPlugin)
 
@@ -241,7 +241,6 @@ void AttitudeIndicatorPlugin::PrintError(const std::string & message)
 void AttitudeIndicatorPlugin::PrintInfo(const std::string & message)
 {
   PrintInfoHelper(ui_.status, message);
-
 }
 
 void AttitudeIndicatorPlugin::PrintWarning(const std::string & message)
@@ -272,7 +271,7 @@ void AttitudeIndicatorPlugin::Shutdown()
   placer_.setContainer(nullptr);
 }
 
-void AttitudeIndicatorPlugin::timerEvent(QTimerEvent *)
+void AttitudeIndicatorPlugin::timerEvent([[maybe_unused]] QTimerEvent * event)
 {
   canvas_->update();
 }

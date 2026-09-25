@@ -28,14 +28,14 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_STADIA_SOURCE_H
-#define TILE_MAP_STADIA_SOURCE_H
+#ifndef TILE_MAP__STADIA_SOURCE_HPP_
+#define TILE_MAP__STADIA_SOURCE_HPP_
 
-#include <tile_map/tile_source.hpp>
+#include <QString>
 
 #include <string>
 
-#include <QString>
+#include <tile_map/tile_source.hpp>
 
 namespace tile_map
 {
@@ -63,6 +63,6 @@ private:
   std::hash<std::string> hash_;
   QString api_key_;
 };
-}
+}  // namespace tile_map
 
-#endif //TILE_MAP_STADIA_SOURCE_H
+#endif  // TILE_MAP__STADIA_SOURCE_HPP_

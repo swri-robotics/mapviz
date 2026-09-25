@@ -29,16 +29,16 @@
 
 #include <multires_image/tile_set.hpp>
 
-// C++ standard libraries
-#include <cmath>
-#include <cstdlib>
-#include <algorithm>
-
 // QT libraries
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
 #include <QString>
+
+// C++ standard libraries
+#include <cmath>
+#include <cstdlib>
+#include <algorithm>
 
 namespace multires_image
 {
@@ -121,4 +121,4 @@ bool TileSet::Load()
 
   return true;
 }
-}
+}  // namespace multires_image

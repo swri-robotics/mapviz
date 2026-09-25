@@ -29,12 +29,12 @@
 
 #include <multires_image/tile_set_layer.hpp>
 
+// QT libraries
+#include <QString>
+
 // C++ standard libraries
 #include <cmath>
 #include <cstdio>
-
-// QT libraries
-#include <QString>
 
 namespace multires_image
 {
@@ -180,4 +180,4 @@ void TileSetLayer::GetTileRange(
     endRow = m_tiles[0].size() - 1;
   }
 }
-}
+}  // namespace multires_image

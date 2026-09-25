@@ -27,16 +27,14 @@
 //
 // *****************************************************************************
 
+#include <gtest/gtest.h>
+#include <QApplication>
+#include <yaml-cpp/yaml.h>
+
 #include <memory>
 #include <string>
 
-#include <gtest/gtest.h>
-
-#include <QApplication>
-
 #include <rclcpp/rclcpp.hpp>
-#include <yaml-cpp/yaml.h>
-
 #include <mapviz_plugins/draw_marker_plugin.hpp>
 #include <mapviz_plugins/speedometer_plugin.hpp>
 

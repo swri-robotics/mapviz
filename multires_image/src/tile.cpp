@@ -29,18 +29,18 @@
 
 #include <multires_image/tile.hpp>
 
+// QT libraries
+#include <QImage>
+#include <QFile>
+#include <QOpenGLTexture>
+
 // C++ standard libraries
 #include <cmath>
 #include <algorithm>
 #include <exception>
 #include <iostream>
 
-// QT libraries
-#include <QImage>
-#include <QFile>
-#include <QOpenGLTexture>
-
-#include <swri_math_util/math_util.h>
+#include "swri_math_util/math_util.h"
 
 namespace multires_image
 {
@@ -218,4 +218,4 @@ void Tile::Transform(
   m_transformed_bottom_left = offset_tf * (transform * m_bottom_left);
   m_transformed_bottom_right = offset_tf * (transform * m_bottom_right);
 }
-}
+}  // namespace multires_image

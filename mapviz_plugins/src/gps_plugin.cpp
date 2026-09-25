@@ -18,29 +18,28 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/gps_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
 #include <QOpenGLWidget>
 #include <QPalette>
 
-#include <opencv2/core/core.hpp>
-
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-
-#include <swri_image_util/geometry_util.h>
-#include <swri_transform_util/transform_util.h>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
+#include <opencv2/core/core.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include "swri_image_util/geometry_util.h"
+#include "swri_transform_util/transform_util.h"
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GpsPlugin, mapviz::MapvizPlugin)
 

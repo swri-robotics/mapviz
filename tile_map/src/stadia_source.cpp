@@ -81,4 +81,4 @@ QString StadiaSource::GenerateTileUrl(int32_t level, int64_t x, int64_t y)
 
   return url;
 }
-}
+}  // namespace tile_map

@@ -32,11 +32,9 @@
 #include <cmath>
 
 #include <rclcpp/logging.hpp>
-
-#include <swri_math_util/constants.h>
-#include <swri_math_util/trig_util.h>
-#include <swri_transform_util/earth_constants.h>
-
+#include "swri_math_util/constants.h"
+#include "swri_math_util/trig_util.h"
+#include "swri_transform_util/earth_constants.h"
 #include <tile_map/image_cache.hpp>
 
 namespace tile_map
@@ -354,4 +352,4 @@ void TileMapView::InitializeTile(int32_t level, int64_t x, int64_t y, Tile & til
     i = transform_ * i;
   }
 }
-}
+}  // namespace tile_map

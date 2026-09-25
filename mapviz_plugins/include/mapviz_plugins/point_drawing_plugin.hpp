@@ -30,25 +30,25 @@
 #ifndef MAPVIZ_PLUGINS__POINT_DRAWING_PLUGIN_HPP_
 #define MAPVIZ_PLUGINS__POINT_DRAWING_PLUGIN_HPP_
 
-#include <mapviz/mapviz_plugin.hpp>
-#include <mapviz/map_canvas.hpp>
-
 // QT libraries
 #include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-#include <swri_transform_util/transform.h>
-#include <tf2/transform_datatypes.hpp>
-
 // C++ standard libraries
 #include <deque>
 #include <list>
 #include <string>
 #include <vector>
+
+#include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/map_canvas.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include "swri_transform_util/transform.h"
+#include <tf2/transform_datatypes.hpp>
 
 namespace mapviz_plugins
 {

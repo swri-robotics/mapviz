@@ -27,18 +27,16 @@
 //
 // *****************************************************************************
 
+#include <gtest/gtest.h>
+#include <QCoreApplication>
+
 #include <cmath>
 #include <memory>
 
-#include <gtest/gtest.h>
-
-#include <QCoreApplication>
-
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include <swri_transform_util/local_xy_util.h>
-#include <swri_transform_util/transform.h>
-#include <swri_transform_util/wgs84_transformer.h>
-
+#include "swri_transform_util/local_xy_util.h"
+#include "swri_transform_util/transform.h"
+#include "swri_transform_util/wgs84_transformer.h"
 #include <tile_map/tile_map_view.hpp>
 
 namespace
@@ -71,7 +69,7 @@ tf2::Vector3 TileCornerNearOrigin(double latitude, double longitude)
 {
   return tf2::Vector3(longitude + 0.002246, latitude + 0.002246, 0.0);
 }
-}
+}  // namespace
 
 namespace tile_map
 {
@@ -170,7 +168,7 @@ TEST_F(TileMapViewTest, AppliesUpdatedTransformWhenLocalOriginChanges)
 
   ExpectProjectsLikeLocalXy(view, san_antonio, TileCornerNearOrigin(29.45, -98.6));
 }
-}
+}  // namespace tile_map
 
 int main(int argc, char ** argv)
 {
