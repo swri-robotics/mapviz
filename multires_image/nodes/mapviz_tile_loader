@@ -5,22 +5,22 @@
 # Copyright (C) 2016 All Right Reserved, Southwest Research Institute® (SwRI®)
 #
 
+from collections import namedtuple
 import fnmatch
 import math
 import os
-from collections import namedtuple
 
-import pyproj
-import rclpy
-import yaml
 from geometry_msgs.msg import PoseStamped
 from gps_msgs.msg import GPSFix
 from mapviz_interfaces.srv import AddMapvizDisplay
 from marti_common_msgs.msg import KeyValue
+import pyproj
+import rclpy
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile
+import yaml
 
-GeoReference = namedtuple("GeoReference", "path min_lat min_lon max_lat max_lon area")
+GeoReference = namedtuple('GeoReference', 'path min_lat min_lon max_lat max_lon area')
 
 
 def distance(lat1, lon1, lat2, lon2):
@@ -32,11 +32,12 @@ def distance(lat1, lon1, lat2, lon2):
 
 
 class MapvizTileLoader(Node):
+
     def __init__(self):
         super().__init__('mapviz_tile_loader')
 
         self.base_directory = self.declare_parameter(
-            'base_directory', os.path.expanduser('~') + "/.ros").value
+            'base_directory', os.path.expanduser('~') + '/.ros').value
         self.max_search_depth = self.declare_parameter('max_search_depth', 1).value
         rate = max(0.1, self.declare_parameter('rate', 1.0).value)
         self.display_name = self.declare_parameter('display_name', 'satellite').value
@@ -48,7 +49,7 @@ class MapvizTileLoader(Node):
         self._last_path = None
         self._request_pending = False
 
-        self._gps_sub = self.create_subscription(GPSFix, "gps", self.gps_callback, 10)
+        self._gps_sub = self.create_subscription(GPSFix, 'gps', self.gps_callback, 10)
 
         if self.use_local_xy:
             # The origin is published latched, so subscribe with transient-local
@@ -58,12 +59,12 @@ class MapvizTileLoader(Node):
                 history=HistoryPolicy.KEEP_LAST,
                 durability=DurabilityPolicy.TRANSIENT_LOCAL)
             self._local_xy_sub = self.create_subscription(
-                PoseStamped, "/local_xy_origin", self.local_xy_callback, origin_qos)
+                PoseStamped, '/local_xy_origin', self.local_xy_callback, origin_qos)
 
         self.georeferences = self.load_georeferences()
 
         self._client = self.create_client(AddMapvizDisplay, 'add_mapviz_display')
-        self.get_logger().info(f"waiting for service: {self._client.srv_name} ...")
+        self.get_logger().info(f'waiting for service: {self._client.srv_name} ...')
         self._client.wait_for_service()
 
         self._timer = self.create_timer(1.0 / rate, self.on_timer)
@@ -92,7 +93,7 @@ class MapvizTileLoader(Node):
         return georeferences
 
     def parse_georeference(self, geofile):
-        self.get_logger().info(f"Parsing {geofile}...")
+        self.get_logger().info(f'Parsing {geofile}...')
         min_lat = 90.0
         max_lat = -90.0
         min_lon = 180.0
@@ -100,28 +101,28 @@ class MapvizTileLoader(Node):
         with open(geofile) as f:
             geodata = yaml.safe_load(f)
         if str(geodata['projection']).lower() == 'utm':
-            self.get_logger().info("  projection: utm")
+            self.get_logger().info('  projection: utm')
             zone = 1
             band = 'N'
             if 'utm_zone' in geodata:
                 zone = int(geodata['utm_zone'])
                 if zone >= 1 or zone <= 60:
-                    self.get_logger().info(f"  utm zone: {zone}")
+                    self.get_logger().info(f'  utm zone: {zone}')
                 else:
-                    self.get_logger().warn("  invalid utm zone!")
+                    self.get_logger().warn('  invalid utm zone!')
                     return None
             else:
-                self.get_logger().warn("  no utm zone!")
+                self.get_logger().warn('  no utm zone!')
                 return None
             if 'utm_band' in geodata:
                 band = str(geodata['utm_band'])
                 if band >= 'C' or band <= 'X':
-                    self.get_logger().info(f"  utm band: {band}")
+                    self.get_logger().info(f'  utm band: {band}')
                 else:
-                    self.get_logger().warn("  invalid utm band!")
+                    self.get_logger().warn('  invalid utm band!')
                     return None
             else:
-                self.get_logger().warn("  no utm band!")
+                self.get_logger().warn('  no utm band!')
                 return None
 
             utm_proj = pyproj.Proj(proj='utm', zone=zone, ellps='WGS84', south=(band < 'N'))
@@ -137,16 +138,16 @@ class MapvizTileLoader(Node):
                         min_lat = min(lat, min_lat)
                         max_lat = max(lat, max_lat)
                 else:
-                    self.get_logger().warn("  not enough tiepoints!")
+                    self.get_logger().warn('  not enough tiepoints!')
                     return None
             else:
-                self.get_logger().warn("  no tiepoints!")
+                self.get_logger().warn('  no tiepoints!')
                 return None
 
         area = (max_lat - min_lat) * (max_lon - min_lon)
 
         self.get_logger().info(
-            f"  lat/lon bounds: ({min_lat:f}, {min_lon:f}) - ({max_lat:f}, {max_lon:f})")
+            f'  lat/lon bounds: ({min_lat:f}, {min_lon:f}) - ({max_lat:f}, {max_lon:f})')
         return GeoReference(geofile, min_lat, min_lon, max_lat, max_lon, area)
 
     def select_tileset(self, lat, lon):
@@ -162,7 +163,7 @@ class MapvizTileLoader(Node):
                 max_area = georef.area
 
         if path is None:
-            min_dist = float("inf")
+            min_dist = float('inf')
             for georef in self.georeferences:
                 clat = (georef.min_lat + georef.max_lat) / 2.0
                 clon = (georef.min_lon + georef.max_lon) / 2.0
@@ -177,7 +178,7 @@ class MapvizTileLoader(Node):
         # the mapviz display.
         if path is None or path == self._last_path or self._request_pending:
             return
-        self.get_logger().info(f"updating tileset: {path}")
+        self.get_logger().info(f'updating tileset: {path}')
         request = AddMapvizDisplay.Request()
         request.type = 'mapviz_plugins/multires_image'
         request.draw_order = self.draw_order
@@ -194,7 +195,7 @@ class MapvizTileLoader(Node):
         if response.success:
             self._last_path = path
         else:
-            self.get_logger().warn(f"failed to update tileset: {response.message}")
+            self.get_logger().warn(f'failed to update tileset: {response.message}')
 
     def on_timer(self):
         if self.use_local_xy:
