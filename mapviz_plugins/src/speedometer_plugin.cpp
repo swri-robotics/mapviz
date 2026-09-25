@@ -28,7 +28,6 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/speedometer_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QFontMetrics>
@@ -36,16 +35,18 @@
 #include <QPalette>
 #include <QPen>
 
+// C++ standard libraries
+#include <algorithm>
+#include <cmath>
+#include <string>
+
+#include <mapviz_plugins/topic_select.hpp>
+
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
-
-// C++ standard libraries
-#include <algorithm>
-#include <cmath>
-#include <string>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::SpeedometerPlugin, mapviz::MapvizPlugin)
 

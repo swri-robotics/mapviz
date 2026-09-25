@@ -28,44 +28,38 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/robot_model_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 #include <QColor>
 #include <QFileDialog>
 #include <QPainter>
 #include <QPen>
 #include <QPixmap>
-
-
 #include <GL/gl.h>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QOffscreenSurface>
 
+#include <mapviz_plugins/topic_select.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <rmw/qos_profiles.h>
+#include "rmw/qos_profiles.h"
 
 #ifdef MAPVIZ_HAVE_URDF_MODEL_HPP
 #include <urdf/model.hpp>
 #else
-#include <urdf/model.h>
+#include "urdf/model.h"
 #endif
 
-#include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-#include <ament_index_cpp/version.h>
+#include <assimp/Importer.hpp>
+#include "ament_index_cpp/version.h"
 #if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
 #include <ament_index_cpp/get_package_share_path.hpp>
 #else
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 #include <algorithm>
 #include <array>
@@ -77,6 +71,10 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
   mapviz_plugins::RobotModelPlugin,
@@ -158,7 +156,7 @@ LoadedMesh loadMesh(
     std::vector<std::array<unsigned int, 3>> tris;
     QColor color;
     cv::Mat texture;                       // loaded diffuse texture (empty if none)
-    std::vector<std::array<float, 2>> uvs; // per-vertex UV, indexed by (tris[k] - vert_base)
+    std::vector<std::array<float, 2>> uvs;  // per-vertex UV, indexed by (tris[k] - vert_base)
   };
 
   std::vector<tf2::Vector3> all_verts;
@@ -198,7 +196,7 @@ LoadedMesh loadMesh(
         (c.r > 0.f || c.g > 0.f || c.b > 0.f))
       {
         si.color = QColor::fromRgbF(c.r, c.g, c.b);
-      } else if (AI_SUCCESS == mat->Get(AI_MATKEY_BASE_COLOR, c) &&
+      } else if (AI_SUCCESS == mat->Get(AI_MATKEY_BASE_COLOR, c) &&  // NOLINT(readability/braces)
         (c.r > 0.f || c.g > 0.f || c.b > 0.f))
       {
         si.color = QColor::fromRgbF(c.r, c.g, c.b);
@@ -348,18 +346,24 @@ void traverseLink(
           const double hz = box->dim.z / 2.0;
           // 6 faces as quads (CCW winding from outside), each split into 2 triangles.
           const std::array<std::array<tf2::Vector3, 4>, 6> faces = {{
+            // +Z
             {{tf2::Vector3(hx, hy, hz), tf2::Vector3(-hx, hy, hz), tf2::Vector3(-hx, -hy, hz),
-              tf2::Vector3(hx, -hy, hz)}},                                                                                     // +Z
+              tf2::Vector3(hx, -hy, hz)}},
+            // -Z
             {{tf2::Vector3(hx, hy, -hz), tf2::Vector3(hx, -hy, -hz), tf2::Vector3(-hx, -hy, -hz),
-              tf2::Vector3(-hx, hy, -hz)}},                                                                                    // -Z
+              tf2::Vector3(-hx, hy, -hz)}},
+            // +X
             {{tf2::Vector3(hx, hy, hz), tf2::Vector3(hx, -hy, hz), tf2::Vector3(hx, -hy, -hz),
-              tf2::Vector3(hx, hy, -hz)}},                                                                                     // +X
+              tf2::Vector3(hx, hy, -hz)}},
+            // -X
             {{tf2::Vector3(-hx, -hy, hz), tf2::Vector3(-hx, hy, hz), tf2::Vector3(-hx, hy, -hz),
-              tf2::Vector3(-hx, -hy, -hz)}},                                                                                   // -X
+              tf2::Vector3(-hx, -hy, -hz)}},
+            // +Y
             {{tf2::Vector3(-hx, hy, hz), tf2::Vector3(hx, hy, hz), tf2::Vector3(hx, hy, -hz),
-              tf2::Vector3(-hx, hy, -hz)}},                                                                                    // +Y
+              tf2::Vector3(-hx, hy, -hz)}},
+            // -Y
             {{tf2::Vector3(hx, -hy, hz), tf2::Vector3(-hx, -hy, hz), tf2::Vector3(-hx, -hy, -hz),
-              tf2::Vector3(hx, -hy, -hz)}},                                                                                    // -Y
+              tf2::Vector3(hx, -hy, -hz)}},
           }};
           for (const auto & f : faces) {
             const tf2::Vector3 a = root_T_vis * f[0];
@@ -394,8 +398,8 @@ void traverseLink(
             const tf2::Vector3 b1 = root_T_vis * tf2::Vector3(
               r * std::cos(a1), r * std::sin(
                 a1), -hzc);
-            pushIfUp(geom, top_c, t0, t1); // top cap
-            pushIfUp(geom, bot_c, b1, b0); // bottom cap (reversed winding)
+            pushIfUp(geom, top_c, t0, t1);  // top cap
+            pushIfUp(geom, bot_c, b1, b0);  // bottom cap (reversed winding)
             pushIfUp(geom, t1, t0, b0);   // side quad tri 1 (CCW from outside)
             pushIfUp(geom, t1, b0, b1);   // side quad tri 2
           }
@@ -777,7 +781,6 @@ void RobotModelPlugin::Transform()
 
 void RobotModelPlugin::Draw(double x, double y, double scale)
 {
-
   GLuint tex_id = 0;
   std::array<std::pair<double, double>, 4> quad;
   double alpha = 0.0;

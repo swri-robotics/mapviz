@@ -162,4 +162,4 @@ void TileView::Draw()
 
   glDisable(GL_TEXTURE_2D);
 }
-}
+}  // namespace multires_image

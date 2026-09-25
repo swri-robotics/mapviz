@@ -28,29 +28,28 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/measuring_plugin.hpp>
-#include <mapviz/mapviz_plugin.hpp>
-#include <mapviz/qt_mouse_event_compat.hpp>
 
 // QT libraries
 #include <QDateTime>
 #include <QMouseEvent>
 #include <QTextStream>
 #include <QPainter>
-
 #include <QGuiApplication>
+
+// C++ Libraries
+#include <limits>
+#include <string>
+#include <vector>
+
+#include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/qt_mouse_event_compat.hpp>
 
 // ROS Libraries
 #include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
 #include <mapviz/select_frame_dialog.hpp>
-
 #include <pluginlib/class_list_macros.hpp>
-
-// C++ Libraries
-#include <limits>
-#include <string>
-#include <vector>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MeasuringPlugin, mapviz::MapvizPlugin)
 
@@ -272,7 +271,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent * event)
     tf2::Vector3 position(transformed.x(), transformed.y(), 0.0);
     vertices_[selected_point_].setY(position.y());
     vertices_[selected_point_].setX(position.x());
-    DistanceCalculation(); //function to calculate distance
+    DistanceCalculation();  // function to calculate distance
     return true;
   }   // Let other plugins process this event too
   return false;

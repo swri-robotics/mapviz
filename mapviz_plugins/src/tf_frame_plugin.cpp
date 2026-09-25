@@ -33,16 +33,16 @@
 #include <QOpenGLWidget>
 #include <QPalette>
 
-#include <mapviz/select_frame_dialog.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <mapviz/select_frame_dialog.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::TfFramePlugin, mapviz::MapvizPlugin)
 

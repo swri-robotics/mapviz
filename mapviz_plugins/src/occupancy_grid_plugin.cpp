@@ -28,19 +28,20 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/occupancy_grid_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QOpenGLWidget>
 #include <QPalette>
 
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OccupancyGridPlugin, mapviz::MapvizPlugin)
 
@@ -72,7 +73,7 @@ Palette makeMapPalette()
   // illegal negative (char) values in shades of red/yellow
   for (int i = 128; i <= 254; i++) {
     *palette_ptr++ = 255;     // red
-    *palette_ptr++ = (255 * (i - 128)) / (254 - 128); // green
+    *palette_ptr++ = (255 * (i - 128)) / (254 - 128);  // green
     *palette_ptr++ = 0;     // blue
     *palette_ptr++ = 255;     // alpha
   }
@@ -124,7 +125,7 @@ Palette makeCostmapPalette()
   // illegal negative (char) values in shades of red/yellow
   for (int i = 128; i <= 254; i++) {
     *palette_ptr++ = 255;     // red
-    *palette_ptr++ = (255 * (i - 128)) / (254 - 128); // green
+    *palette_ptr++ = (255 * (i - 128)) / (254 - 128);  // green
     *palette_ptr++ = 0;     // blue
     *palette_ptr++ = 255;     // alpha
   }
@@ -181,14 +182,13 @@ OccupancyGridPlugin::OccupancyGridPlugin()
     ui_.checkbox_update,
     SIGNAL(toggled(bool)),
     this,
-    SLOT(upgradeCheckBoxToggled(bool)));
+    SLOT(upgradeCheckBoxToggled([[maybe_unused]] bool checked)));
 
   QObject::connect(
     ui_.color_scheme,
     SIGNAL(currentTextChanged(const QString&)),
     this,
     SLOT(colorSchemeUpdated(const QString&)));
-
 }
 
 void OccupancyGridPlugin::DrawIcon()
@@ -277,7 +277,7 @@ void OccupancyGridPlugin::connectCallback(const std::string & topic, const rmw_q
   }
 }
 
-void OccupancyGridPlugin::upgradeCheckBoxToggled(bool)
+void OccupancyGridPlugin::upgradeCheckBoxToggled([[maybe_unused]] bool checked)
 {
   const std::string topic = ui_.topic_grid->text().trimmed().toStdString();
   update_sub_.reset();

@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MULTIRES_IMAGE_QGLMAP_HPP_
-#define MULTIRES_IMAGE_QGLMAP_HPP_
+#ifndef MULTIRES_IMAGE__QGLMAP_HPP_
+#define MULTIRES_IMAGE__QGLMAP_HPP_
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -38,9 +38,7 @@
 
 // QT auto-generated headers
 #include "ui_QGLMap.h"
-
 #include <tf2/transform_datatypes.hpp>
-
 #include <multires_image/tile.hpp>
 #include <multires_image/tile_view.hpp>
 
@@ -106,6 +104,6 @@ private:
   void Recenter();
   void MousePan(int x, int y);
 };
-}
+}  // namespace multires_image
 
-#endif  // MULTIRES_IMAGE_QGLMAP_HPP_
+#endif  // MULTIRES_IMAGE__QGLMAP_HPP_

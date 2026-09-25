@@ -28,7 +28,6 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/plan_route_plugin.hpp>
-#include <mapviz/qt_mouse_event_compat.hpp>
 
 // QT libraries
 #include <QDateTime>
@@ -39,17 +38,6 @@
 #include <QPalette>
 #include <QStaticText>
 
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-
-#include <swri_route_util/util.h>
-#include <swri_transform_util/frames.h>
-
-#include <marti_nav_msgs/srv/plan_route.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <chrono>
 #include <cstdio>
@@ -57,6 +45,17 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <mapviz/qt_mouse_event_compat.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include "swri_route_util/util.h"
+#include "swri_transform_util/frames.h"
+#include <marti_nav_msgs/srv/plan_route.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PlanRoutePlugin, mapviz::MapvizPlugin)
 

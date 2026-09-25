@@ -28,12 +28,13 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/coordinate_picker_plugin.hpp>
-#include <mapviz/mapviz_plugin.hpp>
-#include <mapviz/qt_mouse_event_compat.hpp>
 
 #include <QClipboard>
 #include <QMouseEvent>
 #include <QTextStream>
+
+#include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/qt_mouse_event_compat.hpp>
 
 #if QT_VERSION >= 0x050000
 #include <QGuiApplication>
@@ -41,20 +42,18 @@
 #include <QApplication>
 #endif
 
+#include <string>
+
 // ROS Libraries
 #include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
 #include <mapviz/select_frame_dialog.hpp>
-
 //
-#include <swri_transform_util/frames.h>
-#include <swri_transform_util/transform.h>
-#include <swri_transform_util/transform_util.h>
-
+#include "swri_transform_util/frames.h"
+#include "swri_transform_util/transform.h"
+#include "swri_transform_util/transform_util.h"
 #include <pluginlib/class_list_macros.hpp>
-
-#include <string>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::CoordinatePickerPlugin, mapviz::MapvizPlugin)
 
@@ -203,13 +202,13 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent * event)
   return false;
 }
 
-bool CoordinatePickerPlugin::handleMouseRelease(QMouseEvent * /*event*/)
+bool CoordinatePickerPlugin::handleMouseRelease([[maybe_unused]] QMouseEvent * event)
 {
   // Let other plugins process this event too
   return false;
 }
 
-bool CoordinatePickerPlugin::handleMouseMove(QMouseEvent * /*event*/)
+bool CoordinatePickerPlugin::handleMouseMove([[maybe_unused]] QMouseEvent * event)
 {
   // Let other plugins process this event too
   return false;

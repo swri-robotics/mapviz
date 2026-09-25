@@ -29,14 +29,14 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/string_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 #include <QFontDialog>
 #include <QFontDatabase>
 
-#include <pluginlib/class_list_macros.hpp>
-
 #include <string>
+
+#include <mapviz_plugins/topic_select.hpp>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::StringPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins

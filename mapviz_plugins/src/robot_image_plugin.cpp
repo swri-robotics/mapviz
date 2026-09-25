@@ -38,22 +38,22 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include <ament_index_cpp/version.h>
+#include "ament_index_cpp/version.h"
 #if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
 #include <ament_index_cpp/get_package_share_path.hpp>
 #else
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
 
-#include <mapviz/select_frame_dialog.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <vector>
+
+#include <mapviz/select_frame_dialog.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RobotImagePlugin, mapviz::MapvizPlugin)
 

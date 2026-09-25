@@ -36,6 +36,13 @@
 #include <QMouseEvent>
 #include <QPalette>
 
+// C++ standard libraries
+#include <cstdio>
+#include <limits>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <mapviz/select_frame_dialog.hpp>
@@ -43,13 +50,6 @@
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
-
-// C++ standard libraries
-#include <cstdio>
-#include <limits>
-#include <memory>
-#include <string>
-#include <vector>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DrawPolygonPlugin, mapviz::MapvizPlugin)
 

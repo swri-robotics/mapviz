@@ -38,20 +38,19 @@
 #include <QColor>
 #include <QTimer>
 
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-#include <tf2/transform_datatypes.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/transform_listener.hpp>
-
-#include <mapviz/mapviz_plugin.hpp>
-
 // C++ standard libraries
 #include <cstring>
 #include <list>
 #include <memory>
 #include <string>
 #include <vector>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_ros/transform_listener.hpp>
+#include <mapviz/mapviz_plugin.hpp>
 
 namespace mapviz
 {

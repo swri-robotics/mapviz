@@ -28,6 +28,7 @@
 // *****************************************************************************
 
 #include <mapviz/config_item.hpp>
+
 #include <QMenu>
 #include <QAction>
 #include <QFontMetrics>

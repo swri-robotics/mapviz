@@ -33,7 +33,7 @@
 #include <cmath>
 #include <iostream>
 
-#include <swri_transform_util/transform_util.h>
+#include "swri_transform_util/transform_util.h"
 
 namespace mapviz_plugins
 {
@@ -180,4 +180,4 @@ void MultiresView::Draw()
 
   glDisable(GL_TEXTURE_2D);
 }
-}
+}  // namespace mapviz_plugins

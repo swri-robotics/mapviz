@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MULTIRES_IMAGE_TILE_VIEW_HPP_
-#define MULTIRES_IMAGE_TILE_VIEW_HPP_
+#ifndef MULTIRES_IMAGE__TILE_VIEW_HPP_
+#define MULTIRES_IMAGE__TILE_VIEW_HPP_
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -64,6 +64,6 @@ private:
   double min_scale_;
   bool gl_initialized_ = false;
 };
-}
+}  // namespace multires_image
 
-#endif  // MULTIRES_IMAGE_TILE_VIEW_HPP_
+#endif  // MULTIRES_IMAGE__TILE_VIEW_HPP_

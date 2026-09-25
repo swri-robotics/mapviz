@@ -28,7 +28,6 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/placeable_window_proxy.hpp>
-#include <mapviz/qt_mouse_event_compat.hpp>
 
 #include <QApplication>
 #include <QCursor>
@@ -37,10 +36,11 @@
 #include <QResizeEvent>
 #include <QTimerEvent>
 #include <QWidget>
-
 #include <QDebug>
 
 #include <cmath>
+
+#include <mapviz/qt_mouse_event_compat.hpp>
 
 namespace mapviz_plugins
 {
@@ -290,7 +290,7 @@ QRectF PlaceableWindowProxy::resizeHelper(
 }
 
 
-bool PlaceableWindowProxy::handleResize(QResizeEvent */*event*/)
+bool PlaceableWindowProxy::handleResize([[maybe_unused]] QResizeEvent * event)
 {
   // We always want to pass the resize event along to other widgets.
   return false;
