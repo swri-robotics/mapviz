@@ -38,23 +38,23 @@ Fairly easy and simple. Using `test.tif`  as an example file with geospatial ref
 ```bash
 # could be used to see all sorts of metadata for test.tif
 $ gdalinfo test.tif
- 
+
 # the command we actually want to see what sort of bands we're dealing with
 $ gdalinfo test.tif | grep Band
 Band 1 Block=2672x392 Type=Byte, ColorInterp=Red
 Band 2 Block=2672x392 Type=Byte, ColorInterp=Green
 Band 3 Block=2672x392 Type=Byte, ColorInterp=Blue
 Band 4 Block=2672x392 Type=Byte, ColorInterp=Alpha # We don't want the alpha, so note this band to skip
- 
+
 # Remove the alpha by selecting all other bands with `-b #`
 $ gdal_translate -b 1 -b 2 -b 3 test.tif test_no_alpha.tif
- 
+
 # Convert to WMTS tiles in the proper directory structure of `<output_dir>/<level>/<x>/<y>.png`
 #     -z manually sets desired zoom levels. If left blank it will only output tiles in levels where the data would be visible.
 #     --xyz Use OGC WMTS standard format for output. This is the format that matches what mapviz expects.
 # More info: https://gdal.org/programs/gdal2tiles.html
 $ gdal2tiles.py --xyz test_no_alpha.tif
- 
+
 # Check that the output makes sense with gdal's generated preview using a browser, like chrome.
 #     Check the "Layers" box in the top left
 $ google-chrome test_no_alpha/leaflet.html
@@ -69,8 +69,8 @@ $ cat input.txt
 test1.tif
 test2.tif
 test3.tif
- 
- 
+
+
 # Could be created with various bash tricks (here choosing all GeoTiffs in current dir):
 $ ls *.tif > input.txt
 ```
@@ -81,10 +81,10 @@ Now, use GDAL's virtual format to treat many files like one:
 ```bash
 # Use input.txt from above
 $ gdalbuildvrt --input_file_list input.txt test.vrt
- 
+
 # Same steps as for single file now:
 $ gdal_translate -b 1 -b 2 -b 3 test.vrt test_no_alpha.vrt
- 
+
 $ gdal2tiles.py --xyz test_no_alpha.vrt
 ```
 

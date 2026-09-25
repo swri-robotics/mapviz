@@ -159,7 +159,7 @@ namespace mapviz_plugins
     {
       ss << " (but not publishing since plugin is hidden)";
     }
-    
+
     PrintInfo(ss.str());
   }
 

@@ -469,4 +469,3 @@ namespace mapviz_plugins
     }
   }
 }   // namespace mapviz_plugins
-

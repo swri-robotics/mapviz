@@ -139,7 +139,7 @@ namespace tile_map
     swri_transform_util::Transform inverse_transform_;
 
     bool transformed_;
-    
+
     TileMapView tile_map_;
     std::map<QString, std::shared_ptr<TileSource> > tile_sources_;
 

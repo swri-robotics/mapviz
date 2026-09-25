@@ -126,4 +126,3 @@ struct MeasurementBox
 }   // namespace mapviz_plugins
 
 #endif  // MAPVIZ_PLUGINS__MEASURING_PLUGIN_HPP_
-

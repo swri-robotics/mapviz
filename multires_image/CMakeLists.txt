@@ -81,7 +81,7 @@ set(TILE_HEADER_FILES
   include/${PROJECT_NAME}/tile_cache.hpp
 )
 
-add_library(${PROJECT_NAME} 
+add_library(${PROJECT_NAME}
   ${TILE_SRC_FILES}
   ${TILE_HEADER_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -251,6 +251,18 @@ install(DIRECTORY launch
 )
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # TODO(#938): Enable the remaining linters once the code complies with them.
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cppcheck_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  set(ament_cmake_flake8_FOUND TRUE)
+  set(ament_cmake_pep257_FOUND TRUE)
+  set(ament_cmake_uncrustify_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(

@@ -207,7 +207,7 @@ namespace mapviz_plugins
       RCLCPP_DEBUG(Logger(), "Ignoring mouse press, since draw polygon plugin is hidden");
       return false;
     }
-    
+
     selected_point_ = -1;
     int closest_point = 0;
     double closest_distance = std::numeric_limits<double>::max();
