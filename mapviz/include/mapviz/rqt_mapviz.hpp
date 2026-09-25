@@ -51,7 +51,7 @@
 
 #define slots
 #define signals
-#if __has_include(<rqt_gui_cpp/plugin.h>)
+#ifdef MAPVIZ_RQT_GUI_CPP_PLUGIN_H
 #include "rqt_gui_cpp/plugin.h"
 #else
 #include <rqt_gui_cpp/plugin.hpp>

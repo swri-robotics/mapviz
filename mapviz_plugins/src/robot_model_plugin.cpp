@@ -55,7 +55,12 @@
 
 #include <assimp/Importer.hpp>
 #include "ament_index_cpp/version.h"
-#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
+
+// The version is compared arithmetically rather than with
+// AMENT_INDEX_CPP_VERSION_GTE(), because cppcheck does not see this header and
+// treats an unresolved function-like macro in an #if as an error, while
+// unresolved object-like macros simply evaluate to 0.
+#if AMENT_INDEX_CPP_VERSION_MAJOR * 100 + AMENT_INDEX_CPP_VERSION_MINOR >= 113
 #include <ament_index_cpp/get_package_share_path.hpp>
 #else
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -97,7 +102,7 @@ std::string resolveUri(const std::string & uri)
     const std::string pkg = no_scheme.substr(0, slash);
     const std::string rel = no_scheme.substr(slash + 1);
     try {
-#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
+#if AMENT_INDEX_CPP_VERSION_MAJOR * 100 + AMENT_INDEX_CPP_VERSION_MINOR >= 113
       return (ament_index_cpp::get_package_share_path(pkg) / rel).string();
 #else
       return ament_index_cpp::get_package_share_directory(pkg) + "/" + rel;

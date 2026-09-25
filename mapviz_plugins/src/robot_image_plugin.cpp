@@ -39,7 +39,12 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 #include "ament_index_cpp/version.h"
-#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
+
+// The version is compared arithmetically rather than with
+// AMENT_INDEX_CPP_VERSION_GTE(), because cppcheck does not see this header and
+// treats an unresolved function-like macro in an #if as an error, while
+// unresolved object-like macros simply evaluate to 0.
+#if AMENT_INDEX_CPP_VERSION_MAJOR * 100 + AMENT_INDEX_CPP_VERSION_MINOR >= 113
 #include <ament_index_cpp/get_package_share_path.hpp>
 #else
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -317,7 +322,7 @@ void RobotImagePlugin::LoadImage()
       std::string package = filename_.substr(spos + prefix.length());
       package = package.substr(0, package.find(')'));
 
-#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 0)
+#if AMENT_INDEX_CPP_VERSION_MAJOR * 100 + AMENT_INDEX_CPP_VERSION_MINOR >= 113
       std::string package_path = ament_index_cpp::get_package_share_path(package).string();
 #else
       std::string package_path = ament_index_cpp::get_package_share_directory(package);
@@ -347,7 +352,7 @@ void RobotImagePlugin::LoadImage()
       }
 
       // QImage::flipped() replaced mirrored() in Qt 6; Qt 5 only has mirrored().
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= 0x060000
       image_ = image_.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
 #else
       image_ = image_.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
