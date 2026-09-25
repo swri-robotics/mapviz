@@ -102,6 +102,12 @@ protected:
   }
 };
 
+}  // namespace tile_map
+
+// cppcheck cannot parse TEST_F() inside a namespace.
+using tile_map::TileMapView;
+using tile_map::TileMapViewTest;
+
 /// Regression test for https://github.com/swri-robotics/mapviz/issues/909.
 ///
 /// A WGS84 transform whose local origin is at lat/lon (0, 0) -- what a Gazebo
@@ -168,7 +174,6 @@ TEST_F(TileMapViewTest, AppliesUpdatedTransformWhenLocalOriginChanges)
 
   ExpectProjectsLikeLocalXy(view, san_antonio, TileCornerNearOrigin(29.45, -98.6));
 }
-}  // namespace tile_map
 
 int main(int argc, char ** argv)
 {

@@ -102,7 +102,7 @@ bool Tile::LoadImageToMemory(bool gl)
           m_memorySize = m_dimension * m_dimension * 4;
 
           // QImage::flipped() replaced mirrored() in Qt 6; Qt 5 only has mirrored().
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= 0x060000
           m_image = m_image.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
 #else
           m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
