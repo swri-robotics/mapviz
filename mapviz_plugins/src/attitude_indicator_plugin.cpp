@@ -53,419 +53,414 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::AttitudeIndicatorPlugin, mapviz::MapvizPl
 
 namespace mapviz_plugins
 {
-  namespace
-  {
+namespace
+{
 
-    void DrawSolidSphere(QOpenGLFunctions_1_1& gl, double radius, int slices, int stacks)
-    {
-      for (int stack = 0; stack < stacks; ++stack) {
-        const double phi0 = M_PI * (static_cast<double>(stack) / stacks - 0.5);
-        const double phi1 = M_PI * (static_cast<double>(stack + 1) / stacks - 0.5);
-        const double z0 = radius * std::sin(phi0);
-        const double z1 = radius * std::sin(phi1);
-        const double zr0 = radius * std::cos(phi0);
-        const double zr1 = radius * std::cos(phi1);
+void DrawSolidSphere(QOpenGLFunctions_1_1 & gl, double radius, int slices, int stacks)
+{
+  for (int stack = 0; stack < stacks; ++stack) {
+    const double phi0 = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+    const double phi1 = M_PI * (static_cast<double>(stack + 1) / stacks - 0.5);
+    const double z0 = radius * std::sin(phi0);
+    const double z1 = radius * std::sin(phi1);
+    const double zr0 = radius * std::cos(phi0);
+    const double zr1 = radius * std::cos(phi1);
 
-        gl.glBegin(GL_QUAD_STRIP);
-        for (int slice = 0; slice <= slices; ++slice) {
-          const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
-          const double cos_theta = std::cos(theta);
-          const double sin_theta = std::sin(theta);
+    gl.glBegin(GL_QUAD_STRIP);
+    for (int slice = 0; slice <= slices; ++slice) {
+      const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
+      const double cos_theta = std::cos(theta);
+      const double sin_theta = std::sin(theta);
 
-          gl.glNormal3d(cos_theta * zr0 / radius, sin_theta * zr0 / radius, z0 / radius);
-          gl.glVertex3d(cos_theta * zr0, sin_theta * zr0, z0);
-          gl.glNormal3d(cos_theta * zr1 / radius, sin_theta * zr1 / radius, z1 / radius);
-          gl.glVertex3d(cos_theta * zr1, sin_theta * zr1, z1);
-        }
-        gl.glEnd();
-      }
+      gl.glNormal3d(cos_theta * zr0 / radius, sin_theta * zr0 / radius, z0 / radius);
+      gl.glVertex3d(cos_theta * zr0, sin_theta * zr0, z0);
+      gl.glNormal3d(cos_theta * zr1 / radius, sin_theta * zr1 / radius, z1 / radius);
+      gl.glVertex3d(cos_theta * zr1, sin_theta * zr1, z1);
     }
+    gl.glEnd();
+  }
+}
 
-    void DrawWireSphere(QOpenGLFunctions_1_1& gl, double radius, int slices, int stacks)
-    {
-      for (int stack = 1; stack < stacks; ++stack) {
-        const double phi = M_PI * (static_cast<double>(stack) / stacks - 0.5);
-        const double z = radius * std::sin(phi);
-        const double zr = radius * std::cos(phi);
+void DrawWireSphere(QOpenGLFunctions_1_1 & gl, double radius, int slices, int stacks)
+{
+  for (int stack = 1; stack < stacks; ++stack) {
+    const double phi = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+    const double z = radius * std::sin(phi);
+    const double zr = radius * std::cos(phi);
 
-        gl.glBegin(GL_LINE_LOOP);
-        for (int slice = 0; slice < slices; ++slice) {
-          const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
-          gl.glVertex3d(std::cos(theta) * zr, std::sin(theta) * zr, z);
-        }
-        gl.glEnd();
-      }
-
-      for (int slice = 0; slice < slices; ++slice) {
-        const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
-
-        gl.glBegin(GL_LINE_STRIP);
-        for (int stack = 0; stack <= stacks; ++stack) {
-          const double phi = M_PI * (static_cast<double>(stack) / stacks - 0.5);
-          const double z = radius * std::sin(phi);
-          const double zr = radius * std::cos(phi);
-          gl.glVertex3d(std::cos(theta) * zr, std::sin(theta) * zr, z);
-        }
-        gl.glEnd();
-      }
+    gl.glBegin(GL_LINE_LOOP);
+    for (int slice = 0; slice < slices; ++slice) {
+      const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
+      gl.glVertex3d(std::cos(theta) * zr, std::sin(theta) * zr, z);
     }
-  }  // namespace
-
-  AttitudeIndicatorPlugin::AttitudeIndicatorPlugin() :
-    MapvizPlugin(),
-    config_widget_(new QWidget()),
-    topic_(""),
-    qos_(rmw_qos_profile_default),
-    ui_()
-  {
-    ui_.setupUi(config_widget_);
-
-    // Set background white
-    QPalette p(config_widget_->palette());
-    p.setColor(QPalette::Window, Qt::white);
-    config_widget_->setPalette(p);
-    roll_ = pitch_ = yaw_ = 0;
-    topics_.emplace_back("nav_msgs/msg/Odometry");
-    topics_.emplace_back("geometry_msgs/msg/Pose");
-    topics_.emplace_back("sensor_msgs/msg/Imu");
-    // Set status text red
-    QPalette p3(ui_.status->palette());
-    p3.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p3);
-
-    placer_.setRect(QRect(0, 0, 100, 100));
-    QObject::connect(this, SIGNAL(VisibleChanged(bool)),
-                     &placer_, SLOT(setVisible(bool)));
-
-    QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-    QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+    gl.glEnd();
   }
 
-  void AttitudeIndicatorPlugin::SelectTopic()
-  {
-    auto [topic, qos] = SelectTopicDialog::selectTopic(
-        TopicSource(),
-        topics_,
-        qos_);
+  for (int slice = 0; slice < slices; ++slice) {
+    const double theta = 2.0 * M_PI * static_cast<double>(slice) / slices;
 
-    if (!topic.empty())
-    {
-      connectCallback(topic, qos);
+    gl.glBegin(GL_LINE_STRIP);
+    for (int stack = 0; stack <= stacks; ++stack) {
+      const double phi = M_PI * (static_cast<double>(stack) / stacks - 0.5);
+      const double z = radius * std::sin(phi);
+      const double zr = radius * std::cos(phi);
+      gl.glVertex3d(std::cos(theta) * zr, std::sin(theta) * zr, z);
+    }
+    gl.glEnd();
+  }
+}
+}    // namespace
+
+AttitudeIndicatorPlugin::AttitudeIndicatorPlugin()
+: MapvizPlugin(),
+  config_widget_(new QWidget()),
+  topic_(""),
+  qos_(rmw_qos_profile_default),
+  ui_()
+{
+  ui_.setupUi(config_widget_);
+
+  // Set background white
+  QPalette p(config_widget_->palette());
+  p.setColor(QPalette::Window, Qt::white);
+  config_widget_->setPalette(p);
+  roll_ = pitch_ = yaw_ = 0;
+  topics_.emplace_back("nav_msgs/msg/Odometry");
+  topics_.emplace_back("geometry_msgs/msg/Pose");
+  topics_.emplace_back("sensor_msgs/msg/Imu");
+  // Set status text red
+  QPalette p3(ui_.status->palette());
+  p3.setColor(QPalette::Text, Qt::red);
+  ui_.status->setPalette(p3);
+
+  placer_.setRect(QRect(0, 0, 100, 100));
+  QObject::connect(
+    this, SIGNAL(VisibleChanged(bool)),
+    &placer_, SLOT(setVisible(bool)));
+
+  QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
+  QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+}
+
+void AttitudeIndicatorPlugin::SelectTopic()
+{
+  auto [topic, qos] = SelectTopicDialog::selectTopic(
+    TopicSource(),
+    topics_,
+    qos_);
+
+  if (!topic.empty()) {
+    connectCallback(topic, qos);
+  }
+}
+
+void AttitudeIndicatorPlugin::TopicEdited()
+{
+  // Sanitize the user input before setting it
+  std::string topic = ui_.topic->text().trimmed().toStdString();
+  connectCallback(topic, qos_);
+}
+
+void AttitudeIndicatorPlugin::connectCallback(
+  const std::string & topic,
+  const rmw_qos_profile_t & qos)
+{
+  ui_.topic->setText(QString::fromStdString(topic));
+  if ((topic != topic_) || !qosEqual(qos, qos_)) {
+    initialized_ = true;
+    PrintWarning("No messages received.");
+
+    odom_sub_.reset();
+    imu_sub_.reset();
+    pose_sub_.reset();
+
+    topic_ = topic;
+    qos_ = qos;
+    if (!topic_.empty()) {
+      // Subscribe() delivers each message to the matching handle*() method
+      // on the GUI thread, where plugin state may be touched without locking.
+      Subscribe<nav_msgs::msg::Odometry>(
+        topic_, qos, odom_sub_,
+        [this](nav_msgs::msg::Odometry::ConstSharedPtr odometry) {
+          handleOdometry(odometry);
+        });
+      Subscribe<sensor_msgs::msg::Imu>(
+        topic_, qos, imu_sub_,
+        [this](sensor_msgs::msg::Imu::ConstSharedPtr imu) {handleImu(imu);});
+      Subscribe<geometry_msgs::msg::Pose>(
+        topic_, qos, pose_sub_,
+        [this](geometry_msgs::msg::Pose::ConstSharedPtr pose) {
+          handlePose(pose);
+        });
+
+      RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
     }
   }
+}
 
-  void AttitudeIndicatorPlugin::TopicEdited()
-  {
-    // Sanitize the user input before setting it
-    std::string topic = ui_.topic->text().trimmed().toStdString();
-    connectCallback(topic, qos_);
-  }
+void AttitudeIndicatorPlugin::handleOdometry(
+  const nav_msgs::msg::Odometry::ConstSharedPtr odometry)
+{
+  applyAttitudeOrientation(odometry->pose.pose.orientation);
+}
 
-  void AttitudeIndicatorPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
-  {
-    ui_.topic->setText(QString::fromStdString(topic));
-    if ((topic != topic_) || !qosEqual(qos, qos_))
-    {
-      initialized_ = true;
-      PrintWarning("No messages received.");
+void AttitudeIndicatorPlugin::handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu)
+{
+  applyAttitudeOrientation(imu->orientation);
+}
 
-      odom_sub_.reset();
-      imu_sub_.reset();
-      pose_sub_.reset();
+void AttitudeIndicatorPlugin::handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose)
+{
+  applyAttitudeOrientation(pose->orientation);
+}
 
-      topic_ = topic;
-      qos_ = qos;
-      if (!topic_.empty())
-      {
-        // Subscribe() delivers each message to the matching handle*() method
-        // on the GUI thread, where plugin state may be touched without locking.
-        Subscribe<nav_msgs::msg::Odometry>(
-            topic_, qos, odom_sub_,
-            [this](nav_msgs::msg::Odometry::ConstSharedPtr odometry) {
-              handleOdometry(odometry);
-            });
-        Subscribe<sensor_msgs::msg::Imu>(
-            topic_, qos, imu_sub_,
-            [this](sensor_msgs::msg::Imu::ConstSharedPtr imu) { handleImu(imu); });
-        Subscribe<geometry_msgs::msg::Pose>(
-            topic_, qos, pose_sub_,
-            [this](geometry_msgs::msg::Pose::ConstSharedPtr pose) {
-              handlePose(pose);
-            });
+void AttitudeIndicatorPlugin::applyAttitudeOrientation(
+  const geometry_msgs::msg::Quaternion & orientation)
+{
+  tf2::Quaternion attitude_orientation(
+    orientation.x,
+    orientation.y,
+    orientation.z
+    ,
+    orientation.w);
 
-        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
-      }
-    }
-  }
+  tf2::Matrix3x3 m(attitude_orientation);
+  m.getRPY(roll_, pitch_, yaw_);
+  roll_ = roll_ * (180.0 / M_PI);
+  pitch_ = pitch_ * (180.0 / M_PI);
+  yaw_ = yaw_ * (180.0 / M_PI);
 
-  void AttitudeIndicatorPlugin::handleOdometry(
-    const nav_msgs::msg::Odometry::ConstSharedPtr odometry)
-  {
-    applyAttitudeOrientation(odometry->pose.pose.orientation);
-  }
+  canvas_->update();
+}
 
-  void AttitudeIndicatorPlugin::handleImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu)
-  {
-    applyAttitudeOrientation(imu->orientation);
-  }
+void AttitudeIndicatorPlugin::PrintError(const std::string & message)
+{
+  PrintErrorHelper(ui_.status, message);
+}
 
-  void AttitudeIndicatorPlugin::handlePose(const geometry_msgs::msg::Pose::ConstSharedPtr pose)
-  {
-    applyAttitudeOrientation(pose->orientation);
-  }
-
-  void AttitudeIndicatorPlugin::applyAttitudeOrientation(
-    const geometry_msgs::msg::Quaternion &orientation)
-  {
-    tf2::Quaternion attitude_orientation(
-      orientation.x,
-      orientation.y,
-      orientation.z
-,
-      orientation.w);
-
-    tf2::Matrix3x3 m(attitude_orientation);
-    m.getRPY(roll_, pitch_, yaw_);
-    roll_ = roll_ * (180.0 / M_PI);
-    pitch_ = pitch_ * (180.0 / M_PI);
-    yaw_ = yaw_ * (180.0 / M_PI);
-
-    canvas_->update();
-  }
-
-  void AttitudeIndicatorPlugin::PrintError(const std::string& message)
-  {
-    PrintErrorHelper(ui_.status, message);
-  }
-
-  void AttitudeIndicatorPlugin::PrintInfo(const std::string& message)
-  {
-    PrintInfoHelper(ui_.status, message);
+void AttitudeIndicatorPlugin::PrintInfo(const std::string & message)
+{
+  PrintInfoHelper(ui_.status, message);
 
 }
 
-  void AttitudeIndicatorPlugin::PrintWarning(const std::string& message)
-  {
-    PrintWarningHelper(ui_.status, message);
+void AttitudeIndicatorPlugin::PrintWarning(const std::string & message)
+{
+  PrintWarningHelper(ui_.status, message);
+}
+
+QWidget * AttitudeIndicatorPlugin::GetConfigWidget(QWidget * parent)
+{
+  config_widget_->setParent(parent);
+  return config_widget_;
+}
+
+bool AttitudeIndicatorPlugin::Initialize(QOpenGLWidget * canvas)
+{
+  initialized_ = true;
+  canvas_ = canvas;
+  canvas->makeCurrent();
+  initializeOpenGLFunctions();
+  canvas->doneCurrent();
+  placer_.setContainer(canvas_);
+  startTimer(50);
+  return true;
+}
+
+void AttitudeIndicatorPlugin::Shutdown()
+{
+  placer_.setContainer(nullptr);
+}
+
+void AttitudeIndicatorPlugin::timerEvent(QTimerEvent *)
+{
+  canvas_->update();
+}
+
+void AttitudeIndicatorPlugin::drawBall()
+{
+  GLdouble eqn[4] = {0.0, 0.0, 1.0, 0.0};
+  GLdouble eqn2[4] = {0.0, 0.0, -1.0, 0.0};
+  GLdouble eqn4[4] = {0.0, 0.0, 1.0, 0.05};
+  GLdouble eqn3[4] = {0.0, 0.0, -1.0, 0.05};
+
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+
+  glPushMatrix();
+
+  glColor3f(0.392156863f, 0.584313725f, 0.929411765f);
+  glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+
+  glRotated(roll_, 0.0, 1.0, 0.0);
+  glRotated(yaw_, 0.0, 0.0, 1.0);
+  glClipPlane(GL_CLIP_PLANE1, eqn2);
+  glEnable(GL_CLIP_PLANE1);
+  DrawSolidSphere(*this, .8, 20, 16);
+  glDisable(GL_CLIP_PLANE1);
+  glPopMatrix();
+
+  glPushMatrix();
+
+  glLineWidth(2);
+  glColor3f(1.0f, 1.0f, 1.0f);
+  glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+  glRotated(roll_, 0.0, 1.0, 0.0);
+  glRotated(yaw_, 0.0, 0.0, 1.0);
+  glClipPlane(GL_CLIP_PLANE3, eqn4);
+  glClipPlane(GL_CLIP_PLANE2, eqn3);
+  glEnable(GL_CLIP_PLANE2);
+  glEnable(GL_CLIP_PLANE3);
+  DrawWireSphere(*this, .801, 10, 16);
+  glDisable(GL_CLIP_PLANE2);
+  glDisable(GL_CLIP_PLANE3);
+  glPopMatrix();
+
+  glPushMatrix();
+  glColor3f(0.62745098f, 0.321568627f, 0.176470588f);
+  glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
+  glRotated(roll_, 0.0, 1.0, 0.0);
+  glRotated(yaw_, 0.0, 0.0, 1.0);
+  glClipPlane(GL_CLIP_PLANE0, eqn);
+  glEnable(GL_CLIP_PLANE0);
+  DrawSolidSphere(*this, .8, 20, 16);
+  glDisable(GL_CLIP_PLANE0);
+  glPopMatrix();
+  glDisable(GL_DEPTH_TEST);
+}
+
+void AttitudeIndicatorPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
+{
+  glPushAttrib(GL_ALL_ATTRIB_BITS);
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(0, canvas_->width(), canvas_->height(), 0, -1.0f, 1.0f);
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+  // Setup coordinate system so that we have a [-1,1]x[1,1] cube on
+  // the screen.
+  QRect rect = placer_.rect();
+  double s_x = rect.width() / 2.0;
+  double s_y = -rect.height() / 2.0;
+  double t_x = rect.right() - s_x;
+  double t_y = rect.top() - s_y;
+
+  double m[16] = {
+    s_x, 0, 0, 0,
+    0, s_y, 0, 0,
+    0, 0, 1.0, 0,
+    t_x, t_y, 0, 1.0};
+  glMultMatrixd(m);
+
+  // Placed in a separate function so that we don't forget to pop the
+  // GL state back.
+
+  drawBackground();
+  drawBall();
+
+  drawPanel();
+
+  glPopMatrix();
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPopAttrib();
+  PrintInfo("OK!");
+}
+
+void AttitudeIndicatorPlugin::drawBackground()
+{
+  glBegin(GL_TRIANGLES);
+  glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+
+  glVertex2d(-1.0, -1.0);
+  glVertex2d(-1.0, 1.0);
+  glVertex2d(1.0, 1.0);
+
+  glVertex2d(-1.0, -1.0);
+  glVertex2d(1.0, 1.0);
+  glVertex2d(1.0, -1.0);
+
+  glEnd();
+}
+
+void AttitudeIndicatorPlugin::drawPanel()
+{
+  glLineWidth(2);
+
+  glBegin(GL_LINE_STRIP);
+  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+  glVertex2d(-0.9, 0.0);
+  glVertex2d(-0.2, 0.0);
+
+  int divisions = 20;
+  for (int i = 1; i < divisions; i++) {
+    glVertex2d(
+      -0.2 * std::cos(M_PI * i / divisions),
+      -0.2 * std::sin(M_PI * i / divisions));
   }
 
-  QWidget* AttitudeIndicatorPlugin::GetConfigWidget(QWidget* parent)
-  {
-    config_widget_->setParent(parent);
-    return config_widget_;
+  glVertex2f(0.2, 0.0);
+  glVertex2f(0.9, 0.0);
+  glEnd();
+
+  glBegin(GL_LINES);
+  glVertex2f(0.0, -0.2f);
+  glVertex2f(0.0, -0.9f);
+  glEnd();
+}
+
+void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node & node, const std::string & /*path*/)
+{
+  LoadQosConfig(node, qos_);
+
+  if (node["topic"]) {
+    std::string topic = node["topic"].as<std::string>();
+    ui_.topic->setText(topic.c_str());
   }
 
-  bool AttitudeIndicatorPlugin::Initialize(QOpenGLWidget* canvas)
-  {
-    initialized_ = true;
-    canvas_ = canvas;
-    canvas->makeCurrent();
-    initializeOpenGLFunctions();
-    canvas->doneCurrent();
-    placer_.setContainer(canvas_);
-    startTimer(50);
-    return true;
+  QRect current = placer_.rect();
+  int x = current.x();
+  int y = current.y();
+  int width = current.width();
+  int height = current.height();
+
+  if (node["x"]) {
+    x = node["x"].as<int>();
   }
 
-  void AttitudeIndicatorPlugin::Shutdown()
-  {
-    placer_.setContainer(nullptr);
+  if (node["y"]) {
+    y = node["y"].as<int>();
   }
 
-  void AttitudeIndicatorPlugin::timerEvent(QTimerEvent*)
-  {
-    canvas_->update();
+  if (node["width"]) {
+    width = node["width"].as<int>();
   }
 
-  void AttitudeIndicatorPlugin::drawBall()
-  {
-    GLdouble eqn[4] = {0.0, 0.0, 1.0, 0.0};
-    GLdouble eqn2[4] = {0.0, 0.0, -1.0, 0.0};
-    GLdouble eqn4[4] = {0.0, 0.0, 1.0, 0.05};
-    GLdouble eqn3[4] = {0.0, 0.0, -1.0, 0.05};
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    glPushMatrix();
-
-    glColor3f(0.392156863f, 0.584313725f, 0.929411765f);
-    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
-
-    glRotated(roll_, 0.0, 1.0, 0.0);
-    glRotated(yaw_, 0.0, 0.0, 1.0);
-    glClipPlane(GL_CLIP_PLANE1, eqn2);
-    glEnable(GL_CLIP_PLANE1);
-    DrawSolidSphere(*this, .8, 20, 16);
-    glDisable(GL_CLIP_PLANE1);
-    glPopMatrix();
-
-    glPushMatrix();
-
-    glLineWidth(2);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
-    glRotated(roll_, 0.0, 1.0, 0.0);
-    glRotated(yaw_, 0.0, 0.0, 1.0);
-    glClipPlane(GL_CLIP_PLANE3, eqn4);
-    glClipPlane(GL_CLIP_PLANE2, eqn3);
-    glEnable(GL_CLIP_PLANE2);
-    glEnable(GL_CLIP_PLANE3);
-    DrawWireSphere(*this, .801, 10, 16);
-    glDisable(GL_CLIP_PLANE2);
-    glDisable(GL_CLIP_PLANE3);
-    glPopMatrix();
-
-    glPushMatrix();
-    glColor3f(0.62745098f, 0.321568627f, 0.176470588f);
-    glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
-    glRotated(roll_, 0.0, 1.0, 0.0);
-    glRotated(yaw_, 0.0, 0.0, 1.0);
-    glClipPlane(GL_CLIP_PLANE0, eqn);
-    glEnable(GL_CLIP_PLANE0);
-    DrawSolidSphere(*this, .8, 20, 16);
-    glDisable(GL_CLIP_PLANE0);
-    glPopMatrix();
-    glDisable(GL_DEPTH_TEST);
+  if (node["height"]) {
+    height = node["height"].as<int>();
   }
 
-  void AttitudeIndicatorPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
-  {
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, canvas_->width(), canvas_->height(), 0, -1.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    // Setup coordinate system so that we have a [-1,1]x[1,1] cube on
-    // the screen.
-    QRect rect = placer_.rect();
-    double s_x = rect.width() / 2.0;
-    double s_y = -rect.height() / 2.0;
-    double t_x = rect.right() - s_x;
-    double t_y = rect.top() - s_y;
+  QRect position(x, y, width, height);
+  placer_.setRect(position);
 
-    double m[16] = {
-        s_x, 0, 0, 0,
-        0, s_y, 0, 0,
-        0, 0, 1.0, 0,
-        t_x, t_y, 0, 1.0};
-    glMultMatrixd(m);
+  TopicEdited();
+}
 
-    // Placed in a separate function so that we don't forget to pop the
-    // GL state back.
+void AttitudeIndicatorPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & /*path*/)
+{
+  emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
 
-    drawBackground();
-    drawBall();
+  QRect position = placer_.rect();
 
-    drawPanel();
+  emitter << YAML::Key << "x" << YAML::Value << position.x();
+  emitter << YAML::Key << "y" << YAML::Value << position.y();
+  emitter << YAML::Key << "width" << YAML::Value << position.width();
+  emitter << YAML::Key << "height" << YAML::Value << position.height();
 
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopAttrib();
-    PrintInfo("OK!");
-  }
-
-  void AttitudeIndicatorPlugin::drawBackground()
-  {
-    glBegin(GL_TRIANGLES);
-    glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-
-    glVertex2d(-1.0, -1.0);
-    glVertex2d(-1.0, 1.0);
-    glVertex2d(1.0, 1.0);
-
-    glVertex2d(-1.0, -1.0);
-    glVertex2d(1.0, 1.0);
-    glVertex2d(1.0, -1.0);
-
-    glEnd();
-  }
-
-  void AttitudeIndicatorPlugin::drawPanel()
-  {
-    glLineWidth(2);
-
-    glBegin(GL_LINE_STRIP);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-    glVertex2d(-0.9, 0.0);
-    glVertex2d(-0.2, 0.0);
-
-    int divisions = 20;
-    for (int i = 1; i < divisions; i++)
-    {
-      glVertex2d(-0.2 * std::cos(M_PI * i / divisions),
-                 -0.2 * std::sin(M_PI * i / divisions));
-    }
-
-    glVertex2f(0.2, 0.0);
-    glVertex2f(0.9, 0.0);
-    glEnd();
-
-    glBegin(GL_LINES);
-    glVertex2f(0.0, -0.2f);
-    glVertex2f(0.0, -0.9f);
-    glEnd();
-  }
-
-  void AttitudeIndicatorPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
-  {
-    LoadQosConfig(node, qos_);
-
-    if (node["topic"])
-    {
-      std::string topic = node["topic"].as<std::string>();
-      ui_.topic->setText(topic.c_str());
-    }
-
-    QRect current = placer_.rect();
-    int x = current.x();
-    int y = current.y();
-    int width = current.width();
-    int height = current.height();
-
-    if (node["x"])
-    {
-      x = node["x"].as<int>();
-    }
-
-    if (node["y"])
-    {
-      y = node["y"].as<int>();
-    }
-
-    if (node["width"])
-    {
-      width = node["width"].as<int>();
-    }
-
-    if (node["height"])
-    {
-      height = node["height"].as<int>();
-    }
-
-    QRect position(x, y, width, height);
-    placer_.setRect(position);
-
-    TopicEdited();
-  }
-
-  void AttitudeIndicatorPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
-  {
-    emitter << YAML::Key << "topic" << YAML::Value << ui_.topic->text().toStdString();
-
-    QRect position = placer_.rect();
-
-    emitter << YAML::Key << "x" << YAML::Value << position.x();
-    emitter << YAML::Key << "y" << YAML::Value << position.y();
-    emitter << YAML::Key << "width" << YAML::Value << position.width();
-    emitter << YAML::Key << "height" << YAML::Value << position.height();
-
-    SaveQosConfig(emitter, qos_);
-  }
+  SaveQosConfig(emitter, qos_);
+}
 }   // namespace mapviz_plugins

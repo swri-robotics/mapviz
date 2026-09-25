@@ -40,39 +40,40 @@
 
 namespace multires_image
 {
-  class TileSet
-  {
-  public:
-    explicit TileSet(const std::string& geofile);
-    TileSet(const std::string& geofile, const std::string extension);
-    explicit TileSet(const swri_transform_util::GeoReference& georeference);
-    TileSet(const swri_transform_util::GeoReference& georeference,
-            const std::string extension);
+class TileSet
+{
+public:
+  explicit TileSet(const std::string & geofile);
+  TileSet(const std::string & geofile, const std::string extension);
+  explicit TileSet(const swri_transform_util::GeoReference & georeference);
+  TileSet(
+    const swri_transform_util::GeoReference & georeference,
+    const std::string extension);
 
-    ~TileSet();
+  ~TileSet();
 
-    bool Load();
+  bool Load();
 
-    int LayerCount() { return m_layerCount; }
-    int TileSize() { return m_tileSize; }
+  int LayerCount() {return m_layerCount;}
+  int TileSize() {return m_tileSize;}
 
-    swri_transform_util::GeoReference& GeoReference() { return m_geo; }
+  swri_transform_util::GeoReference & GeoReference() {return m_geo;}
 
-    TileSetLayer* GetLayer(int layer) { return m_layers[layer]; }
+  TileSetLayer * GetLayer(int layer) {return m_layers[layer];}
 
-  private:
-    swri_transform_util::GeoReference  m_geo;
-    int                           m_tileSize{};
-    int                           m_width{};
-    int                           m_height{};
+private:
+  swri_transform_util::GeoReference m_geo;
+  int m_tileSize{};
+  int m_width{};
+  int m_height{};
 
-    std::string                   m_cacheDir;
-    std::string                   m_extension;
+  std::string m_cacheDir;
+  std::string m_extension;
 
-    int                           m_layerCount{};
+  int m_layerCount{};
 
-    std::vector<TileSetLayer*>    m_layers;
-  };
+  std::vector<TileSetLayer *> m_layers;
+};
 }
 
 #endif  // MULTIRES_IMAGE_TILE_SET_HPP_

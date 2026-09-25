@@ -45,12 +45,14 @@ namespace mapviz
 class MapvizApplication : public QApplication
 {
 public:
-  MapvizApplication(int &argc, char** argv,
-      rclcpp::Logger logger = rclcpp::get_logger("mapviz::MapvizApplication"));
+  MapvizApplication(
+    int & argc, char ** argv,
+    rclcpp::Logger logger = rclcpp::get_logger("mapviz::MapvizApplication"));
 
-  void setLogger(const rclcpp::Logger& logger);
+  void setLogger(const rclcpp::Logger & logger);
+
 private:
-  bool notify(QObject* receiver, QEvent* event) override;
+  bool notify(QObject * receiver, QEvent * event) override;
 
   rclcpp::Logger logger_;
 };

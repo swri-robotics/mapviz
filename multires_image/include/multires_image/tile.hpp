@@ -46,63 +46,65 @@
 
 namespace multires_image
 {
-  class Tile : protected QOpenGLFunctions_1_1
-  {
-  public:
-    Tile(
-      const std::string& path, int column, int row, int level,
-      const tf2::Vector3& topLeft,
-      const tf2::Vector3& topRight,
-      const tf2::Vector3& bottomLeft,
-      const tf2::Vector3& bottomRight);
-    ~Tile() = default;
+class Tile : protected QOpenGLFunctions_1_1
+{
+public:
+  Tile(
+    const std::string & path, int column, int row, int level,
+    const tf2::Vector3 & topLeft,
+    const tf2::Vector3 & topRight,
+    const tf2::Vector3 & bottomLeft,
+    const tf2::Vector3 & bottomRight);
+  ~Tile() = default;
 
-    bool Exists();
-    bool Failed() const { return m_failed; }
-    bool TextureLoaded() const { return m_textureLoaded; }
-    const QImage& Image() const { return m_image; }
-    int64_t TileID() const { return m_tileId; }
-    int Layer() const { return m_level; }
-    int MemorySize() const { return m_memorySize; }
-    int Row() const { return m_row; }
-    int Column() const { return m_column; }
+  bool Exists();
+  bool Failed() const {return m_failed;}
+  bool TextureLoaded() const {return m_textureLoaded;}
+  const QImage & Image() const {return m_image;}
+  int64_t TileID() const {return m_tileId;}
+  int Layer() const {return m_level;}
+  int MemorySize() const {return m_memorySize;}
+  int Row() const {return m_row;}
+  int Column() const {return m_column;}
 
-    bool LoadImageToMemory(bool gl = true);
-    void UnloadImage();
+  bool LoadImageToMemory(bool gl = true);
+  void UnloadImage();
 
-    bool LoadTexture();
-    void UnloadTexture();
+  bool LoadTexture();
+  void UnloadTexture();
 
-    void Draw();
+  void Draw();
 
-    void Transform(const swri_transform_util::Transform& transform);
-    void Transform(const swri_transform_util::Transform& transform, const swri_transform_util::Transform& offset_tf);
+  void Transform(const swri_transform_util::Transform & transform);
+  void Transform(
+    const swri_transform_util::Transform & transform,
+    const swri_transform_util::Transform & offset_tf);
 
-  private:
-    const std::string   m_path;
-    const int           m_column;
-    const int           m_row;
-    const int           m_level;
+private:
+  const std::string m_path;
+  const int m_column;
+  const int m_row;
+  const int m_level;
 
-    tf2::Vector3           m_top_left;
-    tf2::Vector3           m_top_right;
-    tf2::Vector3           m_bottom_right;
-    tf2::Vector3           m_bottom_left;
+  tf2::Vector3 m_top_left;
+  tf2::Vector3 m_top_right;
+  tf2::Vector3 m_bottom_right;
+  tf2::Vector3 m_bottom_left;
 
-    tf2::Vector3           m_transformed_top_left;
-    tf2::Vector3           m_transformed_top_right;
-    tf2::Vector3           m_transformed_bottom_right;
-    tf2::Vector3           m_transformed_bottom_left;
+  tf2::Vector3 m_transformed_top_left;
+  tf2::Vector3 m_transformed_top_right;
+  tf2::Vector3 m_transformed_bottom_right;
+  tf2::Vector3 m_transformed_bottom_left;
 
-    bool                m_failed;
-    bool                m_textureLoaded;
-    int                 m_dimension;
-    int64_t             m_tileId;
-    int                 m_memorySize;
-    QImage              m_image;
-    QMutex              m_mutex;
-    std::unique_ptr<QOpenGLTexture> m_texture;
-  };
+  bool m_failed;
+  bool m_textureLoaded;
+  int m_dimension;
+  int64_t m_tileId;
+  int m_memorySize;
+  QImage m_image;
+  QMutex m_mutex;
+  std::unique_ptr<QOpenGLTexture> m_texture;
+};
 }
 
 #endif  // MULTIRES_IMAGE_TILE_HPP_

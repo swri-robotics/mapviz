@@ -33,16 +33,16 @@
 
 namespace mapviz
 {
-ColorButton::ColorButton(QWidget *parent)
-  :
-  QPushButton(parent)
+ColorButton::ColorButton(QWidget * parent)
+: QPushButton(parent)
 {
   setColor(Qt::black);
-  QObject::connect(this, SIGNAL(clicked(bool)),
-                   this, SLOT(handleClicked()));
+  QObject::connect(
+    this, SIGNAL(clicked(bool)),
+    this, SLOT(handleClicked()));
 }
 
-void ColorButton::setColor(const QColor &color)
+void ColorButton::setColor(const QColor & color)
 {
   if (!color.isValid() || color == color_) {
     return;

@@ -57,7 +57,7 @@ namespace mapviz_plugins
 {
 class PlaceableWindowProxy : public QObject
 {
-Q_OBJECT
+  Q_OBJECT
 
 public:
   PlaceableWindowProxy();
@@ -75,7 +75,7 @@ public Q_SLOTS:
   void setVisible(bool visible);
 
 protected:
-  bool eventFilter(QObject *object, QEvent *event) override;
+  bool eventFilter(QObject * object, QEvent * event) override;
 
   bool handleMousePress(QMouseEvent *);
   bool handleMouseRelease(QMouseEvent *);
@@ -87,15 +87,15 @@ protected:
   void rectResize(int dx, int dy);
   void winResize(const QSize &);
 
-  QRectF resizeHelper(const QRectF &rect,
-                      const QPointF &p1,
-                      const QPointF &p2,
-                      const QPointF &p3) const;
-
-
+  QRectF resizeHelper(
+    const QRectF & rect,
+    const QPointF & p1,
+    const QPointF & p2,
+    const QPointF & p3) const;
 
 private:
-  enum State {
+  enum State
+  {
     INACTIVE = 0,
     MOVE_ALL,
     MOVE_TOP_LEFT,
@@ -104,7 +104,7 @@ private:
     MOVE_TOP_RIGHT
   };
 
-  QWidget *target_;
+  QWidget * target_;
   bool visible_;
 
   bool has_cursor_;
@@ -116,7 +116,7 @@ private:
 
   int win_resize_timer_;
 
-  State getNextState(const QPointF &pt) const;
+  State getNextState(const QPointF & pt) const;
 };  // class PlaceableWindowProxy
 }  // namespace mapviz_plugins
 #endif  // MAPVIZ_PLUGINS__PLACEABLE_WINDOW_PROXY_HPP_

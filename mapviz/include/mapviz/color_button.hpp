@@ -52,21 +52,21 @@ class ColorButton : public QPushButton
 
   QColor color_;
 
- public:
-  explicit ColorButton(QWidget *parent = 0);
+public:
+  explicit ColorButton(QWidget * parent = 0);
 
-  const QColor& color() const { return color_; }
+  const QColor & color() const {return color_;}
 
- Q_SIGNALS:
+Q_SIGNALS:
   // Emitted when the color is changed by user interaction.
-  void colorEdited(const QColor &color);
+  void colorEdited(const QColor & color);
   // Emitted when the color is changed by user interaction or programatically.
-  void colorChanged(const QColor &color);
+  void colorChanged(const QColor & color);
 
-  public Q_SLOTS:
-  void setColor(const QColor &color);
+public Q_SLOTS:
+  void setColor(const QColor & color);
 
-  private Q_SLOTS:
+private Q_SLOTS:
   void handleClicked();
 };  // class ColorButton
 }  // namespace mapviz

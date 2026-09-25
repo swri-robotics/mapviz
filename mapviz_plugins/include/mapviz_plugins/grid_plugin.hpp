@@ -62,25 +62,25 @@ public:
   GridPlugin();
   ~GridPlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
 protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst);
+  void Transform(std::list<tf2::Vector3> & src, std::list<tf2::Vector3> & dst);
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
 protected Q_SLOTS:
   void SelectFrame();
@@ -95,7 +95,7 @@ protected Q_SLOTS:
 
 private:
   Ui::grid_config ui_;
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   double alpha_;
 

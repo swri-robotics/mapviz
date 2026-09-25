@@ -60,23 +60,23 @@ public:
   RobotImagePlugin();
   ~RobotImagePlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
 protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
 protected Q_SLOTS:
   void SelectFile();
@@ -93,7 +93,7 @@ protected Q_SLOTS:
 
 private:
   Ui::robot_image_config ui_;
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   double width_;  // image width, if robot frame is x-forward this corresponds to robot length
   double height_;   // image height, corresponds to robot width
@@ -102,7 +102,7 @@ private:
   double image_ratio_;
 
   std::string filename_;
-  QImage      image_;
+  QImage image_;
   int dimension_;
   int texture_id_;
   bool texture_loaded_;

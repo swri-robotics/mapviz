@@ -79,18 +79,20 @@ namespace mapviz
  * builds.  It must be used from a non-static member function of a MapvizPlugin
  * (it relies on thread() and Logger()).
  */
-#define MAPVIZ_ASSERT_GUI_THREAD()                                             \
-  do {                                                                         \
-    if (QThread::currentThread() != this->thread()) {                          \
-      RCLCPP_ERROR(this->Logger(),                                             \
-        "%s: called off the GUI thread; mapviz plugin state is not "           \
-        "thread-safe and must only be accessed on the GUI thread", __func__);  \
-      Q_ASSERT(!"mapviz: this function must run on the GUI thread");           \
-    }                                                                          \
+#define MAPVIZ_ASSERT_GUI_THREAD() \
+  do { \
+    if (QThread::currentThread() != this->thread()) { \
+      RCLCPP_ERROR( \
+        this->Logger(), \
+        "%s: called off the GUI thread; mapviz plugin state is not " \
+        "thread-safe and must only be accessed on the GUI thread", __func__); \
+      Q_ASSERT(!"mapviz: this function must run on the GUI thread"); \
+    } \
   } while (0)
 class MapvizPlugin : public QObject
 {
   Q_OBJECT
+
 public:
   ~MapvizPlugin() override = default;
 
@@ -119,10 +121,10 @@ public:
    */
 
   virtual bool Initialize(
-      std::shared_ptr<tf2_ros::Buffer> tf_buffer,
-      std::shared_ptr<tf2_ros::TransformListener> tf_listener,
-      swri_transform_util::TransformManagerPtr tf_manager,
-      QOpenGLWidget* canvas)
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer,
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener,
+    swri_transform_util::TransformManagerPtr tf_manager,
+    QOpenGLWidget * canvas)
   {
     tf_buf_ = tf_buffer;
     tf_ = tf_listener;
@@ -142,15 +144,15 @@ public:
     }
   }
 
-  void SetName(const std::string& name) { name_ = name; }
+  void SetName(const std::string & name) {name_ = name;}
 
-  std::string Name() const { return name_; }
+  std::string Name() const {return name_;}
 
-  void SetType(const std::string& type) { type_ = type; }
+  void SetType(const std::string & type) {type_ = type;}
 
-  std::string Type() const { return type_; }
+  std::string Type() const {return type_;}
 
-  int DrawOrder() const { return draw_order_; }
+  int DrawOrder() const {return draw_order_;}
 
   void SetDrawOrder(int order)
   {
@@ -160,7 +162,7 @@ public:
     }
   }
 
-  virtual void SetNode(rclcpp::Node& node)
+  virtual void SetNode(rclcpp::Node & node)
   {
     // node_ = node;
     node_ = node.shared_from_this();
@@ -180,7 +182,7 @@ public:
     }
   }
 
-  void PaintPlugin(QPainter* painter, double x, double y, double scale)
+  void PaintPlugin(QPainter * painter, double x, double y, double scale)
   {
     MAPVIZ_ASSERT_GUI_THREAD();
     if (visible_ && initialized_) {
@@ -194,7 +196,7 @@ public:
     }
   }
 
-  void SetTargetFrame(const std::string& frame_id)
+  void SetTargetFrame(const std::string & frame_id)
   {
     MAPVIZ_ASSERT_GUI_THREAD();
     if (frame_id != target_frame_) {
@@ -208,7 +210,7 @@ public:
     }
   }
 
-  bool Visible() const { return visible_; }
+  bool Visible() const {return visible_;}
 
   void SetVisible(bool visible)
   {
@@ -219,16 +221,17 @@ public:
   }
 
   bool GetTransform(
-    const rclcpp::Time& stamp,
-    swri_transform_util::Transform& transform,
+    const rclcpp::Time & stamp,
+    swri_transform_util::Transform & transform,
     bool use_latest_transforms = true)
   {
     return GetTransform(source_frame_, stamp, transform, use_latest_transforms);
   }
 
-  bool GetTransform(const std::string& source,
-    const rclcpp::Time& stamp,
-    swri_transform_util::Transform& transform,
+  bool GetTransform(
+    const std::string & source,
+    const rclcpp::Time & stamp,
+    swri_transform_util::Transform & transform,
     bool use_latest_transforms = true)
   {
     if (!initialized_) {
@@ -240,9 +243,7 @@ public:
 
     if (use_latest_transforms_ && use_latest_transforms) {
       time = tf2::TimePointZero;
-    }
-    else
-    {
+    } else {
       time = tf2::timeFromSec(stamp.seconds());
     }
 
@@ -256,8 +257,7 @@ public:
     } else if (time != tf2::TimePointZero) {
       rclcpp::Duration elapsed = now - stamp;
 
-      if (elapsed.seconds() < 0.1)
-      {
+      if (elapsed.seconds() < 0.1) {
         // If the stamped transform failed because it is too recent, find the
         // most recent transform in the cache instead.
         if (tf_manager_->GetTransform(
@@ -279,25 +279,25 @@ public:
    * DrawPlugin()/PaintPlugin(), these assert the GUI thread on behalf of the
    * plugin's overrides, which read and write widgets.
    */
-  void LoadConfigPlugin(const YAML::Node& load, const std::string& path)
+  void LoadConfigPlugin(const YAML::Node & load, const std::string & path)
   {
     MAPVIZ_ASSERT_GUI_THREAD();
     LoadConfig(load, path);
   }
 
-  void SaveConfigPlugin(YAML::Emitter& emitter, const std::string& path)
+  void SaveConfigPlugin(YAML::Emitter & emitter, const std::string & path)
   {
     MAPVIZ_ASSERT_GUI_THREAD();
     SaveConfig(emitter, path);
   }
 
-  virtual QWidget* GetConfigWidget(QWidget* /* parent */) { return nullptr; }
+  virtual QWidget * GetConfigWidget(QWidget * /* parent */) {return nullptr;}
 
-  virtual void PrintError(const std::string& message) = 0;
-  virtual void PrintInfo(const std::string& message) = 0;
-  virtual void PrintWarning(const std::string& message) = 0;
+  virtual void PrintError(const std::string & message) = 0;
+  virtual void PrintInfo(const std::string & message) = 0;
+  virtual void PrintWarning(const std::string & message) = 0;
 
-  void SetIcon(IconWidget* icon) { icon_ = icon; }
+  void SetIcon(IconWidget * icon) {icon_ = icon;}
 
   void PrintMeasurements()
   {
@@ -308,16 +308,16 @@ public:
   }
 
   void PrintErrorHelper(
-    QLabel *status_label,
-    const std::string& message,
+    QLabel * status_label,
+    const std::string & message,
     double throttle = 0.0);
   void PrintInfoHelper(
-    QLabel *status_label,
-    const std::string& message,
+    QLabel * status_label,
+    const std::string & message,
     double throttle = 0.0);
   void PrintWarningHelper(
-    QLabel *status_label,
-    const std::string& message,
+    QLabel * status_label,
+    const std::string & message,
     double throttle = 0.0);
 
 public Q_SLOTS:
@@ -335,10 +335,9 @@ public Q_SLOTS:
 Q_SIGNALS:
   void DrawOrderChanged(int draw_order);
   void SizeChanged();
-  void TargetFrameChanged(const std::string& target_frame);
+  void TargetFrameChanged(const std::string & target_frame);
   void UseLatestTransformsChanged(bool use_latest_transforms);
   void VisibleChanged(bool visible);
-
 
 protected:
   /**
@@ -359,13 +358,14 @@ protected:
    * Draws on the Mapviz canvas using a QPainter; this is called after Draw().
    * You only need to implement this if you're actually using a QPainter.
    */
-  virtual void Paint(QPainter* /* painter */, double /* x */,
-                     double /* y */, double /* scale */) {}
+  virtual void Paint(
+    QPainter * /* painter */, double /* x */,
+    double /* y */, double /* scale */) {}
 
   virtual void Transform() = 0;
 
-  virtual void LoadConfig(const YAML::Node& load, const std::string& path) = 0;
-  virtual void SaveConfig(YAML::Emitter& emitter, const std::string& path) = 0;
+  virtual void LoadConfig(const YAML::Node & load, const std::string & path) = 0;
+  virtual void SaveConfig(YAML::Emitter & emitter, const std::string & path) = 0;
 
   /**
    * Subscribe to @p topic, delivering every message to @p on_gui_thread on the
@@ -379,25 +379,25 @@ protected:
    * The subscription is written into @p out_sub; reset it (or overwrite it via
    * another Subscribe call) to unsubscribe.
    */
-  template <typename MsgT>
+  template<typename MsgT>
   void Subscribe(
-      const std::string& topic,
-      const rmw_qos_profile_t& qos,
-      typename rclcpp::Subscription<MsgT>::SharedPtr& out_sub,
-      std::function<void(typename MsgT::ConstSharedPtr)> on_gui_thread)
+    const std::string & topic,
+    const rmw_qos_profile_t & qos,
+    typename rclcpp::Subscription<MsgT>::SharedPtr & out_sub,
+    std::function<void(typename MsgT::ConstSharedPtr)> on_gui_thread)
   {
     rclcpp::QoS ros_qos(rclcpp::QoSInitialization::from_rmw(qos), qos);
     out_sub = node_->create_subscription<MsgT>(
-        topic, ros_qos,
-        [this, cb = std::move(on_gui_thread)](typename MsgT::ConstSharedPtr msg)
-        {
-          // Runs on the ROS spin thread.  Hand the message to the GUI thread
-          // and return immediately; using 'this' as the invocation context
-          // means Qt discards the event if the plugin is destroyed, and
-          // because teardown runs on the GUI thread there is no race.
-          QMetaObject::invokeMethod(
-              this, [cb, msg]() { cb(msg); }, Qt::QueuedConnection);
-        });
+      topic, ros_qos,
+      [this, cb = std::move(on_gui_thread)](typename MsgT::ConstSharedPtr msg)
+      {
+        // Runs on the ROS spin thread.  Hand the message to the GUI thread
+        // and return immediately; using 'this' as the invocation context
+        // means Qt discards the event if the plugin is destroyed, and
+        // because teardown runs on the GUI thread there is no race.
+        QMetaObject::invokeMethod(
+          this, [cb, msg]() {cb(msg);}, Qt::QueuedConnection);
+      });
   }
 
   /**
@@ -412,26 +412,25 @@ protected:
    * configuration-dependent work belongs in @p on_gui_thread).  Its result is
    * moved into a shared_ptr and marshaled to the GUI thread.
    */
-  template <typename MsgT, typename DecodedT>
+  template<typename MsgT, typename DecodedT>
   void Subscribe(
-      const std::string& topic,
-      const rmw_qos_profile_t& qos,
-      typename rclcpp::Subscription<MsgT>::SharedPtr& out_sub,
-      DecodedT (*decode)(const typename MsgT::ConstSharedPtr&),
-      std::function<void(std::shared_ptr<DecodedT>)> on_gui_thread)
+    const std::string & topic,
+    const rmw_qos_profile_t & qos,
+    typename rclcpp::Subscription<MsgT>::SharedPtr & out_sub,
+    DecodedT (* decode)(const typename MsgT::ConstSharedPtr &),
+    std::function<void(std::shared_ptr<DecodedT>)> on_gui_thread)
   {
     rclcpp::QoS ros_qos(rclcpp::QoSInitialization::from_rmw(qos), qos);
     out_sub = node_->create_subscription<MsgT>(
-        topic, ros_qos,
-        [this, decode, cb = std::move(on_gui_thread)]
-        (typename MsgT::ConstSharedPtr msg)
-        {
-          // Runs on the ROS spin thread.  'decode' may only look at the
-          // message; the decoded result is handed to the GUI thread.
-          auto decoded = std::make_shared<DecodedT>(decode(msg));
-          QMetaObject::invokeMethod(
-              this, [cb, decoded]() { cb(decoded); }, Qt::QueuedConnection);
-        });
+      topic, ros_qos,
+      [this, decode, cb = std::move(on_gui_thread)](typename MsgT::ConstSharedPtr msg)
+      {
+        // Runs on the ROS spin thread.  'decode' may only look at the
+        // message; the decoded result is handed to the GUI thread.
+        auto decoded = std::make_shared<DecodedT>(decode(msg));
+        QMetaObject::invokeMethod(
+          this, [cb, decoded]() {cb(decoded);}, Qt::QueuedConnection);
+      });
   }
 
   /**
@@ -439,8 +438,8 @@ protected:
    * may be called from the GUI thread.  Arguments are forwarded to
    * rclcpp::Node::create_publisher().
    */
-  template <typename MsgT, typename... Args>
-  typename rclcpp::Publisher<MsgT>::SharedPtr Publisher(Args&&... args)
+  template<typename MsgT, typename ... Args>
+  typename rclcpp::Publisher<MsgT>::SharedPtr Publisher(Args &&... args)
   {
     return node_->create_publisher<MsgT>(std::forward<Args>(args)...);
   }
@@ -452,10 +451,10 @@ protected:
   }
 
   /// The current time from the mapviz node's clock.
-  rclcpp::Time Now() const { return node_->now(); }
+  rclcpp::Time Now() const {return node_->now();}
 
   /// The mapviz node's clock.
-  rclcpp::Clock::SharedPtr Clock() const { return node_->get_clock(); }
+  rclcpp::Clock::SharedPtr Clock() const {return node_->get_clock();}
 
   /**
    * Direct access to the underlying node, for APIs the safe helpers above do
@@ -466,7 +465,7 @@ protected:
    * use Subscribe() instead.  For the topic/service selection dialogs, use
    * TopicSource() instead of handing over the node.
    */
-  rclcpp::Node::SharedPtr NodeUnsafe() { return node_; }
+  rclcpp::Node::SharedPtr NodeUnsafe() {return node_;}
 
   /**
    * A restricted view of the node for topic/service discovery (e.g. the
@@ -476,8 +475,8 @@ protected:
   mapviz::TopicSource TopicSource() const
   {
     return {
-      [node = node_] { return node->get_topic_names_and_types(); },
-      [node = node_] { return node->get_service_names_and_types(); },
+      [node = node_] {return node->get_topic_names_and_types();},
+      [node = node_] {return node->get_service_names_and_types();},
       Logger()
     };
   }
@@ -485,8 +484,8 @@ protected:
   bool initialized_;
   bool visible_;
 
-  QOpenGLWidget* canvas_;
-  IconWidget* icon_;
+  QOpenGLWidget * canvas_;
+  IconWidget * icon_;
 
   std::shared_ptr<tf2_ros::Buffer> tf_buf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_;
@@ -501,10 +500,10 @@ protected:
 
   int draw_order_;
 
-  virtual bool Initialize(QOpenGLWidget* canvas) = 0;
+  virtual bool Initialize(QOpenGLWidget * canvas) = 0;
 
-  MapvizPlugin() :
-    initialized_(false),
+  MapvizPlugin()
+  : initialized_(false),
     visible_(true),
     canvas_(nullptr),
     icon_(nullptr),
@@ -516,30 +515,32 @@ protected:
     node_(nullptr)
   {}
 
-  void LoadQosConfig(const YAML::Node& node, rmw_qos_profile_t& qos, const std::string prefix = "") const
+  void LoadQosConfig(
+    const YAML::Node & node, rmw_qos_profile_t & qos,
+    const std::string prefix = "") const
   {
-    if (node[prefix + "qos_depth"])
-    {
+    if (node[prefix + "qos_depth"]) {
       qos.depth = node[prefix + "qos_depth"].as<int>();
     }
 
-    if (node[prefix + "qos_history"])
-    {
+    if (node[prefix + "qos_history"]) {
       qos.history = static_cast<rmw_qos_history_policy_e>(node[prefix + "qos_history"].as<int>());
     }
 
-    if (node[prefix + "qos_reliability"])
-    {
-      qos.reliability = static_cast<rmw_qos_reliability_policy_e>(node[prefix + "qos_reliability"].as<int>());
+    if (node[prefix + "qos_reliability"]) {
+      qos.reliability =
+        static_cast<rmw_qos_reliability_policy_e>(node[prefix + "qos_reliability"].as<int>());
     }
 
-    if (node[prefix + "qos_durability"])
-    {
-      qos.durability = static_cast<rmw_qos_durability_policy_e>(node[prefix + "qos_durability"].as<int>());
+    if (node[prefix + "qos_durability"]) {
+      qos.durability =
+        static_cast<rmw_qos_durability_policy_e>(node[prefix + "qos_durability"].as<int>());
     }
   }
 
-  void SaveQosConfig(YAML::Emitter& emitter, const rmw_qos_profile_t& qos, const std::string prefix = "") const
+  void SaveQosConfig(
+    YAML::Emitter & emitter, const rmw_qos_profile_t & qos,
+    const std::string prefix = "") const
   {
     emitter << YAML::Key << prefix + "qos_depth" << YAML::Value << qos.depth;
     emitter << YAML::Key << prefix + "qos_history" << YAML::Value << qos.history;
@@ -548,22 +549,19 @@ protected:
   }
 
   // Dealing with YAML frequently requires trimming whitespace from strings
-  inline std::string TrimString(const std::string& str)
+  inline std::string TrimString(const std::string & str)
   {
     auto begin = str.begin();
     auto end = str.end();
 
     // Trim leading whitespace
-    while (begin != end && std::isspace(*begin))
-    {
+    while (begin != end && std::isspace(*begin)) {
       ++begin;
     }
 
     // Trim trailing whitespace
-    if (begin != end)
-    {
-      do
-      {
+    if (begin != end) {
+      do{
         --end;
       } while (std::isspace(*end));
       ++end;
@@ -592,7 +590,7 @@ private:
 
   // Returns true the first time each unique message is seen; used so the
   // status label and log are only updated when the message changes.
-  bool StatusMessageChanged(const std::string& message)
+  bool StatusMessageChanged(const std::string & message)
   {
     std::lock_guard<std::mutex> lock(status_mutex_);
     if (message == last_status_msg_) {
@@ -610,82 +608,85 @@ typedef std::shared_ptr<MapvizPlugin> MapvizPluginPtr;
 // only be touched from the GUI thread, so the label update is posted to the
 // label's thread with a queued invocation when necessary.  The label is used
 // as the invocation context so pending updates are dropped if it is deleted.
-inline void MapvizPlugin::PrintErrorHelper(QLabel *status_label, const std::string &message,
-                                            double throttle)
+inline void MapvizPlugin::PrintErrorHelper(
+  QLabel * status_label, const std::string & message,
+  double throttle)
 {
-    if (!StatusMessageChanged(message)) {
-      return;
-    }
+  if (!StatusMessageChanged(message)) {
+    return;
+  }
 
-    auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
-    if (throttle > 0.0) {
-        RCLCPP_ERROR(logger, "Error: %s", message.c_str());
-    } else {
-        RCLCPP_ERROR(logger, "%s", message.c_str());
-    }
-    auto update_label = [status_label, message]() {
+  auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
+  if (throttle > 0.0) {
+    RCLCPP_ERROR(logger, "Error: %s", message.c_str());
+  } else {
+    RCLCPP_ERROR(logger, "%s", message.c_str());
+  }
+  auto update_label = [status_label, message]() {
       QPalette p(status_label->palette());
       p.setColor(QPalette::Text, Qt::red);
       status_label->setPalette(p);
       status_label->setText(message.c_str());
     };
-    if (QThread::currentThread() == status_label->thread()) {
-      update_label();
-    } else {
-      QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
-    }
+  if (QThread::currentThread() == status_label->thread()) {
+    update_label();
+  } else {
+    QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
+  }
 }
 
-inline void MapvizPlugin::PrintInfoHelper(QLabel *status_label, const std::string &message,
-                                          double throttle)
+inline void MapvizPlugin::PrintInfoHelper(
+  QLabel * status_label, const std::string & message,
+  double throttle)
 {
-    if (!StatusMessageChanged(message)) {
-      return;
-    }
+  if (!StatusMessageChanged(message)) {
+    return;
+  }
 
-    auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
-    if (throttle > 0.0) {
-        RCLCPP_INFO(logger, "%s", message.c_str());
-    } else {
-        RCLCPP_INFO(logger, "%s", message.c_str());
-    }
-    auto update_label = [status_label, message]() {
+  auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
+  if (throttle > 0.0) {
+    RCLCPP_INFO(logger, "%s", message.c_str());
+  } else {
+    RCLCPP_INFO(logger, "%s", message.c_str());
+  }
+  auto update_label = [status_label, message]() {
       QPalette p(status_label->palette());
       p.setColor(QPalette::Text, Qt::darkGreen);
       status_label->setPalette(p);
       status_label->setText(message.c_str());
     };
-    if (QThread::currentThread() == status_label->thread()) {
-      update_label();
-    } else {
-      QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
-    }
+  if (QThread::currentThread() == status_label->thread()) {
+    update_label();
+  } else {
+    QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
+  }
 }
 
-inline void MapvizPlugin::PrintWarningHelper(QLabel *status_label, const std::string &message,
-                                              double throttle)
+inline void MapvizPlugin::PrintWarningHelper(
+  QLabel * status_label, const std::string & message,
+  double throttle)
 {
-    if (!StatusMessageChanged(message)) {
-      return;
-    }
+  if (!StatusMessageChanged(message)) {
+    return;
+  }
 
-    auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
-    if (throttle > 0.0) {
-        RCLCPP_WARN(logger, "%s", message.c_str());
-    } else {
-        RCLCPP_WARN(logger, "%s", message.c_str());
-    }
-    auto update_label = [status_label, message]() {
+  auto logger = node_ ? node_->get_logger() : rclcpp::get_logger("mapviz");
+  if (throttle > 0.0) {
+    RCLCPP_WARN(logger, "%s", message.c_str());
+  } else {
+    RCLCPP_WARN(logger, "%s", message.c_str());
+  }
+  auto update_label = [status_label, message]() {
       QPalette p(status_label->palette());
       p.setColor(QPalette::Text, Qt::darkYellow);
       status_label->setPalette(p);
       status_label->setText(message.c_str());
     };
-    if (QThread::currentThread() == status_label->thread()) {
-      update_label();
-    } else {
-      QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
-    }
+  if (QThread::currentThread() == status_label->thread()) {
+    update_label();
+  } else {
+    QMetaObject::invokeMethod(status_label, update_label, Qt::QueuedConnection);
+  }
 }
 
 }   // namespace mapviz

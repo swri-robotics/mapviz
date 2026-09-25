@@ -39,31 +39,31 @@
 
 namespace multires_image
 {
-  class TileView : protected QOpenGLFunctions_1_1
-  {
-  public:
-    TileView(TileSet* tiles, QOpenGLWidget* widget);
-    ~TileView() = default;
+class TileView : protected QOpenGLFunctions_1_1
+{
+public:
+  TileView(TileSet * tiles, QOpenGLWidget * widget);
+  ~TileView() = default;
 
-    const TileCache* Cache() { return &m_cache; }
+  const TileCache * Cache() {return &m_cache;}
 
-    void SetView(double x, double y, double radius, double scale);
+  void SetView(double x, double y, double radius, double scale);
 
-    void Draw();
+  void Draw();
 
-    void Exit() { m_cache.Exit(); }
+  void Exit() {m_cache.Exit();}
 
-  private:
-    TileSet*   m_tiles;
-    TileCache  m_cache;
-    int        m_currentLayer;
-    int        m_startRow;
-    int        m_startColumn;
-    int        m_endRow;
-    int        m_endColumn;
-    double     min_scale_;
-    bool       gl_initialized_ = false;
-  };
+private:
+  TileSet * m_tiles;
+  TileCache m_cache;
+  int m_currentLayer;
+  int m_startRow;
+  int m_startColumn;
+  int m_endRow;
+  int m_endColumn;
+  double min_scale_;
+  bool gl_initialized_ = false;
+};
 }
 
 #endif  // MULTIRES_IMAGE_TILE_VIEW_HPP_

@@ -59,71 +59,71 @@ class RoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
 
-  public:
-    enum DrawStyle
-    {
-      LINES = 0,
-      POINTS = 1
-    };
+public:
+  enum DrawStyle
+  {
+    LINES = 0,
+    POINTS = 1
+  };
 
-    RoutePlugin();
-    ~RoutePlugin() override = default;
+  RoutePlugin();
+  ~RoutePlugin() override = default;
 
-    bool Initialize(QOpenGLWidget* canvas) override;
-    void Shutdown() override {}
+  bool Initialize(QOpenGLWidget * canvas) override;
+  void Shutdown() override {}
 
-    void DrawStopWaypoint(double x, double y);
-    void DrawRoute(const swri_route_util::Route &route);
-    void DrawRoutePoint(const swri_route_util::RoutePoint &point);
+  void DrawStopWaypoint(double x, double y);
+  void DrawRoute(const swri_route_util::Route & route);
+  void DrawRoutePoint(const swri_route_util::RoutePoint & point);
 
-    QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
-    void Draw(double x, double y, double scale) override;
+protected:
+  void Draw(double x, double y, double scale) override;
 
-    void Transform() override {}
+  void Transform() override {}
 
-    void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-    void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-    void PrintError(const std::string& message) override;
-    void PrintInfo(const std::string& message) override;
-    void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected Q_SLOTS:
-    void SelectTopic();
-    void SelectPositionTopic();
-    void TopicEdited();
-    void PositionTopicEdited();
-    void SetDrawStyle(QString style);
-    void DrawIcon() override;
+protected Q_SLOTS:
+  void SelectTopic();
+  void SelectPositionTopic();
+  void TopicEdited();
+  void PositionTopicEdited();
+  void SetDrawStyle(QString style);
+  void DrawIcon() override;
 
-  private:
-    // Called on the GUI thread by Subscribe(); own all plugin state.
-    void handleRoute(const marti_nav_msgs::msg::Route::ConstSharedPtr route);
-    void handleRoutePosition(const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr position);
+private:
+  // Called on the GUI thread by Subscribe(); own all plugin state.
+  void handleRoute(const marti_nav_msgs::msg::Route::ConstSharedPtr route);
+  void handleRoutePosition(const marti_nav_msgs::msg::RoutePosition::ConstSharedPtr position);
 
-  private:
-    Ui::route_config ui_;
-    QWidget* config_widget_;
+private:
+  Ui::route_config ui_;
+  QWidget * config_widget_;
 
-    DrawStyle draw_style_;
+  DrawStyle draw_style_;
 
-    std::string topic_;
-    rmw_qos_profile_t qos_;
-    std::string position_topic_;
-    rmw_qos_profile_t position_qos_;
+  std::string topic_;
+  rmw_qos_profile_t qos_;
+  std::string position_topic_;
+  rmw_qos_profile_t position_qos_;
 
-    rclcpp::Subscription<marti_nav_msgs::msg::Route>::SharedPtr route_sub_;
-    rclcpp::Subscription<marti_nav_msgs::msg::RoutePosition>::SharedPtr position_sub_;
+  rclcpp::Subscription<marti_nav_msgs::msg::Route>::SharedPtr route_sub_;
+  rclcpp::Subscription<marti_nav_msgs::msg::RoutePosition>::SharedPtr position_sub_;
 
-    swri_route_util::Route src_route_;
-    // marti_nav_msgs::RoutePositionConstPtr src_route_position_;
-    marti_nav_msgs::msg::RoutePosition::ConstSharedPtr src_route_position_;
+  swri_route_util::Route src_route_;
+  // marti_nav_msgs::RoutePositionConstPtr src_route_position_;
+  marti_nav_msgs::msg::RoutePosition::ConstSharedPtr src_route_position_;
 
-    void connectRouteCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-    void connectPositionCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+  void connectRouteCallback(const std::string & topic, const rmw_qos_profile_t & qos);
+  void connectPositionCallback(const std::string & topic, const rmw_qos_profile_t & qos);
 };
 }   // namespace mapviz_plugins
 

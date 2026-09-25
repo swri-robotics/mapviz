@@ -67,7 +67,8 @@ class ImagePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
   Q_OBJECT
 
 public:
-  enum Anchor {
+  enum Anchor
+  {
     TOP_LEFT,
     TOP_CENTER,
     TOP_RIGHT,
@@ -84,25 +85,25 @@ public:
   ImagePlugin();
   ~ImagePlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  void SetNode(rclcpp::Node& node) override;
+  void SetNode(rclcpp::Node & node) override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
 protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
 public Q_SLOTS:
   void Resubscribe();
@@ -117,7 +118,7 @@ protected Q_SLOTS:
   void SetWidth(double width);
   void SetHeight(double height);
   void SetSubscription(bool visible);
-  void SetTransport(const QString& transport);
+  void SetTransport(const QString & transport);
   void KeepRatioChanged(bool checked);
   void SetRotation(QString rotation);
 
@@ -131,7 +132,7 @@ private Q_SLOTS:
 
 private:
   Ui::image_config ui_;
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   std::string topic_;
   rmw_qos_profile_t qos_;
@@ -157,11 +158,11 @@ private:
   cv_bridge::CvImagePtr cv_image_;
   cv::Mat scaled_image_;
 
-  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
+  void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & image);
 
   void ScaleImage(double width, double height);
-  void DrawIplImage(cv::Mat *image);
+  void DrawIplImage(cv::Mat * image);
 
   std::string AnchorToString(Anchor anchor);
   std::string UnitsToString(Units units);

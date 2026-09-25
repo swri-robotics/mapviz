@@ -57,18 +57,20 @@
 namespace mapviz_plugins
 {
 
-template <class T>
-inline void hash_combine(std::size_t& seed, const T& v)
+template<class T>
+inline void hash_combine(std::size_t & seed, const T & v)
 {
-    constexpr int LARGE_PRIME = 0x9e3779b9;
-    std::hash<T> hasher;
-    seed ^= hasher(v) + LARGE_PRIME + (seed<<6) + (seed>>2);
+  constexpr int LARGE_PRIME = 0x9e3779b9;
+  std::hash<T> hasher;
+  seed ^= hasher(v) + LARGE_PRIME + (seed << 6) + (seed >> 2);
 }
 
 using MarkerId = std::pair<std::string, int>;
 
-struct MarkerIdHash {
-  std::size_t operator () (const MarkerId &p) const {
+struct MarkerIdHash
+{
+  std::size_t operator()(const MarkerId & p) const
+  {
     std::size_t seed = 0;
     hash_combine(seed, p.first);
     hash_combine(seed, p.second);
@@ -76,8 +78,10 @@ struct MarkerIdHash {
   }
 };
 
-struct MarkerNsHash {
-  std::size_t operator () (const std::string &p) const {
+struct MarkerNsHash
+{
+  std::size_t operator()(const std::string & p) const
+  {
     std::size_t seed = 0;
     hash_combine(seed, p);
     return seed;
@@ -92,10 +96,10 @@ public:
   MarkerPlugin();
   ~MarkerPlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
   bool SupportsPainting() override
   {
@@ -105,17 +109,17 @@ public:
 protected:
   void Draw(double x, double y, double scale) override;
 
-  void Paint(QPainter* painter, double x, double y, double scale) override;
+  void Paint(QPainter * painter, double x, double y, double scale) override;
 
   void Transform() override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
   void timerEvent(QTimerEvent *) override;
 
 protected Q_SLOTS:
@@ -172,7 +176,7 @@ private:
   };
 
   Ui::marker_config ui_{};
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   std::string topic_;
   rmw_qos_profile_t qos_;
@@ -185,10 +189,11 @@ private:
   std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;
   std::unordered_map<std::string, bool, MarkerNsHash> marker_visible_;
 
-  void processMarker(const visualization_msgs::msg::Marker& marker);
-  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  void transformArrow(MarkerData& markerData,
-                      const swri_transform_util::Transform& transform);
+  void processMarker(const visualization_msgs::msg::Marker & marker);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
+  void transformArrow(
+    MarkerData & markerData,
+    const swri_transform_util::Transform & transform);
 };
 }   // namespace mapviz_plugins
 

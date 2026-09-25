@@ -48,8 +48,8 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::GridPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  GridPlugin::GridPlugin()
-  : MapvizPlugin()
+GridPlugin::GridPlugin()
+: MapvizPlugin()
   , ui_()
   , config_widget_(new QWidget())
   , alpha_(1.0)
@@ -58,320 +58,306 @@ namespace mapviz_plugins
   , rows_(1)
   , columns_(1)
   , transformed_(false)
-  {
-    ui_.setupUi(config_widget_);
+{
+  ui_.setupUi(config_widget_);
 
-    ui_.color->setColor(Qt::red);
+  ui_.color->setColor(Qt::red);
 
-    // Set background white
-    QPalette p(config_widget_->palette());
-    p.setColor(QPalette::Window, Qt::white);
-    config_widget_->setPalette(p);
+  // Set background white
+  QPalette p(config_widget_->palette());
+  p.setColor(QPalette::Window, Qt::white);
+  config_widget_->setPalette(p);
 
-    // Set status text red
-    QPalette p3(ui_.status->palette());
-    p3.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p3);
+  // Set status text red
+  QPalette p3(ui_.status->palette());
+  p3.setColor(QPalette::Text, Qt::red);
+  ui_.status->setPalette(p3);
 
-    QObject::connect(ui_.select_frame, SIGNAL(clicked()), this, SLOT(SelectFrame()));
-    QObject::connect(ui_.frame, SIGNAL(textEdited(const QString&)), this, SLOT(FrameEdited()));
-    QObject::connect(ui_.alpha, SIGNAL(valueChanged(double)), this, SLOT(SetAlpha(double)));
-    QObject::connect(ui_.x, SIGNAL(valueChanged(double)), this, SLOT(SetX(double)));
-    QObject::connect(ui_.y, SIGNAL(valueChanged(double)), this, SLOT(SetY(double)));
-    QObject::connect(ui_.size, SIGNAL(valueChanged(double)), this, SLOT(SetSize(double)));
-    QObject::connect(ui_.rows, SIGNAL(valueChanged(int)), this, SLOT(SetRows(int)));
-    QObject::connect(ui_.columns, SIGNAL(valueChanged(int)), this, SLOT(SetColumns(int)));
-    connect(ui_.color, SIGNAL(colorEdited(const QColor &)), this, SLOT(DrawIcon()));
+  QObject::connect(ui_.select_frame, SIGNAL(clicked()), this, SLOT(SelectFrame()));
+  QObject::connect(ui_.frame, SIGNAL(textEdited(const QString&)), this, SLOT(FrameEdited()));
+  QObject::connect(ui_.alpha, SIGNAL(valueChanged(double)), this, SLOT(SetAlpha(double)));
+  QObject::connect(ui_.x, SIGNAL(valueChanged(double)), this, SLOT(SetX(double)));
+  QObject::connect(ui_.y, SIGNAL(valueChanged(double)), this, SLOT(SetY(double)));
+  QObject::connect(ui_.size, SIGNAL(valueChanged(double)), this, SLOT(SetSize(double)));
+  QObject::connect(ui_.rows, SIGNAL(valueChanged(int)), this, SLOT(SetRows(int)));
+  QObject::connect(ui_.columns, SIGNAL(valueChanged(int)), this, SLOT(SetColumns(int)));
+  connect(ui_.color, SIGNAL(colorEdited(const QColor&)), this, SLOT(DrawIcon()));
+}
+
+void GridPlugin::DrawIcon()
+{
+  if (icon_) {
+    QPixmap icon(16, 16);
+    icon.fill(Qt::transparent);
+
+    QPainter painter(&icon);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    QPen pen(QColor(ui_.color->color()));
+
+    pen.setWidth(2);
+    pen.setCapStyle(Qt::SquareCap);
+    painter.setPen(pen);
+
+    painter.drawLine(2, 2, 14, 2);
+    painter.drawLine(2, 2, 2, 14);
+    painter.drawLine(14, 2, 14, 14);
+    painter.drawLine(2, 14, 14, 14);
+    painter.drawLine(8, 2, 8, 14);
+    painter.drawLine(2, 8, 14, 8);
+
+    icon_->SetPixmap(icon);
   }
+}
 
-  void GridPlugin::DrawIcon()
-  {
-    if (icon_)
-    {
-      QPixmap icon(16, 16);
-      icon.fill(Qt::transparent);
+void GridPlugin::SetAlpha(double alpha)
+{
+  alpha_ = alpha;
+}
 
-      QPainter painter(&icon);
-      painter.setRenderHint(QPainter::Antialiasing, true);
+void GridPlugin::SetX(double x)
+{
+  top_left_.setX(x);
 
-      QPen pen(QColor(ui_.color->color()));
+  RecalculateGrid();
+}
 
-      pen.setWidth(2);
-      pen.setCapStyle(Qt::SquareCap);
-      painter.setPen(pen);
+void GridPlugin::SetY(double y)
+{
+  top_left_.setY(y);
 
-      painter.drawLine(2, 2, 14, 2);
-      painter.drawLine(2, 2, 2, 14);
-      painter.drawLine(14, 2, 14, 14);
-      painter.drawLine(2, 14, 14, 14);
-      painter.drawLine(8, 2, 8, 14);
-      painter.drawLine(2, 8, 14, 8);
+  RecalculateGrid();
+}
 
-      icon_->SetPixmap(icon);
-    }
-  }
+void GridPlugin::SetSize(double size)
+{
+  size_ = size;
 
-  void GridPlugin::SetAlpha(double alpha)
-  {
-    alpha_ = alpha;
-  }
+  RecalculateGrid();
+}
 
-  void GridPlugin::SetX(double x)
-  {
-    top_left_.setX(x);
+void GridPlugin::SetRows(int rows)
+{
+  rows_ = rows;
 
-    RecalculateGrid();
-  }
+  RecalculateGrid();
+}
 
-  void GridPlugin::SetY(double y)
-  {
-    top_left_.setY(y);
+void GridPlugin::SetColumns(int columns)
+{
+  columns_ = columns;
 
-    RecalculateGrid();
-  }
+  RecalculateGrid();
+}
 
-  void GridPlugin::SetSize(double size)
-  {
-    size_ = size;
-
-    RecalculateGrid();
-  }
-
-  void GridPlugin::SetRows(int rows)
-  {
-    rows_ = rows;
-
-    RecalculateGrid();
-  }
-
-  void GridPlugin::SetColumns(int columns)
-  {
-    columns_ = columns;
-
-    RecalculateGrid();
-  }
-
-  void GridPlugin::SelectFrame()
-  {
-    std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
-    if (!frame.empty())
-    {
-      ui_.frame->setText(QString::fromStdString(frame));
-      FrameEdited();
-    }
-  }
-
-  void GridPlugin::FrameEdited()
-  {
-    source_frame_ = ui_.frame->text().toStdString();
-
-    initialized_ = true;
-
-    RecalculateGrid();
-  }
-
-  void GridPlugin::PrintError(const std::string& message)
-  {
-    PrintErrorHelper(ui_.status, message);
-  }
-
-  void GridPlugin::PrintInfo(const std::string& message)
-  {
-    PrintInfoHelper(ui_.status, message);
-  }
-
-  void GridPlugin::PrintWarning(const std::string& message)
-  {
-    PrintWarningHelper(ui_.status, message);
-  }
-
-  QWidget* GridPlugin::GetConfigWidget(QWidget* parent)
-  {
-    config_widget_->setParent(parent);
-
-    return config_widget_;
-  }
-
-  bool GridPlugin::Initialize(QOpenGLWidget* canvas)
-  {
-    canvas_ = canvas;
-    canvas->makeCurrent();
-    initializeOpenGLFunctions();
-    canvas->doneCurrent();
-
-    DrawIcon();
-
-    return true;
-  }
-
-  void GridPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
-  {
-    if (transformed_) {
-      QColor color = ui_.color->color();
-
-      glLineWidth(3);
-      glColor4d(color.redF(), color.greenF(), color.blueF(), alpha_);
-      glBegin(GL_LINES);
-
-      auto transformed_left_it = transformed_left_points_.begin();
-      auto transformed_right_it = transformed_right_points_.begin();
-      for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it) {
-        glVertex2d(transformed_left_it->getX(), transformed_left_it->getY());
-        glVertex2d(transformed_right_it->getX(), transformed_right_it->getY());
-
-        ++transformed_right_it;
-      }
-
-      auto transformed_top_it = transformed_top_points_.begin();
-      auto transformed_bottom_it = transformed_bottom_points_.begin();
-      for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it) {
-        glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
-        glVertex2d(transformed_bottom_it->getX(), transformed_bottom_it->getY());
-
-        ++transformed_bottom_it;
-      }
-
-      glEnd();
-
-      PrintInfo("OK");
-    }
-  }
-
-  void GridPlugin::RecalculateGrid()
-  {
-    transformed_ = false;
-
-    left_points_.clear();
-    right_points_.clear();
-    top_points_.clear();
-    bottom_points_.clear();
-
-    transformed_left_points_.clear();
-    transformed_right_points_.clear();
-    transformed_top_points_.clear();
-    transformed_bottom_points_.clear();
-
-    // Set top and bottom
-    for (int c = 0; c <= columns_; c++)
-    {
-      tf2::Vector3 top_point(top_left_.getX() + c * size_, top_left_.getY(), 0);
-      top_points_.push_back(top_point);
-      transformed_top_points_.push_back(transform_ * top_point);
-
-      tf2::Vector3 bottom_point(top_left_.getX() + c * size_, top_left_.getY() + size_ * rows_, 0);
-      bottom_points_.push_back(bottom_point);
-      transformed_bottom_points_.push_back(transform_ * bottom_point);
-    }
-
-    // Set left and right
-    for (int r = 0; r <= rows_; r++)
-    {
-      tf2::Vector3 left_point(top_left_.getX(), top_left_.getY() + r * size_, 0);
-      left_points_.push_back(left_point);
-      transformed_left_points_.push_back(transform_ * left_point);
-
-      tf2::Vector3 right_point(
-        top_left_.getX() + size_ * columns_,
-        top_left_.getY() + r * size_,
-        0);
-      right_points_.push_back(right_point);
-      transformed_right_points_.push_back(transform_ * right_point);
-    }
-  }
-
-  void GridPlugin::Transform()
-  {
-    transformed_ = false;
-
-    if (GetTransform(rclcpp::Time(), transform_))
-    {
-      Transform(left_points_, transformed_left_points_);
-      Transform(right_points_, transformed_right_points_);
-      Transform(top_points_, transformed_top_points_);
-      Transform(bottom_points_, transformed_bottom_points_);
-
-      transformed_ = true;
-    }
-  }
-
-  void GridPlugin::Transform(std::list<tf2::Vector3>& src, std::list<tf2::Vector3>& dst)
-  {
-    auto points_it = src.begin();
-    auto transformed_it = dst.begin();
-    for (; points_it != src.end() && transformed_it != dst.end(); ++points_it)
-    {
-      (*transformed_it) = transform_ * (*points_it);
-
-      ++transformed_it;
-    }
-  }
-
-  void GridPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
-  {
-    if (node["color"])
-    {
-      std::string color = node["color"].as<std::string>();
-      ui_.color->setColor(QColor(color.c_str()));
-    }
-
-    if (node["frame"])
-    {
-      std::string frame = node["frame"].as<std::string>();
-      ui_.frame->setText(QString::fromStdString(frame));
-    }
-
-    if (node["x"])
-    {
-      float x = node["x"].as<float>();
-      ui_.x->setValue(x);
-    }
-
-    if (node["y"])
-    {
-      float y = node["y"].as<float>();
-      ui_.y->setValue(y);
-    }
-
-    if (node["alpha"])
-    {
-      alpha_ = node["alpha"].as<double>();
-      ui_.alpha->setValue(alpha_);
-    }
-
-    if (node["size"])
-    {
-      size_ = node["size"].as<double>();
-      ui_.size->setValue(size_);
-    }
-
-    if (node["rows"])
-    {
-      rows_ = node["rows"].as<int>();
-      ui_.rows->setValue(rows_);
-    }
-
-    if (node["columns"])
-    {
-      columns_ = node["columns"].as<int>();
-      ui_.columns->setValue(columns_);
-    }
-
+void GridPlugin::SelectFrame()
+{
+  std::string frame = mapviz::SelectFrameDialog::selectFrame(tf_buf_);
+  if (!frame.empty()) {
+    ui_.frame->setText(QString::fromStdString(frame));
     FrameEdited();
   }
+}
 
-  void GridPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
-  {
-    emitter << YAML::Key << "color" << YAML::Value << ui_.color->color().name().toStdString();
+void GridPlugin::FrameEdited()
+{
+  source_frame_ = ui_.frame->text().toStdString();
 
-    emitter << YAML::Key << "alpha" << YAML::Value << alpha_;
+  initialized_ = true;
 
-    std::string frame = ui_.frame->text().toStdString();
-    emitter << YAML::Key << "frame" << YAML::Value << frame;
+  RecalculateGrid();
+}
 
-    emitter << YAML::Key << "x" << YAML::Value << top_left_.getX();
-    emitter << YAML::Key << "y" << YAML::Value << top_left_.getY();
-    emitter << YAML::Key << "size" << YAML::Value << size_;
-    emitter << YAML::Key << "rows" << YAML::Value << rows_;
-    emitter << YAML::Key << "columns" << YAML::Value << columns_;
+void GridPlugin::PrintError(const std::string & message)
+{
+  PrintErrorHelper(ui_.status, message);
+}
+
+void GridPlugin::PrintInfo(const std::string & message)
+{
+  PrintInfoHelper(ui_.status, message);
+}
+
+void GridPlugin::PrintWarning(const std::string & message)
+{
+  PrintWarningHelper(ui_.status, message);
+}
+
+QWidget * GridPlugin::GetConfigWidget(QWidget * parent)
+{
+  config_widget_->setParent(parent);
+
+  return config_widget_;
+}
+
+bool GridPlugin::Initialize(QOpenGLWidget * canvas)
+{
+  canvas_ = canvas;
+  canvas->makeCurrent();
+  initializeOpenGLFunctions();
+  canvas->doneCurrent();
+
+  DrawIcon();
+
+  return true;
+}
+
+void GridPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
+{
+  if (transformed_) {
+    QColor color = ui_.color->color();
+
+    glLineWidth(3);
+    glColor4d(color.redF(), color.greenF(), color.blueF(), alpha_);
+    glBegin(GL_LINES);
+
+    auto transformed_left_it = transformed_left_points_.begin();
+    auto transformed_right_it = transformed_right_points_.begin();
+    for (; transformed_left_it != transformed_left_points_.end(); ++transformed_left_it) {
+      glVertex2d(transformed_left_it->getX(), transformed_left_it->getY());
+      glVertex2d(transformed_right_it->getX(), transformed_right_it->getY());
+
+      ++transformed_right_it;
+    }
+
+    auto transformed_top_it = transformed_top_points_.begin();
+    auto transformed_bottom_it = transformed_bottom_points_.begin();
+    for (; transformed_top_it != transformed_top_points_.end(); ++transformed_top_it) {
+      glVertex2d(transformed_top_it->getX(), transformed_top_it->getY());
+      glVertex2d(transformed_bottom_it->getX(), transformed_bottom_it->getY());
+
+      ++transformed_bottom_it;
+    }
+
+    glEnd();
+
+    PrintInfo("OK");
   }
+}
+
+void GridPlugin::RecalculateGrid()
+{
+  transformed_ = false;
+
+  left_points_.clear();
+  right_points_.clear();
+  top_points_.clear();
+  bottom_points_.clear();
+
+  transformed_left_points_.clear();
+  transformed_right_points_.clear();
+  transformed_top_points_.clear();
+  transformed_bottom_points_.clear();
+
+  // Set top and bottom
+  for (int c = 0; c <= columns_; c++) {
+    tf2::Vector3 top_point(top_left_.getX() + c * size_, top_left_.getY(), 0);
+    top_points_.push_back(top_point);
+    transformed_top_points_.push_back(transform_ * top_point);
+
+    tf2::Vector3 bottom_point(top_left_.getX() + c * size_, top_left_.getY() + size_ * rows_, 0);
+    bottom_points_.push_back(bottom_point);
+    transformed_bottom_points_.push_back(transform_ * bottom_point);
+  }
+
+  // Set left and right
+  for (int r = 0; r <= rows_; r++) {
+    tf2::Vector3 left_point(top_left_.getX(), top_left_.getY() + r * size_, 0);
+    left_points_.push_back(left_point);
+    transformed_left_points_.push_back(transform_ * left_point);
+
+    tf2::Vector3 right_point(
+      top_left_.getX() + size_ * columns_,
+      top_left_.getY() + r * size_,
+      0);
+    right_points_.push_back(right_point);
+    transformed_right_points_.push_back(transform_ * right_point);
+  }
+}
+
+void GridPlugin::Transform()
+{
+  transformed_ = false;
+
+  if (GetTransform(rclcpp::Time(), transform_)) {
+    Transform(left_points_, transformed_left_points_);
+    Transform(right_points_, transformed_right_points_);
+    Transform(top_points_, transformed_top_points_);
+    Transform(bottom_points_, transformed_bottom_points_);
+
+    transformed_ = true;
+  }
+}
+
+void GridPlugin::Transform(std::list<tf2::Vector3> & src, std::list<tf2::Vector3> & dst)
+{
+  auto points_it = src.begin();
+  auto transformed_it = dst.begin();
+  for (; points_it != src.end() && transformed_it != dst.end(); ++points_it) {
+    (*transformed_it) = transform_ * (*points_it);
+
+    ++transformed_it;
+  }
+}
+
+void GridPlugin::LoadConfig(const YAML::Node & node, const std::string & /*path*/)
+{
+  if (node["color"]) {
+    std::string color = node["color"].as<std::string>();
+    ui_.color->setColor(QColor(color.c_str()));
+  }
+
+  if (node["frame"]) {
+    std::string frame = node["frame"].as<std::string>();
+    ui_.frame->setText(QString::fromStdString(frame));
+  }
+
+  if (node["x"]) {
+    float x = node["x"].as<float>();
+    ui_.x->setValue(x);
+  }
+
+  if (node["y"]) {
+    float y = node["y"].as<float>();
+    ui_.y->setValue(y);
+  }
+
+  if (node["alpha"]) {
+    alpha_ = node["alpha"].as<double>();
+    ui_.alpha->setValue(alpha_);
+  }
+
+  if (node["size"]) {
+    size_ = node["size"].as<double>();
+    ui_.size->setValue(size_);
+  }
+
+  if (node["rows"]) {
+    rows_ = node["rows"].as<int>();
+    ui_.rows->setValue(rows_);
+  }
+
+  if (node["columns"]) {
+    columns_ = node["columns"].as<int>();
+    ui_.columns->setValue(columns_);
+  }
+
+  FrameEdited();
+}
+
+void GridPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & /*path*/)
+{
+  emitter << YAML::Key << "color" << YAML::Value << ui_.color->color().name().toStdString();
+
+  emitter << YAML::Key << "alpha" << YAML::Value << alpha_;
+
+  std::string frame = ui_.frame->text().toStdString();
+  emitter << YAML::Key << "frame" << YAML::Value << frame;
+
+  emitter << YAML::Key << "x" << YAML::Value << top_left_.getX();
+  emitter << YAML::Key << "y" << YAML::Value << top_left_.getY();
+  emitter << YAML::Key << "size" << YAML::Value << size_;
+  emitter << YAML::Key << "rows" << YAML::Value << rows_;
+  emitter << YAML::Key << "columns" << YAML::Value << columns_;
+}
 }   // namespace mapviz_plugins

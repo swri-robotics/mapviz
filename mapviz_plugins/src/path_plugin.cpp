@@ -50,179 +50,174 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PathPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
-  PathPlugin::PathPlugin() :
-    PointDrawingPlugin(),
-    ui_(),
-    config_widget_(new QWidget()),
-    topic_(""),
-    qos_(rmw_qos_profile_default),
-    has_message_(false)
-  {
-    ui_.setupUi(config_widget_);
-    ui_.path_color->setColor(Qt::green);
+PathPlugin::PathPlugin()
+: PointDrawingPlugin(),
+  ui_(),
+  config_widget_(new QWidget()),
+  topic_(""),
+  qos_(rmw_qos_profile_default),
+  has_message_(false)
+{
+  ui_.setupUi(config_widget_);
+  ui_.path_color->setColor(Qt::green);
 
-    // Set background white
-    QPalette p(config_widget_->palette());
-    p.setColor(QPalette::Window, Qt::white);
-    config_widget_->setPalette(p);
+  // Set background white
+  QPalette p(config_widget_->palette());
+  p.setColor(QPalette::Window, Qt::white);
+  config_widget_->setPalette(p);
 
-    // Set status text red
-    QPalette p3(ui_.status->palette());
-    p3.setColor(QPalette::Text, Qt::red);
-    ui_.status->setPalette(p3);
+  // Set status text red
+  QPalette p3(ui_.status->palette());
+  p3.setColor(QPalette::Text, Qt::red);
+  ui_.status->setPalette(p3);
 
-    connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
-    connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-    connect(ui_.path_color, SIGNAL(colorEdited(const QColor&)), this,
-            SLOT(SetColor(const QColor&)));
-    QObject::connect(ui_.buttonResetBuffer, SIGNAL(pressed()), this,
-                     SLOT(ClearPoints()));
+  connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
+  connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
+  connect(
+    ui_.path_color, SIGNAL(colorEdited(const QColor&)), this,
+    SLOT(SetColor(const QColor&)));
+  QObject::connect(
+    ui_.buttonResetBuffer, SIGNAL(pressed()), this,
+    SLOT(ClearPoints()));
+}
+
+void PathPlugin::SelectTopic()
+{
+  auto [topic, qos] = SelectTopicDialog::selectTopic(
+    TopicSource(),
+    "nav_msgs/msg/Path",
+    qos_);
+  if (!topic.empty()) {
+    connectCallback(topic, qos);
   }
+}
 
-  void PathPlugin::SelectTopic()
-  {
-    auto [topic, qos] = SelectTopicDialog::selectTopic(
-      TopicSource(),
-      "nav_msgs/msg/Path",
-      qos_);
-    if (!topic.empty())
-    {
-      connectCallback(topic, qos);
-    }
-  }
+void PathPlugin::TopicEdited()
+{
+  std::string topic = ui_.topic->text().trimmed().toStdString();
+  connectCallback(topic, qos_);
+}
 
-  void PathPlugin::TopicEdited()
-  {
-    std::string topic = ui_.topic->text().trimmed().toStdString();
-    connectCallback(topic, qos_);
-  }
-
-  void PathPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
-  {
-    ui_.topic->setText(QString::fromStdString(topic));
-    if ((topic != topic_) || !qosEqual(qos, qos_))
-    {
-      initialized_ = false;
-      ClearPoints();
-      has_message_ = false;
-      PrintWarning("No messages received.");
-
-      path_sub_.reset();
-
-      topic_ = topic;
-      qos_ = qos;
-      if (!topic.empty())
-      {
-        // Subscribe() delivers each message to handlePath() on the GUI
-        // thread, where plugin state may be touched without locking.
-        Subscribe<nav_msgs::msg::Path>(
-          topic_, qos, path_sub_,
-          [this](nav_msgs::msg::Path::ConstSharedPtr msg) { handlePath(msg); });
-        RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
-      }
-    }
-  }
-
-
-  void PathPlugin::handlePath(const nav_msgs::msg::Path::ConstSharedPtr path)
-  {
-    if (!has_message_)
-    {
-      initialized_ = true;
-      has_message_ = true;
-    }
-
+void PathPlugin::connectCallback(const std::string & topic, const rmw_qos_profile_t & qos)
+{
+  ui_.topic->setText(QString::fromStdString(topic));
+  if ((topic != topic_) || !qosEqual(qos, qos_)) {
+    initialized_ = false;
     ClearPoints();
+    has_message_ = false;
+    PrintWarning("No messages received.");
 
-    for (unsigned int i = 0; i < path->poses.size(); i++)
-    {
-      StampedPoint stamped_point;
-      stamped_point.stamp = path->header.stamp;
-      stamped_point.source_frame = path->header.frame_id;
-      stamped_point.point = tf2::Vector3(path->poses[i].pose.position.x,
-                                      path->poses[i].pose.position.y, 0);
+    path_sub_.reset();
 
-      pushPoint( stamped_point );
+    topic_ = topic;
+    qos_ = qos;
+    if (!topic.empty()) {
+      // Subscribe() delivers each message to handlePath() on the GUI
+      // thread, where plugin state may be touched without locking.
+      Subscribe<nav_msgs::msg::Path>(
+        topic_, qos, path_sub_,
+        [this](nav_msgs::msg::Path::ConstSharedPtr msg) {handlePath(msg);});
+      RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
     }
   }
+}
 
-  void PathPlugin::PrintError(const std::string& message)
-  {
-    PrintErrorHelper(ui_.status, message);
+
+void PathPlugin::handlePath(const nav_msgs::msg::Path::ConstSharedPtr path)
+{
+  if (!has_message_) {
+    initialized_ = true;
+    has_message_ = true;
   }
 
-  void PathPlugin::PrintInfo(const std::string& message)
-  {
-    PrintInfoHelper(ui_.status, message);
+  ClearPoints();
+
+  for (unsigned int i = 0; i < path->poses.size(); i++) {
+    StampedPoint stamped_point;
+    stamped_point.stamp = path->header.stamp;
+    stamped_point.source_frame = path->header.frame_id;
+    stamped_point.point = tf2::Vector3(
+      path->poses[i].pose.position.x,
+      path->poses[i].pose.position.y, 0);
+
+    pushPoint(stamped_point);
+  }
+}
+
+void PathPlugin::PrintError(const std::string & message)
+{
+  PrintErrorHelper(ui_.status, message);
+}
+
+void PathPlugin::PrintInfo(const std::string & message)
+{
+  PrintInfoHelper(ui_.status, message);
+}
+
+void PathPlugin::PrintWarning(const std::string & message)
+{
+  PrintWarningHelper(ui_.status, message);
+}
+
+QWidget * PathPlugin::GetConfigWidget(QWidget * parent)
+{
+  config_widget_->setParent(parent);
+
+  return config_widget_;
+}
+
+bool PathPlugin::Initialize(QOpenGLWidget * canvas)
+{
+  canvas_ = canvas;
+  canvas->makeCurrent();
+  initializeOpenGLFunctions();
+  canvas->doneCurrent();
+  DrawIcon();
+  return true;
+}
+
+void PathPlugin::Draw(double /*x*/, double /*y*/, double scale)
+{
+  bool lines;
+  bool points;
+  QColor old_color = ui_.path_color->color();
+  QColor color = old_color.darker(200);
+  SetDrawStyle(LINES);
+  lines = DrawPoints(scale);
+  SetColor(color);
+  SetDrawStyle(POINTS);
+  points = DrawPoints(scale);
+  SetColor(old_color);
+  if (lines && points) {
+    PrintInfo("OK");
+  }
+}
+
+void PathPlugin::LoadConfig(const YAML::Node & node, const std::string & /*path*/)
+{
+  LoadQosConfig(node, qos_);
+  if (node["topic"]) {
+    std::string topic = node["topic"].as<std::string>();
+    ui_.topic->setText(topic.c_str());
+    TopicEdited();
   }
 
-  void PathPlugin::PrintWarning(const std::string& message)
-  {
-    PrintWarningHelper(ui_.status, message);
+  if (node["color"]) {
+    std::string color = node["color"].as<std::string>();
+    QColor qcolor(color.c_str());
+    SetColor(qcolor);
+    ui_.path_color->setColor(qcolor);
   }
+}
 
-  QWidget* PathPlugin::GetConfigWidget(QWidget* parent)
-  {
-    config_widget_->setParent(parent);
+void PathPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & /*path*/)
+{
+  std::string topic = ui_.topic->text().toStdString();
+  emitter << YAML::Key << "topic" << YAML::Value << topic;
 
-    return config_widget_;
-  }
+  std::string color = ui_.path_color->color().name().toStdString();
+  emitter << YAML::Key << "color" << YAML::Value << color;
 
-  bool PathPlugin::Initialize(QOpenGLWidget* canvas)
-  {
-    canvas_ = canvas;
-    canvas->makeCurrent();
-    initializeOpenGLFunctions();
-    canvas->doneCurrent();
-    DrawIcon();
-    return true;
-  }
-
-  void PathPlugin::Draw(double /*x*/, double /*y*/, double scale)
-  {
-    bool lines;
-    bool points;
-    QColor old_color = ui_.path_color->color();
-    QColor color = old_color.darker(200);
-    SetDrawStyle( LINES );
-    lines = DrawPoints(scale);
-    SetColor(color);
-    SetDrawStyle( POINTS );
-    points = DrawPoints(scale);
-    SetColor(old_color);
-    if (lines && points)
-    {
-      PrintInfo("OK");
-    }
-  }
-
-  void PathPlugin::LoadConfig(const YAML::Node& node, const std::string& /*path*/)
-  {
-    LoadQosConfig(node, qos_);
-    if (node["topic"])
-    {
-      std::string topic = node["topic"].as<std::string>();
-      ui_.topic->setText(topic.c_str());
-      TopicEdited();
-    }
-
-    if (node["color"])
-    {
-      std::string color = node["color"].as<std::string>();
-      QColor qcolor(color.c_str());
-      SetColor(qcolor);
-      ui_.path_color->setColor(qcolor);
-    }
-  }
-
-  void PathPlugin::SaveConfig(YAML::Emitter& emitter, const std::string& /*path*/)
-  {
-    std::string topic = ui_.topic->text().toStdString();
-    emitter << YAML::Key << "topic" << YAML::Value << topic;
-
-    std::string color = ui_.path_color->color().name().toStdString();
-    emitter << YAML::Key << "color" << YAML::Value << color;
-
-    SaveQosConfig(emitter, qos_);
-  }
+  SaveQosConfig(emitter, qos_);
+}
 }   // namespace mapviz_plugins

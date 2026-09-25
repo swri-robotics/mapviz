@@ -32,53 +32,53 @@
 
 namespace tile_map
 {
-  const QString StadiaSource::STADIA_TYPE = "stadia";
+const QString StadiaSource::STADIA_TYPE = "stadia";
 
-  StadiaSource::StadiaSource(const QString& name,
-                             const QString& base_url,
-                             bool is_custom,
-                             int32_t max_zoom) :
-                             TileSource()
-  {
-    name_ = name;
-    base_url_ = base_url;
-    is_custom_ = is_custom;
-    max_zoom_ = max_zoom;
-    min_zoom_ = 1;
+StadiaSource::StadiaSource(
+  const QString & name,
+  const QString & base_url,
+  bool is_custom,
+  int32_t max_zoom)
+: TileSource()
+{
+  name_ = name;
+  base_url_ = base_url;
+  is_custom_ = is_custom;
+  max_zoom_ = max_zoom;
+  min_zoom_ = 1;
+}
+
+QString StadiaSource::GetType() const
+{
+  return STADIA_TYPE;
+}
+
+QString StadiaSource::GetApiKey() const
+{
+  return api_key_;
+}
+
+void StadiaSource::SetApiKey(const QString & api_key)
+{
+  api_key_ = api_key.trimmed();
+}
+
+size_t StadiaSource::GenerateTileHash(int32_t level, int64_t x, int64_t y)
+{
+  return hash_((base_url_ + api_key_ + GenerateTileUrl(level, x, y)).toStdString());
+}
+
+QString StadiaSource::GenerateTileUrl(int32_t level, int64_t x, int64_t y)
+{
+  QString url(base_url_);
+  url.replace(QString::fromStdString("{level}"), QString::number(level));
+  url.replace(QString::fromStdString("{x}"), QString::number(x));
+  url.replace(QString::fromStdString("{y}"), QString::number(y));
+
+  if (!api_key_.isEmpty()) {
+    url += "?api_key=" + api_key_;
   }
 
-  QString StadiaSource::GetType() const
-  {
-    return STADIA_TYPE;
-  }
-
-  QString StadiaSource::GetApiKey() const
-  {
-    return api_key_;
-  }
-
-  void StadiaSource::SetApiKey(const QString& api_key)
-  {
-    api_key_ = api_key.trimmed();
-  }
-
-  size_t StadiaSource::GenerateTileHash(int32_t level, int64_t x, int64_t y)
-  {
-    return hash_((base_url_ + api_key_ + GenerateTileUrl(level, x, y)).toStdString());
-  }
-
-  QString StadiaSource::GenerateTileUrl(int32_t level, int64_t x, int64_t y)
-  {
-    QString url(base_url_);
-    url.replace(QString::fromStdString("{level}"), QString::number(level));
-    url.replace(QString::fromStdString("{x}"), QString::number(x));
-    url.replace(QString::fromStdString("{y}"), QString::number(y));
-
-    if (!api_key_.isEmpty())
-    {
-      url += "?api_key=" + api_key_;
-    }
-
-    return url;
-  }
+  return url;
+}
 }
