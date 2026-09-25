@@ -19,11 +19,21 @@ repos:
 
   - repo: local
     hooks:
+      - id: ament_flake8
+        name: ament_flake8
+        entry: ament_flake8
+        language: system
+        types: [python]
       - id: ament_lint_cmake
         name: ament_lint_cmake
         entry: ament_lint_cmake
         language: system
         files: (CMakeLists\.txt|\.cmake)$
+      - id: ament_pep257
+        name: ament_pep257
+        entry: ament_pep257
+        language: system
+        types: [python]
       - id: ament_xmllint
         name: ament_xmllint
         entry: ament_xmllint
