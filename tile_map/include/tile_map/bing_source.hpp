@@ -28,18 +28,18 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_BING_SOURCE_H
-#define TILE_MAP_BING_SOURCE_H
+#ifndef TILE_MAP__BING_SOURCE_HPP_
+#define TILE_MAP__BING_SOURCE_HPP_
 
-#include "tile_source.hpp"
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QString>
 
 #include <random>
 #include <string>
 #include <vector>
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QString>
+#include "tile_source.hpp"
 
 namespace tile_map
 {
@@ -136,6 +136,6 @@ protected:
   static const std::string BING_RESOURCE_KEY;
   static const std::string BING_STATUS_CODE_KEY;
 };
-}
+}  // namespace tile_map
 
-#endif //TILE_MAP_BING_SOURCE_H
+#endif  // TILE_MAP__BING_SOURCE_HPP_

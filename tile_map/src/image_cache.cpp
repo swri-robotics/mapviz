@@ -411,4 +411,4 @@ void CacheThread::run()
     }
   }
 }
-}
+}  // namespace tile_map

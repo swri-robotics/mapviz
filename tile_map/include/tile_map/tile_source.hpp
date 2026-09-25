@@ -28,11 +28,13 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_TILE_SOURCE_H
-#define TILE_MAP_TILE_SOURCE_H
+#ifndef TILE_MAP__TILE_SOURCE_HPP_
+#define TILE_MAP__TILE_SOURCE_HPP_
 
 #include <QObject>
 #include <QString>
+
+#include <string>
 
 namespace tile_map
 {
@@ -118,6 +120,6 @@ protected:
   int32_t min_zoom_;
   QString name_;
 };
-}
+}  // namespace tile_map
 
-#endif //TILE_MAP_TILE_SOURCE_H
+#endif  // TILE_MAP__TILE_SOURCE_HPP_

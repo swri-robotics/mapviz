@@ -30,19 +30,12 @@
 #ifndef MAPVIZ_PLUGINS__ROBOT_MODEL_PLUGIN_HPP_
 #define MAPVIZ_PLUGINS__ROBOT_MODEL_PLUGIN_HPP_
 
-#include <mapviz/mapviz_plugin.hpp>
-
 #include <QColor>
 #include <QObject>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QOffscreenSurface>
 #include <QWidget>
-
-#include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/string.hpp>
-#include <tf2/LinearMath/Transform.hpp>
-#include <tf2/LinearMath/Vector3.hpp>
 
 #include <array>
 #include <atomic>
@@ -54,7 +47,12 @@
 #include <utility>
 #include <vector>
 
-#include "ui_robot_model_config.h"
+#include <mapviz/mapviz_plugin.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include "ui_robot_model_config.h"  // NOLINT(build/include_subdir)
 
 namespace mapviz_plugins
 {
@@ -80,7 +78,7 @@ public:
     {
       std::array<tf2::Vector3, 3> verts;       // root_link frame
       std::array<float, 3> brightness;         // per-vertex Lambert [0,1]
-      std::array<std::array<float, 2>, 3> uvs; // per-vertex UV (u, v); v=0 is image top
+      std::array<std::array<float, 2>, 3> uvs;  // per-vertex UV (u, v); v=0 is image top
       bool use_texture{false};
       QColor color;  // flat color when !use_texture; tint when use_texture
     };

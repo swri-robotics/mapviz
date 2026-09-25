@@ -35,8 +35,7 @@
  *      - \e "node_name"/image_path <tt>[string]</tt> - Description. [""]
  */
 
-#include <string>
-#include <filesystem>
+#include <multires_image/multires_view_node.hpp>
 
 // QT libraries
 #include <QString>
@@ -45,7 +44,8 @@
 #include <QImage>
 #include <QFileInfo>
 
-#include <multires_image/multires_view_node.hpp>
+#include <string>
+#include <filesystem>
 
 namespace multires_image
 {
@@ -78,7 +78,7 @@ void MultiresViewNode::SpinLoop()
   }
 }
 
-void MultiresViewNode::showEvent(QShowEvent * /*event*/)
+void MultiresViewNode::showEvent([[maybe_unused]] QShowEvent * event)
 {
   Initialize();
 }
@@ -110,7 +110,7 @@ void MultiresViewNode::Initialize()
     initialized_ = true;
   }
 }
-}
+}  // namespace multires_image
 
 int main(int argc, char ** argv)
 {

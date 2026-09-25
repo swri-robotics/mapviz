@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_WIDGETS_HPP_
-#define MAPVIZ_WIDGETS_HPP_
+#ifndef MAPVIZ__WIDGETS_HPP_
+#define MAPVIZ__WIDGETS_HPP_
 
 // QT libraries
 #include <QWidget>

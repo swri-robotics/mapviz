@@ -27,14 +27,15 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_TEXTURE_CACHE_HPP_
-#define TILE_MAP_TEXTURE_CACHE_HPP_
+#ifndef TILE_MAP__TEXTURE_CACHE_HPP_
+#define TILE_MAP__TEXTURE_CACHE_HPP_
 
 #include <QCache>
 #include <QOpenGLTexture>
 
-#include <rclcpp/logger.hpp>
+#include <memory>
 
+#include <rclcpp/logger.hpp>
 #include <tile_map/image_cache.hpp>
 
 namespace tile_map
@@ -82,6 +83,6 @@ private:
   rclcpp::Logger logger_;
 };
 typedef std::shared_ptr<TextureCache> TextureCachePtr;
-}
+}  // namespace tile_map
 
-#endif  // TILE_MAP_TEXTURE_CACHE_HPP_
+#endif  // TILE_MAP__TEXTURE_CACHE_HPP_

@@ -99,4 +99,4 @@ QString WmtsSource::ValidateBaseUrl(const QString & base_url)
          "like http://localhost/osm_tiles/{level}/{x}/{y}.png ({z} also works "
          "in place of {level}).";
 }
-}
+}  // namespace tile_map

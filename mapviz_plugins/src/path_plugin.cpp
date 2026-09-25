@@ -28,23 +28,24 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/path_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
 #include <QOpenGLWidget>
-
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PathPlugin, mapviz::MapvizPlugin)
 

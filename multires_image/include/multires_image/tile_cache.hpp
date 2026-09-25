@@ -27,14 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MULTIRES_IMAGE_TILE_CACHE_HPP_
-#define MULTIRES_IMAGE_TILE_CACHE_HPP_
-
-// C++ standard libraries
-#include <vector>
-#include <stack>
-#include <queue>
-#include <map>
+#ifndef MULTIRES_IMAGE__TILE_CACHE_HPP_
+#define MULTIRES_IMAGE__TILE_CACHE_HPP_
 
 // QT libraries
 #include <QObject>
@@ -42,8 +36,13 @@
 #include <QRecursiveMutex>
 #include <QOpenGLWidget>
 
-#include <tf2/transform_datatypes.hpp>
+// C++ standard libraries
+#include <vector>
+#include <stack>
+#include <queue>
+#include <map>
 
+#include <tf2/transform_datatypes.hpp>
 #include <multires_image/tile_set.hpp>
 #include <multires_image/tile.hpp>
 
@@ -125,6 +124,6 @@ private:
   QRecursiveMutex m_precacheRequestSetLock;
   QRecursiveMutex m_textureLoadedLock;
 };
-}
+}  // namespace multires_image
 
-#endif  // MULTIRES_IMAGE_TILE_CACHE_HPP_
+#endif  // MULTIRES_IMAGE__TILE_CACHE_HPP_

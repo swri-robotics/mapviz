@@ -27,18 +27,18 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_TILE_MAP_VIEW_HPP_
-#define TILE_MAP_TILE_MAP_VIEW_HPP_
-
-#include <string>
+#ifndef TILE_MAP__TILE_MAP_VIEW_HPP_
+#define TILE_MAP__TILE_MAP_VIEW_HPP_
 
 #include <QOpenGLFunctions_1_1>
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <tile_map/tile_source.hpp>
 #include <tile_map/texture_cache.hpp>
-
-#include <swri_transform_util/transform.h>
-
+#include "swri_transform_util/transform.h"
 #include <rclcpp/logger.hpp>
 
 namespace tile_map
@@ -130,6 +130,6 @@ private:
 
   void InitializeTile(int32_t level, int64_t x, int64_t y, Tile & tile, int priority);
 };
-}
+}  // namespace tile_map
 
-#endif  // TILE_MAP_TILE_MAP_VIEW_HPP_
+#endif  // TILE_MAP__TILE_MAP_VIEW_HPP_

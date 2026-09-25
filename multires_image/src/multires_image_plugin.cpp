@@ -29,13 +29,13 @@
 
 #include <multires_image/multires_image_plugin.hpp>
 
-// C++ standard libraries
-#include <cstdio>
-
 // QT libraries
 #include <QFileDialog>
 #include <QOpenGLWidget>
 #include <QPalette>
+
+// C++ standard libraries
+#include <cstdio>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
@@ -338,4 +338,4 @@ void MultiresImagePlugin::SaveConfig(YAML::Emitter & emitter, const std::string 
   emitter << YAML::Key << "offset_x" << YAML::Value << offset_x_;
   emitter << YAML::Key << "offset_y" << YAML::Value << offset_y_;
 }
-}
+}  // namespace mapviz_plugins

@@ -30,16 +30,6 @@
 #ifndef MAPVIZ__MAPVIZ_PLUGIN_HPP_
 #define MAPVIZ__MAPVIZ_PLUGIN_HPP_
 
-// ROS libraries
-#include <swri_transform_util/transform.h>
-#include <swri_transform_util/transform_manager.h>
-#include <rclcpp/rclcpp.hpp>
-#include <tf2/transform_datatypes.hpp>
-#include <tf2_ros/buffer.hpp>
-#include <tf2_ros/transform_listener.hpp>
-
-#include <mapviz/topic_source.hpp>
-#include <mapviz/widgets.hpp>
 #include <yaml-cpp/yaml.h>
 
 // QT libraries
@@ -53,8 +43,17 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <utility>
 
-
+// ROS libraries
+#include "swri_transform_util/transform.h"
+#include "swri_transform_util/transform_manager.h"
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/transform_datatypes.hpp>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
+#include <mapviz/topic_source.hpp>
+#include <mapviz/widgets.hpp>
 #include "mapviz/stopwatch.hpp"
 
 namespace mapviz

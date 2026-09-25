@@ -81,4 +81,4 @@ void TileSource::SetName(const QString & name)
 {
   name_ = name;
 }
-}
+}  // namespace tile_map

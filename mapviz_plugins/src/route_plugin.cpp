@@ -28,7 +28,6 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/route_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
@@ -36,24 +35,23 @@
 #include <QPainter>
 #include <QPalette>
 
-#include <opencv2/core/core.hpp>
-
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-
-#include <swri_image_util/geometry_util.h>
-#include <swri_route_util/util.h>
-#include <swri_transform_util/transform_util.h>
-
-#include <marti_nav_msgs/msg/route.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
+#include <opencv2/core/core.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include "swri_image_util/geometry_util.h"
+#include "swri_route_util/util.h"
+#include "swri_transform_util/transform_util.h"
+#include <marti_nav_msgs/msg/route.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::RoutePlugin, mapviz::MapvizPlugin)
 
@@ -218,7 +216,6 @@ void RoutePlugin::connectPositionCallback(const std::string & topic, const rmw_q
       RCLCPP_INFO(Logger(), "Subscribing to %s", position_topic_.c_str());
     }
   }
-
 }
 
 void RoutePlugin::handleRoutePosition(

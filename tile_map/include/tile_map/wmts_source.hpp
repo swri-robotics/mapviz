@@ -28,12 +28,12 @@
 //
 // *****************************************************************************
 
-#ifndef TILE_MAP_WMTS_SOURCE_H
-#define TILE_MAP_WMTS_SOURCE_H
-
-#include "tile_source.hpp"
+#ifndef TILE_MAP__WMTS_SOURCE_HPP_
+#define TILE_MAP__WMTS_SOURCE_HPP_
 
 #include <string>
+
+#include "tile_source.hpp"
 
 namespace tile_map
 {
@@ -98,6 +98,6 @@ public:
 private:
   std::hash<std::string> hash_;
 };
-}
+}  // namespace tile_map
 
-#endif //TILE_MAP_WMTS_SOURCE_H
+#endif  // TILE_MAP__WMTS_SOURCE_HPP_

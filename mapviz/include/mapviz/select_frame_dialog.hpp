@@ -29,13 +29,13 @@
 #ifndef MAPVIZ__SELECT_FRAME_DIALOG_HPP_
 #define MAPVIZ__SELECT_FRAME_DIALOG_HPP_
 
-#include <tf2_ros/buffer.hpp>
-
 #include <QDialog>
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <tf2_ros/buffer.hpp>
 
 
 QT_BEGIN_NAMESPACE

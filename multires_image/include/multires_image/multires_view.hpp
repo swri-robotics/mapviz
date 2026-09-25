@@ -27,8 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MAPVIZ_PLUGINS_MULTIRES_VIEW_HPP_
-#define MAPVIZ_PLUGINS_MULTIRES_VIEW_HPP_
+#ifndef MULTIRES_IMAGE__MULTIRES_VIEW_HPP_
+#define MULTIRES_IMAGE__MULTIRES_VIEW_HPP_
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
@@ -65,6 +65,6 @@ private:
   double min_scale_;
   bool gl_initialized_ = false;
 };
-}
+}  // namespace mapviz_plugins
 
-#endif  // MAPVIZ_PLUGINS_MULTIRES_VIEW_HPP_
+#endif  // MULTIRES_IMAGE__MULTIRES_VIEW_HPP_

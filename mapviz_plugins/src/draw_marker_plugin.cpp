@@ -36,19 +36,19 @@
 #include <QMouseEvent>
 #include <QPalette>
 
-#include <visualization_msgs/msg/marker.hpp>
-#include <mapviz/select_frame_dialog.hpp>
-#include <mapviz/qt_mouse_event_compat.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cstdio>
 #include <limits>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <visualization_msgs/msg/marker.hpp>
+#include <mapviz/select_frame_dialog.hpp>
+#include <mapviz/qt_mouse_event_compat.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::DrawMarkerPlugin, mapviz::MapvizPlugin)
 

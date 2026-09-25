@@ -27,12 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MULTIRES_IMAGE_TILE_HPP_
-#define MULTIRES_IMAGE_TILE_HPP_
-
-// C++ standard libraries
-#include <memory>
-#include <string>
+#ifndef MULTIRES_IMAGE__TILE_HPP_
+#define MULTIRES_IMAGE__TILE_HPP_
 
 // QT libraries
 #include <QImage>
@@ -40,9 +36,12 @@
 #include <QOpenGLFunctions_1_1>
 #include <QOpenGLTexture>
 
-#include <tf2/transform_datatypes.hpp>
+// C++ standard libraries
+#include <memory>
+#include <string>
 
-#include <swri_transform_util/transform.h>
+#include <tf2/transform_datatypes.hpp>
+#include "swri_transform_util/transform.h"
 
 namespace multires_image
 {
@@ -105,6 +104,6 @@ private:
   QMutex m_mutex;
   std::unique_ptr<QOpenGLTexture> m_texture;
 };
-}
+}  // namespace multires_image
 
-#endif  // MULTIRES_IMAGE_TILE_HPP_
+#endif  // MULTIRES_IMAGE__TILE_HPP_

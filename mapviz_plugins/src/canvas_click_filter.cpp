@@ -27,13 +27,13 @@
 //
 // *****************************************************************************
 
+#include "mapviz_plugins/canvas_click_filter.hpp"
+
 #include <QMouseEvent>
 #include <QLineF>
 #include <QDateTime>
 
 #include <mapviz/qt_mouse_event_compat.hpp>
-
-#include "mapviz_plugins/canvas_click_filter.hpp"
 
 namespace mapviz_plugins
 {
