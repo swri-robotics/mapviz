@@ -29,6 +29,7 @@
 #include <gtest/gtest.h>
 #include <QApplication>
 #include <QCoreApplication>
+#include <QOpenGLWidget>
 #include <yaml-cpp/yaml.h>
 
 #include <chrono>
@@ -37,6 +38,7 @@
 #include <ostream>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include <marti_common_msgs/msg/float32_stamped.hpp>
 #include <marti_common_msgs/msg/string_stamped.hpp>
@@ -54,10 +56,12 @@
 #include <mapviz_plugins/image_plugin.hpp>
 #include <mapviz_plugins/laserscan_plugin.hpp>
 #include <mapviz_plugins/marker_plugin.hpp>
+#include <mapviz_plugins/measuring_plugin.hpp>
 #include <mapviz_plugins/navsat_plugin.hpp>
 #include <mapviz_plugins/occupancy_grid_plugin.hpp>
 #include <mapviz_plugins/odometry_plugin.hpp>
 #include <mapviz_plugins/path_plugin.hpp>
+#include <mapviz_plugins/pointcloud2_plugin.hpp>
 #include <mapviz_plugins/pose_plugin.hpp>
 #include <mapviz_plugins/robot_model_plugin.hpp>
 #include <mapviz_plugins/route_plugin.hpp>
@@ -71,6 +75,19 @@ namespace
 /// they need a node just as they get one from Mapviz::CreateNewDisplay(),
 /// which calls SetNode() before LoadConfigPlugin().
 rclcpp::Node::SharedPtr g_node;
+
+/// Stands in for the map canvas.  It is never shown, so no OpenGL context is
+/// needed; plugins only ask it to repaint.
+std::unique_ptr<QOpenGLWidget> g_canvas;
+
+/// PointCloud2Plugin repaints while loading its config, which needs the
+/// canvas that Initialize() normally provides.  Initialize() also needs an
+/// OpenGL context, so hand the canvas over directly.
+class CanvasPointCloud2Plugin : public mapviz_plugins::PointCloud2Plugin
+{
+public:
+  CanvasPointCloud2Plugin() {canvas_ = g_canvas.get();}
+};
 
 /// Round trips a plugin's configuration the way mapviz does when a config
 /// file is opened and then saved again.
@@ -321,9 +338,6 @@ TEST_P(TopicEditing, FollowsTheConfiguredTopic)
   EXPECT_TRUE(HasSubscribers(second));
 }
 
-// PointCloud2Plugin is left out: loading its config repaints the canvas it is
-// only given by Initialize(), which needs an OpenGL context that the headless
-// test platform cannot provide.
 INSTANTIATE_TEST_SUITE_P(
   Plugins, TopicEditing,
   ::testing::Values(
@@ -339,6 +353,7 @@ INSTANTIATE_TEST_SUITE_P(
     Case<mapviz_plugins::OccupancyGridPlugin>("occupancy_grid"),
     Case<mapviz_plugins::OdometryPlugin>("odometry"),
     Case<mapviz_plugins::PathPlugin>("path"),
+    Case<CanvasPointCloud2Plugin>("pointcloud2"),
     Case<mapviz_plugins::PosePlugin>("pose"),
     Case<mapviz_plugins::RobotModelPlugin>("robot_model"),
     Case<mapviz_plugins::RoutePlugin>("route"),
@@ -462,6 +477,84 @@ TEST(OccupancyGridTopics, DoesNotSubscribeToUpdatesWithoutAGridTopic)
   EXPECT_TRUE(HasNoSubscribers("/_updates"));
 }
 
+namespace mapviz_plugins
+{
+class MeasuringPluginTest : public ::testing::Test
+{
+protected:
+  /// Places vertices as if they had been clicked, then measures.
+  static void Measure(MeasuringPlugin & plugin, const std::vector<tf2::Vector3> & vertices)
+  {
+    plugin.vertices_ = vertices;
+    plugin.DistanceCalculation();
+  }
+
+  static const std::vector<double> & Measurements(const MeasuringPlugin & plugin)
+  {
+    return plugin.measurements_;
+  }
+
+  static std::string TotalText(const MeasuringPlugin & plugin)
+  {
+    return plugin.ui_.totaldistance->text().toStdString();
+  }
+
+  static std::string LastSegmentText(const MeasuringPlugin & plugin)
+  {
+    return plugin.ui_.measurement->text().toStdString();
+  }
+};
+}  // namespace mapviz_plugins
+
+using mapviz_plugins::MeasuringPluginTest;
+
+TEST_F(MeasuringPluginTest, CountsAPointAtTheOrigin)
+{
+  mapviz_plugins::MeasuringPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  // The origin used to double as "no previous point", so a click at (0, 0)
+  // was left out of the distance (#924).
+  Measure(plugin, {tf2::Vector3(0, 0, 0), tf2::Vector3(3, 4, 0)});
+
+  ASSERT_EQ(2u, Measurements(plugin).size());
+  EXPECT_DOUBLE_EQ(5.0, Measurements(plugin)[0]);
+  EXPECT_DOUBLE_EQ(5.0, Measurements(plugin).back());
+  EXPECT_EQ("5 meters", TotalText(plugin));
+  EXPECT_EQ("5 meters", LastSegmentText(plugin));
+}
+
+TEST_F(MeasuringPluginTest, CountsTheOriginInTheMiddleOfAPath)
+{
+  mapviz_plugins::MeasuringPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  Measure(
+    plugin,
+    {tf2::Vector3(3, 4, 0), tf2::Vector3(0, 0, 0), tf2::Vector3(0, 2, 0)});
+
+  // One measurement per segment, then the total.
+  ASSERT_EQ(3u, Measurements(plugin).size());
+  EXPECT_DOUBLE_EQ(5.0, Measurements(plugin)[0]);
+  EXPECT_DOUBLE_EQ(2.0, Measurements(plugin)[1]);
+  EXPECT_DOUBLE_EQ(7.0, Measurements(plugin)[2]);
+  EXPECT_EQ("7 meters", TotalText(plugin));
+  EXPECT_EQ("2 meters", LastSegmentText(plugin));
+}
+
+TEST_F(MeasuringPluginTest, ShowsNothingForASinglePoint)
+{
+  mapviz_plugins::MeasuringPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  Measure(plugin, {tf2::Vector3(1, 1, 0)});
+
+  ASSERT_EQ(1u, Measurements(plugin).size());
+  EXPECT_DOUBLE_EQ(0.0, Measurements(plugin)[0]);
+  EXPECT_EQ("", TotalText(plugin));
+  EXPECT_EQ("", LastSegmentText(plugin));
+}
+
 int main(int argc, char ** argv)
 {
   // The plugins build QWidget based config panels in their constructors, so a
@@ -470,10 +563,12 @@ int main(int argc, char ** argv)
   QApplication app(argc, argv);
   rclcpp::init(argc, argv);
   g_node = std::make_shared<rclcpp::Node>("test_plugin_config");
+  g_canvas = std::make_unique<QOpenGLWidget>();
 
   testing::InitGoogleTest(&argc, argv);
   int result = RUN_ALL_TESTS();
 
+  g_canvas.reset();
   g_node.reset();
   rclcpp::shutdown();
   return result;

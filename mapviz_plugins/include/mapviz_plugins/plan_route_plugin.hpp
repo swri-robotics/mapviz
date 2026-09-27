@@ -60,9 +60,16 @@
 
 namespace mapviz_plugins
 {
+class PlanRoutePluginTest;
+
 class PlanRoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
+
+  /// Waypoints only arrive through mouse events on the map canvas, which a
+  /// unit test does not have, so the test fixture is a friend that can place
+  /// them directly and drive planning and publishing.
+  friend class PlanRoutePluginTest;
 
 public:
   PlanRoutePlugin();

@@ -49,9 +49,16 @@
 
 namespace mapviz_plugins
 {
+class MeasuringPluginTest;
+
 class MeasuringPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_1_1
 {
   Q_OBJECT
+
+  /// Vertices only arrive through mouse events on the map canvas, which a
+  /// unit test does not have, so the test fixture is a friend that can place
+  /// them directly and read back the measurements.
+  friend class MeasuringPluginTest;
 
 public:
   MeasuringPlugin();
