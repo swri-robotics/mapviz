@@ -202,10 +202,12 @@ void RoutePlugin::connectPositionCallback(const std::string & topic, const rmw_q
   if ((topic != position_topic_) || !qosEqual(qos, position_qos_)) {
     src_route_position_.reset();
     position_sub_.reset();
+    // Record the topic even when it is empty, so that entering the previous
+    // topic again is seen as a change and resubscribes.
+    position_topic_ = topic;
+    position_qos_ = qos;
 
     if (!topic.empty()) {
-      position_topic_ = topic;
-      position_qos_ = qos;
       Subscribe<marti_nav_msgs::msg::RoutePosition>(
         position_topic_, qos, position_sub_,
         [this](marti_nav_msgs::msg::RoutePosition::ConstSharedPtr msg) {
