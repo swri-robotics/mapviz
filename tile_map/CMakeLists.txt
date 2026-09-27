@@ -136,6 +136,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   jsoncpp_lib
   ${swri_math_util_TARGETS})
 
+# swri_transform_util 3.10.0 added Transform::operator==, which TileMapView
+# uses to skip reprojecting tiles when the transform has not changed.
+if(swri_transform_util_VERSION VERSION_GREATER_EQUAL "3.10.0")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE TILE_MAP_HAVE_TRANSFORM_EQUALITY)
+endif()
+
 set(PLUGIN_SRC_FILES
   src/${PROJECT_NAME}_plugin.cpp)
 set(PLUGIN_UI_FILES
