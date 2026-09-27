@@ -277,9 +277,11 @@ target_compile_definitions(${PROJECT_NAME}
   PRIVATE
     WFlags=WindowFlags)
 
-# cv_bridge 3.5.0 (ROS 2 Iron) started transitioning some files from .h to .hpp extensions
+# cv_bridge 3.5.0 (ROS 2 Iron) started transitioning some files from .h to .hpp extensions.
+# Public because image_plugin.hpp and disparity_plugin.hpp choose their include
+# with it, so anything including them (such as the tests) needs it too.
 if(cv_bridge_VERSION VERSION_LESS "3.5.0")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CVBRIDGE_H_FILES)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC USE_CVBRIDGE_H_FILES)
 endif()
 
 if(MAPVIZ_PLUGINS_IMAGE_TRANSPORT_TAKES_NODE_REF)
