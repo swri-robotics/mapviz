@@ -108,9 +108,13 @@ void TileMapView::SetTransform(const swri_transform_util::Transform & transform)
   // local XY frame originating at lat/lon (0, 0) shares both with the identity
   // transform. The lat/lon (0,0) is especially important for Gazebo that tends
   // to use this transform. This asks the transform implementation itself.
+  // Without Transform::operator== (swri_transform_util < 3.10.0) there is no
+  // reliable way to tell, so always reproject.
+#ifdef TILE_MAP_HAVE_TRANSFORM_EQUALITY
   if (transform == transform_) {
     return;
   }
+#endif
 
   transform_ = transform;
 
