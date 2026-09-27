@@ -276,7 +276,7 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
   auto ret_value = std::make_pair<std::vector<std::string>, rmw_qos_profile_t>(
     std::move(selection),
     std::move(qos));
-  
+
   return ret_value;
 }
 

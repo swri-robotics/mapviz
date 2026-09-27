@@ -81,7 +81,7 @@ class PathPlugin : public mapviz_plugins::PointDrawingPlugin
   protected Q_SLOTS:
     void SelectTopic();
     void TopicEdited();
-  
+
 
   private Q_SLOTS:
     void handlePath(const nav_msgs::msg::Path::ConstSharedPtr msg);

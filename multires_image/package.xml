@@ -6,11 +6,11 @@
      multires_image
 
   </description>
-  <author>Marc Alban</author>
-  <author>P. J. Reed</author>
   <maintainer email="swri-robotics@swri.org">Southwest Research Institute</maintainer>
   <license>BSD</license>
   <url>https://github.com/swri-robotics/mapviz</url>
+  <author>Marc Alban</author>
+  <author>P. J. Reed</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -48,11 +48,12 @@
   <exec_depend>python3-yaml</exec_depend>
   <exec_depend>rclpy</exec_depend>
 
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
     <mapviz plugin="${prefix}/mapviz_plugins.xml" />
   </export>
 
 </package>
-
-

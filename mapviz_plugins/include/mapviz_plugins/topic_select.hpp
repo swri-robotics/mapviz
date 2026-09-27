@@ -117,7 +117,7 @@ class SelectTopicDialog : public QDialog
    * settings.  This is a convenience wrapper for the common case where only one
    * datatype is allowed.
    *
-   * If the user cancels the selection or doesn't make a valid selection, the 
+   * If the user cancels the selection or doesn't make a valid selection, the
    * returned vector will be empty, and the QoS will be the RMW default.
    */
   static std::pair<std::vector<std::string>, rmw_qos_profile_t> selectTopics(
@@ -128,7 +128,7 @@ class SelectTopicDialog : public QDialog
 
   /**
    * Present the user with a dialog to select a multiple topics and configure QoS.
-   * This is a convenience wrapper for the common case where two datatypes are 
+   * This is a convenience wrapper for the common case where two datatypes are
    * allowed.
    *
    * If the user cancels the selection or doesn't make a valid

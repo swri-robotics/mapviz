@@ -632,7 +632,7 @@ namespace tile_map
       {
         ui_.source_combo->setCurrentIndex(index);
       }
-      
+
       SelectSource(QString::fromStdString(source));
     }
   }
@@ -655,7 +655,7 @@ namespace tile_map
       }
     }
     emitter << YAML::EndSeq;
-    
+
     BingSource* bing_source = dynamic_cast<BingSource*>(tile_sources_[BING_NAME].get());
     std::string bing_key = TrimString(bing_source->GetApiKey().toStdString());
     emitter << YAML::Key << BING_API_KEY << YAML::Value << bing_key;
@@ -696,4 +696,3 @@ namespace tile_map
     tile_map_.SetLogger(node.get_logger());
   }
 }
-

@@ -194,4 +194,3 @@ namespace multires_image
     }
   }
 }
-

@@ -93,4 +93,3 @@ class CoordinatePickerPlugin : public mapviz::MapvizPlugin
 }   // namespace mapviz_plugins
 
 #endif  // MAPVIZ_PLUGINS__COORDINATE_PICKER_PLUGIN_HPP_
-

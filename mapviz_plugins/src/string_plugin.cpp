@@ -229,7 +229,7 @@ namespace mapviz_plugins
       // Make a copy of the display font here so that we can change the size
       // to a consistent value, and update the UI with that information
       QFont button_font = font_;
-      button_font.setPointSize(DEFAULT_FONT_SIZE); 
+      button_font.setPointSize(DEFAULT_FONT_SIZE);
       ui_.font_button->setFont(button_font);
       ui_.font_button->setText(button_font.family());
     }
@@ -387,7 +387,7 @@ namespace mapviz_plugins
             "Exception thrown while subscribing to Marti stamped string: %s",
             topic_.c_str());
         }
-         
+
         RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
       }
     }

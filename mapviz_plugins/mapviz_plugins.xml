@@ -1,6 +1,6 @@
 <library path="mapviz_plugins">
-  <class name="mapviz_plugins/attitude_indicator" 
-         type="mapviz_plugins::AttitudeIndicatorPlugin" 
+  <class name="mapviz_plugins/attitude_indicator"
+         type="mapviz_plugins::AttitudeIndicatorPlugin"
          base_class_type="mapviz::MapvizPlugin">
     <description>
       Plugin to provide an intuitive visualization of orientations
@@ -88,4 +88,3 @@
     <description>Renders a URDF robot model top-down using Lambert shading</description>
   </class>
 </library>
-

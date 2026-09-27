@@ -121,7 +121,7 @@ namespace mapviz_plugins
     std::string topic = ui_.topic->text().trimmed().toStdString();
     connectCallback(topic, qos_);
   }
-  
+
   void OdometryPlugin::connectCallback(const std::string& topic, const rmw_qos_profile_t& qos)
   {
     ui_.topic->setText(QString::fromStdString(topic));
@@ -433,5 +433,3 @@ namespace mapviz_plugins
     SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins
-
-

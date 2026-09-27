@@ -104,4 +104,3 @@ class OdometryPlugin : public mapviz_plugins::PointDrawingPlugin
 
 
 #endif  // MAPVIZ_PLUGINS__ODOMETRY_PLUGIN_HPP_
-

@@ -767,4 +767,3 @@ namespace mapviz_plugins
     connected_ = new_connected;
   }
 }   // namespace mapviz_plugins
-

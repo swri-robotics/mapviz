@@ -698,4 +698,3 @@ namespace mapviz_plugins
     SaveQosConfig(emitter, qos_);
   }
 }   // namespace mapviz_plugins
-

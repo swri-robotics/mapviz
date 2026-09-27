@@ -231,4 +231,3 @@ namespace multires_image
     m_transformed_bottom_right = offset_tf * (transform * m_bottom_right);
   }
 }
-

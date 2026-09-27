@@ -1,0 +1,31 @@
+# See https://pre-commit.com for more information.
+#
+# The ament hooks run the same linters as `colcon test` and need a sourced ROS 2 environment:
+#   source /opt/ros/$ROS_DISTRO/setup.bash
+#   pre-commit install
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-xml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+  - repo: local
+    hooks:
+      - id: ament_lint_cmake
+        name: ament_lint_cmake
+        entry: ament_lint_cmake
+        language: system
+        files: (CMakeLists\.txt|\.cmake)$
+      - id: ament_xmllint
+        name: ament_xmllint
+        entry: ament_xmllint
+        language: system
+        files: package\.xml$

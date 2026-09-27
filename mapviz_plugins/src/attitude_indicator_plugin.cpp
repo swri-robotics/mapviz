@@ -241,7 +241,7 @@ namespace mapviz_plugins
   void AttitudeIndicatorPlugin::PrintInfo(const std::string& message)
   {
     PrintInfoHelper(ui_.status, message);
-  
+
 }
 
   void AttitudeIndicatorPlugin::PrintWarning(const std::string& message)
