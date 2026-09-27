@@ -585,7 +585,7 @@ void LaserScanPlugin::LoadConfig(
     ui_.minValue->setValue(min_value_);
   }
 
-  if (node["max_value"]) {
+  if (node["value_max"]) {
     max_value_ = node["value_max"].as<double>();
     ui_.maxValue->setValue(max_value_);
   }
