@@ -31,8 +31,6 @@
 #ifndef MAPVIZ__SELECT_SERVICE_DIALOG_HPP_
 #define MAPVIZ__SELECT_SERVICE_DIALOG_HPP_
 
-#include <mapviz/topic_source.hpp>
-
 #include <QDialog>
 #include <QMetaType>
 #include <QThread>
@@ -41,7 +39,10 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include <mapviz/topic_source.hpp>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;

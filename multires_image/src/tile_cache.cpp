@@ -29,15 +29,15 @@
 
 #include <multires_image/tile_cache.hpp>
 
+// QT libraries
+#include <QApplication>
+#include <QEvent>
+
 // C++ standard libraries
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
 #include <exception>
-
-// QT libraries
-#include <QApplication>
-#include <QEvent>
 
 #include <multires_image/tile_set_layer.hpp>
 
@@ -338,4 +338,4 @@ void TileCache::FreeThread::run()
     sleep(2);
   }
 }
-}
+}  // namespace multires_image

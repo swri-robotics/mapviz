@@ -28,18 +28,10 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/textured_marker_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
 #include <QOpenGLWidget>
-
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/image_encodings.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
 #include <algorithm>
@@ -49,6 +41,15 @@
 #include <map>
 #include <string>
 #include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 using namespace std::chrono_literals;
 
@@ -182,7 +183,6 @@ void TexturedMarkerPlugin::connectCallback(const std::string & topic, const rmw_
       }
     }
   }
-
 }
 
 void TexturedMarkerPlugin::ProcessMarker(const marti_visualization_msgs::msg::TexturedMarker marker)

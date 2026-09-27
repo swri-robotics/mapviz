@@ -28,16 +28,17 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/point_click_publisher_plugin.hpp>
-#include <swri_transform_util/frames.h>
-#include <tf2/transform_datatypes.hpp>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
 
 // C++ Standard Libraries
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "swri_transform_util/frames.h"
+#include <tf2/transform_datatypes.hpp>
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointClickPublisherPlugin, mapviz::MapvizPlugin)
 

@@ -27,12 +27,8 @@
 //
 // *****************************************************************************
 
-#ifndef MULTIRES_IMAGE_MULTIRES_VIEW_NODE_HPP_
-#define MULTIRES_IMAGE_MULTIRES_VIEW_NODE_HPP_
-
-// C++ standard libraries
-#include <string>
-#include <thread>
+#ifndef MULTIRES_IMAGE__MULTIRES_VIEW_NODE_HPP_
+#define MULTIRES_IMAGE__MULTIRES_VIEW_NODE_HPP_
 
 // QT libraries
 #include <QMainWindow>
@@ -40,9 +36,12 @@
 #include <QLabel>
 #include <QShowEvent>
 
+// C++ standard libraries
+#include <string>
+#include <thread>
+
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-
 #include <multires_image/QGLMap.hpp>
 #include <multires_image/tile_set.hpp>
 
@@ -58,7 +57,7 @@ public:
     Qt::WindowFlags flags = Qt::WindowFlags());
   ~MultiresViewNode() override = default;
 
-  virtual void showEvent(QShowEvent * event) override;
+  void showEvent(QShowEvent * event) override;
 
   void Initialize();
 
@@ -80,6 +79,6 @@ private:
 
   TileSet * tile_set_;
 };
-}
+}  // namespace multires_image
 
-#endif  // MULTIRES_IMAGE_MULTIRES_VIEW_NODE_HPP_
+#endif  // MULTIRES_IMAGE__MULTIRES_VIEW_NODE_HPP_

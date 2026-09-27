@@ -28,7 +28,6 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/odometry_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
@@ -36,22 +35,22 @@
 #include <QPainter>
 #include <QPalette>
 
-#include <opencv2/core/core.hpp>
-
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-
-#include <swri_image_util/geometry_util.h>
-#include <swri_transform_util/transform_util.h>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
-
 // C++ standard libraries
 #include <cstdio>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
+#include <opencv2/core/core.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include "swri_image_util/geometry_util.h"
+#include "swri_transform_util/transform_util.h"
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::OdometryPlugin, mapviz::MapvizPlugin)
 
@@ -158,7 +157,6 @@ void OdometryPlugin::connectCallback(const std::string & topic, const rmw_qos_pr
       RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
     }
   }
-
 }
 
 void OdometryPlugin::handleOdometry(

@@ -28,18 +28,10 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/laserscan_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
 #include <QOpenGLWidget>
-
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-#include <swri_transform_util/transform.h>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
 #include <algorithm>
@@ -47,6 +39,15 @@
 #include <cstdio>
 #include <deque>
 #include <string>
+
+#include <mapviz_plugins/topic_select.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include "swri_transform_util/transform.h"
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::LaserScanPlugin, mapviz::MapvizPlugin)
 
@@ -168,7 +169,6 @@ LaserScanPlugin::LaserScanPlugin()
     SIGNAL(clicked()),
     this,
     SLOT(ClearHistory()));
-
 }
 
 void LaserScanPlugin::ClearHistory()

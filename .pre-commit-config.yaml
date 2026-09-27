@@ -19,6 +19,11 @@ repos:
 
   - repo: local
     hooks:
+      - id: ament_cpplint
+        name: ament_cpplint
+        entry: ament_cpplint
+        language: system
+        files: \.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
       - id: ament_flake8
         name: ament_flake8
         entry: ament_flake8

@@ -30,10 +30,6 @@
 #ifndef MAPVIZ__CONFIG_ITEM_HPP_
 #define MAPVIZ__CONFIG_ITEM_HPP_
 
-// C++ standard libraries
-#include <string>
-#include <vector>
-
 // QT libraries
 #include <QWidget>
 #include <QLabel>

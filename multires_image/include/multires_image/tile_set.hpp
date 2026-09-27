@@ -27,15 +27,14 @@
 //
 // *****************************************************************************
 
-#ifndef MULTIRES_IMAGE_TILE_SET_HPP_
-#define MULTIRES_IMAGE_TILE_SET_HPP_
+#ifndef MULTIRES_IMAGE__TILE_SET_HPP_
+#define MULTIRES_IMAGE__TILE_SET_HPP_
 
 // C++ standard libraries
 #include <string>
 #include <vector>
 
-#include <swri_transform_util/georeference.h>
-
+#include "swri_transform_util/georeference.h"
 #include <multires_image/tile_set_layer.hpp>
 
 namespace multires_image
@@ -74,6 +73,6 @@ private:
 
   std::vector<TileSetLayer *> m_layers;
 };
-}
+}  // namespace multires_image
 
-#endif  // MULTIRES_IMAGE_TILE_SET_HPP_
+#endif  // MULTIRES_IMAGE__TILE_SET_HPP_

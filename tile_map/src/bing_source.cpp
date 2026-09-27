@@ -31,19 +31,19 @@
 #include <tile_map/bing_source.hpp>
 
 #include <QString>
+#include <json/json.h>
 
 #include <random>
-
-#include <json/json.h>
 
 namespace tile_map
 {
 const QString BingSource::BING_TYPE = "bing";
-const std::string BingSource::BING_IMAGE_URL_KEY = "imageUrl";
-const std::string BingSource::BING_IMAGE_URL_SUBDOMAIN_KEY = "imageUrlSubdomains";
-const std::string BingSource::BING_RESOURCE_SET_KEY = "resourceSets";
-const std::string BingSource::BING_RESOURCE_KEY = "resources";
-const std::string BingSource::BING_STATUS_CODE_KEY = "statusCode";
+const std::string BingSource::BING_IMAGE_URL_KEY = "imageUrl";  // NOLINT(runtime/string)
+const std::string BingSource::BING_IMAGE_URL_SUBDOMAIN_KEY =  // NOLINT(runtime/string)
+  "imageUrlSubdomains";
+const std::string BingSource::BING_RESOURCE_SET_KEY = "resourceSets";  // NOLINT(runtime/string)
+const std::string BingSource::BING_RESOURCE_KEY = "resources";  // NOLINT(runtime/string)
+const std::string BingSource::BING_STATUS_CODE_KEY = "statusCode";  // NOLINT(runtime/string)
 
 BingSource::BingSource(const QString & name)
 : TileSource(),
@@ -54,7 +54,8 @@ BingSource::BingSource(const QString & name)
   is_custom_ = false;
   max_zoom_ = 19;
   base_url_ =
-    "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?uriScheme=https&include=ImageryProviders&key={api_key}";
+    "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial"
+    "?uriScheme=https&include=ImageryProviders&key={api_key}";
   tile_url_ = "";
   min_zoom_ = 2;
 
@@ -176,4 +177,4 @@ void BingSource::ReplyFinished(QNetworkReply * reply)
     is_ready_ = true;
   }
 }
-}
+}  // namespace tile_map

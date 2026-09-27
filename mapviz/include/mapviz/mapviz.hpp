@@ -46,21 +46,7 @@
 #include <QStringList>
 #include <QMainWindow>
 #include <QShortcut>
-
-#include <swri_transform_util/transform_manager.h>
-#include <mapviz_interfaces/srv/add_mapviz_display.hpp>  // Service
-#include <mapviz/mapviz_plugin.hpp>
-#include <mapviz/map_canvas.hpp>
-#include <mapviz/video_writer.hpp>
-
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp/version.h>
-#include <pluginlib/class_loader.hpp>
-#include <tf2_ros/buffer.hpp>
-#include <tf2_ros/transform_listener.hpp>
 #include <yaml-cpp/yaml.h>
-#include <std_srvs/srv/empty.hpp>
 
 // C++ standard libraries
 #include <atomic>
@@ -71,11 +57,23 @@
 #include <thread>
 #include <vector>
 
+#include "swri_transform_util/transform_manager.h"
+#include <mapviz_interfaces/srv/add_mapviz_display.hpp>  // Service
+#include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/map_canvas.hpp>
+#include <mapviz/video_writer.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include "rclcpp/version.h"
+#include <pluginlib/class_loader.hpp>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
+#include <std_srvs/srv/empty.hpp>
+
 // Auto-generated UI files
 #include "ui/ui_mapviz.h"
 #include "ui/ui_pluginselect.h"
-
-
 #include "mapviz/stopwatch.hpp"
 
 namespace mapviz

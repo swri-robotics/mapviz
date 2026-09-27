@@ -1,5 +1,45 @@
 // *****************************************************************************
 //
+// Copyright (c) 2026, Southwest Research Institute® (SwRI®)
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//     * Neither the name of Southwest Research Institute® (SwRI®) nor the
+//       names of its contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// *****************************************************************************
+
+#include <mapviz_plugins/topic_select.hpp>
+
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QListWidget>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QTimerEvent>
+#include <QVBoxLayout>
+
+// *****************************************************************************
+//
 // Copyright (c) 2014, Southwest Research Institute® (SwRI®)
 // All rights reserved.
 //
@@ -32,19 +72,8 @@
 #include <string>
 #include <vector>
 
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QListWidget>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QSpinBox>
-#include <QTimerEvent>
-#include <QVBoxLayout>
-
 #include <rclcpp/logging.hpp>
-#include <rmw/qos_profiles.h>
-
-#include <mapviz_plugins/topic_select.hpp>
+#include "rmw/qos_profiles.h"
 
 namespace mapviz_plugins
 {
@@ -85,7 +114,7 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectTopic(
     return dialog.selectedTopic();
   } else {
     rmw_qos_profile_t default_profile = rmw_qos_profile_default;
-    return std::make_pair<std::string, rmw_qos_profile_t>(
+    return std::pair<std::string, rmw_qos_profile_t>(
       std::string(),
       std::move(default_profile));
   }
@@ -129,7 +158,7 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
   } else {
     rmw_qos_profile_t default_profile = rmw_qos_profile_default;
     std::vector<std::string> topics;
-    return std::make_pair<std::vector<std::string>, rmw_qos_profile_t>(
+    return std::pair<std::vector<std::string>, rmw_qos_profile_t>(
       std::move(topics),
       std::move(default_profile));
   }
@@ -213,11 +242,11 @@ std::pair<std::string, rmw_qos_profile_t> SelectTopicDialog::selectedTopic() con
 {
   auto [selection, qos] = selectedTopics();
   if (selection.empty()) {
-    return std::make_pair<std::string, rmw_qos_profile_t>(
+    return std::pair<std::string, rmw_qos_profile_t>(
       std::string(),
       std::move(qos));
   } else {
-    return std::make_pair<std::string, rmw_qos_profile_t>(
+    return std::pair<std::string, rmw_qos_profile_t>(
       std::move(selection.front()),
       std::move(qos));
   }
@@ -261,7 +290,7 @@ std::pair<std::vector<std::string>, rmw_qos_profile_t> SelectTopicDialog::select
     qos.durability = RMW_QOS_POLICY_DURABILITY_VOLATILE;
   }
 
-  auto ret_value = std::make_pair<std::vector<std::string>, rmw_qos_profile_t>(
+  auto ret_value = std::pair<std::vector<std::string>, rmw_qos_profile_t>(
     std::move(selection),
     std::move(qos));
 

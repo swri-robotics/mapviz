@@ -28,19 +28,11 @@
 // *****************************************************************************
 
 #include <mapviz_plugins/pointcloud2_plugin.hpp>
-#include <mapviz_plugins/topic_select.hpp>
 
 // QT libraries
 #include <QDialog>
 #include <QOpenGLWidget>
 #include <QSignalBlocker>
-
-// ROS libraries
-#include <rclcpp/rclcpp.hpp>
-#include <swri_transform_util/transform.h>
-
-// Declare plugin
-#include <pluginlib/class_list_macros.hpp>
 
 // C++ standard libraries
 #include <cstdio>
@@ -49,6 +41,15 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <mapviz_plugins/topic_select.hpp>
+
+// ROS libraries
+#include <rclcpp/rclcpp.hpp>
+#include "swri_transform_util/transform.h"
+
+// Declare plugin
+#include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::PointCloud2Plugin, mapviz::MapvizPlugin)
 
@@ -180,7 +181,6 @@ PointCloud2Plugin::PointCloud2Plugin()
     SIGNAL(VisibleChanged(bool)),
     this,
     SLOT(SetSubscription(bool)));
-
 }
 
 void PointCloud2Plugin::ClearHistory()
@@ -279,7 +279,7 @@ QColor PointCloud2Plugin::CalculateColor(const StampedPoint & point)
   }
   val = std::max(0.0f, std::min(val, 1.0f));
 
-  if (ui_.use_rainbow->isChecked()) { // Hue Interpolation
+  if (ui_.use_rainbow->isChecked()) {  // Hue Interpolation
     int hue = static_cast<int>(val * 255.0);
     return QColor::fromHsl(hue, 255, 127, 255);
   } else {
@@ -360,7 +360,6 @@ void PointCloud2Plugin::connectCallback(const std::string & topic, const rmw_qos
     qos_ = qos;
     SetSubscription(this->Visible());
   }
-
 }
 
 void PointCloud2Plugin::MinValueChanged(double value)
@@ -377,7 +376,7 @@ void PointCloud2Plugin::MaxValueChanged(double value)
 
 void PointCloud2Plugin::BufferSizeChanged(int value)
 {
-  buffer_size_ = (size_t)value;
+  buffer_size_ = static_cast<size_t>(value);
 
   if (buffer_size_ > 0) {
     while (scans_.size() > buffer_size_) {
@@ -390,7 +389,7 @@ void PointCloud2Plugin::BufferSizeChanged(int value)
 
 void PointCloud2Plugin::PointSizeChanged(int value)
 {
-  point_size_ = (size_t)value;
+  point_size_ = static_cast<size_t>(value);
 
   canvas_->update();
 }
@@ -655,7 +654,7 @@ void PointCloud2Plugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   PrintInfo("OK");
 }
 
-void PointCloud2Plugin::UseRainbowChanged(int /*check_state*/)
+void PointCloud2Plugin::UseRainbowChanged([[maybe_unused]] int check_state)
 {
   UpdateMinMaxWidgets();
   UpdateColors();

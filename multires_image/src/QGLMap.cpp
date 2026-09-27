@@ -29,10 +29,10 @@
 
 #include <multires_image/QGLMap.hpp>
 
-#include <mapviz/qt_mouse_event_compat.hpp>
-
 // C++ standard libraries
 #include <cmath>
+
+#include <mapviz/qt_mouse_event_compat.hpp>
 
 namespace multires_image
 {
@@ -195,12 +195,12 @@ void QGLMap::mousePressEvent(QMouseEvent * e)
   update();
 }
 
-void QGLMap::mouseDoubleClickEvent(QMouseEvent * /*e*/)
+void QGLMap::mouseDoubleClickEvent([[maybe_unused]] QMouseEvent * e)
 {
   update();
 }
 
-void QGLMap::mouseReleaseEvent(QMouseEvent * /*e*/)
+void QGLMap::mouseReleaseEvent([[maybe_unused]] QMouseEvent * e)
 {
   m_mouseDown = false;
 
@@ -289,4 +289,4 @@ void QGLMap::Recenter()
   }
 }
 
-}
+}  // namespace multires_image

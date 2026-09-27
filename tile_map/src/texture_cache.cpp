@@ -29,13 +29,12 @@
 
 #include <tile_map/texture_cache.hpp>
 
+#include <QImage>
+
 #include <cmath>
 
 #include <rclcpp/logging.hpp>
-
-#include <QImage>
-
-#include <swri_math_util/math_util.h>
+#include "swri_math_util/math_util.h"
 
 namespace tile_map
 {
@@ -55,7 +54,6 @@ TextureCache::TextureCache(
   image_cache_(image_cache),
   logger_(logger)
 {
-
 }
 
 TexturePtr TextureCache::GetTexture(
@@ -152,4 +150,4 @@ void TextureCache::Clear()
   image_cache_->Clear();
   cache_.clear();
 }
-}
+}  // namespace tile_map

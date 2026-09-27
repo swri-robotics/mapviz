@@ -27,12 +27,7 @@
 //
 // *****************************************************************************
 
-#include <mapviz/mapviz_plugin.hpp>
 #include <tile_map/tile_map_plugin.hpp>
-#include <tile_map/tile_source.hpp>
-#include <tile_map/bing_source.hpp>
-#include <tile_map/stadia_source.hpp>
-#include <tile_map/wmts_source.hpp>
 
 // QT libraries
 #include <QOpenGLWidget>
@@ -43,11 +38,16 @@
 #include <QDateTime>
 #include <QPalette>
 
+#include <mapviz/mapviz_plugin.hpp>
+#include <tile_map/tile_source.hpp>
+#include <tile_map/bing_source.hpp>
+#include <tile_map/stadia_source.hpp>
+#include <tile_map/wmts_source.hpp>
+
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/transform_datatypes.hpp>
-
-#include <swri_transform_util/frames.h>
+#include "swri_transform_util/frames.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -55,14 +55,14 @@ PLUGINLIB_EXPORT_CLASS(tile_map::TileMapPlugin, mapviz::MapvizPlugin)
 
 namespace tile_map
 {
-std::string TileMapPlugin::BASE_URL_KEY = "base_url";
-std::string TileMapPlugin::BING_API_KEY = "bing_api_key";
-std::string TileMapPlugin::STADIA_API_KEY = "stadia_api_key";
-std::string TileMapPlugin::CUSTOM_SOURCES_KEY = "custom_sources";
-std::string TileMapPlugin::MAX_ZOOM_KEY = "max_zoom";
-std::string TileMapPlugin::NAME_KEY = "name";
-std::string TileMapPlugin::SOURCE_KEY = "source";
-std::string TileMapPlugin::TYPE_KEY = "type";
+std::string TileMapPlugin::BASE_URL_KEY = "base_url";  // NOLINT(runtime/string)
+std::string TileMapPlugin::BING_API_KEY = "bing_api_key";  // NOLINT(runtime/string)
+std::string TileMapPlugin::STADIA_API_KEY = "stadia_api_key";  // NOLINT(runtime/string)
+std::string TileMapPlugin::CUSTOM_SOURCES_KEY = "custom_sources";  // NOLINT(runtime/string)
+std::string TileMapPlugin::MAX_ZOOM_KEY = "max_zoom";  // NOLINT(runtime/string)
+std::string TileMapPlugin::NAME_KEY = "name";  // NOLINT(runtime/string)
+std::string TileMapPlugin::SOURCE_KEY = "source";  // NOLINT(runtime/string)
+std::string TileMapPlugin::TYPE_KEY = "type";  // NOLINT(runtime/string)
 QString TileMapPlugin::BING_NAME = "Bing Maps (terrain)";
 QString TileMapPlugin::CARTO_NAME = "Carto";
 QString TileMapPlugin::STAMEN_TERRAIN_NAME = "Stamen (terrain)";
@@ -124,7 +124,8 @@ TileMapPlugin::TileMapPlugin()
   tile_sources_[USGS_NAME] =
     std::make_shared<WmtsSource>(
     USGS_NAME,
-    "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/tile/1.0.0/USGSImageryOnly/default/default028mm/{level}/{y}/{x}.png",
+    "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/tile/"
+    "1.0.0/USGSImageryOnly/default/default028mm/{level}/{y}/{x}.png",
     false,
     19);
   std::shared_ptr<BingSource> bing = std::make_shared<BingSource>(BING_NAME);
@@ -168,8 +169,8 @@ TileMapPlugin::TileMapPlugin()
   // set on it, so this connection is made a single time.
   QObject::connect(
     tile_map_.GetImageCache().get(),
-    SIGNAL(RequestFailed(QString,QString)),
-    this, SLOT(HandleTileFailure(QString,QString)));
+    SIGNAL(RequestFailed(QString,QString)),  // NOLINT(whitespace/comma)
+    this, SLOT(HandleTileFailure(QString,QString)));  // NOLINT(whitespace/comma)
 
   UpdateControlState();
 }
@@ -351,7 +352,7 @@ void TileMapPlugin::HandleTestReply(QNetworkReply * reply)
     tile_error_.clear();
     PrintInfo(
       "Test succeeded: " + detail + ", " +
-      std::to_string(static_cast<long long>(size)) + " bytes from " + url.toStdString());
+      std::to_string(size) + " bytes from " + url.toStdString());
   } else {
     std::string detail = status.isValid() ?
       "HTTP " + std::to_string(status.toInt()) + ": " :
@@ -667,4 +668,4 @@ void TileMapPlugin::SetNode(rclcpp::Node & node)
   MapvizPlugin::SetNode(node);
   tile_map_.SetLogger(node.get_logger());
 }
-}
+}  // namespace tile_map
