@@ -56,6 +56,7 @@ FloatPlugin::FloatPlugin()
   units_(PIXELS),
   offset_x_(0),
   offset_y_(0),
+  type_watcher_(SupportedTypes()),
   has_message_(false),
   has_painted_(false),
   color_(Qt::black)
@@ -295,17 +296,21 @@ void FloatPlugin::SelectFont()
   }
 }
 
+std::vector<std::string> FloatPlugin::SupportedTypes()
+{
+  return {
+    "std_msgs/msg/Float32",
+    "std_msgs/msg/Float64",
+    "marti_common_msgs/msg/Float32Stamped",
+    "marti_common_msgs/msg/Float64Stamped",
+    "marti_sensor_msgs/msg/Velocity"};
+}
+
 void FloatPlugin::SelectTopic()
 {
-  std::vector<std::string> topics;
-  topics.emplace_back("std_msgs/msg/Float32");
-  topics.emplace_back("std_msgs/msg/Float64");
-  topics.emplace_back("marti_common_msgs/msg/Float32Stamped");
-  topics.emplace_back("marti_common_msgs/msg/Float64Stamped");
-  topics.emplace_back("marti_sensor_msgs/msg/Velocity");
   auto [topic, qos] = SelectTopicDialog::selectTopic(
     TopicSource(),
-    topics,
+    SupportedTypes(),
     qos_);
   if (!topic.empty()) {
     connectCallback(topic, qos);
@@ -334,38 +339,50 @@ void FloatPlugin::connectCallback(const std::string & topic, const rmw_qos_profi
 
     topic_ = topic;
     qos_ = qos;
-    if (!topic.empty()) {
-      // Subscribe() delivers each message to handleFloat() on the GUI
-      // thread, where plugin state may be touched without locking.  Only one
-      // of these subscriptions will actually receive data, depending on the
-      // topic's type.
-      Subscribe<std_msgs::msg::Float32>(
-        topic_, qos, float32_sub_,
-        [this](std_msgs::msg::Float32::ConstSharedPtr msg) {
-          handleFloat(msg->data);
-        });
-      Subscribe<std_msgs::msg::Float64>(
-        topic_, qos, float64_sub_,
-        [this](std_msgs::msg::Float64::ConstSharedPtr msg) {
-          handleFloat(msg->data);
-        });
-      Subscribe<marti_common_msgs::msg::Float32Stamped>(
-        topic_, qos, float32_stamped_sub_,
-        [this](marti_common_msgs::msg::Float32Stamped::ConstSharedPtr msg) {
-          handleFloat(msg->value);
-        });
-      Subscribe<marti_common_msgs::msg::Float64Stamped>(
-        topic_, qos, float64_stamped_sub_,
-        [this](marti_common_msgs::msg::Float64Stamped::ConstSharedPtr msg) {
-          handleFloat(msg->value);
-        });
-      Subscribe<marti_sensor_msgs::msg::Velocity>(
-        topic_, qos, velocity_sub_,
-        [this](marti_sensor_msgs::msg::Velocity::ConstSharedPtr msg) {
-          handleFloat(msg->velocity);
-        });
-    }
+    // Subscribing to one topic under several types fails on some middleware,
+    // so subscribe with the one type the topic is published with.
+    type_watcher_.Watch(
+      topic_, TopicSource(),
+      [this](const std::string & type) {SubscribeWithType(type);});
   }
+}
+
+void FloatPlugin::SubscribeWithType(const std::string & type)
+{
+  // Subscribe() delivers each message to handleFloat() on the GUI thread,
+  // where plugin state may be touched without locking.
+  if (type == "std_msgs/msg/Float32") {
+    Subscribe<std_msgs::msg::Float32>(
+      topic_, qos_, float32_sub_,
+      [this](std_msgs::msg::Float32::ConstSharedPtr msg) {
+        handleFloat(msg->data);
+      });
+  } else if (type == "std_msgs/msg/Float64") {
+    Subscribe<std_msgs::msg::Float64>(
+      topic_, qos_, float64_sub_,
+      [this](std_msgs::msg::Float64::ConstSharedPtr msg) {
+        handleFloat(msg->data);
+      });
+  } else if (type == "marti_common_msgs/msg/Float32Stamped") {
+    Subscribe<marti_common_msgs::msg::Float32Stamped>(
+      topic_, qos_, float32_stamped_sub_,
+      [this](marti_common_msgs::msg::Float32Stamped::ConstSharedPtr msg) {
+        handleFloat(msg->value);
+      });
+  } else if (type == "marti_common_msgs/msg/Float64Stamped") {
+    Subscribe<marti_common_msgs::msg::Float64Stamped>(
+      topic_, qos_, float64_stamped_sub_,
+      [this](marti_common_msgs::msg::Float64Stamped::ConstSharedPtr msg) {
+        handleFloat(msg->value);
+      });
+  } else if (type == "marti_sensor_msgs/msg/Velocity") {
+    Subscribe<marti_sensor_msgs::msg::Velocity>(
+      topic_, qos_, velocity_sub_,
+      [this](marti_sensor_msgs::msg::Velocity::ConstSharedPtr msg) {
+        handleFloat(msg->velocity);
+      });
+  }
+  RCLCPP_INFO(Logger(), "Subscribing to %s (%s)", topic_.c_str(), type.c_str());
 }
 
 void FloatPlugin::SetAnchor(QString anchor)

@@ -115,6 +115,7 @@ AttitudeIndicatorPlugin::AttitudeIndicatorPlugin()
   config_widget_(new QWidget()),
   topic_(""),
   qos_(rmw_qos_profile_default),
+  type_watcher_(SupportedTypes()),
   ui_()
 {
   ui_.setupUi(config_widget_);
@@ -124,9 +125,6 @@ AttitudeIndicatorPlugin::AttitudeIndicatorPlugin()
   p.setColor(QPalette::Window, Qt::white);
   config_widget_->setPalette(p);
   roll_ = pitch_ = yaw_ = 0;
-  topics_.emplace_back("nav_msgs/msg/Odometry");
-  topics_.emplace_back("geometry_msgs/msg/Pose");
-  topics_.emplace_back("sensor_msgs/msg/Imu");
   // Set status text red
   QPalette p3(ui_.status->palette());
   p3.setColor(QPalette::Text, Qt::red);
@@ -145,7 +143,7 @@ void AttitudeIndicatorPlugin::SelectTopic()
 {
   auto [topic, qos] = SelectTopicDialog::selectTopic(
     TopicSource(),
-    topics_,
+    SupportedTypes(),
     qos_);
 
   if (!topic.empty()) {
@@ -175,26 +173,44 @@ void AttitudeIndicatorPlugin::connectCallback(
 
     topic_ = topic;
     qos_ = qos;
-    if (!topic_.empty()) {
-      // Subscribe() delivers each message to the matching handle*() method
-      // on the GUI thread, where plugin state may be touched without locking.
-      Subscribe<nav_msgs::msg::Odometry>(
-        topic_, qos, odom_sub_,
-        [this](nav_msgs::msg::Odometry::ConstSharedPtr odometry) {
-          handleOdometry(odometry);
-        });
-      Subscribe<sensor_msgs::msg::Imu>(
-        topic_, qos, imu_sub_,
-        [this](sensor_msgs::msg::Imu::ConstSharedPtr imu) {handleImu(imu);});
-      Subscribe<geometry_msgs::msg::Pose>(
-        topic_, qos, pose_sub_,
-        [this](geometry_msgs::msg::Pose::ConstSharedPtr pose) {
-          handlePose(pose);
-        });
-
-      RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
-    }
+    // Subscribing to one topic under several types fails on some middleware,
+    // so subscribe with the one type the topic is published with.
+    type_watcher_.Watch(
+      topic_, TopicSource(),
+      [this](const std::string & type) {SubscribeWithType(type);});
   }
+}
+
+std::vector<std::string> AttitudeIndicatorPlugin::SupportedTypes()
+{
+  return {
+    "nav_msgs/msg/Odometry",
+    "geometry_msgs/msg/Pose",
+    "sensor_msgs/msg/Imu"};
+}
+
+void AttitudeIndicatorPlugin::SubscribeWithType(const std::string & type)
+{
+  // Subscribe() delivers each message to the matching handle*() method on the
+  // GUI thread, where plugin state may be touched without locking.
+  if (type == "nav_msgs/msg/Odometry") {
+    Subscribe<nav_msgs::msg::Odometry>(
+      topic_, qos_, odom_sub_,
+      [this](nav_msgs::msg::Odometry::ConstSharedPtr odometry) {
+        handleOdometry(odometry);
+      });
+  } else if (type == "geometry_msgs/msg/Pose") {
+    Subscribe<geometry_msgs::msg::Pose>(
+      topic_, qos_, pose_sub_,
+      [this](geometry_msgs::msg::Pose::ConstSharedPtr pose) {
+        handlePose(pose);
+      });
+  } else if (type == "sensor_msgs/msg/Imu") {
+    Subscribe<sensor_msgs::msg::Imu>(
+      topic_, qos_, imu_sub_,
+      [this](sensor_msgs::msg::Imu::ConstSharedPtr imu) {handleImu(imu);});
+  }
+  RCLCPP_INFO(Logger(), "Subscribing to %s (%s)", topic_.c_str(), type.c_str());
 }
 
 void AttitudeIndicatorPlugin::handleOdometry(

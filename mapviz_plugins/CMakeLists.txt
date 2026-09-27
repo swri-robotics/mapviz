@@ -193,7 +193,8 @@ set(SRC_FILES
   src/string_plugin.cpp
   src/textured_marker_plugin.cpp
   src/tf_frame_plugin.cpp
-  src/topic_select.cpp)
+  src/topic_select.cpp
+  src/topic_type_watcher.cpp)
 
 set(HEADER_FILES
   include/${PROJECT_NAME}/attitude_indicator_plugin.hpp
@@ -226,7 +227,8 @@ set(HEADER_FILES
   include/${PROJECT_NAME}/string_plugin.hpp
   include/${PROJECT_NAME}/textured_marker_plugin.hpp
   include/${PROJECT_NAME}/tf_frame_plugin.hpp
-  include/${PROJECT_NAME}/topic_select.hpp)
+  include/${PROJECT_NAME}/topic_select.hpp
+  include/${PROJECT_NAME}/topic_type_watcher.hpp)
 
 set(MAPVIZ_PLUGINS_QT_LIBRARIES
   Qt${QT_VERSION_MAJOR}::Core

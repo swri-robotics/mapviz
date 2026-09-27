@@ -57,6 +57,7 @@ StringPlugin::StringPlugin()
   units_(PIXELS),
   offset_x_(0),
   offset_y_(0),
+  type_watcher_(SupportedTypes()),
   has_message_(false),
   has_painted_(false),
   color_(Qt::black),
@@ -311,7 +312,7 @@ void StringPlugin::SelectTopic()
 {
   auto [topic, qos] = SelectTopicDialog::selectTopic(
     TopicSource(),
-    "std_msgs/msg/String",
+    SupportedTypes(),
     qos_);
 
   if (!topic.empty()) {
@@ -334,41 +335,43 @@ void StringPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
     PrintWarning("No messages received.");
 
     string_sub_.reset();
+    string_stamped_sub_.reset();
 
     topic_ = topic;
     qos_ = qos;
-    if (!topic.empty()) {
-      try {
-        // Subscribe() delivers each message to SetText() on the GUI thread,
-        // where plugin state may be touched without locking.
-        Subscribe<std_msgs::msg::String>(
-          topic_, qos, string_sub_,
-          [this](std_msgs::msg::String::ConstSharedPtr str) {
-            SetText(QString(str->data.c_str()));
-          });
-      } catch (...) {
-        RCLCPP_ERROR(
-          Logger(),
-          "Exception thrown while subscribing to standard string: %s",
-          topic_.c_str());
-      }
-
-      try {
-        Subscribe<marti_common_msgs::msg::StringStamped>(
-          topic_, qos, string_stamped_sub_,
-          [this](marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
-            SetText(QString(str->value.c_str()));
-          });
-      } catch (...) {
-        RCLCPP_ERROR(
-          Logger(),
-          "Exception thrown while subscribing to Marti stamped string: %s",
-          topic_.c_str());
-      }
-
-      RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
-    }
+    // Subscribing to one topic under several types fails on some middleware,
+    // so subscribe with the one type the topic is published with.
+    type_watcher_.Watch(
+      topic_, TopicSource(),
+      [this](const std::string & type) {SubscribeWithType(type);});
   }
+}
+
+std::vector<std::string> StringPlugin::SupportedTypes()
+{
+  return {
+    "std_msgs/msg/String",
+    "marti_common_msgs/msg/StringStamped"};
+}
+
+void StringPlugin::SubscribeWithType(const std::string & type)
+{
+  // Subscribe() delivers each message to SetText() on the GUI thread, where
+  // plugin state may be touched without locking.
+  if (type == "std_msgs/msg/String") {
+    Subscribe<std_msgs::msg::String>(
+      topic_, qos_, string_sub_,
+      [this](std_msgs::msg::String::ConstSharedPtr str) {
+        SetText(QString(str->data.c_str()));
+      });
+  } else if (type == "marti_common_msgs/msg/StringStamped") {
+    Subscribe<marti_common_msgs::msg::StringStamped>(
+      topic_, qos_, string_stamped_sub_,
+      [this](marti_common_msgs::msg::StringStamped::ConstSharedPtr str) {
+        SetText(QString(str->value.c_str()));
+      });
+  }
+  RCLCPP_INFO(Logger(), "Subscribing to %s (%s)", topic_.c_str(), type.c_str());
 }
 
 void StringPlugin::SetText(const QString & text)
