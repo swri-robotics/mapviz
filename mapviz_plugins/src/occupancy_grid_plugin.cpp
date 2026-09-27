@@ -178,10 +178,8 @@ OccupancyGridPlugin::OccupancyGridPlugin()
     SLOT(FrameChanged(std::string)));
 
   QObject::connect(
-    ui_.checkbox_update,
-    SIGNAL(toggled(bool)),
-    this,
-    SLOT(upgradeCheckBoxToggled([[maybe_unused]] bool checked)));
+    ui_.checkbox_update, &QCheckBox::toggled,
+    this, &OccupancyGridPlugin::upgradeCheckBoxToggled);
 
   QObject::connect(
     ui_.color_scheme,
