@@ -19,6 +19,11 @@ repos:
 
   - repo: local
     hooks:
+      - id: ament_copyright
+        name: ament_copyright
+        entry: ament_copyright
+        language: system
+        files: (\.(c|cc|cpp|cxx|h|hh|hpp|hxx|py|cmake)|CMakeLists\.txt)$
       # ament_cppcheck skips every cppcheck 2.x release unless this variable is set.
       - id: ament_cppcheck
         name: ament_cppcheck
