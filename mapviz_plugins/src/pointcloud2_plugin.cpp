@@ -29,6 +29,7 @@
 #include <mapviz_plugins/pointcloud2_plugin.hpp>
 
 // QT libraries
+#include <QComboBox>
 #include <QDialog>
 #include <QOpenGLWidget>
 #include <QSignalBlocker>
@@ -115,6 +116,12 @@ PointCloud2Plugin::PointCloud2Plugin()
     SIGNAL(currentIndexChanged(int)),
     this,
     SLOT(ColorTransformerChanged(int)));
+  // Picking a transformer by hand replaces one from the config that is still
+  // waiting for a cloud with its field.  activated is only emitted for the
+  // user's choices, not for the list being rebuilt.
+  QObject::connect(
+    ui_.color_transformer, qOverload<int>(&QComboBox::activated),
+    this, [this](int) {saved_color_transformer_.clear();});
   QObject::connect(
     ui_.max_color,
     SIGNAL(colorEdited(const QColor&)),
@@ -886,8 +893,12 @@ void PointCloud2Plugin::SaveConfig(
     YAML::Value << ui_.bufferSize->value();
   emitter << YAML::Key << "alpha" <<
     YAML::Value << alpha_;
-  emitter << YAML::Key << "color_transformer" <<
-    YAML::Value << ui_.color_transformer->currentText().toStdString();
+  // A transformer from the config waits in saved_color_transformer_ until a
+  // cloud with that field arrives, since the list is built from the cloud's
+  // fields.  Save it rather than the placeholder the list shows until then.
+  const std::string color_transformer = saved_color_transformer_.empty() ?
+    ui_.color_transformer->currentText().toStdString() : saved_color_transformer_;
+  emitter << YAML::Key << "color_transformer" << YAML::Value << color_transformer;
   emitter << YAML::Key << "min_color" <<
     YAML::Value << ui_.min_color->color().name().toStdString();
   emitter << YAML::Key << "max_color" <<
