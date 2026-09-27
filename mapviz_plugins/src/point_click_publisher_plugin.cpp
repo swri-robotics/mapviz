@@ -147,8 +147,10 @@ void PointClickPublisherPlugin::pointClicked(const QPointF & point)
   std::stringstream ss;
   ss << "Point in " << output_frame.c_str() << ": " << transformed.x() << "," << transformed.y();
 
-  // Only publish if this plugin is visible
-  if (this->Visible()) {
+  // Only publish if this plugin is visible and has a valid topic
+  if (!point_publisher_) {
+    ss << " (but not publishing since there is no valid topic)";
+  } else if (this->Visible()) {
     point_publisher_->publish(*stamped);
   } else {
     ss << " (but not publishing since plugin is hidden)";
@@ -188,6 +190,8 @@ void PointClickPublisherPlugin::topicChanged(const QString & topic)
   ss << "Publishing points to topic: " << topic.toStdString().c_str();
   PrintInfo(ss.str());
 
+  // Publisher() leaves this empty, and reports why, for a name ROS rejects.
+  point_publisher_.reset();
   if (!topic.isEmpty()) {
     point_publisher_ = Publisher<geometry_msgs::msg::PointStamped>(
       topic.toStdString(), rclcpp::QoS(1000));

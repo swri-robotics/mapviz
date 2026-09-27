@@ -121,11 +121,17 @@ void DrawPolygonPlugin::FrameEdited()
 
 void DrawPolygonPlugin::PublishPolygon()
 {
-  if (polygon_topic_ != ui_.topic->text().toStdString()) {
+  // Also retry when there is no publisher, so a rejected or empty topic is
+  // reported each time rather than silently skipped.
+  if (polygon_topic_ != ui_.topic->text().toStdString() || !polygon_pub_) {
     polygon_topic_ = ui_.topic->text().toStdString();
     rclcpp::QoS qos = rclcpp::QoS(1).durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
     polygon_pub_ = Publisher<geometry_msgs::msg::PolygonStamped>(
       polygon_topic_, qos);
+  }
+  if (!polygon_pub_) {
+    // Publisher() has already reported why the topic was rejected.
+    return;
   }
 
   geometry_msgs::msg::PolygonStamped::UniquePtr polygon =
