@@ -28,14 +28,42 @@
 
 #include <gtest/gtest.h>
 #include <QApplication>
+#include <QCoreApplication>
 #include <yaml-cpp/yaml.h>
 
+#include <chrono>
+#include <functional>
 #include <memory>
+#include <ostream>
 #include <string>
+#include <thread>
 
+#include <marti_common_msgs/msg/float32_stamped.hpp>
+#include <marti_common_msgs/msg/string_stamped.hpp>
+#include <marti_visualization_msgs/msg/textured_marker.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <std_msgs/msg/float64.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <mapviz_plugins/attitude_indicator_plugin.hpp>
+#include <mapviz_plugins/disparity_plugin.hpp>
 #include <mapviz_plugins/draw_marker_plugin.hpp>
+#include <mapviz_plugins/float_plugin.hpp>
+#include <mapviz_plugins/gps_plugin.hpp>
+#include <mapviz_plugins/image_plugin.hpp>
+#include <mapviz_plugins/laserscan_plugin.hpp>
+#include <mapviz_plugins/marker_plugin.hpp>
+#include <mapviz_plugins/navsat_plugin.hpp>
+#include <mapviz_plugins/occupancy_grid_plugin.hpp>
+#include <mapviz_plugins/odometry_plugin.hpp>
+#include <mapviz_plugins/path_plugin.hpp>
+#include <mapviz_plugins/pose_plugin.hpp>
+#include <mapviz_plugins/robot_model_plugin.hpp>
+#include <mapviz_plugins/route_plugin.hpp>
 #include <mapviz_plugins/speedometer_plugin.hpp>
+#include <mapviz_plugins/string_plugin.hpp>
+#include <mapviz_plugins/textured_marker_plugin.hpp>
 
 namespace
 {
@@ -56,6 +84,74 @@ YAML::Node SaveAfterLoading(mapviz::MapvizPlugin & plugin, const std::string & y
   emitter << YAML::EndMap;
 
   return YAML::Load(emitter.c_str());
+}
+
+/// Loads a config that sets a single topic key, the same path mapviz takes
+/// when a config file is opened.
+void LoadTopic(mapviz::MapvizPlugin & plugin, const std::string & key, const std::string & topic)
+{
+  YAML::Node node;
+  node[key] = topic;
+  plugin.LoadConfigPlugin(node, "");
+}
+
+/// Subscriptions show up in the ROS graph asynchronously on some middleware,
+/// and some plugins subscribe from a Qt timer, so poll briefly before deciding.
+::testing::AssertionResult HasSubscribers(const std::string & topic)
+{
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+  while (g_node->count_subscribers(topic) == 0) {
+    if (std::chrono::steady_clock::now() > deadline) {
+      return ::testing::AssertionFailure() << "no subscribers on " << topic;
+    }
+    QCoreApplication::processEvents();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return ::testing::AssertionSuccess();
+}
+
+::testing::AssertionResult HasNoSubscribers(const std::string & topic)
+{
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+  size_t count = 0;
+  while ((count = g_node->count_subscribers(topic)) != 0) {
+    if (std::chrono::steady_clock::now() > deadline) {
+      return ::testing::AssertionFailure() << count << " subscriber(s) left on " << topic;
+    }
+    QCoreApplication::processEvents();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return ::testing::AssertionSuccess();
+}
+
+struct TopicCase
+{
+  std::string name;
+  std::string key;
+  std::function<std::unique_ptr<mapviz::MapvizPlugin>()> create;
+  /// Set for plugins that accept several message types and pick one from the
+  /// topic's publishers, so they only subscribe once something is publishing.
+  std::function<rclcpp::PublisherBase::SharedPtr(const std::string &)> advertise;
+};
+
+template<typename PluginT>
+TopicCase Case(const std::string & name, const std::string & key = "topic")
+{
+  return {name, key, [] {return std::make_unique<PluginT>();}, nullptr};
+}
+
+template<typename PluginT, typename MsgT>
+TopicCase AdvertisedCase(const std::string & name)
+{
+  return {
+    name, "topic",
+    [] {return std::make_unique<PluginT>();},
+    [](const std::string & topic) {return g_node->create_publisher<MsgT>(topic, 1);}};
+}
+
+void PrintTo(const TopicCase & topic_case, std::ostream * os)
+{
+  *os << topic_case.name;
 }
 }  // namespace
 
@@ -186,6 +282,184 @@ TEST(DrawMarkerConfig, IgnoresMalformedVertices)
   ASSERT_EQ(2u, saved["vertices"].size());
   EXPECT_DOUBLE_EQ(1.0, saved["vertices"][0][0].as<double>());
   EXPECT_DOUBLE_EQ(4.0, saved["vertices"][1][0].as<double>());
+}
+
+class TopicEditing : public ::testing::TestWithParam<TopicCase> {};
+
+TEST_P(TopicEditing, FollowsTheConfiguredTopic)
+{
+  const TopicCase & topic_case = GetParam();
+  const std::string first = "/test_topic_editing/" + topic_case.name + "/first";
+  const std::string second = "/test_topic_editing/" + topic_case.name + "/second";
+
+  rclcpp::PublisherBase::SharedPtr first_pub, second_pub;
+  if (topic_case.advertise) {
+    first_pub = topic_case.advertise(first);
+    second_pub = topic_case.advertise(second);
+  }
+
+  std::unique_ptr<mapviz::MapvizPlugin> plugin = topic_case.create();
+  plugin->SetNode(*g_node);
+
+  LoadTopic(*plugin, topic_case.key, first);
+  EXPECT_TRUE(HasSubscribers(first));
+
+  // Changing the topic has to move the subscription, not add a second one or
+  // leave the old one in place (#914, #918).
+  LoadTopic(*plugin, topic_case.key, second);
+  EXPECT_TRUE(HasSubscribers(second));
+  EXPECT_TRUE(HasNoSubscribers(first));
+
+  // Clearing the field unsubscribes.  rclcpp rejects an empty topic name, so
+  // this must not reach create_subscription() (#913).
+  EXPECT_NO_THROW(LoadTopic(*plugin, topic_case.key, ""));
+  EXPECT_TRUE(HasNoSubscribers(second));
+
+  // Entering the previous topic again has to subscribe again, even though it
+  // matches what the plugin last subscribed to.
+  LoadTopic(*plugin, topic_case.key, second);
+  EXPECT_TRUE(HasSubscribers(second));
+}
+
+// PointCloud2Plugin is left out: loading its config repaints the canvas it is
+// only given by Initialize(), which needs an OpenGL context that the headless
+// test platform cannot provide.
+INSTANTIATE_TEST_SUITE_P(
+  Plugins, TopicEditing,
+  ::testing::Values(
+    AdvertisedCase<mapviz_plugins::AttitudeIndicatorPlugin, sensor_msgs::msg::Imu>(
+      "attitude_indicator"),
+    Case<mapviz_plugins::DisparityPlugin>("disparity"),
+    AdvertisedCase<mapviz_plugins::FloatPlugin, std_msgs::msg::Float64>("float"),
+    Case<mapviz_plugins::GpsPlugin>("gps"),
+    Case<mapviz_plugins::ImagePlugin>("image"),
+    Case<mapviz_plugins::LaserScanPlugin>("laserscan"),
+    AdvertisedCase<mapviz_plugins::MarkerPlugin, visualization_msgs::msg::Marker>("marker"),
+    Case<mapviz_plugins::NavSatPlugin>("navsat"),
+    Case<mapviz_plugins::OccupancyGridPlugin>("occupancy_grid"),
+    Case<mapviz_plugins::OdometryPlugin>("odometry"),
+    Case<mapviz_plugins::PathPlugin>("path"),
+    Case<mapviz_plugins::PosePlugin>("pose"),
+    Case<mapviz_plugins::RobotModelPlugin>("robot_model"),
+    Case<mapviz_plugins::RoutePlugin>("route"),
+    Case<mapviz_plugins::RoutePlugin>("route_position", "postopic"),
+    Case<mapviz_plugins::SpeedometerPlugin>("speedometer"),
+    AdvertisedCase<mapviz_plugins::StringPlugin, std_msgs::msg::String>("string"),
+    AdvertisedCase<
+      mapviz_plugins::TexturedMarkerPlugin,
+      marti_visualization_msgs::msg::TexturedMarker>("textured_marker")),
+  [](const ::testing::TestParamInfo<TopicCase> & info) {return info.param.name;});
+
+TEST(MultiTypeTopics, SubscribesOnlyWithThePublishedType)
+{
+  const std::string topic = "/test_multi_type_topics/stamped_float";
+  auto pub = g_node->create_publisher<marti_common_msgs::msg::Float32Stamped>(topic, 1);
+
+  mapviz_plugins::FloatPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  // Subscribing to the topic under every supported type makes Fast DDS throw
+  // "incompatible type", so exactly one subscription, of the published type,
+  // is expected.
+  EXPECT_NO_THROW(LoadTopic(plugin, "topic", topic));
+  ASSERT_TRUE(HasSubscribers(topic));
+  EXPECT_EQ(1u, g_node->count_subscribers(topic));
+}
+
+TEST(MultiTypeTopics, SubscribesToStampedStrings)
+{
+  const std::string topic = "/test_multi_type_topics/stamped_string";
+  auto pub = g_node->create_publisher<marti_common_msgs::msg::StringStamped>(topic, 1);
+
+  mapviz_plugins::StringPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  LoadTopic(plugin, "topic", topic);
+  ASSERT_TRUE(HasSubscribers(topic));
+  EXPECT_EQ(1u, g_node->count_subscribers(topic));
+}
+
+TEST(MultiTypeTopics, SubscribesOnceAPublisherAppears)
+{
+  const std::string topic = "/test_multi_type_topics/late_publisher";
+
+  mapviz_plugins::FloatPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  // Mapviz is often started before the rest of the system.
+  LoadTopic(plugin, "topic", topic);
+  EXPECT_TRUE(HasNoSubscribers(topic));
+
+  auto pub = g_node->create_publisher<std_msgs::msg::Float64>(topic, 1);
+  EXPECT_TRUE(HasSubscribers(topic));
+}
+
+TEST(RouteTopics, SubscribesToThePositionTopicWithoutARouteTopic)
+{
+  mapviz_plugins::RoutePlugin plugin;
+  plugin.SetNode(*g_node);
+
+  // The position subscription used to be created on the route topic, which
+  // is empty here, so the whole load failed with "topic name must not be
+  // empty string" (#913).
+  EXPECT_NO_THROW(
+    plugin.LoadConfigPlugin(
+      YAML::Load(
+        "topic: ''\n"
+        "postopic: /test_route_topics/position\n"),
+      ""));
+
+  EXPECT_TRUE(HasSubscribers("/test_route_topics/position"));
+}
+
+TEST(RouteTopics, KeepsRouteAndPositionSubscriptionsApart)
+{
+  mapviz_plugins::RoutePlugin plugin;
+  plugin.SetNode(*g_node);
+
+  plugin.LoadConfigPlugin(
+    YAML::Load(
+      "topic: /test_route_topics/apart/route\n"
+      "postopic: /test_route_topics/apart/position\n"),
+    "");
+
+  // One subscription each; a mix-up puts both on the same topic.
+  EXPECT_EQ(1u, g_node->count_subscribers("/test_route_topics/apart/route"));
+  EXPECT_EQ(1u, g_node->count_subscribers("/test_route_topics/apart/position"));
+}
+
+TEST(OccupancyGridTopics, SubscribesToUpdatesOnlyWhenChecked)
+{
+  const std::string grid = "/test_occupancy_grid_topics/map";
+  const std::string updates = grid + "_updates";
+
+  mapviz_plugins::OccupancyGridPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  // Updates arrive on "<topic>_updates", never on the grid topic itself
+  // (#918).
+  plugin.LoadConfigPlugin(YAML::Load("topic: " + grid + "\nupdate: true\n"), "");
+  EXPECT_TRUE(HasSubscribers(grid));
+  EXPECT_TRUE(HasSubscribers(updates));
+  EXPECT_EQ(1u, g_node->count_subscribers(grid));
+
+  // Unchecking used to resubscribe instead of unsubscribing (#918).
+  plugin.LoadConfigPlugin(YAML::Load("update: false\n"), "");
+  EXPECT_TRUE(HasNoSubscribers(updates));
+  EXPECT_TRUE(HasSubscribers(grid));
+
+  plugin.LoadConfigPlugin(YAML::Load("update: true\n"), "");
+  EXPECT_TRUE(HasSubscribers(updates));
+}
+
+TEST(OccupancyGridTopics, DoesNotSubscribeToUpdatesWithoutAGridTopic)
+{
+  mapviz_plugins::OccupancyGridPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  // Checking the box with no topic must not subscribe to a bare "_updates".
+  EXPECT_NO_THROW(plugin.LoadConfigPlugin(YAML::Load("topic: ''\nupdate: true\n"), ""));
+  EXPECT_TRUE(HasNoSubscribers("/_updates"));
 }
 
 int main(int argc, char ** argv)
