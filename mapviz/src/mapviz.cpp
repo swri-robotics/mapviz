@@ -479,7 +479,7 @@ void Mapviz::Initialize()
         this,
         std::placeholders::_1,
         std::placeholders::_2),
-#if RCLCPP_VERSION_GTE(17, 0, 0)
+#if RCLCPP_VERSION_MAJOR >= 17
       // Iron and newer take rclcpp::QoS
       rclcpp::ServicesQoS(),
 #else

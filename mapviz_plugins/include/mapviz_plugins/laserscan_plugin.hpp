@@ -110,8 +110,8 @@ private:
     tf2::Vector3 point;
     tf2::Vector3 transformed_point;
     QColor color;
-    float range;
-    float intensity;
+    float range = 0.0f;
+    float intensity = 0.0f;
   };
 
   struct Scan
@@ -120,8 +120,8 @@ private:
     QColor color;
     std::vector<StampedPoint> points;
     std::string source_frame_;
-    bool transformed;
-    bool has_intensity;
+    bool transformed = false;
+    bool has_intensity = false;
   };
 
   void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);

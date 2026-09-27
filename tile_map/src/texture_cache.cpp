@@ -92,7 +92,7 @@ TexturePtr TextureCache::GetTexture(
         }
 
         // QImage::flipped() replaced mirrored() in Qt 6; Qt 5 only has mirrored().
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= 0x060000
         const QImage gl_image =
           qimage.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
 #else

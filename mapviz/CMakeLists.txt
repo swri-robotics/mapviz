@@ -249,6 +249,10 @@ target_link_libraries(rqt_${PROJECT_NAME} PUBLIC
 set_target_properties(rqt_${PROJECT_NAME} PROPERTIES
   AUTOMOC ON
 )
+# rqt_gui_cpp 1.7.2 added plugin.hpp and 1.10.3 removed plugin.h.
+if(rqt_gui_cpp_VERSION VERSION_LESS "1.7.2")
+  target_compile_definitions(rqt_${PROJECT_NAME} PUBLIC MAPVIZ_RQT_GUI_CPP_PLUGIN_H)
+endif()
 
 ### Build mapviz as a standalone executable ###
 add_executable(${PROJECT_NAME}
@@ -304,7 +308,6 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # TODO(#938): Enable the remaining linters once the code complies with them.
   set(ament_cmake_copyright_FOUND TRUE)
-  set(ament_cmake_cppcheck_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 

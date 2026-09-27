@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         env:
-          - {ROS_DISTRO: jazzy, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True}
+          - {ROS_DISTRO: jazzy, ROS_REPO: main, PIP_BREAK_SYSTEM_PACKAGES: True, DOCKER_RUN_OPTS: '-e AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS=1'}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

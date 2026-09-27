@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         env:
-          - {ROS_DISTRO: humble, ROS_REPO: main}
+          - {ROS_DISTRO: humble, ROS_REPO: main, DOCKER_RUN_OPTS: '-e AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS=1'}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

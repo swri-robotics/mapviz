@@ -38,7 +38,7 @@ namespace mapviz
 {
 inline QPointF MouseEventPosition(const QMouseEvent * event)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= 0x060000
   return event->position();
 #else
   return QPointF(event->x(), event->y());

@@ -19,6 +19,12 @@ repos:
 
   - repo: local
     hooks:
+      # ament_cppcheck skips every cppcheck 2.x release unless this variable is set.
+      - id: ament_cppcheck
+        name: ament_cppcheck
+        entry: env AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS=1 ament_cppcheck --language c++
+        language: system
+        files: \.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
       - id: ament_cpplint
         name: ament_cpplint
         entry: ament_cpplint
