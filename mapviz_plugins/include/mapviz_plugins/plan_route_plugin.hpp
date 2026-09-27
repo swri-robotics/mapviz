@@ -65,63 +65,63 @@ class PlanRoutePlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions_
 {
   Q_OBJECT
 
-  public:
+public:
   PlanRoutePlugin();
   ~PlanRoutePlugin() override;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
   bool SupportsPainting() override
   {
     return true;
   }
 
-  protected:
+protected:
   void Draw(double x, double y, double scale) override;
 
-  void Paint(QPainter* painter, double x, double y, double scale) override;
+  void Paint(QPainter * painter, double x, double y, double scale) override;
 
-  void Transform() override {};
+  void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
-  bool eventFilter(QObject *object, QEvent* event) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
+  bool eventFilter(QObject * object, QEvent * event) override;
   bool handleMousePress(QMouseEvent *);
   bool handleMouseRelease(QMouseEvent *);
   bool handleMouseMove(QMouseEvent *);
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
   void PublishRoute();
   void PlanRoute();
   void Clear();
   void VisibilityChanged(bool);
 
-  Q_SIGNALS:
-    // Emitted from the ROS spin thread when the PlanRoute service responds;
-    // delivered as a queued connection to handlePlanRouteResponse() on the
-    // GUI thread, which owns all plugin state.
-    void PlanRouteCompleted(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future);
+Q_SIGNALS:
+  // Emitted from the ROS spin thread when the PlanRoute service responds;
+  // delivered as a queued connection to handlePlanRouteResponse() on the
+  // GUI thread, which owns all plugin state.
+  void PlanRouteCompleted(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future);
 
-  private Q_SLOTS:
-    void handlePlanRouteResponse(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future);
+private Q_SLOTS:
+  void handlePlanRouteResponse(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future);
 
-  private:
+private:
   // void Retry(const ros::TimerEvent& e);
   void Retry();
 
   void ClientCallback(rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedFuture future);
 
   Ui::plan_route_config ui_{};
-  QWidget* config_widget_;
-  mapviz::MapCanvas* map_canvas_;
+  QWidget * config_widget_;
+  mapviz::MapCanvas * map_canvas_;
 
   std::string route_topic_;
 

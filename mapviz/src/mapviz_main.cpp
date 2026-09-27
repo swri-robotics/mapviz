@@ -30,7 +30,7 @@
 #include "mapviz/mapviz.hpp"
 #include "mapviz/mapviz_application.hpp"
 
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
   // Initialize ROS; spinning on the Node is handled in mapviz.cpp
   rclcpp::init(argc, argv);

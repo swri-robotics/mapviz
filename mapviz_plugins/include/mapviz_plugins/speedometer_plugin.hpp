@@ -60,45 +60,45 @@ class SpeedometerPlugin : public mapviz::MapvizPlugin
 {
   Q_OBJECT
 
-  public:
+public:
   SpeedometerPlugin();
   ~SpeedometerPlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
-  void Paint(QPainter* painter, double x, double y, double scale) override;
+protected:
+  void Paint(QPainter * painter, double x, double y, double scale) override;
 
   void Draw(double, double, double) override {}
 
   void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
   void SelectTopic();
   void TopicEdited();
   void MaxSpeedChanged(double value);
 
-  private:
+private:
   // Called on the GUI thread by Subscribe(); owns all plugin state.
   void handleOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr odometry);
-  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
 
   /// Renders the dial into the placer's rectangle.
-  void PaintDial(QPainter* painter, const QRectF& rect);
+  void PaintDial(QPainter * painter, const QRectF & rect);
 
   Ui::speedometer_config ui_{};
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   PlaceableWindowProxy placer_;
 

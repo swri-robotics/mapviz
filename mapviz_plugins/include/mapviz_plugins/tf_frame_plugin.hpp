@@ -58,33 +58,33 @@ class TfFramePlugin : public mapviz_plugins::PointDrawingPlugin
 {
   Q_OBJECT
 
-  public:
+public:
   TfFramePlugin();
   ~TfFramePlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
+protected:
   void Draw(double x, double y, double scale) override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
   void SelectFrame();
   void FrameEdited();
 
-  private:
+private:
   Ui::tf_frame_config ui_{};
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   QTimer timer_;
 

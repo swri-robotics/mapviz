@@ -35,118 +35,118 @@
 
 namespace mapviz
 {
-  ConfigItem::ConfigItem(QWidget *parent, Qt::WindowFlags flags) :
-    QWidget(parent, flags),
-    item_(nullptr),
-    visible_(true)
-  {
-    ui_.setupUi(this);
+ConfigItem::ConfigItem(QWidget * parent, Qt::WindowFlags flags)
+: QWidget(parent, flags),
+  item_(nullptr),
+  visible_(true)
+{
+  ui_.setupUi(this);
 
-    edit_name_action_   = new QAction("Edit Name", this);
-    edit_name_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
-    remove_item_action_ = new QAction("Remove", this);
-    remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
-    remove_item_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X));
-    duplicate_item_action_ = new QAction("Duplicate", this);
-    duplicate_item_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+  edit_name_action_ = new QAction("Edit Name", this);
+  edit_name_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
+  remove_item_action_ = new QAction("Remove", this);
+  remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
+  remove_item_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X));
+  duplicate_item_action_ = new QAction("Duplicate", this);
+  duplicate_item_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
 
-    connect(edit_name_action_, SIGNAL(triggered()), this, SLOT(EditName()));
-    connect(duplicate_item_action_, SIGNAL(triggered()), this, SLOT(Duplicate()));
-    connect(remove_item_action_, SIGNAL(triggered()), this, SLOT(Remove()));
-  }
+  connect(edit_name_action_, SIGNAL(triggered()), this, SLOT(EditName()));
+  connect(duplicate_item_action_, SIGNAL(triggered()), this, SLOT(Duplicate()));
+  connect(remove_item_action_, SIGNAL(triggered()), this, SLOT(Remove()));
+}
 
-  void ConfigItem::ToggleDraw(bool toggled)
-  {
-    if (visible_ != toggled) {
-      visible_ = toggled;
-      if (ui_.show->isChecked() != toggled) {
-        ui_.show->setChecked(toggled);
-      }
-
-      Q_EMIT ToggledDraw(item_, toggled);
-    }
-  }
-
-  void ConfigItem::contextMenuEvent(QContextMenuEvent* event)
-  {
-    QMenu menu(this);
-    menu.addAction(edit_name_action_);
-    menu.addAction(duplicate_item_action_);
-    menu.addAction(remove_item_action_);
-    menu.exec(event->globalPos());
-  }
-
-  void ConfigItem::SetName(QString name)
-  {
-    name_ = name;
-    full_label_text_ = type_ + " (" + name_ + ")";
-    updateNameLabel();
-  }
-
-  void ConfigItem::SetType(QString type)
-  {
-    type_ = type;
-    full_label_text_ = type_ + " (" + name_ + ")";
-    updateNameLabel();
-  }
-
-  void ConfigItem::resizeEvent(QResizeEvent* event)
-  {
-    QWidget::resizeEvent(event);
-    updateNameLabel();
-  }
-
-  void ConfigItem::updateNameLabel()
-  {
-    if (ui_.namelabel->width() <= 0) {
-      return;
-    }
-    QFontMetrics fm(ui_.namelabel->font());
-    ui_.namelabel->setText(
-        fm.elidedText(full_label_text_, Qt::ElideRight, ui_.namelabel->width()));
-  }
-
-  void ConfigItem::SetWidget(QWidget* widget)
-  {
-    ui_.label->hide();
-    ui_.content_layout->addWidget(widget);
-  }
-
-  void ConfigItem::EditName()
-  {
-    bool ok;
-    QString text = QInputDialog::getText(
-      this,
-      tr("Set Display name"),
-      tr(""),
-      QLineEdit::Normal,
-      name_, &ok);
-
-    if (ok && !text.isEmpty()) {
-      SetName(text);
-    }
-  }
-
-  void ConfigItem::Duplicate()
-  {
-    Q_EMIT DuplicateRequest(item_);
-  }
-
-  void ConfigItem::Remove()
-  {
-    Q_EMIT RemoveRequest(item_);
-  }
-
-  void ConfigItem::Hide()
-  {
-    if (!ui_.content->isHidden()) {
-      ui_.content->hide();
-      ui_.signlabel->setText(" + ");
-    } else {
-      ui_.content->show();
-      ui_.signlabel->setText(" - ");
+void ConfigItem::ToggleDraw(bool toggled)
+{
+  if (visible_ != toggled) {
+    visible_ = toggled;
+    if (ui_.show->isChecked() != toggled) {
+      ui_.show->setChecked(toggled);
     }
 
-    Q_EMIT UpdateSizeHint();
+    Q_EMIT ToggledDraw(item_, toggled);
   }
+}
+
+void ConfigItem::contextMenuEvent(QContextMenuEvent * event)
+{
+  QMenu menu(this);
+  menu.addAction(edit_name_action_);
+  menu.addAction(duplicate_item_action_);
+  menu.addAction(remove_item_action_);
+  menu.exec(event->globalPos());
+}
+
+void ConfigItem::SetName(QString name)
+{
+  name_ = name;
+  full_label_text_ = type_ + " (" + name_ + ")";
+  updateNameLabel();
+}
+
+void ConfigItem::SetType(QString type)
+{
+  type_ = type;
+  full_label_text_ = type_ + " (" + name_ + ")";
+  updateNameLabel();
+}
+
+void ConfigItem::resizeEvent(QResizeEvent * event)
+{
+  QWidget::resizeEvent(event);
+  updateNameLabel();
+}
+
+void ConfigItem::updateNameLabel()
+{
+  if (ui_.namelabel->width() <= 0) {
+    return;
+  }
+  QFontMetrics fm(ui_.namelabel->font());
+  ui_.namelabel->setText(
+    fm.elidedText(full_label_text_, Qt::ElideRight, ui_.namelabel->width()));
+}
+
+void ConfigItem::SetWidget(QWidget * widget)
+{
+  ui_.label->hide();
+  ui_.content_layout->addWidget(widget);
+}
+
+void ConfigItem::EditName()
+{
+  bool ok;
+  QString text = QInputDialog::getText(
+    this,
+    tr("Set Display name"),
+    tr(""),
+    QLineEdit::Normal,
+    name_, &ok);
+
+  if (ok && !text.isEmpty()) {
+    SetName(text);
+  }
+}
+
+void ConfigItem::Duplicate()
+{
+  Q_EMIT DuplicateRequest(item_);
+}
+
+void ConfigItem::Remove()
+{
+  Q_EMIT RemoveRequest(item_);
+}
+
+void ConfigItem::Hide()
+{
+  if (!ui_.content->isHidden()) {
+    ui_.content->hide();
+    ui_.signlabel->setText(" + ");
+  } else {
+    ui_.content->show();
+    ui_.signlabel->setText(" - ");
+  }
+
+  Q_EMIT UpdateSizeHint();
+}
 }   // namespace mapviz

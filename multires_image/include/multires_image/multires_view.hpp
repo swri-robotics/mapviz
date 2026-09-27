@@ -41,30 +41,30 @@ namespace mapviz_plugins
 {
 class MultiresView : protected QOpenGLFunctions_1_1
 {
-  public:
-    MultiresView(multires_image::TileSet* tiles, QOpenGLWidget* widget);
-    ~MultiresView() = default;
+public:
+  MultiresView(multires_image::TileSet * tiles, QOpenGLWidget * widget);
+  ~MultiresView() = default;
 
-    const multires_image::TileCache* Cache() { return &m_cache; }
+  const multires_image::TileCache * Cache() {return &m_cache;}
 
-    void SetView(double x, double y, double radius, double scale);
+  void SetView(double x, double y, double radius, double scale);
 
-    void Draw();
+  void Draw();
 
-    void Exit() { m_cache.Exit(); }
+  void Exit() {m_cache.Exit();}
 
-  private:
-    multires_image::TileSet*   m_tiles;
-    multires_image::TileCache  m_cache;
-    int        m_currentLayer;
-    int        m_startRow;
-    int        m_startColumn;
-    int        m_endRow;
-    int        m_endColumn;
+private:
+  multires_image::TileSet * m_tiles;
+  multires_image::TileCache m_cache;
+  int m_currentLayer;
+  int m_startRow;
+  int m_startColumn;
+  int m_endRow;
+  int m_endColumn;
 
-    double min_scale_;
-    bool gl_initialized_ = false;
-  };
+  double min_scale_;
+  bool gl_initialized_ = false;
+};
 }
 
 #endif  // MAPVIZ_PLUGINS_MULTIRES_VIEW_HPP_

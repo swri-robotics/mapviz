@@ -63,40 +63,40 @@ class DrawMarkerPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions
 {
   Q_OBJECT
 
-  public:
+public:
   DrawMarkerPlugin();
   ~DrawMarkerPlugin() override;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
+protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  bool eventFilter(QObject* object, QEvent* event) override;
-  bool handleMousePress(QMouseEvent*);
-  bool handleMouseRelease(QMouseEvent*);
-  bool handleMouseMove(QMouseEvent*);
+  bool eventFilter(QObject * object, QEvent * event) override;
+  bool handleMousePress(QMouseEvent *);
+  bool handleMouseRelease(QMouseEvent *);
+  bool handleMouseMove(QMouseEvent *);
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
   void PublishMarker();
   void Clear();
   void SelectFrame();
   void FrameEdited();
 
-  private:
+private:
   /// Index into the marker_type combo box, kept in sync with its .ui entries.
   enum MarkerShape
   {
@@ -116,8 +116,8 @@ class DrawMarkerPlugin : public mapviz::MapvizPlugin, protected QOpenGLFunctions
   bool SelectedShapeIsLine() const;
 
   Ui::draw_marker_config ui_;
-  QWidget* config_widget_;
-  mapviz::MapCanvas* map_canvas_;
+  QWidget * config_widget_;
+  mapviz::MapCanvas * map_canvas_;
 
   std::string marker_topic_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;

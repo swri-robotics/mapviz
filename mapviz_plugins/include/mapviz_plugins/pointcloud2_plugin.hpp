@@ -54,9 +54,9 @@
 namespace mapviz_plugins
 {
 class PointCloud2Plugin : public mapviz::MapvizPlugin,
-                          protected QOpenGLFunctions_1_5
+  protected QOpenGLFunctions_1_5
 {
-Q_OBJECT
+  Q_OBJECT
 
 public:
   struct FieldInfo
@@ -95,25 +95,25 @@ public:
   PointCloud2Plugin();
   ~PointCloud2Plugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
   void ClearHistory() override;
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
 protected:
   void Draw(double x, double y, double scale) override;
 
   void Transform() override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
 protected Q_SLOTS:
   void SelectTopic();
@@ -136,14 +136,14 @@ private:
   // Decodes the raw cloud on the ROS spin thread; static (a Subscribe()
   // function pointer) so it cannot touch plugin state.  Returns an empty
   // (feature-less) Scan for malformed clouds.
-  static Scan DecodeScan(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg);
-  static float PointFeature(const uint8_t*, const FieldInfo&);
+  static Scan DecodeScan(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & msg);
+  static float PointFeature(const uint8_t *, const FieldInfo &);
   // Runs on the GUI thread via Subscribe(); owns scans_ and everything
   // configuration-dependent.
   void handleScan(std::shared_ptr<mapviz_plugins::PointCloud2Plugin::Scan> scan);
-  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
-  QColor CalculateColor(const StampedPoint& point);
-  void ColorScan(Scan& scan);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
+  QColor CalculateColor(const StampedPoint & point);
+  void ColorScan(Scan & scan);
   void UpdateMinMaxWidgets();
   // In auto mode, recomputes min_value_/max_value_ over the buffered scans for
   // the active color transformer and mirrors them into the min/max spin boxes,
@@ -154,7 +154,7 @@ private:
   bool UpdateAutoRange();
 
   Ui::PointCloud2_config ui_{};
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   std::string topic_;
   rmw_qos_profile_t qos_;

@@ -68,13 +68,13 @@ struct ArrowPoint
 };
 
 constexpr std::array<ArrowPoint, 7> kArrowShape = {{
-  {10.0,  0.0},   // tip
-  { 6.0, -2.5},   // barb, one side
-  { 6.5, -1.0},
-  { 0.0, -1.0},   // shaft, one side
-  { 0.0,  1.0},   // shaft, other side
-  { 6.5,  1.0},
-  { 6.0,  2.5}    // barb, other side
+  {10.0, 0.0},    // tip
+  {6.0, -2.5},    // barb, one side
+  {6.5, -1.0},
+  {0.0, -1.0},    // shaft, one side
+  {0.0, 1.0},     // shaft, other side
+  {6.5, 1.0},
+  {6.0, 2.5}      // barb, other side
 }};
 
 constexpr double kArrowScale = 10.0;
@@ -96,10 +96,10 @@ constexpr double kStatusThrottleSec = 1.0;
 
 MoveBasePlugin::MoveBasePlugin()
 : config_widget_(new QWidget())
-, map_canvas_(nullptr)
-, action_status_(IDLE)
-, is_mouse_down_(false)
-, arrow_angle_(0.0)
+  , map_canvas_(nullptr)
+  , action_status_(IDLE)
+  , is_mouse_down_(false)
+  , arrow_angle_(0.0)
 {
   ui_.setupUi(config_widget_);
 
@@ -113,62 +113,65 @@ MoveBasePlugin::MoveBasePlugin()
   p3.setColor(QPalette::Text, Qt::green);
   ui_.status->setPalette(p3);
 
-  QObject::connect(ui_.pushButtonInitialPose, &QPushButton::toggled,
-                   this, &MoveBasePlugin::on_pushButtonInitialPose_toggled);
-  QObject::connect(ui_.pushButtonGoalPose, &QPushButton::toggled,
-                   this, &MoveBasePlugin::on_pushButtonGoalPose_toggled);
-  QObject::connect(ui_.pushButtonAbort, &QPushButton::clicked,
-                   this, &MoveBasePlugin::on_pushButtonAbort_clicked);
+  QObject::connect(
+    ui_.pushButtonInitialPose, &QPushButton::toggled,
+    this, &MoveBasePlugin::on_pushButtonInitialPose_toggled);
+  QObject::connect(
+    ui_.pushButtonGoalPose, &QPushButton::toggled,
+    this, &MoveBasePlugin::on_pushButtonGoalPose_toggled);
+  QObject::connect(
+    ui_.pushButtonAbort, &QPushButton::clicked,
+    this, &MoveBasePlugin::on_pushButtonAbort_clicked);
 
   // The action-client callbacks fire on the ROS spin thread; hand the status
   // to the GUI thread, which owns action_status_ and the widgets.  Qt makes
   // this a queued connection because the emitting thread differs from this
   // object's thread.
-  QObject::connect(this, &MoveBasePlugin::ActionStatusChanged,
-                   this, &MoveBasePlugin::handleActionStatus);
+  QObject::connect(
+    this, &MoveBasePlugin::ActionStatusChanged,
+    this, &MoveBasePlugin::handleActionStatus);
 }
 
 MoveBasePlugin::~MoveBasePlugin()
 {
-  if (map_canvas_)
-  {
+  if (map_canvas_) {
     map_canvas_->removeEventFilter(this);
   }
 }
 
-void MoveBasePlugin::PrintError(const std::string& message)
+void MoveBasePlugin::PrintError(const std::string & message)
 {
   PrintErrorHelper(ui_.status, message, kStatusThrottleSec);
 }
 
-void MoveBasePlugin::PrintInfo(const std::string& message)
+void MoveBasePlugin::PrintInfo(const std::string & message)
 {
   PrintInfoHelper(ui_.status, message, kStatusThrottleSec);
 }
 
-void MoveBasePlugin::PrintWarning(const std::string& message)
+void MoveBasePlugin::PrintWarning(const std::string & message)
 {
   PrintWarningHelper(ui_.status, message, kStatusThrottleSec);
 }
 
-QWidget* MoveBasePlugin::GetConfigWidget(QWidget* parent)
+QWidget * MoveBasePlugin::GetConfigWidget(QWidget * parent)
 {
   config_widget_->setParent(parent);
   return config_widget_;
 }
 
-bool MoveBasePlugin::Initialize(QOpenGLWidget* canvas)
+bool MoveBasePlugin::Initialize(QOpenGLWidget * canvas)
 {
-  map_canvas_ = dynamic_cast<mapviz::MapCanvas*>(canvas);
+  map_canvas_ = dynamic_cast<mapviz::MapCanvas *>(canvas);
   map_canvas_->installEventFilter(this);
   canvas->makeCurrent();
   initializeOpenGLFunctions();
   canvas->doneCurrent();
 
   init_pose_pub_ = Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
-      "/initialpose", rclcpp::QoS(kInitialPoseQueueDepth));
+    "/initialpose", rclcpp::QoS(kInitialPoseQueueDepth));
   move_base_client_ = rclcpp_action::create_client<NavigateToPose>(
-      NodeUnsafe(), "navigate_to_pose");
+    NodeUnsafe(), "navigate_to_pose");
 
   // A QTimer (not a ROS wall timer) so timerCallback() runs on the GUI thread,
   // which owns the widgets and status it touches.
@@ -179,16 +182,15 @@ bool MoveBasePlugin::Initialize(QOpenGLWidget* canvas)
   return true;
 }
 
-bool MoveBasePlugin::eventFilter(QObject* /*object*/, QEvent* event)
+bool MoveBasePlugin::eventFilter(QObject * /*object*/, QEvent * event)
 {
-  switch (event->type())
-  {
+  switch (event->type()) {
     case QEvent::MouseButtonPress:
-      return handleMousePress(dynamic_cast<QMouseEvent*>(event));
+      return handleMousePress(dynamic_cast<QMouseEvent *>(event));
     case QEvent::MouseButtonRelease:
-      return handleMouseRelease(dynamic_cast<QMouseEvent*>(event));
+      return handleMouseRelease(dynamic_cast<QMouseEvent *>(event));
     case QEvent::MouseMove:
-      return handleMouseMove(dynamic_cast<QMouseEvent*>(event));
+      return handleMouseMove(dynamic_cast<QMouseEvent *>(event));
     default:
       return false;
   }
@@ -208,14 +210,12 @@ void MoveBasePlugin::timerCallback()
   ui_.pushButtonGoalPose->setEnabled(connected);
   ui_.pushButtonInitialPose->setEnabled(connected);
 
-  if (!connected)
-  {
+  if (!connected) {
     PrintError("[navigate_to_pose] server not connected");
     return;
   }
 
-  switch (action_status_)
-  {
+  switch (action_status_) {
     case ACTIVE:
       PrintInfo("Goal active");
       break;
@@ -232,24 +232,22 @@ void MoveBasePlugin::timerCallback()
       PrintError("Goal aborted by server");
       break;
     case IDLE:
-      // Fallthrough intentional
+    // Fallthrough intentional
     default:
       PrintInfo("Ready to send command");
       break;
   }
 }
 
-bool MoveBasePlugin::handleMousePress(QMouseEvent* event)
+bool MoveBasePlugin::handleMousePress(QMouseEvent * event)
 {
   const bool init_checked = ui_.pushButtonInitialPose->isChecked();
   const bool goal_checked = ui_.pushButtonGoalPose->isChecked();
-  if (!init_checked && !goal_checked)
-  {
+  if (!init_checked && !goal_checked) {
     return false;
   }
 
-  if (event->button() == Qt::LeftButton)
-  {
+  if (event->button() == Qt::LeftButton) {
     is_mouse_down_ = true;
     arrow_angle_ = 0;
     arrow_tail_position_ = map_canvas_->MapGlCoordToFixedFrame(mapviz::MouseEventPosition(event));
@@ -258,37 +256,34 @@ bool MoveBasePlugin::handleMousePress(QMouseEvent* event)
   return false;
 }
 
-bool MoveBasePlugin::handleMouseMove(QMouseEvent* event)
+bool MoveBasePlugin::handleMouseMove(QMouseEvent * event)
 {
-  if (is_mouse_down_)
-  {
+  if (is_mouse_down_) {
     QPointF head_pos = map_canvas_->MapGlCoordToFixedFrame(mapviz::MouseEventPosition(event));
-    arrow_angle_ = atan2(head_pos.y() - arrow_tail_position_.y(),
-                         head_pos.x() - arrow_tail_position_.x());
+    arrow_angle_ = atan2(
+      head_pos.y() - arrow_tail_position_.y(),
+      head_pos.x() - arrow_tail_position_.x());
   }
   return false;
 }
 
-bool MoveBasePlugin::handleMouseRelease(QMouseEvent* /*event*/)
+bool MoveBasePlugin::handleMouseRelease(QMouseEvent * /*event*/)
 {
-  if (!is_mouse_down_)
-  {
+  if (!is_mouse_down_) {
     return false;
   }
   is_mouse_down_ = false;
 
   const bool init_checked = ui_.pushButtonInitialPose->isChecked();
   const bool goal_checked = ui_.pushButtonGoalPose->isChecked();
-  if (!init_checked && !goal_checked)
-  {
+  if (!init_checked && !goal_checked) {
     return false;
   }
 
   tf2::Quaternion quat;
   quat.setRPY(0.0, 0.0, arrow_angle_);
 
-  if (goal_checked)
-  {
+  if (goal_checked) {
     NavigateToPose::Goal goal;
     goal.pose.header.frame_id = target_frame_;
     goal.pose.header.stamp = Now();
@@ -306,11 +301,10 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* /*event*/)
         Q_EMIT ActionStatusChanged(handle ? ACTIVE : REJECTED);
       };
     options.result_callback =
-      [this](const GoalHandle::WrappedResult& result)
+      [this](const GoalHandle::WrappedResult & result)
       {
         int status = ABORTED;
-        switch (result.code)
-        {
+        switch (result.code) {
           case rclcpp_action::ResultCode::SUCCEEDED:
             status = SUCCEEDED;
             break;
@@ -318,7 +312,7 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* /*event*/)
             status = CANCELED;
             break;
           case rclcpp_action::ResultCode::ABORTED:
-            // Fallthrough intentional
+          // Fallthrough intentional
           default:
             status = ABORTED;
             break;
@@ -330,8 +324,7 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* /*event*/)
     action_status_ = ACTIVE;
     ui_.pushButtonGoalPose->setChecked(false);
   }
-  if (init_checked)
-  {
+  if (init_checked) {
     geometry_msgs::msg::PoseWithCovarianceStamped initpose;
     initpose.header.frame_id = target_frame_;
     initpose.header.stamp = Now();
@@ -348,27 +341,25 @@ bool MoveBasePlugin::handleMouseRelease(QMouseEvent* /*event*/)
 
 void MoveBasePlugin::Draw(double /*x*/, double /*y*/, double scale)
 {
-  if (is_mouse_down_)
-  {
+  if (is_mouse_down_) {
     tf2::Quaternion quat;
     quat.setRPY(0.0, 0.0, arrow_angle_);
     tf2::Transform transform(quat);
 
     std::array<QPointF, kArrowShape.size()> transformed_points;
-    for (size_t i = 0; i < kArrowShape.size(); i++)
-    {
+    for (size_t i = 0; i < kArrowShape.size(); i++) {
       tf2::Vector3 point(kArrowShape[i].x, kArrowShape[i].y, 0.0);
       point *= (scale * kArrowScale);
       point = transform * point;
-      transformed_points[i] = QPointF(point.x() + arrow_tail_position_.x(),
-                                      point.y() + arrow_tail_position_.y());
+      transformed_points[i] = QPointF(
+        point.x() + arrow_tail_position_.x(),
+        point.y() + arrow_tail_position_.y());
     }
     const QColor fill_color(kArrowFillColor);
     glColor3d(fill_color.redF(), fill_color.greenF(), fill_color.blueF());
     glLineWidth(kArrowLineWidth);
     glBegin(GL_TRIANGLE_FAN);
-    for (const QPointF& point : transformed_points)
-    {
+    for (const QPointF & point : transformed_points) {
       glVertex2d(point.x(), point.y());
     }
     glEnd();
@@ -376,19 +367,18 @@ void MoveBasePlugin::Draw(double /*x*/, double /*y*/, double scale)
     const QColor outline_color(kArrowOutlineColor);
     glColor3d(outline_color.redF(), outline_color.greenF(), outline_color.blueF());
     glBegin(GL_LINE_LOOP);
-    for (const QPointF& point : transformed_points)
-    {
+    for (const QPointF & point : transformed_points) {
       glVertex2d(point.x(), point.y());
     }
     glEnd();
   }
 }
 
-void MoveBasePlugin::LoadConfig(const YAML::Node& /*node*/, const std::string& /*path*/)
+void MoveBasePlugin::LoadConfig(const YAML::Node & /*node*/, const std::string & /*path*/)
 {
 }
 
-void MoveBasePlugin::SaveConfig(YAML::Emitter& /*emitter*/, const std::string& /*path*/)
+void MoveBasePlugin::SaveConfig(YAML::Emitter & /*emitter*/, const std::string & /*path*/)
 {
 }
 
@@ -396,20 +386,15 @@ void MoveBasePlugin::on_pushButtonInitialPose_toggled(bool checked)
 {
   const bool other_checked = ui_.pushButtonGoalPose->isChecked();
 
-  if (checked)
-  {
-    if (other_checked)
-    {
+  if (checked) {
+    if (other_checked) {
       ui_.pushButtonGoalPose->setChecked(false);
-    }
-    else
-    {
+    } else {
       QPixmap cursor_pixmap = QPixmap(":/images/green-arrow.png");
       QApplication::setOverrideCursor(QCursor(cursor_pixmap));
     }
   }
-  if (!checked && !other_checked)
-  {
+  if (!checked && !other_checked) {
     QApplication::restoreOverrideCursor();
   }
 }
@@ -417,28 +402,22 @@ void MoveBasePlugin::on_pushButtonInitialPose_toggled(bool checked)
 void MoveBasePlugin::on_pushButtonGoalPose_toggled(bool checked)
 {
   const bool other_checked = ui_.pushButtonInitialPose->isChecked();
-  if (checked)
-  {
-    if (other_checked)
-    {
+  if (checked) {
+    if (other_checked) {
       ui_.pushButtonInitialPose->setChecked(false);
-    }
-    else
-    {
+    } else {
       QPixmap cursor_pixmap = QPixmap(":/images/green-arrow.png");
       QApplication::setOverrideCursor(QCursor(cursor_pixmap));
     }
   }
-  if (!checked && !other_checked)
-  {
+  if (!checked && !other_checked) {
     QApplication::restoreOverrideCursor();
   }
 }
 
 void MoveBasePlugin::on_pushButtonAbort_clicked()
 {
-  if (move_base_client_)
-  {
+  if (move_base_client_) {
     move_base_client_->async_cancel_all_goals();
   }
 }

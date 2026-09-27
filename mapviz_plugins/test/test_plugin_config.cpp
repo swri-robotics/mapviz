@@ -42,24 +42,24 @@
 
 namespace
 {
-  /// Shared by every test.  Plugins subscribe while loading their config, so
-  /// they need a node just as they get one from Mapviz::CreateNewDisplay(),
-  /// which calls SetNode() before LoadConfigPlugin().
-  rclcpp::Node::SharedPtr g_node;
+/// Shared by every test.  Plugins subscribe while loading their config, so
+/// they need a node just as they get one from Mapviz::CreateNewDisplay(),
+/// which calls SetNode() before LoadConfigPlugin().
+rclcpp::Node::SharedPtr g_node;
 
-  /// Round trips a plugin's configuration the way mapviz does when a config
-  /// file is opened and then saved again.
-  YAML::Node SaveAfterLoading(mapviz::MapvizPlugin& plugin, const std::string& yaml)
-  {
-    plugin.LoadConfigPlugin(YAML::Load(yaml), "");
+/// Round trips a plugin's configuration the way mapviz does when a config
+/// file is opened and then saved again.
+YAML::Node SaveAfterLoading(mapviz::MapvizPlugin & plugin, const std::string & yaml)
+{
+  plugin.LoadConfigPlugin(YAML::Load(yaml), "");
 
-    YAML::Emitter emitter;
-    emitter << YAML::BeginMap;
-    plugin.SaveConfigPlugin(emitter, "");
-    emitter << YAML::EndMap;
+  YAML::Emitter emitter;
+  emitter << YAML::BeginMap;
+  plugin.SaveConfigPlugin(emitter, "");
+  emitter << YAML::EndMap;
 
-    return YAML::Load(emitter.c_str());
-  }
+  return YAML::Load(emitter.c_str());
+}
 }  // namespace
 
 TEST(SpeedometerConfig, RoundTripsSettings)
@@ -67,7 +67,8 @@ TEST(SpeedometerConfig, RoundTripsSettings)
   mapviz_plugins::SpeedometerPlugin plugin;
   plugin.SetNode(*g_node);
 
-  YAML::Node saved = SaveAfterLoading(plugin,
+  YAML::Node saved = SaveAfterLoading(
+    plugin,
     "topic: /vehicle/odom\n"
     "max_speed: 33.5\n"
     "color: '#ff00ff'\n"
@@ -102,9 +103,11 @@ TEST(SpeedometerConfig, ClampsOutOfRangeMaxSpeed)
 
   // A hand edited config must not be able to push the dial outside the range
   // the config widget allows.
-  EXPECT_DOUBLE_EQ(1000.0,
+  EXPECT_DOUBLE_EQ(
+    1000.0,
     SaveAfterLoading(plugin, "max_speed: 99999999\n")["max_speed"].as<double>());
-  EXPECT_DOUBLE_EQ(0.1,
+  EXPECT_DOUBLE_EQ(
+    0.1,
     SaveAfterLoading(plugin, "max_speed: -5\n")["max_speed"].as<double>());
 }
 
@@ -113,7 +116,8 @@ TEST(DrawMarkerConfig, RoundTripsSettings)
   mapviz_plugins::DrawMarkerPlugin plugin;
   plugin.SetNode(*g_node);
 
-  YAML::Node saved = SaveAfterLoading(plugin,
+  YAML::Node saved = SaveAfterLoading(
+    plugin,
     "frame: map\n"
     "topic: /drawn\n"
     "type: 2\n"
@@ -140,7 +144,8 @@ TEST(DrawMarkerConfig, RoundTripsVertices)
 
   // Persisting the vertices is what lets a drawing outlive the session it was
   // made in, so the coordinates have to survive exactly.
-  YAML::Node saved = SaveAfterLoading(plugin,
+  YAML::Node saved = SaveAfterLoading(
+    plugin,
     "vertices:\n"
     "  - [1.5, -2.5]\n"
     "  - [3.0, 4.0]\n"
@@ -174,7 +179,8 @@ TEST(DrawMarkerConfig, IgnoresMalformedVertices)
 
   // A vertex needs both coordinates; a short one is skipped rather than read
   // out of bounds.
-  YAML::Node saved = SaveAfterLoading(plugin,
+  YAML::Node saved = SaveAfterLoading(
+    plugin,
     "vertices:\n"
     "  - [1.0, 2.0]\n"
     "  - [3.0]\n"
@@ -185,7 +191,7 @@ TEST(DrawMarkerConfig, IgnoresMalformedVertices)
   EXPECT_DOUBLE_EQ(4.0, saved["vertices"][1][0].as<double>());
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   // The plugins build QWidget based config panels in their constructors, so a
   // QApplication has to exist first.  The test runs headless; see the ENV set

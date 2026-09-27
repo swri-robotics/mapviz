@@ -32,53 +32,53 @@
 
 namespace tile_map
 {
-  const QString& TileSource::GetBaseUrl() const
-  {
-    return base_url_;
-  }
+const QString & TileSource::GetBaseUrl() const
+{
+  return base_url_;
+}
 
-  void TileSource::SetBaseUrl(const QString& base_url)
-  {
-    base_url_ = base_url;
-  }
+void TileSource::SetBaseUrl(const QString & base_url)
+{
+  base_url_ = base_url;
+}
 
-  bool TileSource::IsCustom() const
-  {
-    return is_custom_;
-  }
+bool TileSource::IsCustom() const
+{
+  return is_custom_;
+}
 
-  void TileSource::SetCustom(bool is_custom)
-  {
-    is_custom_ = is_custom;
-  }
+void TileSource::SetCustom(bool is_custom)
+{
+  is_custom_ = is_custom;
+}
 
-  int32_t TileSource::GetMaxZoom() const
-  {
-    return max_zoom_;
-  }
+int32_t TileSource::GetMaxZoom() const
+{
+  return max_zoom_;
+}
 
-  void TileSource::SetMaxZoom(int32_t max_zoom)
-  {
-    max_zoom_ = max_zoom;
-  }
+void TileSource::SetMaxZoom(int32_t max_zoom)
+{
+  max_zoom_ = max_zoom;
+}
 
-  int32_t TileSource::GetMinZoom() const
-  {
-    return min_zoom_;
-  }
+int32_t TileSource::GetMinZoom() const
+{
+  return min_zoom_;
+}
 
-  void TileSource::SetMinZoom(int32_t min_zoom)
-  {
-    min_zoom_ = min_zoom;
-  }
+void TileSource::SetMinZoom(int32_t min_zoom)
+{
+  min_zoom_ = min_zoom;
+}
 
-  const QString& TileSource::GetName() const
-  {
-    return name_;
-  }
+const QString & TileSource::GetName() const
+{
+  return name_;
+}
 
-  void TileSource::SetName(const QString& name)
-  {
-    name_ = name;
-  }
+void TileSource::SetName(const QString & name)
+{
+  name_ = name;
+}
 }

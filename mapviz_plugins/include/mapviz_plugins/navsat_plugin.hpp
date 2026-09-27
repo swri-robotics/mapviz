@@ -49,37 +49,36 @@ class NavSatPlugin : public mapviz_plugins::PointDrawingPlugin
 {
   Q_OBJECT
 
-  public:
+public:
   NavSatPlugin();
   ~NavSatPlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
-  protected:
+protected:
   void Draw(double x, double y, double scale) override;
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
-  protected Q_SLOTS:
+protected Q_SLOTS:
   void SelectTopic();
   void TopicEdited();
 
+private Q_SLOTS:
+  void handleNavSatFix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr msg);
 
-  private Q_SLOTS:
-    void handleNavSatFix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr msg);
-
-  private:
+private:
   Ui::navsat_config ui_;
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   std::string topic_;
   rmw_qos_profile_t qos_;
@@ -87,7 +86,7 @@ class NavSatPlugin : public mapviz_plugins::PointDrawingPlugin
   rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr navsat_sub_;
   bool has_message_;
 
-  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
 };
 }   // namespace mapviz_plugins
 

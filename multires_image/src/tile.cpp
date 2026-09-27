@@ -45,189 +45,177 @@
 namespace multires_image
 {
 
-  Tile::Tile(
-         const std::string& path, int column, int row, int level,
-         const tf2::Vector3& topLeft, const tf2::Vector3& topRight,
-         const tf2::Vector3& bottomLeft, const tf2::Vector3& bottomRight) :
-    m_path(path),
-    m_column(column),
-    m_row(row),
-    m_level(level),
-    m_top_left(topLeft),
-    m_top_right(topRight),
-    m_bottom_right(bottomRight),
-    m_bottom_left(bottomLeft),
-    m_transformed_top_left(topLeft),
-    m_transformed_top_right(topRight),
-    m_transformed_bottom_right(bottomRight),
-    m_transformed_bottom_left(bottomLeft),
-    m_failed(false),
-    m_textureLoaded(false),
-    m_dimension(0),
-    m_tileId(1000000 * level + 1000 * column + row),
-    m_memorySize(0),
-    m_texture(nullptr)
-  {
-  }
+Tile::Tile(
+  const std::string & path, int column, int row, int level,
+  const tf2::Vector3 & topLeft, const tf2::Vector3 & topRight,
+  const tf2::Vector3 & bottomLeft, const tf2::Vector3 & bottomRight)
+: m_path(path),
+  m_column(column),
+  m_row(row),
+  m_level(level),
+  m_top_left(topLeft),
+  m_top_right(topRight),
+  m_bottom_right(bottomRight),
+  m_bottom_left(bottomLeft),
+  m_transformed_top_left(topLeft),
+  m_transformed_top_right(topRight),
+  m_transformed_bottom_right(bottomRight),
+  m_transformed_bottom_left(bottomLeft),
+  m_failed(false),
+  m_textureLoaded(false),
+  m_dimension(0),
+  m_tileId(1000000 * level + 1000 * column + row),
+  m_memorySize(0),
+  m_texture(nullptr)
+{
+}
 
-  bool Tile::Exists()
-  {
-    return QFile::exists(m_path.c_str());
-  }
+bool Tile::Exists()
+{
+  return QFile::exists(m_path.c_str());
+}
 
-  bool Tile::LoadImageToMemory(bool gl)
-  {
-    if (!m_failed)
-    {
-      m_mutex.lock();
+bool Tile::LoadImageToMemory(bool gl)
+{
+  if (!m_failed) {
+    m_mutex.lock();
 
-      try
-      {
-        QImage nullImage;
-        m_image = nullImage;
+    try {
+      QImage nullImage;
+      m_image = nullImage;
 
-        if (m_image.load(m_path.c_str()))
-        {
-          if (gl)
-          {
-            int width = m_image.width();
-            int height = m_image.height();
+      if (m_image.load(m_path.c_str())) {
+        if (gl) {
+          int width = m_image.width();
+          int height = m_image.height();
 
-            float max_dim = std::max(width, height);
-            m_dimension = swri_math_util::Round(
-              std::pow(2.0f, std::ceil(std::log(max_dim)/std::log(2.0f))));
+          float max_dim = std::max(width, height);
+          m_dimension = swri_math_util::Round(
+            std::pow(2.0f, std::ceil(std::log(max_dim) / std::log(2.0f))));
 
-            if (width != m_dimension || height != m_dimension)
-            {
-              m_image = m_image.scaled(m_dimension, m_dimension, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-            }
-
-            m_memorySize = m_dimension * m_dimension * 4;
-
-            // QImage::flipped() replaced mirrored() in Qt 6; Qt 5 only has mirrored().
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-            m_image = m_image.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
-#else
-            m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
-#endif
+          if (width != m_dimension || height != m_dimension) {
+            m_image = m_image.scaled(
+              m_dimension, m_dimension, Qt::IgnoreAspectRatio,
+              Qt::FastTransformation);
           }
+
+          m_memorySize = m_dimension * m_dimension * 4;
+
+          // QImage::flipped() replaced mirrored() in Qt 6; Qt 5 only has mirrored().
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+          m_image = m_image.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
+#else
+          m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
+#endif
         }
-        else
-        {
-          m_failed = true;
-        }
-      }
-      catch(std::exception& e)
-      {
-        std::cout << "An exception occurred loading image: " << e.what() << std::endl;
+      } else {
         m_failed = true;
       }
-
-      m_mutex.unlock();
-    }
-
-    return !m_failed;
-  }
-
-  void Tile::UnloadImage()
-  {
-    m_mutex.lock();
-
-    QImage nullImage;
-    m_image = nullImage;
-
-    m_mutex.unlock();
-  }
-
-  bool Tile::LoadTexture()
-  {
-    if (!m_textureLoaded && !m_failed)
-    {
-      m_mutex.lock();
-
-      initializeOpenGLFunctions();
-
-      try
-      {
-        auto texture = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
-        texture->setFormat(QOpenGLTexture::RGBA8_UNorm);
-        texture->setSize(m_dimension, m_dimension);
-        texture->allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
-        texture->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, m_image.constBits());
-        texture->setMinificationFilter(QOpenGLTexture::Linear);
-        texture->setMagnificationFilter(QOpenGLTexture::Linear);
-        texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-
-        m_textureLoaded = texture->isCreated();
-        if (m_textureLoaded) {
-          m_texture = std::move(texture);
-        } else {
-          m_failed = true;
-        }
-      }
-      catch (const std::exception& e)
-      {
-        std::cout << "An exception occured loading texture: " << e.what() << std::endl;
-        m_failed = true;
-      }
-
-      m_mutex.unlock();
-    }
-
-    return m_textureLoaded;
-  }
-
-  void Tile::UnloadTexture()
-  {
-    m_mutex.lock();
-
-    if (m_textureLoaded)
-    {
-      m_textureLoaded = false;
-      m_texture.reset();
+    } catch (std::exception & e) {
+      std::cout << "An exception occurred loading image: " << e.what() << std::endl;
+      m_failed = true;
     }
 
     m_mutex.unlock();
   }
 
-  void Tile::Draw()
-  {
-    if (!m_failed)
-    {
-      if (m_textureLoaded && m_texture)
-      {
-        m_texture->bind();
+  return !m_failed;
+}
 
-        glBegin(GL_QUADS);
+void Tile::UnloadImage()
+{
+  m_mutex.lock();
 
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex2d(m_transformed_top_left.x(), m_transformed_top_left.y());
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2d(m_transformed_top_right.x(), m_transformed_top_right.y());
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2d(m_transformed_bottom_right.x(), m_transformed_bottom_right.y());
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2d(m_transformed_bottom_left.x(), m_transformed_bottom_left.y());
+  QImage nullImage;
+  m_image = nullImage;
 
-        glEnd();
-        m_texture->release();
+  m_mutex.unlock();
+}
+
+bool Tile::LoadTexture()
+{
+  if (!m_textureLoaded && !m_failed) {
+    m_mutex.lock();
+
+    initializeOpenGLFunctions();
+
+    try {
+      auto texture = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
+      texture->setFormat(QOpenGLTexture::RGBA8_UNorm);
+      texture->setSize(m_dimension, m_dimension);
+      texture->allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
+      texture->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, m_image.constBits());
+      texture->setMinificationFilter(QOpenGLTexture::Linear);
+      texture->setMagnificationFilter(QOpenGLTexture::Linear);
+      texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+
+      m_textureLoaded = texture->isCreated();
+      if (m_textureLoaded) {
+        m_texture = std::move(texture);
+      } else {
+        m_failed = true;
       }
+    } catch (const std::exception & e) {
+      std::cout << "An exception occured loading texture: " << e.what() << std::endl;
+      m_failed = true;
+    }
+
+    m_mutex.unlock();
+  }
+
+  return m_textureLoaded;
+}
+
+void Tile::UnloadTexture()
+{
+  m_mutex.lock();
+
+  if (m_textureLoaded) {
+    m_textureLoaded = false;
+    m_texture.reset();
+  }
+
+  m_mutex.unlock();
+}
+
+void Tile::Draw()
+{
+  if (!m_failed) {
+    if (m_textureLoaded && m_texture) {
+      m_texture->bind();
+
+      glBegin(GL_QUADS);
+
+      glTexCoord2f(0.0f, 1.0f);
+      glVertex2d(m_transformed_top_left.x(), m_transformed_top_left.y());
+      glTexCoord2f(1.0f, 1.0f);
+      glVertex2d(m_transformed_top_right.x(), m_transformed_top_right.y());
+      glTexCoord2f(1.0f, 0.0f);
+      glVertex2d(m_transformed_bottom_right.x(), m_transformed_bottom_right.y());
+      glTexCoord2f(0.0f, 0.0f);
+      glVertex2d(m_transformed_bottom_left.x(), m_transformed_bottom_left.y());
+
+      glEnd();
+      m_texture->release();
     }
   }
+}
 
-  void Tile::Transform(const swri_transform_util::Transform& transform)
-  {
-    m_transformed_top_left = transform * m_top_left;
-    m_transformed_top_right = transform * m_top_right;
-    m_transformed_bottom_left = transform * m_bottom_left;
-    m_transformed_bottom_right = transform * m_bottom_right;
-  }
+void Tile::Transform(const swri_transform_util::Transform & transform)
+{
+  m_transformed_top_left = transform * m_top_left;
+  m_transformed_top_right = transform * m_top_right;
+  m_transformed_bottom_left = transform * m_bottom_left;
+  m_transformed_bottom_right = transform * m_bottom_right;
+}
 
-  void Tile::Transform(const swri_transform_util::Transform& transform, const swri_transform_util::Transform& offset_tf)
-  {
-    m_transformed_top_left = offset_tf * (transform * m_top_left);
-    m_transformed_top_right = offset_tf * (transform * m_top_right);
-    m_transformed_bottom_left = offset_tf * (transform * m_bottom_left);
-    m_transformed_bottom_right = offset_tf * (transform * m_bottom_right);
-  }
+void Tile::Transform(
+  const swri_transform_util::Transform & transform,
+  const swri_transform_util::Transform & offset_tf)
+{
+  m_transformed_top_left = offset_tf * (transform * m_top_left);
+  m_transformed_top_right = offset_tf * (transform * m_top_right);
+  m_transformed_bottom_left = offset_tf * (transform * m_bottom_left);
+  m_transformed_bottom_right = offset_tf * (transform * m_bottom_right);
+}
 }

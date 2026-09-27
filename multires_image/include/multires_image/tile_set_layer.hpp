@@ -42,46 +42,46 @@
 
 namespace multires_image
 {
-  class TileSetLayer
-  {
-  public:
-    TileSetLayer(
-      const swri_transform_util::GeoReference& geo,
-      const std::string& path,
-      int tileSize, int layer);
+class TileSetLayer
+{
+public:
+  TileSetLayer(
+    const swri_transform_util::GeoReference & geo,
+    const std::string & path,
+    int tileSize, int layer);
 
-    ~TileSetLayer() = default;
+  ~TileSetLayer() = default;
 
-    bool Load();
-    bool Load(const std::string extension);
+  bool Load();
+  bool Load(const std::string extension);
 
-    Tile* GetTile(int column, int row) { return m_tiles[column][row]; }
+  Tile * GetTile(int column, int row) {return m_tiles[column][row];}
 
-    void GetTileIndex(const tf2::Vector3& position, int& row, int& column) const;
-    void GetTileIndex(double x, double y, int& row, int& column) const;
-    void GetTileRange(
-      const tf2::Vector3& top_left,
-      const tf2::Vector3& bottom_right,
-      int& startRow, int& startColumn,
-      int& endRow, int& endColumn) const;
+  void GetTileIndex(const tf2::Vector3 & position, int & row, int & column) const;
+  void GetTileIndex(double x, double y, int & row, int & column) const;
+  void GetTileRange(
+    const tf2::Vector3 & top_left,
+    const tf2::Vector3 & bottom_right,
+    int & startRow, int & startColumn,
+    int & endRow, int & endColumn) const;
 
-    int RowCount() { return m_rows; }
-    int ColumnCount() { return m_columns; }
+  int RowCount() {return m_rows;}
+  int ColumnCount() {return m_columns;}
 
-  private:
-    const swri_transform_util::GeoReference& m_geo;
-    const std::string      m_path;
-    const int              m_tileSize;
-    const int              m_layer;
-    const double           m_scale;
+private:
+  const swri_transform_util::GeoReference & m_geo;
+  const std::string m_path;
+  const int m_tileSize;
+  const int m_layer;
+  const double m_scale;
 
-    bool                   m_expectTiles;
+  bool m_expectTiles;
 
-    int                    m_columns;
-    int                    m_rows;
+  int m_columns;
+  int m_rows;
 
-    std::vector<std::vector<Tile*> > m_tiles;
-  };
+  std::vector<std::vector<Tile *>> m_tiles;
+};
 }
 
 #endif  // MULTIRES_IMAGE_TILE_SET_LAYER_HPP_

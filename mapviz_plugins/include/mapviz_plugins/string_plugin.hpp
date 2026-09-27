@@ -60,7 +60,8 @@ class StringPlugin : public mapviz::MapvizPlugin
   Q_OBJECT
 
 public:
-  enum Anchor {
+  enum Anchor
+  {
     TOP_LEFT,
     TOP_CENTER,
     TOP_RIGHT,
@@ -72,7 +73,8 @@ public:
     BOTTOM_RIGHT
   };
 
-  enum Units {
+  enum Units
+  {
     PIXELS,
     PERCENT
   };
@@ -80,33 +82,33 @@ public:
   StringPlugin();
   ~StringPlugin() override = default;
 
-  bool Initialize(QOpenGLWidget* canvas) override;
+  bool Initialize(QOpenGLWidget * canvas) override;
   void Shutdown() override {}
 
-  QWidget* GetConfigWidget(QWidget* parent) override;
+  QWidget * GetConfigWidget(QWidget * parent) override;
 
   bool SupportsPainting() override
   {
     return true;
   }
 
-  void SetText(const QString& text);
+  void SetText(const QString & text);
 
 protected:
   void Draw(double x, double y, double scale) override;
 
-  void Paint(QPainter* painter, double x, double y, double scale) override;
+  void Paint(QPainter * painter, double x, double y, double scale) override;
 
   void Transform() override {}
 
-  void LoadConfig(const YAML::Node& node, const std::string& path) override;
+  void LoadConfig(const YAML::Node & node, const std::string & path) override;
 
-  void SaveConfig(YAML::Emitter& emitter, const std::string& path) override;
+  void SaveConfig(YAML::Emitter & emitter, const std::string & path) override;
 
-  void PaintText(QPainter* painter);
-  void PrintError(const std::string& message) override;
-  void PrintInfo(const std::string& message) override;
-  void PrintWarning(const std::string& message) override;
+  void PaintText(QPainter * painter);
+  void PrintError(const std::string & message) override;
+  void PrintInfo(const std::string & message) override;
+  void PrintWarning(const std::string & message) override;
 
 protected Q_SLOTS:
   void SelectColor();
@@ -120,7 +122,7 @@ protected Q_SLOTS:
 
 private:
   Ui::string_config ui_;
-  QWidget* config_widget_;
+  QWidget * config_widget_;
 
   std::string topic_;
   rmw_qos_profile_t qos_;
@@ -138,17 +140,17 @@ private:
   QFont font_;
   QStaticText message_;
 
-  void connectCallback(const std::string& topic, const rmw_qos_profile_t& qos);
+  void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
   std::string AnchorToString(Anchor anchor);
   std::string UnitsToString(Units units);
 
-  static const char* ANCHOR_KEY;
-  static const char* COLOR_KEY;
-  static const char* FONT_KEY;
-  static const char* OFFSET_X_KEY;
-  static const char* OFFSET_Y_KEY;
-  static const char* TOPIC_KEY;
-  static const char* UNITS_KEY;
+  static const char * ANCHOR_KEY;
+  static const char * COLOR_KEY;
+  static const char * FONT_KEY;
+  static const char * OFFSET_X_KEY;
+  static const char * OFFSET_Y_KEY;
+  static const char * TOPIC_KEY;
+  static const char * UNITS_KEY;
 };
 }  // namespace mapviz_plugins
 

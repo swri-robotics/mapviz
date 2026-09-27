@@ -41,329 +41,317 @@
 
 namespace tile_map
 {
-  TileMapView::TileMapView(rclcpp::Logger logger) :
-    level_(-1),
-    width_(100),
-    height_(100),
-    logger_(logger)
-  {
-    ImageCachePtr image_cache = std::make_shared<ImageCache>("/tmp/tile_map", 4096, logger);
-    tile_cache_ = std::make_shared<TextureCache>(image_cache, 512, logger);
+TileMapView::TileMapView(rclcpp::Logger logger)
+: level_(-1),
+  width_(100),
+  height_(100),
+  logger_(logger)
+{
+  ImageCachePtr image_cache = std::make_shared<ImageCache>("/tmp/tile_map", 4096, logger);
+  tile_cache_ = std::make_shared<TextureCache>(image_cache, 512, logger);
+}
+
+bool TileMapView::IsReady()
+{
+  return tile_source_ && tile_source_->IsReady();
+}
+
+void TileMapView::ResetCache()
+{
+  tile_cache_->Clear();
+}
+
+ImageCachePtr TileMapView::GetImageCache()
+{
+  return tile_cache_->GetImageCache();
+}
+
+bool TileMapView::GetCenterTile(int32_t & level, int64_t & x, int64_t & y) const
+{
+  // level_ is reset to -1 whenever the source changes and is only assigned a
+  // real value by SetView().
+  if (level_ < 0) {
+    return false;
   }
 
-  bool TileMapView::IsReady()
-  {
-    return tile_source_ && tile_source_->IsReady();
+  level = level_;
+  x = center_x_;
+  y = center_y_;
+  return true;
+}
+
+void TileMapView::SetLogger(rclcpp::Logger logger)
+{
+  logger_ = logger;
+  tile_cache_->SetLogger(logger_);
+}
+
+void TileMapView::SetTileSource(const std::shared_ptr<TileSource> & tile_source)
+{
+  tile_source_ = tile_source;
+  level_ = -1;
+  // Clear existing tiles to avoid using stale textures from the old source
+  // which can cause segfaults when switching tile sources
+  for (auto & tile : tiles_) {
+    tile_cache_->AddTexture(tile.texture);
+  }
+  tiles_.clear();
+  for (auto & tile : precache_) {
+    tile_cache_->AddTexture(tile.texture);
+  }
+  precache_.clear();
+}
+
+void TileMapView::SetTransform(const swri_transform_util::Transform & transform)
+{
+  // Reprojecting every tile corner is not free and this runs once per frame,
+  // so skip the work when the new transform is interchangeable with the one
+  // the tiles were already projected with. Comparing origins and orientations
+  // is not enough to tell this because a WGS84 transform onto an unrotated
+  // local XY frame originating at lat/lon (0, 0) shares both with the identity
+  // transform. The lat/lon (0,0) is especially important for Gazebo that tends
+  // to use this transform. This asks the transform implementation itself.
+  if (transform == transform_) {
+    return;
   }
 
-  void TileMapView::ResetCache()
-  {
-    tile_cache_->Clear();
-  }
+  transform_ = transform;
 
-  ImageCachePtr TileMapView::GetImageCache()
-  {
-    return tile_cache_->GetImageCache();
-  }
-
-  bool TileMapView::GetCenterTile(int32_t& level, int64_t& x, int64_t& y) const
-  {
-    // level_ is reset to -1 whenever the source changes and is only assigned a
-    // real value by SetView().
-    if (level_ < 0)
-    {
-      return false;
+  for (auto & tile : tiles_) {
+    for (size_t j = 0; j < tile.points_t.size(); j++) {
+      tile.points_t[j] = transform_ * tile.points[j];
     }
-
-    level = level_;
-    x = center_x_;
-    y = center_y_;
-    return true;
   }
 
-  void TileMapView::SetLogger(rclcpp::Logger logger)
-  {
-    logger_ = logger;
-    tile_cache_->SetLogger(logger_);
+  for (auto & i : precache_) {
+    for (size_t j = 0; j < i.points_t.size(); j++) {
+      i.points_t[j] = transform_ * i.points[j];
+    }
+  }
+}
+
+void TileMapView::SetView(
+  double latitude,
+  double longitude,
+  double scale,
+  int32_t width,
+  int32_t height)
+{
+  latitude = std::max(-90.0, std::min(90.0, latitude));
+  longitude = std::max(-180.0, std::min(180.0, longitude));
+
+  double lat = swri_math_util::ToRadians(latitude);
+
+  // Calculate the current zoom level:
+  //
+  // According to http://wiki.openstreetmap.org/wiki/Zoom_levels:
+  //   meters_per_pixel = earth_circumference * cos(lat) / 2^(level + 8)
+  //
+  // Therefore,
+  //   level = log2(earth_circumference * cos(lat) / meters_per_pixel) - 8
+  //
+  double lat_circumference =
+    swri_transform_util::_earth_equator_circumference * std::cos(lat) / scale;
+  int32_t level = std::min(
+    tile_source_->GetMaxZoom(),
+    std::max(
+      tile_source_->GetMinZoom(),
+      static_cast<int32_t>(std::ceil(std::log(lat_circumference) / std::log(2) - 8))));
+  int64_t max_size = std::pow(2, level);
+
+  int64_t center_x = std::min(
+    max_size - 1, static_cast<int64_t>(
+      std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level))));
+  int64_t center_y = std::min(
+    max_size - 1, static_cast<int64_t>(
+      std::floor(
+        (1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / swri_math_util::_pi) / 2.0 *
+        std::pow(2.0, level))));
+
+  width_ = width;
+  height_ = height;
+
+  double max_dimension = std::max(width, height);
+
+  double meters_per_pixel = swri_transform_util::_earth_equator_circumference * std::cos(lat) /
+    std::pow(2, level + 8);
+  double tile_size = 256.0 * (meters_per_pixel / scale);
+
+  int64_t size = std::max(
+    static_cast<int64_t>(1L), std::min(
+      max_size, static_cast<int64_t>(
+        std::ceil(0.5 * max_dimension / tile_size) * 2 + 1)));
+
+  if (size > 50) {
+    RCLCPP_ERROR(logger_, "Invalid map size: %ld", size);
+    return;
   }
 
-  void TileMapView::SetTileSource(const std::shared_ptr<TileSource>& tile_source)
-  {
-    tile_source_ = tile_source;
-    level_ = -1;
-    // Clear existing tiles to avoid using stale textures from the old source
-    // which can cause segfaults when switching tile sources
-    for (auto & tile : tiles_)
-    {
+  if (size_ != size || level_ != level || center_x_ != center_x || center_y_ != center_y) {
+    size_ = size;
+    level_ = level;
+    center_x_ = center_x;
+    center_y_ = center_y;
+
+    int64_t top = std::max(static_cast<int64_t>(0L), center_y_ - size_ / 2);
+    int64_t left = std::max(static_cast<int64_t>(0L), center_x_ - size_ / 2);
+
+    int64_t right = std::min(max_size, left + size_);
+    int64_t bottom = std::min(max_size, top + size_);
+
+    for (auto & tile : tiles_) {
       tile_cache_->AddTexture(tile.texture);
     }
     tiles_.clear();
-    for (auto & tile : precache_)
-    {
-      tile_cache_->AddTexture(tile.texture);
+
+    for (int64_t i = top; i < bottom; i++) {
+      for (int64_t j = left; j < right; j++) {
+        Tile tile;
+        InitializeTile(level_, j, i, tile, 10000);
+        tiles_.push_back(tile);
+      }
+    }
+
+    for (auto & i : precache_) {
+      tile_cache_->AddTexture(i.texture);
     }
     precache_.clear();
-  }
 
-  void TileMapView::SetTransform(const swri_transform_util::Transform& transform)
-  {
-    // Reprojecting every tile corner is not free and this runs once per frame,
-    // so skip the work when the new transform is interchangeable with the one
-    // the tiles were already projected with. Comparing origins and orientations
-    // is not enough to tell this because a WGS84 transform onto an unrotated
-    // local XY frame originating at lat/lon (0, 0) shares both with the identity
-    // transform. The lat/lon (0,0) is especially important for Gazebo that tends
-    // to use this transform. This asks the transform implementation itself.
-    if (transform == transform_)
-    {
-      return;
-    }
+    if (level_ > 0) {
+      int64_t precache_x = std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level - 1));
+      int64_t precache_y =
+        std::floor(
+        (1.0 - std::log(
+          std::tan(lat) + 1.0 / std::cos(
+            lat)) / swri_math_util::_pi) / 2.0 * std::pow(2.0, level - 1));
 
-    transform_ = transform;
+      int64_t precache_max_size = std::pow(2, level - 1);
 
-    for (auto & tile : tiles_)
-    {
-      for (size_t j = 0; j < tile.points_t.size(); j++)
-      {
-        tile.points_t[j] = transform_ * tile.points[j];
-      }
-    }
+      int64_t precache_top = std::max(static_cast<int64_t>(0L), precache_y - (size_ - 1) / 2);
+      int64_t precache_left = std::max(static_cast<int64_t>(0L), precache_x - (size_ - 1) / 2);
 
-    for (auto & i : precache_)
-    {
-      for (size_t j = 0; j < i.points_t.size(); j++)
-      {
-        i.points_t[j] = transform_ * i.points[j];
-      }
-    }
-  }
+      int64_t precache_right = std::min(precache_max_size, precache_left + size_);
+      int64_t precache_bottom = std::min(precache_max_size, precache_top + size_);
 
-  void TileMapView::SetView(
-    double latitude,
-    double longitude,
-    double scale,
-    int32_t width,
-    int32_t height)
-  {
-    latitude = std::max(-90.0, std::min(90.0, latitude));
-    longitude = std::max(-180.0, std::min(180.0, longitude));
-
-    double lat = swri_math_util::ToRadians(latitude);
-
-    // Calculate the current zoom level:
-    //
-    // According to http://wiki.openstreetmap.org/wiki/Zoom_levels:
-    //   meters_per_pixel = earth_circumference * cos(lat) / 2^(level + 8)
-    //
-    // Therefore,
-    //   level = log2(earth_circumference * cos(lat) / meters_per_pixel) - 8
-    //
-    double lat_circumference =
-      swri_transform_util::_earth_equator_circumference * std::cos(lat) / scale;
-    int32_t level =  std::min(tile_source_->GetMaxZoom(),
-                             std::max(tile_source_->GetMinZoom(), static_cast<int32_t>(std::ceil(std::log(lat_circumference) / std::log(2) - 8))));
-    int64_t max_size = std::pow(2, level);
-
-    int64_t center_x = std::min(max_size - 1, static_cast<int64_t>(
-      std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level))));
-    int64_t center_y = std::min(max_size - 1, static_cast<int64_t>(
-      std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / swri_math_util::_pi) / 2.0 * std::pow(2.0, level))));
-
-    width_ = width;
-    height_ = height;
-
-    double max_dimension = std::max(width, height);
-
-    double meters_per_pixel = swri_transform_util::_earth_equator_circumference * std::cos(lat) / std::pow(2, level + 8);
-    double tile_size = 256.0 * (meters_per_pixel / scale);
-
-    int64_t size = std::max(static_cast<int64_t>(1L), std::min(max_size, static_cast<int64_t>(
-      std::ceil(0.5 * max_dimension / tile_size) * 2 + 1)));
-
-    if (size > 50)
-    {
-      RCLCPP_ERROR(logger_, "Invalid map size: %ld", size);
-      return;
-    }
-
-    if (size_ != size || level_ != level || center_x_ != center_x || center_y_ != center_y)
-    {
-      size_ = size;
-      level_ = level;
-      center_x_ = center_x;
-      center_y_ = center_y;
-
-      int64_t top = std::max(static_cast<int64_t>(0L), center_y_ - size_ / 2);
-      int64_t left = std::max(static_cast<int64_t>(0L), center_x_ - size_ / 2);
-
-      int64_t right = std::min(max_size, left + size_);
-      int64_t bottom = std::min(max_size, top + size_);
-
-      for (auto & tile : tiles_)
-      {
-        tile_cache_->AddTexture(tile.texture);
-      }
-      tiles_.clear();
-
-      for (int64_t i = top; i < bottom; i++)
-      {
-        for (int64_t j = left; j < right; j++)
-        {
+      for (int64_t i = precache_top; i < precache_bottom; i++) {
+        for (int64_t j = precache_left; j < precache_right; j++) {
           Tile tile;
-          InitializeTile(level_, j, i, tile, 10000);
-          tiles_.push_back(tile);
+          InitializeTile(level_ - 1, j, i, tile, 0);
+          precache_.push_back(tile);
+        }
+      }
+    }
+
+    tile_cache_->IncrementFrame();
+  }
+}
+
+void TileMapView::DrawTiles(std::vector<Tile> & tiles, int priority)
+{
+  for (auto & tile : tiles) {
+    TexturePtr & texture = tile.texture;
+
+    if (!texture) {
+      bool failed;
+      texture = tile_cache_->GetTexture(tile.url_hash, tile.url, failed, priority);
+    }
+
+    if (texture) {
+      texture->GetTexture()->bind();
+
+      glBegin(GL_TRIANGLES);
+
+      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+      for (int32_t row = 0; row < tile.subdiv_count; row++) {
+        for (int32_t col = 0; col < tile.subdiv_count; col++) {
+          double u_0 = col * tile.subwidth;
+          double v_0 = 1.0 - row * tile.subwidth;
+          double u_1 = (col + 1.0) * tile.subwidth;
+          double v_1 = 1.0 - (row + 1.0) * tile.subwidth;
+
+          const tf2::Vector3 & tl = tile.points_t[row * (tile.subdiv_count + 1) + col];
+          const tf2::Vector3 & tr = tile.points_t[row * (tile.subdiv_count + 1) + col + 1];
+          const tf2::Vector3 & br = tile.points_t[(row + 1) * (tile.subdiv_count + 1) + col + 1];
+          const tf2::Vector3 & bl = tile.points_t[(row + 1) * (tile.subdiv_count + 1) + col];
+
+          // Triangle 1
+          glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
+          glTexCoord2f(u_1, v_0); glVertex2d(tr.x(), tr.y());
+          glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
+
+          // Triangle 2
+          glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
+          glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
+          glTexCoord2f(u_0, v_1); glVertex2d(bl.x(), bl.y());
         }
       }
 
-      for (auto & i : precache_)
-      {
-        tile_cache_->AddTexture(i.texture);
-      }
-      precache_.clear();
+      glEnd();
 
-      if (level_ > 0)
-      {
-        int64_t precache_x = std::floor(((longitude + 180.0) / 360.0) * std::pow(2.0, level - 1));
-        int64_t precache_y = std::floor((1.0 - std::log(std::tan(lat) + 1.0 / std::cos(lat)) / swri_math_util::_pi) / 2.0 * std::pow(2.0, level - 1));
+      texture->GetTexture()->release();
+    }
+  }
+}
 
-        int64_t precache_max_size = std::pow(2, level - 1);
+void TileMapView::Draw()
+{
+  if (!gl_initialized_) {
+    initializeOpenGLFunctions();
+    gl_initialized_ = true;
+  }
+  if (!tile_source_) {
+    return;
+  }
 
-        int64_t precache_top = std::max(static_cast<int64_t>(0L), precache_y - (size_ - 1) / 2);
-        int64_t precache_left = std::max(static_cast<int64_t>(0L), precache_x - (size_ - 1) / 2);
+  glEnable(GL_TEXTURE_2D);
 
-        int64_t precache_right = std::min(precache_max_size, precache_left + size_);
-        int64_t precache_bottom = std::min(precache_max_size, precache_top + size_);
+  DrawTiles(precache_, 0);
+  DrawTiles(tiles_, 10000);
 
-        for (int64_t i = precache_top; i < precache_bottom; i++)
-        {
-          for (int64_t j = precache_left; j < precache_right; j++)
-          {
-            Tile tile;
-            InitializeTile(level_ - 1, j, i, tile, 0);
-            precache_.push_back(tile);
-          }
-        }
-      }
+  glDisable(GL_TEXTURE_2D);
+}
 
-      tile_cache_->IncrementFrame();
+void TileMapView::ToLatLon(int32_t level, double x, double y, double & latitude, double & longitude)
+{
+  double n = std::pow(2, level);
+  longitude = x / n * 360.0 - 180.0;
+
+  double r = swri_math_util::_pi - swri_math_util::_2pi * y / n;
+  latitude = swri_math_util::_rad_2_deg * std::atan(0.5 * (std::exp(r) - std::exp(-r)));
+}
+
+void TileMapView::InitializeTile(int32_t level, int64_t x, int64_t y, Tile & tile, int priority)
+{
+  tile.url = tile_source_->GenerateTileUrl(level, x, y);
+
+  tile.url_hash = tile_source_->GenerateTileHash(level, x, y);
+
+  tile.level = level;
+
+  bool failed;
+  tile.texture = tile_cache_->GetTexture(tile.url_hash, tile.url, failed, priority);
+
+  // Tiles at the lowest zoom levels span enough of the globe that the Mercator
+  // projection curves noticeably across them, so they are drawn as a grid of
+  // quads that follows the curve rather than as a single quad. The grid has to
+  // cover exactly one tile, in both geometry and texture coordinates, so the
+  // width of a quad is one divided by the number of quads along an edge.
+  // Deriving subwidth from subdiv_count keeps the two from disagreeing.
+  int32_t subdivs = std::max(0, 4 - level);
+  tile.subdiv_count = std::pow(2, subdivs);
+  tile.subwidth = 1.0 / tile.subdiv_count;
+  for (int32_t row = 0; row <= tile.subdiv_count; row++) {
+    for (int32_t col = 0; col <= tile.subdiv_count; col++) {
+      double t_lat, t_lon;
+      ToLatLon(level, x + col * tile.subwidth, y + row * tile.subwidth, t_lat, t_lon);
+      tile.points.emplace_back(tf2::Vector3(t_lon, t_lat, 0));
     }
   }
 
-  void TileMapView::DrawTiles(std::vector<Tile>& tiles, int priority)
-  {
-    for (auto & tile : tiles)
-    {
-      TexturePtr& texture = tile.texture;
-
-      if (!texture)
-      {
-        bool failed;
-        texture = tile_cache_->GetTexture(tile.url_hash, tile.url, failed, priority);
-      }
-
-      if (texture)
-      {
-        texture->GetTexture()->bind();
-
-        glBegin(GL_TRIANGLES);
-
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-        for (int32_t row = 0; row < tile.subdiv_count; row++)
-        {
-          for (int32_t col = 0; col < tile.subdiv_count; col++)
-          {
-            double u_0 = col * tile.subwidth;
-            double v_0 = 1.0 - row * tile.subwidth;
-            double u_1 = (col + 1.0) * tile.subwidth;
-            double v_1 = 1.0 - (row + 1.0) * tile.subwidth;
-
-            const tf2::Vector3& tl = tile.points_t[row * (tile.subdiv_count + 1) + col];
-            const tf2::Vector3& tr = tile.points_t[row * (tile.subdiv_count + 1) + col + 1];
-            const tf2::Vector3& br = tile.points_t[(row + 1) * (tile.subdiv_count + 1) + col + 1];
-            const tf2::Vector3& bl = tile.points_t[(row + 1) * (tile.subdiv_count + 1) + col];
-
-            // Triangle 1
-            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
-            glTexCoord2f(u_1, v_0); glVertex2d(tr.x(), tr.y());
-            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
-
-            // Triangle 2
-            glTexCoord2f(u_0, v_0); glVertex2d(tl.x(), tl.y());
-            glTexCoord2f(u_1, v_1); glVertex2d(br.x(), br.y());
-            glTexCoord2f(u_0, v_1); glVertex2d(bl.x(), bl.y());
-          }
-        }
-
-        glEnd();
-
-        texture->GetTexture()->release();
-      }
-    }
+  tile.points_t = tile.points;
+  for (auto & i : tile.points_t) {
+    i = transform_ * i;
   }
-
-  void TileMapView::Draw()
-  {
-    if (!gl_initialized_) {
-      initializeOpenGLFunctions();
-      gl_initialized_ = true;
-    }
-    if (!tile_source_)
-    {
-      return;
-    }
-
-    glEnable(GL_TEXTURE_2D);
-
-    DrawTiles( precache_, 0 );
-    DrawTiles( tiles_, 10000 );
-
-    glDisable(GL_TEXTURE_2D);
-  }
-
-  void TileMapView::ToLatLon(int32_t level, double x, double y, double& latitude, double& longitude)
-  {
-    double n = std::pow(2, level);
-    longitude = x / n * 360.0 - 180.0;
-
-    double r = swri_math_util::_pi - swri_math_util::_2pi * y / n;
-    latitude = swri_math_util::_rad_2_deg * std::atan(0.5 * (std::exp(r) - std::exp(-r)));
-  }
-
-  void TileMapView::InitializeTile(int32_t level, int64_t x, int64_t y, Tile& tile, int priority)
-  {
-    tile.url = tile_source_->GenerateTileUrl(level, x, y);
-
-    tile.url_hash = tile_source_->GenerateTileHash(level, x, y);
-
-    tile.level = level;
-
-    bool failed;
-    tile.texture = tile_cache_->GetTexture(tile.url_hash, tile.url, failed, priority);
-
-    // Tiles at the lowest zoom levels span enough of the globe that the Mercator
-    // projection curves noticeably across them, so they are drawn as a grid of
-    // quads that follows the curve rather than as a single quad. The grid has to
-    // cover exactly one tile, in both geometry and texture coordinates, so the
-    // width of a quad is one divided by the number of quads along an edge.
-    // Deriving subwidth from subdiv_count keeps the two from disagreeing.
-    int32_t subdivs = std::max(0, 4 - level);
-    tile.subdiv_count = std::pow(2, subdivs);
-    tile.subwidth = 1.0 / tile.subdiv_count;
-    for (int32_t row = 0; row <= tile.subdiv_count; row++)
-    {
-      for (int32_t col = 0; col <= tile.subdiv_count; col++)
-      {
-        double t_lat, t_lon;
-        ToLatLon(level, x + col * tile.subwidth, y + row * tile.subwidth, t_lat, t_lon);
-        tile.points.emplace_back(tf2::Vector3(t_lon, t_lat, 0));
-      }
-    }
-
-    tile.points_t = tile.points;
-    for (auto & i : tile.points_t)
-    {
-      i = transform_ * i;
-    }
-  }
+}
 }
