@@ -174,7 +174,10 @@ void PlanRoutePlugin::PlanRoute()
     PrintError("Service name may not be empty.");
     return;
   }
-  auto client = NodeUnsafe()->create_client<marti_nav_msgs::srv::PlanRoute>(service);
+  if (!plan_route_client_ || plan_route_client_->get_service_name() != service) {
+    plan_route_client_ = NodeUnsafe()->create_client<marti_nav_msgs::srv::PlanRoute>(service);
+  }
+  auto client = plan_route_client_;
   client->wait_for_service(1ms);
 
   if (!client->service_is_ready()) {
