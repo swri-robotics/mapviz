@@ -40,8 +40,10 @@
 #include <QStaticText>
 
 #include <string>
+#include <vector>
 
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz_plugins/topic_type_watcher.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <marti_common_msgs/msg/string_stamped.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -117,6 +119,11 @@ protected Q_SLOTS:
   void SetOffsetY(int offset);
 
 private:
+  /// The message types this display can show, in order of preference.
+  static std::vector<std::string> SupportedTypes();
+  /// Subscribes to topic_ with @p type, one of SupportedTypes().
+  void SubscribeWithType(const std::string & type);
+
   Ui::string_config ui_;
   QWidget * config_widget_;
 
@@ -129,6 +136,7 @@ private:
 
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr string_sub_;
   rclcpp::Subscription<marti_common_msgs::msg::StringStamped>::SharedPtr string_stamped_sub_;
+  TopicTypeWatcher type_watcher_;
   bool has_message_;
   bool has_painted_;
 
