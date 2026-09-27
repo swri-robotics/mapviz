@@ -193,11 +193,13 @@ void PointDrawingPlugin::ClearPoints()
 
 double PointDrawingPlugin::bufferSize() const
 {
-  if (!lap_checked_) {
-    return buffer_size_;
-  } else {
+  // While laps are being collected, buffer_size_ is INT_MAX and the user's
+  // size is parked in buffer_holder_.  Laps being enabled isn't enough to
+  // tell: collection only starts with the first draw.
+  if (got_begin_) {
     return buffer_holder_;
   }
+  return buffer_size_;
 }
 
 double PointDrawingPlugin::positionTolerance() const
@@ -212,6 +214,13 @@ const std::deque<PointDrawingPlugin::StampedPoint> & PointDrawingPlugin::points(
 
 void PointDrawingPlugin::BufferSizeChanged(int value)
 {
+  if (got_begin_) {
+    // Collecting laps keeps every point; the new size applies once laps are
+    // turned off, when buffer_size_ is restored from buffer_holder_.
+    buffer_holder_ = value;
+    return;
+  }
+
   buffer_size_ = value;
 
   if (buffer_size_ > 0) {
