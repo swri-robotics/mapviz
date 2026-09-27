@@ -129,6 +129,9 @@ private:
 
   bool failed_service_;
   swri_route_util::RoutePtr route_preview_;
+  // Kept for the lifetime of the plugin: a client destroyed while a request
+  // is pending never receives the response.
+  rclcpp::Client<marti_nav_msgs::srv::PlanRoute>::SharedPtr plan_route_client_;
 
   std::vector<geometry_msgs::msg::Pose> waypoints_;
 
