@@ -263,6 +263,11 @@ if(BUILD_TESTING)
     # ament_add_gtest() already used the plain signature on this target.
     target_link_libraries(test_tile_set ${PROJECT_NAME})
   endif()
+
+  ament_add_gtest(test_queued_signals test/test_queued_signals.cpp)
+  if(TARGET test_queued_signals)
+    target_link_libraries(test_queued_signals ${PROJECT_NAME} multires_widget)
+  endif()
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

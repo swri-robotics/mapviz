@@ -70,7 +70,7 @@ public Q_SLOTS:
 Q_SIGNALS:
   void SignalLoadTexture(Tile *);
   void SignalDeleteTexture(Tile *);
-  void SignalMemorySize(int64_t);
+  void SignalMemorySize(qint64);
 
 private:
   TileSet * m_tileSet;
