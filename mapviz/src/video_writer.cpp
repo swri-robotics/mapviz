@@ -86,12 +86,10 @@ void VideoWriter::processFrame(QImage frame)
     cv::Mat temp_image;
     switch (frame.format()) {
       case QImage::Format_ARGB32:
-        // The image received should have its format set to ARGB32, but it's
-        // actually BGRA.  Need to convert it to BGR and flip it vertically
-        // before giving it to the cv::VideoWriter.
-        image = cv::Mat(frame.height(), frame.width(), CV_8UC4, frame.bits());
-        cv::cvtColor(image, temp_image, cv::COLOR_BGRA2BGR);
-        cv::flip(temp_image, image, 0);
+        // ARGB32 is BGRA in memory.  Convert it to the BGR the
+        // cv::VideoWriter takes.
+        temp_image = cv::Mat(frame.height(), frame.width(), CV_8UC4, frame.bits());
+        cv::cvtColor(temp_image, image, cv::COLOR_BGRA2BGR);
         break;
       default:
         RCLCPP_WARN(rclcpp::get_logger("mapviz"), "Unexpected image format: %d", frame.format());

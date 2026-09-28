@@ -46,7 +46,6 @@
 #include <vector>
 
 #if CV_MAJOR_VERSION > 2
-#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/videoio/videoio.hpp>
 #endif
 
@@ -80,10 +79,6 @@
 #include <mapviz/config_item.hpp>
 #include <mapviz/display_loader.hpp>
 #include <image_transport/image_transport.hpp>
-
-// OpenCV libraries
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 namespace mapviz
 {
@@ -1537,7 +1532,6 @@ void Mapviz::ToggleRecord(bool on)
       // Lock the window size.
       AdjustWindowSize();
 
-      canvas_->CaptureFrames(true);
       auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
       std::stringstream time_stream;
       time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S");
@@ -1548,7 +1542,8 @@ void Mapviz::ToggleRecord(bool on)
       }
 
 
-      if (!vid_writer_->initializeWriter(filename, canvas_->width(), canvas_->height())) {
+      const QSize frame_size = canvas_->CaptureSize();
+      if (!vid_writer_->initializeWriter(filename, frame_size.width(), frame_size.height())) {
         RCLCPP_ERROR(node_->get_logger(), "Failed to open video file for writing");
         StopRecord();
         return;
@@ -1603,18 +1598,15 @@ void Mapviz::UpdateImageTransportMenu()
 
 void Mapviz::CaptureVideoFrame()
 {
-  // We need to store the data inside a QImage in order to emit it as a
-  // signal.
-  // Note that the QImage here is set to "ARGB32", but it is actually BGRA.
-  // Qt doesn't have a comparable BGR format, and the cv::VideoWriter this
-  // is going to expects BGR format, but it'd be a waste for us to convert
-  // to RGB and then back to BGR.
-  QImage frame(canvas_->width(), canvas_->height(), QImage::Format_ARGB32);
-  if (canvas_->CopyCaptureBuffer(frame.bits())) {
-    Q_EMIT (FrameGrabbed(frame));
-  } else {
-    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to get capture buffer");
+  // Renders the canvas into its framebuffer and reads it back at the
+  // screen's resolution.  The video writer takes ARGB32, which is BGRA in
+  // memory, as OpenCV expects.
+  const QImage frame = canvas_->grabFramebuffer().convertToFormat(QImage::Format_ARGB32);
+  if (frame.isNull()) {
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to capture a video frame");
+    return;
   }
+  Q_EMIT (FrameGrabbed(frame));
 }
 
 void Mapviz::Recenter()
@@ -1631,7 +1623,6 @@ void Mapviz::StopRecord()
   if (vid_writer_) {
     vid_writer_->stop();
   }
-  canvas_->CaptureFrames(false);
 
   ui_.statusbar->showMessage(QString(""));
   rec_button_->setToolTip("Start recording video of display canvas");
@@ -1641,32 +1632,26 @@ void Mapviz::StopRecord()
 
 void Mapviz::Screenshot()
 {
-  canvas_->CaptureFrame(true);
+  // Renders the canvas into its framebuffer and reads it back at the
+  // screen's resolution.
+  const QImage screenshot = canvas_->grabFramebuffer().convertToFormat(QImage::Format_RGB32);
 
-  std::vector<uint8_t> frame;
-  if (canvas_->CopyCaptureBuffer(frame)) {
-    cv::Mat image(canvas_->height(), canvas_->width(), CV_8UC4, &frame[0]);
-    cv::Mat screenshot;
-    cvtColor(image, screenshot, cv::COLOR_BGRA2BGR);
-
-    cv::flip(screenshot, screenshot, 0);
-
-    auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::stringstream time_stream;
-    time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S");
-    std::string posix_time = time_stream.str();
-    std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
-    if (filename.front() == '~') {
-      filename = getenv("HOME") + filename.substr(1);
-    }
-
-    RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Writing screenshot to: %s", filename.c_str());
-    ui_.statusbar->showMessage("Saved image to " + QString::fromStdString(filename));
-
-    cv::imwrite(filename, screenshot);
-  } else {
-    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to take screenshot.");
+  auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  std::stringstream time_stream;
+  time_stream << std::put_time(std::localtime(&time), "%Y%m%dT%H%M%S");
+  std::string posix_time = time_stream.str();
+  std::string filename = capture_directory_ + "/mapviz_" + posix_time + ".png";
+  if (filename.front() == '~') {
+    filename = getenv("HOME") + filename.substr(1);
   }
+
+  if (screenshot.isNull() || !screenshot.save(QString::fromStdString(filename))) {
+    RCLCPP_ERROR(rclcpp::get_logger("mapviz"), "Failed to take screenshot.");
+    return;
+  }
+
+  RCLCPP_INFO(rclcpp::get_logger("mapviz"), "Writing screenshot to: %s", filename.c_str());
+  ui_.statusbar->showMessage("Saved image to " + QString::fromStdString(filename));
 }
 
 void Mapviz::UpdateSizeHints()
