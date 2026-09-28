@@ -32,6 +32,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <rclcpp/rclcpp.hpp>
 #include <tile_map/tile_map_plugin.hpp>
@@ -59,7 +60,37 @@ const char kCustomSource[] =
   "    name: OSM Basemap\n"
   "    type: wmts\n"
   "source: OSM Basemap\n";
+
+/// Qt only warns when a connection made by name fails, so collect those
+/// warnings.
+std::vector<std::string> g_connect_warnings;
+
+void CollectConnectWarnings(
+  QtMsgType type, const QMessageLogContext & context, const QString & message)
+{
+  (void)context;
+  if (type == QtWarningMsg && message.startsWith("QObject::connect")) {
+    g_connect_warnings.push_back(message.toStdString());
+  }
+}
 }  // namespace
+
+TEST(TileMapSignals, ConnectsEverySignal)
+{
+  // A signal that doesn't exist, such as QComboBox::activated(QString), which
+  // Qt 6 removed, leaves its control doing nothing when it is used.
+  g_connect_warnings.clear();
+  QtMessageHandler previous_handler = qInstallMessageHandler(CollectConnectWarnings);
+  {
+    tile_map::TileMapPlugin plugin;
+    plugin.SetNode(*g_node);
+  }
+  qInstallMessageHandler(previous_handler);
+
+  for (const std::string & warning : g_connect_warnings) {
+    ADD_FAILURE() << warning;
+  }
+}
 
 TEST(TileMapConfig, SelectsCustomSourceWithSpaceInName)
 {

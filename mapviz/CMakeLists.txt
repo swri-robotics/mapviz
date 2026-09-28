@@ -319,6 +319,11 @@ if(BUILD_TESTING)
       ${PROJECT_NAME}_core
       ${std_msgs_TARGETS})
   endif()
+
+  ament_add_gtest(test_display_loader test/test_display_loader.cpp)
+  if(TARGET test_display_loader)
+    target_link_libraries(test_display_loader ${PROJECT_NAME}_core)
+  endif()
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

@@ -51,6 +51,7 @@
 #include <mapviz_plugins/attitude_indicator_plugin.hpp>
 #include <mapviz_plugins/disparity_plugin.hpp>
 #include <mapviz_plugins/draw_marker_plugin.hpp>
+#include <mapviz_plugins/draw_polygon_plugin.hpp>
 #include <mapviz_plugins/float_plugin.hpp>
 #include <mapviz_plugins/gps_plugin.hpp>
 #include <mapviz_plugins/image_plugin.hpp>
@@ -61,6 +62,7 @@
 #include <mapviz_plugins/occupancy_grid_plugin.hpp>
 #include <mapviz_plugins/odometry_plugin.hpp>
 #include <mapviz_plugins/path_plugin.hpp>
+#include <mapviz_plugins/point_click_publisher_plugin.hpp>
 #include <mapviz_plugins/pointcloud2_plugin.hpp>
 #include <mapviz_plugins/pose_plugin.hpp>
 #include <mapviz_plugins/robot_model_plugin.hpp>
@@ -336,6 +338,15 @@ TEST_P(TopicEditing, FollowsTheConfiguredTopic)
   // matches what the plugin last subscribed to.
   LoadTopic(*plugin, topic_case.key, second);
   EXPECT_TRUE(HasSubscribers(second));
+
+  // A name ROS rejects is reported instead of thrown, and drops the previous
+  // subscription like any other change.
+  EXPECT_NO_THROW(LoadTopic(*plugin, topic_case.key, "/test_topic_editing/not a topic"));
+  EXPECT_TRUE(HasNoSubscribers(second));
+
+  // Correcting it subscribes again.
+  LoadTopic(*plugin, topic_case.key, second);
+  EXPECT_TRUE(HasSubscribers(second));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -407,6 +418,98 @@ TEST(MultiTypeTopics, SubscribesOnceAPublisherAppears)
 
   auto pub = g_node->create_publisher<std_msgs::msg::Float64>(topic, 1);
   EXPECT_TRUE(HasSubscribers(topic));
+}
+
+/// Records what a plugin reports through PrintError(), and exposes the
+/// protected publishing slots of the plugins that have them.
+template<typename PluginT>
+class ErrorCapture : public PluginT
+{
+public:
+  void PrintError(const std::string & message) override
+  {
+    errors.push_back(message);
+    PluginT::PrintError(message);
+  }
+
+  std::vector<std::string> errors;
+};
+
+class PublishingDrawMarker : public ErrorCapture<mapviz_plugins::DrawMarkerPlugin>
+{
+public:
+  using DrawMarkerPlugin::PublishMarker;
+};
+
+class PublishingDrawPolygon : public ErrorCapture<mapviz_plugins::DrawPolygonPlugin>
+{
+public:
+  using DrawPolygonPlugin::PublishPolygon;
+};
+
+::testing::AssertionResult ReportedInvalid(
+  const std::vector<std::string> & errors, const std::string & kind)
+{
+  for (const std::string & error : errors) {
+    if (error.rfind("Invalid " + kind, 0) == 0) {
+      return ::testing::AssertionSuccess();
+    }
+  }
+  ::testing::AssertionResult result = ::testing::AssertionFailure();
+  result << "no \"Invalid " << kind << "\" error among " << errors.size() << ":";
+  for (const std::string & error : errors) {
+    result << " [" << error << "]";
+  }
+  return result;
+}
+
+TEST(InvalidNames, ReportsARejectedSubscriptionTopic)
+{
+  ErrorCapture<mapviz_plugins::PosePlugin> plugin;
+  plugin.SetNode(*g_node);
+
+  EXPECT_NO_THROW(LoadTopic(plugin, "topic", "/test_invalid_names/not a topic"));
+
+  EXPECT_TRUE(ReportedInvalid(plugin.errors, "topic name"));
+}
+
+TEST(InvalidNames, ReportsARejectedPublisherTopic)
+{
+  ErrorCapture<mapviz_plugins::PointClickPublisherPlugin> plugin;
+  plugin.SetNode(*g_node);
+
+  EXPECT_NO_THROW(LoadTopic(plugin, "topic", "/test_invalid_names/not a topic"));
+
+  EXPECT_TRUE(ReportedInvalid(plugin.errors, "topic name"));
+}
+
+TEST(InvalidNames, DrawMarkerDoesNotPublishToARejectedTopic)
+{
+  PublishingDrawMarker plugin;
+  plugin.SetNode(*g_node);
+
+  // Empty topics are rejected too, and used to throw here as well.
+  for (const std::string topic : {"/test_invalid_names/not a topic", ""}) {
+    SCOPED_TRACE("topic '" + topic + "'");
+    plugin.errors.clear();
+    LoadTopic(plugin, "topic", topic);
+    EXPECT_NO_THROW(plugin.PublishMarker());
+    EXPECT_TRUE(ReportedInvalid(plugin.errors, "topic name"));
+  }
+}
+
+TEST(InvalidNames, DrawPolygonDoesNotPublishToARejectedTopic)
+{
+  PublishingDrawPolygon plugin;
+  plugin.SetNode(*g_node);
+
+  for (const std::string topic : {"/test_invalid_names/not a topic", ""}) {
+    SCOPED_TRACE("topic '" + topic + "'");
+    plugin.errors.clear();
+    LoadTopic(plugin, "polygon_topic", topic);
+    EXPECT_NO_THROW(plugin.PublishPolygon());
+    EXPECT_TRUE(ReportedInvalid(plugin.errors, "topic name"));
+  }
 }
 
 TEST(RouteTopics, SubscribesToThePositionTopicWithoutARouteTopic)
