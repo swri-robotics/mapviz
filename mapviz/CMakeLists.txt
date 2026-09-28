@@ -152,6 +152,7 @@ set(SRC_FILES
   src/${PROJECT_NAME}.cpp
   src/color_button.cpp
   src/config_item.cpp
+  src/display_loader.cpp
   src/${PROJECT_NAME}_application.cpp
   src/map_canvas.cpp
   src/select_frame_dialog.cpp
