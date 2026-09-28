@@ -187,6 +187,22 @@ if(BUILD_TESTING)
     # ament_add_gtest() already used the plain signature on this target.
     target_link_libraries(test_${PROJECT_NAME}_view ${PROJECT_NAME})
   endif()
+
+  ament_add_gtest(test_${PROJECT_NAME}_sources test/test_tile_sources.cpp)
+  if(TARGET test_${PROJECT_NAME}_sources)
+    target_link_libraries(test_${PROJECT_NAME}_sources ${PROJECT_NAME})
+  endif()
+
+  # The plugin builds Qt widgets in its constructor, so the test needs a
+  # platform plugin that works without a display.
+  ament_add_gtest(test_${PROJECT_NAME}_plugin test/test_${PROJECT_NAME}_plugin.cpp
+    ENV QT_QPA_PLATFORM=offscreen)
+  if(TARGET test_${PROJECT_NAME}_plugin)
+    target_link_libraries(test_${PROJECT_NAME}_plugin ${PROJECT_NAME}_plugin)
+    # tile_map_plugin.hpp includes the plugin's AUTOUIC generated header.
+    target_include_directories(test_${PROJECT_NAME}_plugin
+      PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_plugin_autogen/include)
+  endif()
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

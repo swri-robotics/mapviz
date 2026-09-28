@@ -30,13 +30,16 @@
 #include <QCoreApplication>
 
 #include <cmath>
+#include <cstdint>
 #include <memory>
+#include <string>
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include "swri_transform_util/local_xy_util.h"
 #include "swri_transform_util/transform.h"
 #include "swri_transform_util/wgs84_transformer.h"
 #include <tile_map/tile_map_view.hpp>
+#include <tile_map/wmts_source.hpp>
 
 namespace
 {
@@ -82,6 +85,13 @@ protected:
   static tf2::Vector3 ApplyAppliedTransform(const TileMapView & view, const tf2::Vector3 & point)
   {
     return view.transform_ * point;
+  }
+
+  static Tile InitializeTile(TileMapView & view, int32_t level, int64_t x, int64_t y)
+  {
+    Tile tile;
+    view.InitializeTile(level, x, y, tile, 0);
+    return tile;
   }
 
   /// Assert that the view is projecting tile corners the way the transform it
@@ -172,6 +182,43 @@ TEST_F(TileMapViewTest, AppliesUpdatedTransformWhenLocalOriginChanges)
   view.SetTransform(Wgs84ToLocalXy(san_antonio));
 
   ExpectProjectsLikeLocalXy(view, san_antonio, TileCornerNearOrigin(29.45, -98.6));
+}
+
+TEST_F(TileMapViewTest, SubdividedTileCoversExactlyOneTile)
+{
+  TileMapView view;
+  // Never fetched: the test only looks at the geometry.
+  view.SetTileSource(
+    std::make_shared<tile_map::WmtsSource>(
+      "test", "file:///nonexistent/{level}/{x}/{y}.png", true, 20));
+
+  for (int32_t level = 0; level <= 20; level++) {
+    SCOPED_TRACE("level " + std::to_string(level));
+    const int64_t n = int64_t{1} << level;
+    const int64_t x = n / 3;
+    const int64_t y = n / 3;
+    const tile_map::Tile tile = InitializeTile(view, level, x, y);
+
+    // DrawTiles() steps texture coordinates by subwidth across subdiv_count
+    // quads, so the product has to be exactly one for u and v to end at 1.0
+    // rather than repeating the texture past the tile's edge (#911).
+    ASSERT_GE(tile.subdiv_count, 1);
+    EXPECT_DOUBLE_EQ(1.0, tile.subdiv_count * tile.subwidth);
+
+    const size_t side = static_cast<size_t>(tile.subdiv_count) + 1;
+    ASSERT_EQ(side * side, tile.points.size());
+
+    // The grid's corners are the tile's own corners, from the Web Mercator
+    // tile formulas.
+    const auto longitude = [n](double tile_x) {return tile_x / n * 360.0 - 180.0;};
+    const auto latitude = [n](double tile_y) {
+        return std::atan(std::sinh(M_PI * (1.0 - 2.0 * tile_y / n))) * 180.0 / M_PI;
+      };
+    EXPECT_NEAR(longitude(x), tile.points.front().x(), 1e-9);
+    EXPECT_NEAR(latitude(y), tile.points.front().y(), 1e-9);
+    EXPECT_NEAR(longitude(x + 1), tile.points.back().x(), 1e-9);
+    EXPECT_NEAR(latitude(y + 1), tile.points.back().y(), 1e-9);
+  }
 }
 
 int main(int argc, char ** argv)

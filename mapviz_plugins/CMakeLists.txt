@@ -382,6 +382,22 @@ if(BUILD_TESTING)
     target_include_directories(test_plugin_config
       PRIVATE ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR})
   endif()
+
+  ament_add_gtest(test_plan_route test/test_plan_route.cpp
+    ENV QT_QPA_PLATFORM=offscreen)
+  if(TARGET test_plan_route)
+    target_link_libraries(test_plan_route ${PROJECT_NAME})
+    target_include_directories(test_plan_route
+      PRIVATE ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR})
+  endif()
+
+  ament_add_gtest(test_plugin_round_trip test/test_plugin_round_trip.cpp
+    ENV QT_QPA_PLATFORM=offscreen)
+  if(TARGET test_plugin_round_trip)
+    target_link_libraries(test_plugin_round_trip ${PROJECT_NAME})
+    target_include_directories(test_plugin_round_trip
+      PRIVATE ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR})
+  endif()
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

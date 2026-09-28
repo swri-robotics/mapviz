@@ -308,6 +308,17 @@ pluginlib_export_plugin_description_file(rqt_gui "plugin.xml")
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(std_msgs REQUIRED)
+
+  ament_add_gtest(test_${PROJECT_NAME}_plugin test/test_${PROJECT_NAME}_plugin.cpp)
+  if(TARGET test_${PROJECT_NAME}_plugin)
+    # ament_add_gtest() already used the plain signature on this target.
+    target_link_libraries(test_${PROJECT_NAME}_plugin
+      ${PROJECT_NAME}_core
+      ${std_msgs_TARGETS})
+  endif()
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
