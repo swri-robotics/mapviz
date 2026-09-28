@@ -35,6 +35,7 @@
 #include <QSignalBlocker>
 
 // C++ standard libraries
+#include <algorithm>
 #include <cstdio>
 #include <limits>
 #include <map>
@@ -313,6 +314,27 @@ inline int32_t findChannelIndex(
   return -1;
 }
 
+/// How many bytes PointFeature() reads for a field of @p datatype.
+inline uint32_t fieldSize(uint8_t datatype)
+{
+  switch (datatype) {
+    case sensor_msgs::msg::PointField::INT8:
+    case sensor_msgs::msg::PointField::UINT8:
+      return 1;
+    case sensor_msgs::msg::PointField::INT16:
+    case sensor_msgs::msg::PointField::UINT16:
+      return 2;
+    case sensor_msgs::msg::PointField::INT32:
+    case sensor_msgs::msg::PointField::UINT32:
+    case sensor_msgs::msg::PointField::FLOAT32:
+      return 4;
+    case sensor_msgs::msg::PointField::FLOAT64:
+      return 8;
+    default:
+      return 0;
+  }
+}
+
 void PointCloud2Plugin::ColorScan(Scan & scan)
 {
   scan.gl_color.clear();
@@ -419,6 +441,20 @@ PointCloud2Plugin::Scan PointCloud2Plugin::DecodeScan(
     // Malformed cloud: return an empty scan (no features); handleScan()
     // drops it.
     return scan;
+  }
+
+  // Every field has to fit inside a point, or reading it from the last point
+  // runs past the end of the data.  The coordinates are always read as floats.
+  for (size_t i = 0; i < msg->fields.size(); i++) {
+    const bool coordinate =
+      static_cast<int32_t>(i) == xi || static_cast<int32_t>(i) == yi ||
+      static_cast<int32_t>(i) == zi;
+    const uint64_t size = coordinate ?
+      std::max<uint32_t>(fieldSize(msg->fields[i].datatype), sizeof(float)) :
+      fieldSize(msg->fields[i].datatype);
+    if (msg->fields[i].offset + size > msg->point_step) {
+      return scan;
+    }
   }
 
   // Note that unlike some plugins, this one does not store nor rely on the
