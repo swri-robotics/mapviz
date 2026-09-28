@@ -372,6 +372,15 @@ void OccupancyGridPlugin::updateTexture()
 
 void OccupancyGridPlugin::handleGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg)
 {
+  // A grid without a cell for every point would be read past its end.  Keep
+  // showing the last good one instead, as RViz does.
+  if (msg->data.size() != static_cast<size_t>(msg->info.width) * msg->info.height) {
+    PrintError(
+      "Grid has " + std::to_string(msg->data.size()) + " cells instead of " +
+      std::to_string(msg->info.width) + "x" + std::to_string(msg->info.height));
+    return;
+  }
+
   grid_ = msg;
   const size_t width = grid_->info.width;
   const size_t height = grid_->info.height;
@@ -418,6 +427,22 @@ void OccupancyGridPlugin::handleGridUpdate(
   PrintInfo("Update Received");
 
   if (initialized_) {
+    // An update that doesn't fit inside the grid, or doesn't have a cell for
+    // every point it covers, would be read or written out of bounds.
+    if (msg->x < 0 || msg->y < 0 ||
+      static_cast<size_t>(msg->x) + msg->width > grid_->info.width ||
+      static_cast<size_t>(msg->y) + msg->height > grid_->info.height)
+    {
+      PrintError("Update is outside of the grid");
+      return;
+    }
+    if (msg->data.size() != static_cast<size_t>(msg->width) * msg->height) {
+      PrintError(
+        "Update has " + std::to_string(msg->data.size()) + " cells instead of " +
+        std::to_string(msg->width) + "x" + std::to_string(msg->height));
+      return;
+    }
+
     const Palette & palette =
       (ui_.color_scheme->currentText() == "map") ? map_palette_ : costmap_palette_;
 
