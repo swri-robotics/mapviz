@@ -2,6 +2,20 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding tests for malformed messages, Qt signal connections, and config files (`#978 <https://github.com/swri-robotics/mapviz/issues/978>`_)
+* Connecting combo boxes with a signal that exists in Qt 6 (`#974 <https://github.com/swri-robotics/mapviz/issues/974>`_)
+* Add unit testing based on recent bug discoveries. (`#968 <https://github.com/swri-robotics/mapviz/issues/968>`_)
+* Work around lack of transform equality check (`#947 <https://github.com/swri-robotics/mapviz/issues/947>`_)
+* Standardize BSD license headers and enable ament_copyright (`#944 <https://github.com/swri-robotics/mapviz/issues/944>`_)
+* Enable cppcheck (`#943 <https://github.com/swri-robotics/mapviz/issues/943>`_)
+* Enable cpplint (`#942 <https://github.com/swri-robotics/mapviz/issues/942>`_)
+* Reformat C++ with ament_uncrustify and enable uncrustify (`#941 <https://github.com/swri-robotics/mapviz/issues/941>`_)
+* Enable flake8 and pep257 (`#940 <https://github.com/swri-robotics/mapviz/issues/940>`_)
+* Add ament_lint_auto and pre-commit, enable xmllint and lint_cmake (`#939 <https://github.com/swri-robotics/mapviz/issues/939>`_)
+* Contributors: David Anthony
+
 4.1.1 (2026-09-24)
 ------------------
 

@@ -2,6 +2,23 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fxing screen and video capture with new OpenGL functionality (`#983 <https://github.com/swri-robotics/mapviz/issues/983>`_)
+* Adding font compatibility layer for switching between Qt5 and Qt6 (`#980 <https://github.com/swri-robotics/mapviz/issues/980>`_)
+* Adding tests for malformed messages, Qt signal connections, and config files (`#978 <https://github.com/swri-robotics/mapviz/issues/978>`_)
+* Keeping an unreadable config file from stopping startup (`#977 <https://github.com/swri-robotics/mapviz/issues/977>`_)
+* Add unit testing based on recent bug discoveries. (`#968 <https://github.com/swri-robotics/mapviz/issues/968>`_)
+* Adding robustness to plugin load failures (`#967 <https://github.com/swri-robotics/mapviz/issues/967>`_)
+* Reporting invalid topic names instead of throwing (`#966 <https://github.com/swri-robotics/mapviz/issues/966>`_)
+* Standardize BSD license headers and enable ament_copyright (`#944 <https://github.com/swri-robotics/mapviz/issues/944>`_)
+* Enable cppcheck (`#943 <https://github.com/swri-robotics/mapviz/issues/943>`_)
+* Enable cpplint (`#942 <https://github.com/swri-robotics/mapviz/issues/942>`_)
+* Reformat C++ with ament_uncrustify and enable uncrustify (`#941 <https://github.com/swri-robotics/mapviz/issues/941>`_)
+* Enable flake8 and pep257 (`#940 <https://github.com/swri-robotics/mapviz/issues/940>`_)
+* Add ament_lint_auto and pre-commit, enable xmllint and lint_cmake (`#939 <https://github.com/swri-robotics/mapviz/issues/939>`_)
+* Contributors: David Anthony
+
 4.1.1 (2026-09-24)
 ------------------
 

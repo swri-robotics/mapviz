@@ -2,6 +2,16 @@
 Changelog for package mapviz_interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Standardize BSD license headers and enable ament_copyright (`#944 <https://github.com/swri-robotics/mapviz/issues/944>`_)
+* Enable cppcheck (`#943 <https://github.com/swri-robotics/mapviz/issues/943>`_)
+* Enable cpplint (`#942 <https://github.com/swri-robotics/mapviz/issues/942>`_)
+* Reformat C++ with ament_uncrustify and enable uncrustify (`#941 <https://github.com/swri-robotics/mapviz/issues/941>`_)
+* Enable flake8 and pep257 (`#940 <https://github.com/swri-robotics/mapviz/issues/940>`_)
+* Add ament_lint_auto and pre-commit, enable xmllint and lint_cmake (`#939 <https://github.com/swri-robotics/mapviz/issues/939>`_)
+* Contributors: David Anthony
+
 4.1.1 (2026-09-24)
 ------------------
 

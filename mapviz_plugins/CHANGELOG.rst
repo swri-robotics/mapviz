@@ -2,6 +2,30 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding font compatibility layer for switching between Qt5 and Qt6 (`#980 <https://github.com/swri-robotics/mapviz/issues/980>`_)
+* Adding tests for malformed messages, Qt signal connections, and config files (`#978 <https://github.com/swri-robotics/mapviz/issues/978>`_)
+* Dropping point clouds whose fields don't fit inside a point (`#976 <https://github.com/swri-robotics/mapviz/issues/976>`_)
+* Rejecting occupancy grids and updates that don't fit their data (`#975 <https://github.com/swri-robotics/mapviz/issues/975>`_)
+* Connecting combo boxes with a signal that exists in Qt 6 (`#974 <https://github.com/swri-robotics/mapviz/issues/974>`_)
+* Add unit testing based on recent bug discoveries. (`#968 <https://github.com/swri-robotics/mapviz/issues/968>`_)
+* Reporting invalid topic names instead of throwing (`#966 <https://github.com/swri-robotics/mapviz/issues/966>`_)
+* Fixing GPS, Odometry, and Pose saving the wrong buffer size with laps on (`#963 <https://github.com/swri-robotics/mapviz/issues/963>`_)
+* Fixing PointCloud2 losing its color transformer when saved before a cloud arrives (`#962 <https://github.com/swri-robotics/mapviz/issues/962>`_)
+* Fixing Laser Scan display never loading its saved maximum value (`#961 <https://github.com/swri-robotics/mapviz/issues/961>`_)
+* Subscribing to multi-type topics with only their published type (`#955 <https://github.com/swri-robotics/mapviz/issues/955>`_)
+* Exporting USE_CVBRIDGE_H_FILES with the mapviz_plugins target (`#953 <https://github.com/swri-robotics/mapviz/issues/953>`_)
+* Fixing route position topic not resubscribing after being cleared (`#951 <https://github.com/swri-robotics/mapviz/issues/951>`_)
+* Fixing occupancy grid update checkbox never connecting (`#949 <https://github.com/swri-robotics/mapviz/issues/949>`_)
+* Standardize BSD license headers and enable ament_copyright (`#944 <https://github.com/swri-robotics/mapviz/issues/944>`_)
+* Enable cppcheck (`#943 <https://github.com/swri-robotics/mapviz/issues/943>`_)
+* Enable cpplint (`#942 <https://github.com/swri-robotics/mapviz/issues/942>`_)
+* Reformat C++ with ament_uncrustify and enable uncrustify (`#941 <https://github.com/swri-robotics/mapviz/issues/941>`_)
+* Enable flake8 and pep257 (`#940 <https://github.com/swri-robotics/mapviz/issues/940>`_)
+* Add ament_lint_auto and pre-commit, enable xmllint and lint_cmake (`#939 <https://github.com/swri-robotics/mapviz/issues/939>`_)
+* Contributors: David Anthony
+
 4.1.1 (2026-09-24)
 ------------------
 * Make nav2_msgs an optional dependency for Rolling because it has not been released there yet (`#937 <https://github.com/swri-robotics/mapviz/issues/937>`_)
