@@ -33,6 +33,7 @@
 
 #include <string>
 
+#include <mapviz/qt_font_compat.hpp>
 #include <mapviz_plugins/topic_select.hpp>
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::StringPlugin, mapviz::MapvizPlugin)
@@ -205,7 +206,7 @@ void StringPlugin::LoadConfig(const YAML::Node & node, const std::string & /*pat
 
   if (node[FONT_KEY]) {
     std::string saved_font = node[FONT_KEY].as<std::string>();
-    bool ok = font_.fromString(QString(saved_font.c_str()));
+    bool ok = mapviz::FontFromString(QString(saved_font.c_str()), font_);
 
     // Revert to the default system font and size if we fail to load
     // the stored font setting

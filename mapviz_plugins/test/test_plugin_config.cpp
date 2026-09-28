@@ -29,7 +29,9 @@
 #include <gtest/gtest.h>
 #include <QApplication>
 #include <QCoreApplication>
+#include <QFont>
 #include <QOpenGLWidget>
+#include <QString>
 #include <yaml-cpp/yaml.h>
 
 #include <chrono>
@@ -173,6 +175,36 @@ void PrintTo(const TopicCase & topic_case, std::ostream * os)
   *os << topic_case.name;
 }
 }  // namespace
+
+/// Loads @p font into a new @p PluginT and reads back the font it saves.
+template<typename PluginT>
+QFont FontAfterLoading(const std::string & font)
+{
+  PluginT plugin;
+  plugin.SetNode(*g_node);
+  YAML::Node saved = SaveAfterLoading(plugin, "font: '" + font + "'\n");
+  QFont loaded;
+  loaded.fromString(QString::fromStdString(saved["font"].as<std::string>()));
+  return loaded;
+}
+
+TEST(FontConfig, LoadsFontsSavedByEitherQtVersion)
+{
+  // Qt 5 couldn't read fonts saved by Qt 6, so configs moved from a Qt 6
+  // distro to a Qt 5 one lost their fonts.
+  for (const std::string font : {
+    "Monospace,26,-1,5,50,0,0,0,0,0",
+    "Monospace,26,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"})
+  {
+    const QFont float_font = FontAfterLoading<mapviz_plugins::FloatPlugin>(font);
+    EXPECT_EQ("Monospace", float_font.family()) << "float: " << font;
+    EXPECT_EQ(26, float_font.pointSize()) << "float: " << font;
+
+    // The string plugin keeps its own font size.
+    const QFont string_font = FontAfterLoading<mapviz_plugins::StringPlugin>(font);
+    EXPECT_EQ("Monospace", string_font.family()) << "string: " << font;
+  }
+}
 
 TEST(SpeedometerConfig, RoundTripsSettings)
 {
