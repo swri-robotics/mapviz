@@ -58,6 +58,10 @@ class PointCloud2Plugin : public mapviz::MapvizPlugin,
 {
   Q_OBJECT
 
+  /// Clouds arrive through a subscription, so the unit test fixture is a
+  /// friend that can decode them directly.
+  friend class PointCloud2PluginTest;
+
 public:
   struct FieldInfo
   {

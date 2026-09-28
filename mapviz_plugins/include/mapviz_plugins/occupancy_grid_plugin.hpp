@@ -62,6 +62,10 @@ class OccupancyGridPlugin : public mapviz::MapvizPlugin,
 {
   Q_OBJECT
 
+  /// Grids arrive through a subscription, so the unit test fixture is a
+  /// friend that can hand them over directly and read back the texture data.
+  friend class OccupancyGridPluginTest;
+
   typedef std::array<uchar, 256 *4> Palette;
 
 public:

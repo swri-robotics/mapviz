@@ -293,6 +293,28 @@ TEST_F(PlanRoutePluginTest, ReportsAFailedPlan)
   EXPECT_EQ(0u, g_node->count_publishers("/test_plan_route/failed_route"));
 }
 
+TEST_F(PlanRoutePluginTest, ReportsARejectedServiceName)
+{
+  SetService("/test_plan_route/not a service");
+
+  EXPECT_NO_THROW(Plan(Waypoints(2)));
+
+  EXPECT_EQ(0u, Status().rfind("Invalid service name", 0)) << "status: " << Status();
+  EXPECT_FALSE(HasPreview());
+}
+
+TEST_F(PlanRoutePluginTest, ReportsARejectedRouteTopic)
+{
+  MockPlanner planner("/test_plan_route/rejected_topic", true);
+  SetService("/test_plan_route/rejected_topic");
+  ASSERT_TRUE(PlanAndWait(Waypoints(2)));
+
+  SetTopic("/test_plan_route/not a topic");
+  EXPECT_NO_THROW(Publish());
+
+  EXPECT_EQ(0u, Status().rfind("Invalid topic name", 0)) << "status: " << Status();
+}
+
 int main(int argc, char ** argv)
 {
   // The plugin builds a QWidget based config panel in its constructor, so a
