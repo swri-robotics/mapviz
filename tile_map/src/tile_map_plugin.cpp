@@ -148,7 +148,7 @@ TileMapPlugin::TileMapPlugin()
     this, SLOT(PrintInfo(const std::string&)));
   QObject::connect(ui_.delete_button, SIGNAL(clicked()), this, SLOT(DeleteTileSource()));
   QObject::connect(
-    ui_.source_combo, SIGNAL(activated(const QString&)), this,
+    ui_.source_combo, SIGNAL(textActivated(const QString&)), this,
     SLOT(SelectSource(const QString&)));
   QObject::connect(ui_.save_button, SIGNAL(clicked()), this, SLOT(SaveCustomSource()));
   QObject::connect(ui_.reset_cache_button, SIGNAL(clicked()), this, SLOT(ResetTileCache()));
