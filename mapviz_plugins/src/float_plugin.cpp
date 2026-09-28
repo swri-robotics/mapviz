@@ -30,6 +30,7 @@
 
 #include <QFontDialog>
 
+#include <mapviz/qt_font_compat.hpp>
 #include <mapviz_plugins/topic_select.hpp>
 #include <pluginlib/class_list_macros.hpp>
 
@@ -202,7 +203,7 @@ void FloatPlugin::LoadConfig(const YAML::Node & node, const std::string & /*path
   }
 
   if (node[FONT_KEY]) {
-    font_.fromString(QString(node[FONT_KEY].as<std::string>().c_str()));
+    mapviz::FontFromString(QString(node[FONT_KEY].as<std::string>().c_str()), font_);
     ui_.font_button->setFont(font_);
     ui_.font_button->setText(font_.family());
   }

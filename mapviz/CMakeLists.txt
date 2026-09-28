@@ -324,6 +324,12 @@ if(BUILD_TESTING)
   if(TARGET test_display_loader)
     target_link_libraries(test_display_loader ${PROJECT_NAME}_core)
   endif()
+
+  ament_add_gtest(test_qt_font_compat test/test_qt_font_compat.cpp
+    ENV QT_QPA_PLATFORM=offscreen)
+  if(TARGET test_qt_font_compat)
+    target_link_libraries(test_qt_font_compat ${PROJECT_NAME}_core)
+  endif()
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
