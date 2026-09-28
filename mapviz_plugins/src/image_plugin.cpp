@@ -86,8 +86,8 @@ ImagePlugin::ImagePlugin()
 
   QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
   QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
-  QObject::connect(ui_.anchor, SIGNAL(activated(QString)), this, SLOT(SetAnchor(QString)));
-  QObject::connect(ui_.units, SIGNAL(activated(QString)), this, SLOT(SetUnits(QString)));
+  QObject::connect(ui_.anchor, SIGNAL(textActivated(QString)), this, SLOT(SetAnchor(QString)));
+  QObject::connect(ui_.units, SIGNAL(textActivated(QString)), this, SLOT(SetUnits(QString)));
   QObject::connect(ui_.offsetx, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetX(int)));
   QObject::connect(ui_.offsety, SIGNAL(valueChanged(int)), this, SLOT(SetOffsetY(int)));
   QObject::connect(ui_.width, SIGNAL(valueChanged(double)), this, SLOT(SetWidth(double)));
@@ -95,9 +95,9 @@ ImagePlugin::ImagePlugin()
   QObject::connect(this, SIGNAL(VisibleChanged(bool)), this, SLOT(SetSubscription(bool)));
   QObject::connect(ui_.keep_ratio, SIGNAL(toggled(bool)), this, SLOT(KeepRatioChanged(bool)));
   QObject::connect(
-    ui_.transport_combo_box, SIGNAL(activated(const QString&)),
+    ui_.transport_combo_box, SIGNAL(textActivated(const QString&)),
     this, SLOT(SetTransport(const QString&)));
-  QObject::connect(ui_.rotation, SIGNAL(activated(QString)), this, SLOT(SetRotation(QString)));
+  QObject::connect(ui_.rotation, SIGNAL(textActivated(QString)), this, SLOT(SetRotation(QString)));
 
   ui_.width->setKeyboardTracking(false);
   ui_.height->setKeyboardTracking(false);

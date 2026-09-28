@@ -93,7 +93,7 @@ RoutePlugin::RoutePlugin()
     ui_.positiontopic, SIGNAL(editingFinished()), this,
     SLOT(PositionTopicEdited()));
   QObject::connect(
-    ui_.drawstyle, SIGNAL(activated(QString)), this,
+    ui_.drawstyle, SIGNAL(textActivated(QString)), this,
     SLOT(SetDrawStyle(QString)));
 
   QObject::connect(

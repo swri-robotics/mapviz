@@ -87,7 +87,7 @@ NavSatPlugin::NavSatPlugin()
     ui_.buffersize, SIGNAL(valueChanged(int)), this,
     SLOT(BufferSizeChanged(int)));
   QObject::connect(
-    ui_.drawstyle, SIGNAL(activated(QString)), this,
+    ui_.drawstyle, SIGNAL(textActivated(QString)), this,
     SLOT(SetDrawStyle(QString)));
   QObject::connect(
     ui_.color, SIGNAL(colorEdited(const QColor&)), this,
