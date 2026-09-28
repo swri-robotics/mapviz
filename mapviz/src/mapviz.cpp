@@ -40,6 +40,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -751,6 +752,14 @@ void Mapviz::Open(const std::string & filename)
 {
   RCLCPP_INFO(node_->get_logger(), "Loading configuration from %s", filename.c_str());
 
+  // A file that can't be read leaves the current config, and the rest of
+  // startup, alone.
+  const std::optional<YAML::Node> config = LoadConfigFile(filename, node_->get_logger());
+  if (!config) {
+    return;
+  }
+  YAML::Node doc = *config;
+
   std::string title;
   size_t last_slash = filename.find_last_of('/');
   if (last_slash != std::string::npos && last_slash != filename.size() - 1) {
@@ -762,12 +771,6 @@ void Mapviz::Open(const std::string & filename)
 
   title += " - mapviz";
   setWindowTitle(QString::fromStdString(title));
-
-  YAML::Node doc = YAML::LoadFile(filename);
-  if (!doc) {
-    RCLCPP_ERROR(node_->get_logger(), "Failed to load file: %s", filename.c_str());
-    return;
-  }
 
   std::vector<std::string> failed_plugins;
 
