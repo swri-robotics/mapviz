@@ -143,10 +143,16 @@ void DrawMarkerPlugin::FrameEdited()
 
 void DrawMarkerPlugin::PublishMarker()
 {
-  if (marker_topic_ != ui_.topic->text().toStdString()) {
+  // Also retry when there is no publisher, so a rejected or empty topic is
+  // reported each time rather than silently skipped.
+  if (marker_topic_ != ui_.topic->text().toStdString() || !marker_pub_) {
     marker_topic_ = ui_.topic->text().toStdString();
     rclcpp::QoS qos = rclcpp::QoS(1).durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
     marker_pub_ = Publisher<visualization_msgs::msg::Marker>(marker_topic_, qos);
+  }
+  if (!marker_pub_) {
+    // Publisher() has already reported why the topic was rejected.
+    return;
   }
 
   visualization_msgs::msg::Marker::UniquePtr marker =

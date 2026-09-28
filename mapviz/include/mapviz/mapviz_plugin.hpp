@@ -375,7 +375,8 @@ protected:
    * (the common "store it and repaint" case).
    *
    * The subscription is written into @p out_sub; reset it (or overwrite it via
-   * another Subscribe call) to unsubscribe.
+   * another Subscribe call) to unsubscribe.  If ROS rejects @p topic as a
+   * name, the error is shown with PrintError() and @p out_sub is left empty.
    */
   template<typename MsgT>
   void Subscribe(
@@ -385,17 +386,22 @@ protected:
     std::function<void(typename MsgT::ConstSharedPtr)> on_gui_thread)
   {
     rclcpp::QoS ros_qos(rclcpp::QoSInitialization::from_rmw(qos), qos);
-    out_sub = node_->create_subscription<MsgT>(
-      topic, ros_qos,
-      [this, cb = std::move(on_gui_thread)](typename MsgT::ConstSharedPtr msg)
-      {
-        // Runs on the ROS spin thread.  Hand the message to the GUI thread
-        // and return immediately; using 'this' as the invocation context
-        // means Qt discards the event if the plugin is destroyed, and
-        // because teardown runs on the GUI thread there is no race.
-        QMetaObject::invokeMethod(
-          this, [cb, msg]() {cb(msg);}, Qt::QueuedConnection);
-      });
+    try {
+      out_sub = node_->create_subscription<MsgT>(
+        topic, ros_qos,
+        [this, cb = std::move(on_gui_thread)](typename MsgT::ConstSharedPtr msg)
+        {
+          // Runs on the ROS spin thread.  Hand the message to the GUI thread
+          // and return immediately; using 'this' as the invocation context
+          // means Qt discards the event if the plugin is destroyed, and
+          // because teardown runs on the GUI thread there is no race.
+          QMetaObject::invokeMethod(
+            this, [cb, msg]() {cb(msg);}, Qt::QueuedConnection);
+        });
+    } catch (const rclcpp::exceptions::NameValidationError & e) {
+      out_sub.reset();
+      ReportInvalidName(e);
+    }
   }
 
   /**
@@ -408,7 +414,8 @@ protected:
    * cannot capture, which structurally prevents it from touching plugin state
    * from the spin thread.  It must depend only on the message (any
    * configuration-dependent work belongs in @p on_gui_thread).  Its result is
-   * moved into a shared_ptr and marshaled to the GUI thread.
+   * moved into a shared_ptr and marshaled to the GUI thread.  Invalid topic
+   * names are handled as in the overload above.
    */
   template<typename MsgT, typename DecodedT>
   void Subscribe(
@@ -419,27 +426,50 @@ protected:
     std::function<void(std::shared_ptr<DecodedT>)> on_gui_thread)
   {
     rclcpp::QoS ros_qos(rclcpp::QoSInitialization::from_rmw(qos), qos);
-    out_sub = node_->create_subscription<MsgT>(
-      topic, ros_qos,
-      [this, decode, cb = std::move(on_gui_thread)](typename MsgT::ConstSharedPtr msg)
-      {
-        // Runs on the ROS spin thread.  'decode' may only look at the
-        // message; the decoded result is handed to the GUI thread.
-        auto decoded = std::make_shared<DecodedT>(decode(msg));
-        QMetaObject::invokeMethod(
-          this, [cb, decoded]() {cb(decoded);}, Qt::QueuedConnection);
-      });
+    try {
+      out_sub = node_->create_subscription<MsgT>(
+        topic, ros_qos,
+        [this, decode, cb = std::move(on_gui_thread)](typename MsgT::ConstSharedPtr msg)
+        {
+          // Runs on the ROS spin thread.  'decode' may only look at the
+          // message; the decoded result is handed to the GUI thread.
+          auto decoded = std::make_shared<DecodedT>(decode(msg));
+          QMetaObject::invokeMethod(
+            this, [cb, decoded]() {cb(decoded);}, Qt::QueuedConnection);
+        });
+    } catch (const rclcpp::exceptions::NameValidationError & e) {
+      out_sub.reset();
+      ReportInvalidName(e);
+    }
   }
 
   /**
    * Create a publisher on the mapviz node.  Publishing is thread-safe, so this
    * may be called from the GUI thread.  Arguments are forwarded to
-   * rclcpp::Node::create_publisher().
+   * rclcpp::Node::create_publisher().  If ROS rejects the topic as a name, the
+   * error is shown with PrintError() and nullptr is returned, so check the
+   * result before publishing.
    */
   template<typename MsgT, typename ... Args>
   typename rclcpp::Publisher<MsgT>::SharedPtr Publisher(Args &&... args)
   {
-    return node_->create_publisher<MsgT>(std::forward<Args>(args)...);
+    try {
+      return node_->create_publisher<MsgT>(std::forward<Args>(args)...);
+    } catch (const rclcpp::exceptions::NameValidationError & e) {
+      ReportInvalidName(e);
+      return nullptr;
+    }
+  }
+
+  /**
+   * Shows a topic or service name that ROS rejected, such as one containing a
+   * space, on the plugin's status line.  The name is kept as entered so the
+   * user can correct it; the plugin just has nothing to subscribe or publish
+   * to until then.
+   */
+  void ReportInvalidName(const rclcpp::exceptions::NameValidationError & e)
+  {
+    PrintError("Invalid " + e.name_type + " \"" + e.name + "\": " + e.error_msg);
   }
 
   /// The mapviz node's logger.  Safe to call from any thread.

@@ -156,6 +156,10 @@ void PlanRoutePlugin::PublishRoute()
       route_topic_,
       rclcpp::QoS(1));
   }
+  if (!route_pub_) {
+    // Publisher() has already reported why the topic was rejected.
+    return;
+  }
 
   route_pub_->publish(*route_preview_->toMsgPtr());
 }
@@ -175,7 +179,13 @@ void PlanRoutePlugin::PlanRoute()
     return;
   }
   if (!plan_route_client_ || plan_route_client_->get_service_name() != service) {
-    plan_route_client_ = NodeUnsafe()->create_client<marti_nav_msgs::srv::PlanRoute>(service);
+    try {
+      plan_route_client_ = NodeUnsafe()->create_client<marti_nav_msgs::srv::PlanRoute>(service);
+    } catch (const rclcpp::exceptions::NameValidationError & e) {
+      plan_route_client_.reset();
+      ReportInvalidName(e);
+      return;
+    }
   }
   auto client = plan_route_client_;
   client->wait_for_service(1ms);
