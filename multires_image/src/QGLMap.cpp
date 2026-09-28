@@ -70,7 +70,14 @@ void QGLMap::UpdateView()
       m_tileView->SetView(m_view_center.x(), m_view_center.y(), 1, m_scale);
     }
 
-    glViewport(0, 0, width(), height());
+    // The viewport is in device pixels, which differ from the widget's size
+    // on a scaled screen.
+    const qreal device_pixel_ratio = devicePixelRatioF();
+    glViewport(
+      0,
+      0,
+      static_cast<GLsizei>(width() * device_pixel_ratio),
+      static_cast<GLsizei>(height() * device_pixel_ratio));
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(
@@ -105,8 +112,8 @@ void QGLMap::SetTiles(TileSet * tiles)
   m_tileView = new TileView(tiles, this);
 
   connect(
-    m_tileView->Cache(), SIGNAL(SignalMemorySize(int64_t)),
-    SLOT(SetTextureMemory(int64_t)));
+    m_tileView->Cache(), SIGNAL(SignalMemorySize(qint64)),
+    SLOT(SetTextureMemory(qint64)));
 
   // Create connections for the texture loading functions which must
   // be executed on this object's thread.
@@ -133,7 +140,7 @@ void QGLMap::DeleteTexture(Tile * tile)
   tile->UnloadTexture();
 }
 
-void QGLMap::SetTextureMemory(int64_t bytes)
+void QGLMap::SetTextureMemory(qint64 bytes)
 {
   // Signal that the texture memory size has changed.  The status bar listens
   // to this so that the user can see how much memory the map is using.
