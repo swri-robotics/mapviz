@@ -29,6 +29,7 @@
 #include <mapviz/display_loader.hpp>
 
 #include <exception>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -102,5 +103,30 @@ std::vector<std::string> LoadDisplays(
     failures.push_back(label);
   }
   return failures;
+}
+
+std::optional<YAML::Node> LoadConfigFile(
+  const std::string & filename,
+  const rclcpp::Logger & logger)
+{
+  YAML::Node config;
+  try {
+    config = YAML::LoadFile(filename);
+  } catch (const YAML::BadFile &) {
+    RCLCPP_WARN(logger, "Could not open the config file %s", filename.c_str());
+    return std::nullopt;
+  } catch (const YAML::Exception & e) {
+    RCLCPP_ERROR(logger, "Could not read the config file %s: %s", filename.c_str(), e.what());
+    return std::nullopt;
+  }
+
+  if (config.IsNull()) {
+    return YAML::Node(YAML::NodeType::Map);
+  }
+  if (!config.IsMap()) {
+    RCLCPP_ERROR(logger, "The config file %s does not hold a map of settings", filename.c_str());
+    return std::nullopt;
+  }
+  return config;
 }
 }  // namespace mapviz

@@ -32,6 +32,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -69,6 +70,21 @@ using LoadDisplayFunction = std::function<void (const DisplaySpec & display)>;
 std::vector<std::string> LoadDisplays(
   const YAML::Node & displays,
   const LoadDisplayFunction & load_display,
+  const rclcpp::Logger & logger);
+
+/**
+ * Reads a config file.
+ *
+ * An empty file is an empty config.  A file that is missing, can't be read,
+ * isn't valid YAML, or doesn't hold a map of settings is logged and gives
+ * nothing, so the caller can keep its current config.
+ *
+ * @param[in] filename The config file.
+ * @param[in] logger   Where problems are logged, with their details.
+ * @return The config's settings, if the file could be read.
+ */
+std::optional<YAML::Node> LoadConfigFile(
+  const std::string & filename,
   const rclcpp::Logger & logger);
 }  // namespace mapviz
 
