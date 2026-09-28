@@ -2,8 +2,8 @@
 Changelog for package mapviz_interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.2 (2026-09-28)
+------------------
 * Standardize BSD license headers and enable ament_copyright (`#944 <https://github.com/swri-robotics/mapviz/issues/944>`_)
 * Enable cppcheck (`#943 <https://github.com/swri-robotics/mapviz/issues/943>`_)
 * Enable cpplint (`#942 <https://github.com/swri-robotics/mapviz/issues/942>`_)

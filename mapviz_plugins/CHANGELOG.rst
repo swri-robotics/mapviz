@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.2 (2026-09-28)
+------------------
 * Adding font compatibility layer for switching between Qt5 and Qt6 (`#980 <https://github.com/swri-robotics/mapviz/issues/980>`_)
 * Adding tests for malformed messages, Qt signal connections, and config files (`#978 <https://github.com/swri-robotics/mapviz/issues/978>`_)
 * Dropping point clouds whose fields don't fit inside a point (`#976 <https://github.com/swri-robotics/mapviz/issues/976>`_)

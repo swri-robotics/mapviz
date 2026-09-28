@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.2 (2026-09-28)
+------------------
 * Adding tests for malformed messages, Qt signal connections, and config files (`#978 <https://github.com/swri-robotics/mapviz/issues/978>`_)
 * Connecting combo boxes with a signal that exists in Qt 6 (`#974 <https://github.com/swri-robotics/mapviz/issues/974>`_)
 * Add unit testing based on recent bug discoveries. (`#968 <https://github.com/swri-robotics/mapviz/issues/968>`_)

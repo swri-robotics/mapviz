@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.2 (2026-09-28)
+------------------
 * Fixing signal type and scaling viewport by device pixel ratio (`#981 <https://github.com/swri-robotics/mapviz/issues/981>`_)
 * Add unit testing based on recent bug discoveries. (`#968 <https://github.com/swri-robotics/mapviz/issues/968>`_)
 * Standardize BSD license headers and enable ament_copyright (`#944 <https://github.com/swri-robotics/mapviz/issues/944>`_)

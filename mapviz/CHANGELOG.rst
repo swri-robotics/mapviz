@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.2 (2026-09-28)
+------------------
 * Fxing screen and video capture with new OpenGL functionality (`#983 <https://github.com/swri-robotics/mapviz/issues/983>`_)
 * Adding font compatibility layer for switching between Qt5 and Qt6 (`#980 <https://github.com/swri-robotics/mapviz/issues/980>`_)
 * Adding tests for malformed messages, Qt signal connections, and config files (`#978 <https://github.com/swri-robotics/mapviz/issues/978>`_)
