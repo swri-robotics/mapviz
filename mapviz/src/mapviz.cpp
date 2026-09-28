@@ -77,6 +77,7 @@
 #include "swri_math_util/constants.h"
 #include "swri_transform_util/frames.h"
 #include <mapviz/config_item.hpp>
+#include <mapviz/display_loader.hpp>
 #include <image_transport/image_transport.hpp>
 
 // OpenCV libraries
@@ -906,43 +907,18 @@ void Mapviz::Open(const std::string & filename)
     }
 
     if (doc["displays"]) {
-      const YAML::Node & displays = doc["displays"];
-      for (const auto & display : displays) {
-        std::string type = display["type"].as<std::string>();
-        std::string name = display["name"].as<std::string>();
-
-        const YAML::Node & config = display["config"];
-
-        bool visible = config["visible"].as<bool>();
-
-        bool collapsed = config["collapsed"].as<bool>();
-
-        try {
+      // Each display loads on its own, so one that fails, for whatever
+      // reason, doesn't keep the rest of the config from loading.  A display
+      // whose config fails to load stays in the list with what it did load.
+      failed_plugins = LoadDisplays(
+        doc["displays"],
+        [this, &config_path](const DisplaySpec & display) {
           MapvizPluginPtr plugin =
-            CreateNewDisplay(name, type, visible, collapsed);
-          plugin->LoadConfigPlugin(config, config_path);
+          CreateNewDisplay(display.name, display.type, display.visible, display.collapsed);
+          plugin->LoadConfigPlugin(display.config, config_path);
           plugin->DrawIcon();
-        } catch (const pluginlib::LibraryLoadException & e) {
-          failed_plugins.push_back(type);
-          RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
-        } catch (const YAML::ParserException & e) {
-          failed_plugins.push_back(type);
-          RCLCPP_ERROR(
-            node_->get_logger(), "%s (%s) plugin failed with YAML parser error: %s",
-            type.c_str(), name.c_str(), e.what());
-          // Try to continue parsing through plugins
-        } catch (const YAML::Exception & e) {
-          failed_plugins.push_back(type);
-          RCLCPP_ERROR(
-            node_->get_logger(), "%s (%s) plugin failed with YAML error: %s",
-            type.c_str(), name.c_str(), e.what());
-          // Try to continue parsing through plugins
-        } catch (const rclcpp::exceptions::RCLError & e) {
-          RCLCPP_ERROR(
-            node_->get_logger(), "%s (%s) plugin failed with RCLCPP error: %s",
-            type.c_str(), name.c_str(), e.what());
-        }
-      }
+        },
+        node_->get_logger());
     }
   } catch (const YAML::ParserException & e) {
     RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
