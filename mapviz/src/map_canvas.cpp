@@ -106,11 +106,6 @@ auto tf2_to_msg(const tf2::Stamped<tf2::Transform> & transform)
 
 MapCanvas::MapCanvas(QWidget * parent)
 : QOpenGLWidget(parent),
-  has_pixel_buffers_(false),
-  pixel_buffer_size_(0),
-  pixel_buffer_ids_(),
-  pixel_buffer_index_(0),
-  capture_frames_(false),
   initialized_(false),
   fix_orientation_(false),
   rotate_90_(false),
@@ -152,47 +147,14 @@ MapCanvas::MapCanvas(QWidget * parent)
   setFocusPolicy(Qt::StrongFocus);
 }
 
-MapCanvas::~MapCanvas()
-{
-  if (pixel_buffer_size_ != 0 && context() != nullptr) {
-    makeCurrent();
-    glDeleteBuffers(2, pixel_buffer_ids_);
-    doneCurrent();
-  }
-}
-
 void MapCanvas::InitializeTf(std::shared_ptr<tf2_ros::Buffer> tf)
 {
   tf_buf_ = tf;
 }
 
-void MapCanvas::InitializePixelBuffers()
-{
-  if (has_pixel_buffers_) {
-    int32_t buffer_size = width() * height() * 4;
-
-    if (pixel_buffer_size_ != buffer_size) {
-      if (pixel_buffer_size_ != 0) {
-        glDeleteBuffers(2, pixel_buffer_ids_);
-      }
-
-      glGenBuffers(2, pixel_buffer_ids_);
-      glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[0]);
-      glBufferData(GL_PIXEL_PACK_BUFFER, buffer_size, 0, GL_STREAM_READ);
-      glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[1]);
-      glBufferData(GL_PIXEL_PACK_BUFFER, buffer_size, 0, GL_STREAM_READ);
-      glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
-      pixel_buffer_size_ = buffer_size;
-    }
-  }
-}
-
 void MapCanvas::initializeGL()
 {
   initializeOpenGLFunctions();
-  has_pixel_buffers_ = context() != nullptr &&
-    context()->hasExtension(QByteArrayLiteral("GL_ARB_pixel_buffer_object"));
 
   glClearColor(0.58f, 0.56f, 0.5f, 1);
   applyAntialiasingState();
@@ -232,42 +194,8 @@ void MapCanvas::resizeGL(int /*w*/, int /*h*/)
   UpdateView();
 }
 
-void MapCanvas::CaptureFrame(bool force)
-{
-  // Ensure the pixel size is actually 4
-  glPixelStorei(GL_PACK_ALIGNMENT, 4);
-
-  if (has_pixel_buffers_ && !force) {
-    InitializePixelBuffers();
-
-    pixel_buffer_index_ = (pixel_buffer_index_ + 1) % 2;
-    int32_t next_index = (pixel_buffer_index_ + 1) % 2;
-
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[pixel_buffer_index_]);
-    glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer_ids_[next_index]);
-    GLubyte * data = static_cast<GLubyte *>(
-      glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-    if (data) {
-      capture_buffer_.resize(pixel_buffer_size_);
-      memcpy(&capture_buffer_[0], data, pixel_buffer_size_);
-      glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-    }
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-  } else {
-    int32_t buffer_size = width() * height() * 4;
-    capture_buffer_.clear();
-    capture_buffer_.resize(buffer_size);
-    glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, &capture_buffer_[0]);
-  }
-}
-
 void MapCanvas::paintGL()
 {
-  if (capture_frames_) {
-    CaptureFrame();
-  }
-
   QPainter p(this);
   p.setRenderHints(
     QPainter::Antialiasing |

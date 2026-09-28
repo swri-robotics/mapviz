@@ -330,6 +330,11 @@ if(BUILD_TESTING)
   if(TARGET test_qt_font_compat)
     target_link_libraries(test_qt_font_compat ${PROJECT_NAME}_core)
   endif()
+
+  ament_add_gtest(test_video_writer test/test_video_writer.cpp)
+  if(TARGET test_video_writer)
+    target_link_libraries(test_video_writer ${PROJECT_NAME}_core opencv_core opencv_videoio)
+  endif()
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

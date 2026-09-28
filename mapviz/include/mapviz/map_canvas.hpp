@@ -35,10 +35,10 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QColor>
+#include <QSize>
 #include <QTimer>
 
 // C++ standard libraries
-#include <cstring>
 #include <list>
 #include <memory>
 #include <string>
@@ -59,7 +59,7 @@ class MapCanvas : public QOpenGLWidget, protected QOpenGLFunctions_1_5
 
 public:
   explicit MapCanvas(QWidget * parent = nullptr);
-  ~MapCanvas() override;
+  ~MapCanvas() override = default;
 
   void InitializeTf(std::shared_ptr<tf2_ros::Buffer> tf);
 
@@ -125,49 +125,14 @@ public:
     update();
   }
 
-  void CaptureFrames(bool enabled)
-  {
-    capture_frames_ = enabled;
-    update();
-  }
-
   /**
-   * Copies the current capture buffer into the target buffer.  The target
-   * buffer must already be initialized to a size of:
-   * height * width * 4
-   * @param buffer An initialize buffer to copy data into
-   * @return false if the current capture buffer is empty
+   * The size of a captured frame, in device pixels, which differ from the
+   * widget's size on a scaled screen.
    */
-  bool CopyCaptureBuffer(uchar * buffer)
+  QSize CaptureSize() const
   {
-    if (!capture_buffer_.empty()) {
-      memcpy(&buffer[0], &capture_buffer_[0], capture_buffer_.size());
-      return true;
-    }
-
-    return false;
+    return size() * devicePixelRatioF();
   }
-
-  /**
-   * Resizes a vector to be large enough to hold the current capture buffer
-   * and then copies the capture buffer into it.
-   * @param buffer A vector to copy the capture buffer into.
-   * @return false if the current capture buffer is empty
-   */
-  bool CopyCaptureBuffer(std::vector<uint8_t> & buffer)
-  {
-    buffer.clear();
-    if (!capture_buffer_.empty()) {
-      buffer.resize(capture_buffer_.size());
-      memcpy(&buffer[0], &capture_buffer_[0], buffer.size());
-
-      return true;
-    }
-
-    return false;
-  }
-
-  void CaptureFrame(bool force = false);
 
 Q_SIGNALS:
   void Hover(double x, double y, double scale);
@@ -193,14 +158,7 @@ protected:
   void TransformTarget(QPainter * painter);
   void Zoom(float factor);
 
-  void InitializePixelBuffers();
-
   bool canvas_able_to_move_ = true;
-  bool has_pixel_buffers_;
-  int32_t pixel_buffer_size_;
-  GLuint pixel_buffer_ids_[2];
-  int32_t pixel_buffer_index_;
-  bool capture_frames_;
 
   bool initialized_;
   bool fix_orientation_;
@@ -266,8 +224,6 @@ protected:
   tf2::Stamped<tf2::Transform> transform_;
   QTransform qtransform_;
   std::list<MapvizPluginPtr> plugins_;
-
-  std::vector<uint8_t> capture_buffer_;
 };
 }   // namespace mapviz
 
