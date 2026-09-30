@@ -39,6 +39,7 @@
 #include <utility>
 #include <vector>
 
+#include <mapviz_plugins/has_position.hpp>
 #include <mapviz_plugins/topic_select.hpp>
 #include <opencv2/core/core.hpp>
 
@@ -154,6 +155,11 @@ void GpsPlugin::connectCallback(const std::string & topic, const rmw_qos_profile
 void GpsPlugin::handleGpsFix(const gps_msgs::msg::GPSFix::ConstSharedPtr gps)
 {
   if (!tf_manager_->LocalXyUtil()->Initialized()) {
+    return;
+  }
+  // Without a position there is nothing to draw, and 0,0 or NaN would pull
+  // the track off to the other side of the world.
+  if (!HasPosition(*gps)) {
     return;
   }
   if (!has_message_) {

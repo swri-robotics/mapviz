@@ -407,6 +407,12 @@ if(BUILD_TESTING)
       PRIVATE ${MAPVIZ_PLUGINS_AUTOGEN_INCLUDE_DIR})
   endif()
 
+  ament_add_gtest(test_has_position test/test_has_position.cpp)
+  if(TARGET test_has_position)
+    target_include_directories(test_has_position PRIVATE include)
+    target_link_libraries(test_has_position ${gps_msgs_TARGETS} ${sensor_msgs_TARGETS})
+  endif()
+
   ament_add_gtest(test_malformed_messages test/test_malformed_messages.cpp
     ENV QT_QPA_PLATFORM=offscreen)
   if(TARGET test_malformed_messages)

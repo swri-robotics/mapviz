@@ -39,6 +39,7 @@
 #include <utility>
 #include <vector>
 
+#include <mapviz_plugins/has_position.hpp>
 #include <mapviz_plugins/topic_select.hpp>
 #include <opencv2/core/core.hpp>
 
@@ -144,6 +145,11 @@ void NavSatPlugin::handleNavSatFix(const sensor_msgs::msg::NavSatFix::ConstShare
 {
   if (!tf_manager_->LocalXyUtil()->Initialized()) {
     PrintError("No origin initalized; dropping messages");
+    return;
+  }
+  // Without a position there is nothing to draw, and NaN would corrupt the
+  // track.
+  if (!HasPosition(*navsat)) {
     return;
   }
   if (!has_message_) {
