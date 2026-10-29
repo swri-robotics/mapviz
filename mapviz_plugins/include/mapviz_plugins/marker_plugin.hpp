@@ -123,7 +123,6 @@ protected:
 protected Q_SLOTS:
   void SelectTopic();
   void TopicEdited();
-  void MessageTypeChanged(int index);
   void ClearHistory() override;
 
 private:
@@ -179,7 +178,8 @@ private:
 
   std::string topic_;
   rmw_qos_profile_t qos_;
-  // The topic's message type, or empty to look it up when connecting ("Auto").
+  // The topic's message type once known (from the topic list or a saved config), so the
+  // plugin can subscribe before the topic is advertised. Empty: look it up when connecting.
   std::string message_type_;
 
   rclcpp::Subscription<visualization_msgs::msg::Marker>::SharedPtr marker_sub_;
@@ -192,7 +192,6 @@ private:
 
   void processMarker(const visualization_msgs::msg::Marker & marker);
   void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
-  void setMessageType(const std::string & message_type);
   void transformArrow(
     MarkerData & markerData,
     const swri_transform_util::Transform & transform);

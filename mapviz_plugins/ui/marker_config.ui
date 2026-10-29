@@ -32,7 +32,7 @@
    <property name="verticalSpacing">
     <number>4</number>
    </property>
-   <item row="6" column="3" colspan="2">
+   <item row="5" column="3" colspan="2">
     <widget class="QLabel" name="status">
      <property name="font">
       <font>
@@ -61,7 +61,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
@@ -109,7 +109,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="3">
+   <item row="3" column="3">
     <widget class="QPushButton" name="clear">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -122,10 +122,10 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="3">
+   <item row="4" column="3">
     <widget class="QListWidget" name="nsList"/>
    </item>
-   <item row="7" column="3" colspan="2">
+   <item row="6" column="3" colspan="2">
     <widget class="QCheckBox" name="usePixelScale">
      <property name="font">
       <font>
@@ -141,47 +141,6 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_type">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Type:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="3" colspan="2">
-    <widget class="QComboBox" name="message_type">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="toolTip">
-      <string>The topic's message type. Auto looks it up when connecting, which requires the topic to be advertised already; Marker or MarkerArray subscribes immediately and connects whenever the topic appears.</string>
-     </property>
-     <item>
-      <property name="text">
-       <string>Auto</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Marker</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>MarkerArray</string>
-      </property>
-     </item>
-    </widget>
-   </item>
   </layout>
  </widget>
  <resources/>
@@ -190,7 +149,6 @@
   <slot>SelectColor()</slot>
   <slot>SelectTopic()</slot>
   <slot>TopicEdited()</slot>
-  <slot>MessageTypeChanged(int)</slot>
   <slot>PositionToleranceChanged(double)</slot>
   <slot>AngleToleranceChanged(double)</slot>
  </slots>

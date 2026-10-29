@@ -30,8 +30,6 @@
 
 #include <algorithm>
 
-#include <QSignalBlocker>
-
 // C++ Standard Libraries
 #include <string>
 #include <utility>
@@ -51,10 +49,6 @@ namespace
 {
 const char * const kMarkerType = "visualization_msgs/msg/Marker";
 const char * const kMarkerArrayType = "visualization_msgs/msg/MarkerArray";
-// Entries of the message_type combo box in marker_config.ui.
-constexpr int kAutoIndex = 0;
-constexpr int kMarkerIndex = 1;
-constexpr int kMarkerArrayIndex = 2;
 }  // namespace
 
 MarkerPlugin::MarkerPlugin()
@@ -81,8 +75,6 @@ MarkerPlugin::MarkerPlugin()
   QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
   QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
   QObject::connect(ui_.clear, SIGNAL(clicked()), this, SLOT(ClearHistory()));
-  QObject::connect(
-    ui_.message_type, SIGNAL(currentIndexChanged(int)), this, SLOT(MessageTypeChanged(int)));
 
   startTimer(1000);
 }
@@ -103,45 +95,20 @@ void MarkerPlugin::SelectTopic()
     kMarkerArrayType,
     qos_);
   if (!topic.empty()) {
-    // The dialog only lists advertised topics, so the type is known: record it, so the
-    // display subscribes without a lookup when its config is loaded later.
+    // The dialog only lists advertised topics, so the type is known. Recording it lets a
+    // saved config subscribe without a lookup, before the topic is advertised.
     auto known_topics = TopicSource().topics();
-    if (known_topics.count(topic) > 0) {
-      setMessageType(known_topics[topic][0]);
-    }
+    message_type_ = known_topics.count(topic) > 0 ? known_topics[topic][0] : "";
     connectCallback(topic, qos);
   }
-}
-
-void MarkerPlugin::MessageTypeChanged(int index)
-{
-  if (index == kMarkerIndex) {
-    message_type_ = kMarkerType;
-  } else if (index == kMarkerArrayIndex) {
-    message_type_ = kMarkerArrayType;
-  } else {
-    message_type_.clear();
-  }
-  connectCallback(topic_, qos_);
-}
-
-void MarkerPlugin::setMessageType(const std::string & message_type)
-{
-  int index = kAutoIndex;
-  if (message_type == kMarkerType) {
-    index = kMarkerIndex;
-  } else if (message_type == kMarkerArrayType) {
-    index = kMarkerArrayIndex;
-  }
-  message_type_ = index == kAutoIndex ? "" : message_type;
-  // Update the combo box without MessageTypeChanged() reconnecting.
-  QSignalBlocker blocker(ui_.message_type);
-  ui_.message_type->setCurrentIndex(index);
 }
 
 void MarkerPlugin::TopicEdited()
 {
   std::string topic = ui_.topic->text().trimmed().toStdString();
+  if (topic != topic_) {
+    message_type_.clear();  // a typed-in topic's type is unknown until it is looked up
+  }
   connectCallback(topic, qos_);
 }
 
@@ -171,22 +138,21 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
     // ROS 2 does not allow for a simple way to subscribe to a general type of message
     // (i.e. Marker and MarkerArray). That would require a way to de-serialize the data
     // for mapviz to consume (based on message type).
-    // With a configured message type, subscribe directly: like any typed subscription, it
-    // connects whenever the topic appears. Without one ("Auto", e.g. a config saved before
-    // the option existed), look the type up, which needs the topic to be advertised already.
+    // With a known message type, subscribe directly: like any typed subscription, it
+    // connects whenever the topic appears. Otherwise (a typed-in topic, or a config saved
+    // without message_type), look the type up, which needs the topic to be advertised.
     std::string topic_type = message_type_;
     if (topic_type.empty()) {
       auto known_topics = TopicSource().topics();
       if (known_topics.count(topic_) == 0) {
         RCLCPP_ERROR(
           Logger(),
-          "Unable to subscribe to topic %s (does not exist). Set its message type to "
-          "subscribe before it is advertised.", topic_.c_str());
+          "Unable to subscribe to topic %s (does not exist).", topic_.c_str());
         return;
       }
       topic_type = known_topics[topic_][0];
       if (topic_type == kMarkerType || topic_type == kMarkerArrayType) {
-        setMessageType(topic_type);
+        message_type_ = topic_type;  // saved with the config
       }
     }
     if (topic_type == kMarkerType) {
@@ -773,13 +739,14 @@ void MarkerPlugin::LoadConfig(const YAML::Node & node, const std::string & /*pat
     ui_.usePixelScale->setChecked(node["use_pixel_scale"].as<bool>());
   }
   if (node["message_type"]) {
-    setMessageType(TrimString(node["message_type"].as<std::string>()));
+    message_type_ = TrimString(node["message_type"].as<std::string>());
   }
   if (node["topic"]) {
     std::string topic = TrimString(node["topic"].as<std::string>());
     ui_.topic->setText(topic.c_str());
 
-    TopicEdited();
+    // Not TopicEdited(), which forgets the type of a changed topic.
+    connectCallback(topic, qos_);
   }
 }
 
