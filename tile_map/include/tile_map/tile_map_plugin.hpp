@@ -150,6 +150,7 @@ private:
 
   static std::string BASE_URL_KEY;
   static std::string BING_API_KEY;
+  static std::string CARTO_API_KEY;
   static std::string STADIA_API_KEY;
   static std::string CUSTOM_SOURCES_KEY;
   static std::string MAX_ZOOM_KEY;

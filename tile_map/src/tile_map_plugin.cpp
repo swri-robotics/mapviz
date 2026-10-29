@@ -40,6 +40,7 @@
 #include <mapviz/mapviz_plugin.hpp>
 #include <tile_map/tile_source.hpp>
 #include <tile_map/bing_source.hpp>
+#include <tile_map/carto_source.hpp>
 #include <tile_map/stadia_source.hpp>
 #include <tile_map/wmts_source.hpp>
 
@@ -56,6 +57,7 @@ namespace tile_map
 {
 std::string TileMapPlugin::BASE_URL_KEY = "base_url";  // NOLINT(runtime/string)
 std::string TileMapPlugin::BING_API_KEY = "bing_api_key";  // NOLINT(runtime/string)
+std::string TileMapPlugin::CARTO_API_KEY = "carto_api_key";  // NOLINT(runtime/string)
 std::string TileMapPlugin::STADIA_API_KEY = "stadia_api_key";  // NOLINT(runtime/string)
 std::string TileMapPlugin::CUSTOM_SOURCES_KEY = "custom_sources";  // NOLINT(runtime/string)
 std::string TileMapPlugin::MAX_ZOOM_KEY = "max_zoom";  // NOLINT(runtime/string)
@@ -91,7 +93,7 @@ TileMapPlugin::TileMapPlugin()
   ui_.setupUi(config_widget_);
 
   tile_sources_[CARTO_NAME] =
-    std::make_shared<WmtsSource>(
+    std::make_shared<CartoSource>(
     CARTO_NAME,
     "https://basemaps.cartocdn.com/rastertiles/voyager/{level}/{x}/{y}.png",
     false,
@@ -236,6 +238,7 @@ void TileMapPlugin::SourceEdited()
 
   if (source && !source->IsCustom() &&
     source->GetType() != BingSource::BING_TYPE &&
+    source->GetType() != CartoSource::CARTO_TYPE &&
     source->GetType() != StadiaSource::STADIA_TYPE)
   {
     // Built-in WMTS sources are read-only; nothing to apply.
@@ -254,13 +257,25 @@ void TileMapPlugin::UpdateControlState()
   const bool is_new_custom = !source;
   const bool is_custom = source && source->IsCustom();
   const bool is_bing = source && source->GetType() == BingSource::BING_TYPE;
+  const bool is_carto = source && source->GetType() == CartoSource::CARTO_TYPE;
   const bool is_stadia = source && source->GetType() == StadiaSource::STADIA_TYPE;
-  const bool is_key = is_bing || is_stadia;
+  const bool is_key = is_bing || is_carto || is_stadia;
   const bool editable = is_new_custom || is_custom || is_key;
 
   ui_.url_label->setText(
     is_bing ? "Bing API Key:" :
-    (is_stadia ? "Stadia API Key:" : "Base URL:"));
+    (is_carto ? "Carto API Key:" :
+    (is_stadia ? "Stadia API Key:" : "Base URL:")));
+  // The placeholder and tooltip from the .ui describe a URL template, which
+  // is misleading when the field holds an API key.
+  ui_.base_url_text->setPlaceholderText(
+    is_key ? "Paste API key, then click Save" :
+    "http://localhost/osm_tiles/{level}/{x}/{y}.png");
+  ui_.base_url_text->setToolTip(
+    is_carto ? "Carto basemaps API key, from carto.com/basemaps/apikey." :
+    (is_key ? "API key for this tile source." :
+    "Tile URL template.  {level} (or {z}), {x} and {y} are replaced with the tile "
+    "coordinates.  file:// URLs work for tiles on disk."));
   // The ellipsis is the convention for "this opens a dialog", which saving a
   // custom source does and submitting an API key does not.
   ui_.save_button->setText(is_key ? "Save" : "Save...");
@@ -383,6 +398,15 @@ void TileMapPlugin::SaveCustomSource()
       // saving a custom map source, just updating the API key
       BingSource * bing_source = dynamic_cast<BingSource *>(iter->second.get());
       bing_source->SetApiKey(ui_.base_url_text->text());
+      dirty_ = false;
+      UpdateControlState();
+      UpdateStatus();
+      return;
+    } else if (iter->second->GetType() == CartoSource::CARTO_TYPE) {
+      // If the user has picked Carto as their source, we're not actually
+      // saving a custom map source, just updating the API key
+      CartoSource * carto_source = dynamic_cast<CartoSource *>(iter->second.get());
+      carto_source->SetApiKey(ui_.base_url_text->text());
       dirty_ = false;
       UpdateControlState();
       UpdateStatus();
@@ -591,6 +615,12 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
     source->SetApiKey(QString::fromStdString(key));
   }
 
+  if (node[CARTO_API_KEY]) {
+    std::string key = node[CARTO_API_KEY].as<std::string>();
+    CartoSource * source = dynamic_cast<CartoSource *>(tile_sources_[CARTO_NAME].get());
+    source->SetApiKey(QString::fromStdString(key));
+  }
+
   if (node[STADIA_API_KEY]) {
     std::string key = node[STADIA_API_KEY].as<std::string>();
     for (auto & source_pair : tile_sources_) {
@@ -636,6 +666,10 @@ void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
   std::string bing_key = TrimString(bing_source->GetApiKey().toStdString());
   emitter << YAML::Key << BING_API_KEY << YAML::Value << bing_key;
 
+  CartoSource * carto_source = dynamic_cast<CartoSource *>(tile_sources_[CARTO_NAME].get());
+  std::string carto_key = TrimString(carto_source->GetApiKey().toStdString());
+  emitter << YAML::Key << CARTO_API_KEY << YAML::Value << carto_key;
+
   // Save Stadia API key (all Stadia sources share the same key, so just get it from one)
   StadiaSource * stadia_source =
     dynamic_cast<StadiaSource *>(tile_sources_[STAMEN_TERRAIN_NAME].get());
@@ -653,6 +687,9 @@ void TileMapPlugin::selectTileSource(const std::shared_ptr<TileSource> & tile_so
   if (tile_source->GetType() == BingSource::BING_TYPE) {
     BingSource * bing_source = dynamic_cast<BingSource *>(tile_source.get());
     ui_.base_url_text->setText(bing_source->GetApiKey());
+  } else if (tile_source->GetType() == CartoSource::CARTO_TYPE) {
+    CartoSource * carto_source = dynamic_cast<CartoSource *>(tile_source.get());
+    ui_.base_url_text->setText(carto_source->GetApiKey());
   } else if (tile_source->GetType() == StadiaSource::STADIA_TYPE) {
     StadiaSource * stadia_source = dynamic_cast<StadiaSource *>(tile_source.get());
     ui_.base_url_text->setText(stadia_source->GetApiKey());
