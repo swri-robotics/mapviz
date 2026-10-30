@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.2.0 (2026-10-30)
+------------------
 * Adding attribution on map for different sources (`#989 <https://github.com/swri-robotics/mapviz/issues/989>`_)
 * Adding an API key for the Carto tile source (`#986 <https://github.com/swri-robotics/mapviz/issues/986>`_)
   - Add CartoSource, which appends ?key=<key> to tile URLs
