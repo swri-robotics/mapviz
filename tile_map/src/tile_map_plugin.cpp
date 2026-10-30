@@ -35,7 +35,11 @@
 #include <QUrl>
 #include <QNetworkRequest>
 #include <QDateTime>
+#include <QFontMetrics>
 #include <QPalette>
+
+#include <algorithm>
+#include <cmath>
 
 #include <mapviz/mapviz_plugin.hpp>
 #include <tile_map/tile_source.hpp>
@@ -47,6 +51,8 @@
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/transform_datatypes.hpp>
+#include "swri_math_util/constants.h"
+#include "swri_transform_util/earth_constants.h"
 #include "swri_transform_util/frames.h"
 
 // Declare plugin
@@ -76,6 +82,38 @@ QString TileMapPlugin::USGS_NAME = "USGS Satellite";
 // per-tile success signal, so the message ages out rather than being cleared.
 constexpr qint64 TILE_ERROR_TIMEOUT_MS = 5000;
 
+// Size of the attribution text, its distance from the canvas edges, and the
+// space between it and the edge of its background.
+constexpr int ATTRIBUTION_FONT_PIXELS = 11;
+constexpr int ATTRIBUTION_MARGIN = 4;
+constexpr int ATTRIBUTION_PADDING = 3;
+
+namespace
+{
+/// The area within half the canvas diagonal of the center, so the bounds
+/// still cover the view when the map is rotated.  Views that cross the
+/// antimeridian are clipped at it.
+ViewBounds ViewAround(
+  double latitude, double longitude, double scale,
+  int32_t width, int32_t height, int32_t level)
+{
+  // scale is in meters per pixel.
+  const double meters_per_degree = swri_transform_util::_earth_equator_circumference / 360.0;
+  const double radius = 0.5 * scale * std::hypot(width, height) / meters_per_degree;
+  const double cos_lat = std::cos(latitude / swri_math_util::_rad_2_deg);
+
+  ViewBounds view;
+  view.level = level;
+  view.south = std::max(-90.0, latitude - radius);
+  view.north = std::min(90.0, latitude + radius);
+  if (cos_lat > 0.0 && radius / cos_lat < 180.0) {
+    view.west = std::max(-180.0, longitude - radius / cos_lat);
+    view.east = std::min(180.0, longitude + radius / cos_lat);
+  }
+  return view;
+}
+}  // namespace
+
 TileMapPlugin::TileMapPlugin()
 : MapvizPlugin()
   , ui_()
@@ -92,29 +130,39 @@ TileMapPlugin::TileMapPlugin()
 {
   ui_.setupUi(config_widget_);
 
+  // The attribution for each built-in source is the credit line that the
+  // provider's terms of use require on the map; Bing works out its own from
+  // the imagery on screen.
   tile_sources_[CARTO_NAME] =
     std::make_shared<CartoSource>(
     CARTO_NAME,
     "https://basemaps.cartocdn.com/rastertiles/voyager/{level}/{x}/{y}.png",
     false,
     19);
+  tile_sources_[CARTO_NAME]->SetAttribution("© OpenStreetMap contributors, © CARTO");
   std::shared_ptr<StadiaSource> stamen_terrain = std::make_shared<StadiaSource>(
     STAMEN_TERRAIN_NAME,
     "https://tiles.stadiamaps.com/tiles/stamen_terrain/{level}/{x}/{y}.png",
     false,
     19);
+  stamen_terrain->SetAttribution(
+    "© Stadia Maps © Stamen Design © OpenMapTiles © OpenStreetMap");
   tile_sources_[STAMEN_TERRAIN_NAME] = stamen_terrain;
   std::shared_ptr<StadiaSource> stamen_toner = std::make_shared<StadiaSource>(
     STAMEN_TONER_NAME,
     "https://tiles.stadiamaps.com/tiles/stamen_toner/{level}/{x}/{y}.png",
     false,
     19);
+  stamen_toner->SetAttribution(
+    "© Stadia Maps © Stamen Design © OpenMapTiles © OpenStreetMap");
   tile_sources_[STAMEN_TONER_NAME] = stamen_toner;
   std::shared_ptr<StadiaSource> stamen_watercolor = std::make_shared<StadiaSource>(
     STAMEN_WATERCOLOR_NAME,
     "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{level}/{x}/{y}.jpg",
     false,
     19);
+  // Unlike the other Stamen styles, Watercolor isn't built from OpenMapTiles.
+  stamen_watercolor->SetAttribution("© Stadia Maps © Stamen Design © OpenStreetMap");
   tile_sources_[STAMEN_WATERCOLOR_NAME] = stamen_watercolor;
   tile_sources_[OSM_NAME] =
     std::make_shared<WmtsSource>(
@@ -122,6 +170,7 @@ TileMapPlugin::TileMapPlugin()
     "https://tile.openstreetmap.org/{level}/{x}/{y}.png",
     false,
     19);
+  tile_sources_[OSM_NAME]->SetAttribution("© OpenStreetMap contributors");
   tile_sources_[USGS_NAME] =
     std::make_shared<WmtsSource>(
     USGS_NAME,
@@ -129,6 +178,8 @@ TileMapPlugin::TileMapPlugin()
     "1.0.0/USGSImageryOnly/default/default028mm/{level}/{y}/{x}.png",
     false,
     19);
+  // USGS imagery is public domain; this is the credit the service asks for.
+  tile_sources_[USGS_NAME]->SetAttribution("USDA, USGS The National Map: Orthoimagery");
   std::shared_ptr<BingSource> bing = std::make_shared<BingSource>(BING_NAME);
   tile_sources_[BING_NAME] = bing;
 
@@ -553,9 +604,108 @@ void TileMapPlugin::Draw(double x, double y, double scale)
       last_height_ = canvas_->height();
       tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
       RCLCPP_DEBUG(Logger(), "TileMapPlugin::Draw: Successfully set view");
+
+      int32_t level;
+      int64_t tile_x;
+      int64_t tile_y;
+      if (tile_map_.GetCenterTile(level, tile_x, tile_y)) {
+        view_bounds_ = ViewAround(
+          center.y(), center.x(), scale, last_width_, last_height_, level);
+      }
     }
     tile_map_.Draw();
   }
+}
+
+QString TileMapPlugin::CurrentAttribution() const
+{
+  std::shared_ptr<TileSource> source = tile_map_.GetTileSource();
+  if (!source) {
+    return {};
+  }
+  return source->GetAttribution(view_bounds_);
+}
+
+void TileMapPlugin::Paint(QPainter * painter, double, double, double)
+{
+  std::shared_ptr<TileSource> source = tile_map_.GetTileSource();
+  if (!source) {
+    return;
+  }
+  const QString text = CurrentAttribution();
+  const QImage logo = source->GetAttributionLogo();
+  if (text.isEmpty() && logo.isNull()) {
+    return;
+  }
+
+  // Drawn in screen coordinates, in the bottom-right corner where web maps
+  // put their credits, so it stays put however the map is panned or rotated.
+  painter->save();
+  painter->resetTransform();
+
+  QFont font = painter->font();
+  font.setPixelSize(ATTRIBUTION_FONT_PIXELS);
+  painter->setFont(font);
+  const QFontMetrics metrics(font);
+
+  const int canvas_width = painter->device()->width();
+  const int canvas_height = painter->device()->height();
+
+  // The logo is scaled to the height of one line of text.
+  int logo_width = 0;
+  int logo_height = 0;
+  if (!logo.isNull()) {
+    logo_height = metrics.height();
+    logo_width = logo.width() * logo_height / std::max(1, logo.height());
+  }
+  const int gap = (logo_width > 0 && !text.isEmpty()) ? ATTRIBUTION_PADDING : 0;
+
+  // Wrap rather than run off the left edge of a narrow canvas.
+  const int text_flags = Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter;
+  QRect text_bounds;
+  if (!text.isEmpty()) {
+    const int max_text_width = std::max(
+      1, canvas_width - 2 * (ATTRIBUTION_MARGIN + ATTRIBUTION_PADDING) - logo_width - gap);
+    text_bounds = metrics.boundingRect(
+      QRect(0, 0, max_text_width, canvas_height), text_flags, text);
+  }
+
+  const int box_width = logo_width + gap + text_bounds.width() + 2 * ATTRIBUTION_PADDING;
+  const int box_height =
+    std::max(logo_height, text_bounds.height()) + 2 * ATTRIBUTION_PADDING;
+  const QRect box(
+    canvas_width - ATTRIBUTION_MARGIN - box_width,
+    canvas_height - ATTRIBUTION_MARGIN - box_height,
+    box_width,
+    box_height);
+
+  painter->setPen(Qt::NoPen);
+  painter->setBrush(QColor(255, 255, 255, 200));
+  painter->drawRect(box);
+
+  if (logo_width > 0) {
+    painter->drawImage(
+      QRect(
+        box.left() + ATTRIBUTION_PADDING,
+        box.top() + (box.height() - logo_height) / 2,
+        logo_width,
+        logo_height),
+      logo);
+  }
+
+  if (!text.isEmpty()) {
+    painter->setPen(QColor(51, 51, 51));
+    painter->drawText(
+      QRect(
+        box.left() + ATTRIBUTION_PADDING + logo_width + gap,
+        box.top() + ATTRIBUTION_PADDING,
+        text_bounds.width(),
+        box.height() - 2 * ATTRIBUTION_PADDING),
+      text_flags,
+      text);
+  }
+
+  painter->restore();
 }
 
 void TileMapPlugin::Transform()

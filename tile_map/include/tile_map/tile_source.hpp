@@ -29,6 +29,7 @@
 #ifndef TILE_MAP__TILE_SOURCE_HPP_
 #define TILE_MAP__TILE_SOURCE_HPP_
 
+#include <QImage>
 #include <QObject>
 #include <QString>
 
@@ -36,6 +37,19 @@
 
 namespace tile_map
 {
+/**
+ * The part of the world currently on screen, in degrees, and the zoom level
+ * it is drawn at.  The defaults describe the whole world at level 0.
+ */
+struct ViewBounds
+{
+  int32_t level = 0;
+  double south = -90.0;
+  double west = -180.0;
+  double north = 90.0;
+  double east = 180.0;
+};
+
 /**
    * Represents a network source for map tiles; contains information about how to
    * connect to the source and how to retrieve tiles from it.
@@ -99,6 +113,23 @@ public:
    */
   virtual QString GetType() const = 0;
 
+  /**
+   * The credit line that the source's terms of use require on the map, or an
+   * empty string if it needs none.  Most sources have a fixed line; Bing's
+   * depends on which imagery providers cover the area being shown.
+   * @param view The area currently on screen
+   * @return The attribution text
+   */
+  virtual QString GetAttribution(const ViewBounds & view) const;
+
+  virtual void SetAttribution(const QString & attribution);
+
+  /**
+   * A logo that the terms of use require next to the attribution, or a null
+   * image if there is none.
+   */
+  virtual QImage GetAttributionLogo() const;
+
 Q_SIGNALS:
   void ErrorMessage(const std::string & error_msg) const;
   void InfoMessage(const std::string & info_msg) const;
@@ -111,6 +142,7 @@ protected:
     min_zoom_(0)
   {}
 
+  QString attribution_;
   QString base_url_;
   bool is_custom_;
   bool is_ready_;

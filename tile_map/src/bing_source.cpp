@@ -28,7 +28,10 @@
 
 #include <tile_map/bing_source.hpp>
 
+#include <QNetworkRequest>
 #include <QString>
+#include <QStringList>
+#include <QUrl>
 #include <json/json.h>
 
 #include <random>
@@ -36,12 +39,26 @@
 namespace tile_map
 {
 const QString BingSource::BING_TYPE = "bing";
+const std::string BingSource::BING_ATTRIBUTION_KEY = "attribution";  // NOLINT(runtime/string)
+const std::string BingSource::BING_BBOX_KEY = "bbox";  // NOLINT(runtime/string)
+const std::string BingSource::BING_BRAND_LOGO_URI_KEY = "brandLogoUri";  // NOLINT(runtime/string)
+const std::string BingSource::BING_COVERAGE_AREAS_KEY = "coverageAreas";  // NOLINT(runtime/string)
 const std::string BingSource::BING_IMAGE_URL_KEY = "imageUrl";  // NOLINT(runtime/string)
+const std::string BingSource::BING_IMAGERY_PROVIDERS_KEY =  // NOLINT(runtime/string)
+  "imageryProviders";
 const std::string BingSource::BING_IMAGE_URL_SUBDOMAIN_KEY =  // NOLINT(runtime/string)
   "imageUrlSubdomains";
 const std::string BingSource::BING_RESOURCE_SET_KEY = "resourceSets";  // NOLINT(runtime/string)
 const std::string BingSource::BING_RESOURCE_KEY = "resources";  // NOLINT(runtime/string)
 const std::string BingSource::BING_STATUS_CODE_KEY = "statusCode";  // NOLINT(runtime/string)
+const std::string BingSource::BING_ZOOM_MAX_KEY = "zoomMax";  // NOLINT(runtime/string)
+const std::string BingSource::BING_ZOOM_MIN_KEY = "zoomMin";  // NOLINT(runtime/string)
+
+namespace
+{
+/// Marks the logo request, so ReplyFinished() can tell it from the metadata.
+const char LOGO_REQUEST[] = "logo";
+}  // namespace
 
 BingSource::BingSource(const QString & name)
 : TileSource(),
@@ -84,6 +101,30 @@ QString BingSource::GetType() const
   return BING_TYPE;
 }
 
+QString BingSource::GetAttribution(const ViewBounds & view) const
+{
+  QStringList credits;
+  for (const ImageryProvider & provider : providers_) {
+    for (const CoverageArea & area : provider.coverage_areas) {
+      if (view.level >= area.zoom_min && view.level <= area.zoom_max &&
+        view.south <= area.north && view.north >= area.south &&
+        view.west <= area.east && view.east >= area.west)
+      {
+        if (!credits.contains(provider.attribution)) {
+          credits.append(provider.attribution);
+        }
+        break;
+      }
+    }
+  }
+  return credits.join(", ");
+}
+
+QImage BingSource::GetAttributionLogo() const
+{
+  return logo_;
+}
+
 QString BingSource::GetApiKey() const
 {
   return api_key_;
@@ -99,6 +140,8 @@ void BingSource::SetApiKey(const QString & api_key)
     // and blank it out so we don't make requests using the old one.
     tile_url_ = "";
     subdomains_.clear();
+    providers_.clear();
+    logo_ = QImage();
     network_manager_.get(QNetworkRequest(QUrl(url)));
   }
 }
@@ -123,10 +166,27 @@ QString BingSource::GenerateQuadKey(int32_t level, int64_t x, int64_t y) const
 
 void BingSource::ReplyFinished(QNetworkReply * reply)
 {
-  QString reply_string(reply->readAll());
+  reply->deleteLater();
+
+  if (reply->request().attribute(QNetworkRequest::User).toString() == LOGO_REQUEST) {
+    QImage logo;
+    if (reply->error() == QNetworkReply::NoError && logo.loadFromData(reply->readAll())) {
+      logo_ = logo;
+    } else {
+      Q_EMIT ErrorMessage(
+        "Unable to download the Bing logo: " + reply->errorString().toStdString());
+    }
+    return;
+  }
+
+  HandleMetadata(reply->readAll());
+}
+
+void BingSource::HandleMetadata(const QByteArray & reply)
+{
   Json::Reader reader;
   Json::Value root;
-  reader.parse(reply_string.toStdString(), root);
+  reader.parse(reply.toStdString(), root);
 
   int status = root[BING_STATUS_CODE_KEY].asInt();
   if (status != 200) {
@@ -168,6 +228,40 @@ void BingSource::ReplyFinished(QNetworkReply * reply)
 
     for (const auto & subdomain : first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY]) {
       subdomains_.push_back(QString::fromStdString(subdomain.asString()));
+    }
+
+    // The terms of use require crediting the providers whose imagery is on
+    // screen, so keep each provider's coverage to match against the view.
+    providers_.clear();
+    for (const auto & provider_json : first_resource[BING_IMAGERY_PROVIDERS_KEY]) {
+      ImageryProvider provider;
+      provider.attribution =
+        QString::fromStdString(provider_json[BING_ATTRIBUTION_KEY].asString());
+      for (const auto & area_json : provider_json[BING_COVERAGE_AREAS_KEY]) {
+        // bbox is [south, west, north, east] in degrees.
+        const Json::Value & bbox = area_json[BING_BBOX_KEY];
+        if (!bbox.isArray() || bbox.size() != 4) {
+          continue;
+        }
+        CoverageArea area;
+        area.zoom_min = area_json[BING_ZOOM_MIN_KEY].asInt();
+        area.zoom_max = area_json[BING_ZOOM_MAX_KEY].asInt();
+        area.south = bbox[0].asDouble();
+        area.west = bbox[1].asDouble();
+        area.north = bbox[2].asDouble();
+        area.east = bbox[3].asDouble();
+        provider.coverage_areas.push_back(area);
+      }
+      if (!provider.attribution.isEmpty()) {
+        providers_.push_back(provider);
+      }
+    }
+
+    std::string logo_uri = root[BING_BRAND_LOGO_URI_KEY].asString();
+    if (!logo_uri.empty()) {
+      QNetworkRequest request{QUrl(QString::fromStdString(logo_uri))};
+      request.setAttribute(QNetworkRequest::User, QString(LOGO_REQUEST));
+      network_manager_.get(request);
     }
 
     Q_EMIT InfoMessage("API Key Set.");
