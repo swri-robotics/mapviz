@@ -28,10 +28,15 @@
 
 #include <gtest/gtest.h>
 #include <QCoreApplication>
+#include <QDeadlineTimer>
+#include <QImage>
 #include <QString>
+#include <QTemporaryDir>
+#include <QUrl>
 
 #include <cstdint>
 #include <set>
+#include <string>
 
 #include <tile_map/bing_source.hpp>
 #include <tile_map/wmts_source.hpp>
@@ -49,7 +54,40 @@ public:
   : BingSource("test") {}
 
   using BingSource::GenerateQuadKey;
+  using BingSource::HandleMetadata;
 };
+
+/// An Imagery Metadata response in the shape Bing returns, with two providers:
+/// one worldwide at every zoom, and one covering part of Texas up close.
+std::string BingMetadata(const std::string & brand_logo_uri)
+{
+  return
+    "{\"statusCode\": 200,"
+    " \"brandLogoUri\": \"" + brand_logo_uri + "\","
+    " \"resourceSets\": [{\"resources\": [{"
+    "  \"imageUrl\": \"https://ecn.{subdomain}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg\","
+    "  \"imageUrlSubdomains\": [\"t0\", \"t1\"],"
+    "  \"imageryProviders\": ["
+    "   {\"attribution\": \"© 2026 Microsoft Corporation\","
+    "    \"coverageAreas\": [{\"bbox\": [-90, -180, 90, 180], \"zoomMin\": 1, \"zoomMax\": 21}]},"
+    "   {\"attribution\": \"© 2026 Maxar\","
+    "    \"coverageAreas\": ["
+    "     {\"bbox\": [29, -99, 30, -98], \"zoomMin\": 14, \"zoomMax\": 21},"
+    "     {\"bbox\": [29.5, -98.6, 29.6, -98.4], \"zoomMin\": 10, \"zoomMax\": 21}]}"
+    "  ]"
+    " }]}]}";
+}
+
+tile_map::ViewBounds View(int32_t level, double south, double west, double north, double east)
+{
+  tile_map::ViewBounds view;
+  view.level = level;
+  view.south = south;
+  view.west = west;
+  view.north = north;
+  view.east = east;
+  return view;
+}
 
 WmtsSource Wmts(const QString & base_url)
 {
@@ -136,6 +174,75 @@ TEST(BingSource, GeneratesPublishedQuadKeys)
   EXPECT_EQ("3", source.GenerateQuadKey(1, 1, 1));
   EXPECT_EQ("0000", source.GenerateQuadKey(4, 0, 0));
   EXPECT_EQ("3333", source.GenerateQuadKey(4, 15, 15));
+}
+
+TEST(WmtsSource, HasNoAttributionUnlessGivenOne)
+{
+  WmtsSource source = Wmts("http://localhost/{level}/{x}/{y}.png");
+  EXPECT_EQ("", source.GetAttribution(tile_map::ViewBounds()));
+  EXPECT_TRUE(source.GetAttributionLogo().isNull());
+
+  source.SetAttribution("© Example");
+  EXPECT_EQ("© Example", source.GetAttribution(tile_map::ViewBounds()));
+}
+
+TEST(BingSource, HasNoAttributionBeforeMetadata)
+{
+  TestBingSource source;
+  EXPECT_EQ("", source.GetAttribution(View(15, 29.4, -98.6, 29.5, -98.5)));
+  EXPECT_TRUE(source.GetAttributionLogo().isNull());
+}
+
+TEST(BingSource, CreditsProvidersCoveringTheView)
+{
+  TestBingSource source;
+  source.HandleMetadata(QByteArray::fromStdString(BingMetadata("")));
+
+  // Zoomed out over Europe, only the worldwide provider covers the view.
+  EXPECT_EQ(
+    "© 2026 Microsoft Corporation",
+    source.GetAttribution(View(8, 48.0, 2.0, 49.0, 3.0)));
+
+  // Zoomed in over San Antonio, both do.
+  EXPECT_EQ(
+    "© 2026 Microsoft Corporation, © 2026 Maxar",
+    source.GetAttribution(View(15, 29.4, -98.6, 29.5, -98.5)));
+
+  // Same place, but too far out for the first Maxar area, and the view
+  // doesn't reach the second one.
+  EXPECT_EQ(
+    "© 2026 Microsoft Corporation",
+    source.GetAttribution(View(12, 29.0, -98.9, 29.4, -98.7)));
+
+  // A view that overlaps both Maxar areas still credits it once.
+  EXPECT_EQ(
+    "© 2026 Microsoft Corporation, © 2026 Maxar",
+    source.GetAttribution(View(15, 29.0, -99.0, 30.0, -98.0)));
+
+  // Level 0 is outside every provider's zoom range.
+  EXPECT_EQ("", source.GetAttribution(View(0, -90.0, -180.0, 90.0, 180.0)));
+}
+
+TEST(BingSource, DownloadsTheBrandLogo)
+{
+  QTemporaryDir dir;
+  ASSERT_TRUE(dir.isValid());
+  const QString logo_path = dir.filePath("logo.png");
+  QImage logo(40, 10, QImage::Format_ARGB32);
+  logo.fill(Qt::blue);
+  ASSERT_TRUE(logo.save(logo_path));
+
+  TestBingSource source;
+  source.HandleMetadata(
+    QByteArray::fromStdString(
+      BingMetadata(QUrl::fromLocalFile(logo_path).toString().toStdString())));
+
+  QDeadlineTimer deadline(5000);
+  while (source.GetAttributionLogo().isNull() && !deadline.hasExpired()) {
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
+  }
+  ASSERT_FALSE(source.GetAttributionLogo().isNull());
+  EXPECT_EQ(QSize(40, 10), source.GetAttributionLogo().size());
 }
 
 int main(int argc, char ** argv)

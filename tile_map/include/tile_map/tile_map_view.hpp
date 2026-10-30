@@ -80,6 +80,8 @@ public:
 
   void SetTileSource(const std::shared_ptr<TileSource> & tile_source);
 
+  std::shared_ptr<TileSource> GetTileSource() const;
+
   void SetTransform(const swri_transform_util::Transform & transform);
 
   void SetView(

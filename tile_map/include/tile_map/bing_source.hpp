@@ -29,6 +29,8 @@
 #ifndef TILE_MAP__BING_SOURCE_HPP_
 #define TILE_MAP__BING_SOURCE_HPP_
 
+#include <QByteArray>
+#include <QImage>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QString>
@@ -88,6 +90,21 @@ public:
 
   QString GetType() const override;
 
+  /**
+   * Bing's terms of use require crediting the imagery providers whose
+   * coverage overlaps the area on screen.  The providers come from the
+   * metadata fetched when the API key is set, so this is empty until then.
+   * @param view The area currently on screen
+   * @return The providers' credits, separated by commas
+   */
+  QString GetAttribution(const ViewBounds & view) const override;
+
+  /**
+   * The Bing logo, which the terms of use require next to the provider
+   * credits.  Null until it has been downloaded after the API key is set.
+   */
+  QImage GetAttributionLogo() const override;
+
   QString GetApiKey() const;
 
   /**
@@ -121,18 +138,51 @@ protected:
    */
   QString GenerateQuadKey(int32_t level, int64_t x, int64_t y) const;
 
+  /**
+   * Reads the tile URL, subdomains, imagery providers and logo URL from an
+   * Imagery Metadata response, and starts the logo download.
+   * @param reply The body of the response
+   */
+  void HandleMetadata(const QByteArray & reply);
+
+  /// Part of the world, and range of zoom levels, that a provider covers.
+  struct CoverageArea
+  {
+    int32_t zoom_min;
+    int32_t zoom_max;
+    double south;
+    double west;
+    double north;
+    double east;
+  };
+
+  struct ImageryProvider
+  {
+    QString attribution;
+    std::vector<CoverageArea> coverage_areas;
+  };
+
   QString api_key_;
+  QImage logo_;
+  std::vector<ImageryProvider> providers_;
   std::hash<std::string> hash_;
   QNetworkAccessManager network_manager_;
   std::mt19937 rng_;
   std::vector<QString> subdomains_;
   QString tile_url_;
 
+  static const std::string BING_ATTRIBUTION_KEY;
+  static const std::string BING_BBOX_KEY;
+  static const std::string BING_BRAND_LOGO_URI_KEY;
+  static const std::string BING_COVERAGE_AREAS_KEY;
   static const std::string BING_IMAGE_URL_KEY;
+  static const std::string BING_IMAGERY_PROVIDERS_KEY;
   static const std::string BING_IMAGE_URL_SUBDOMAIN_KEY;
   static const std::string BING_RESOURCE_SET_KEY;
   static const std::string BING_RESOURCE_KEY;
   static const std::string BING_STATUS_CODE_KEY;
+  static const std::string BING_ZOOM_MAX_KEY;
+  static const std::string BING_ZOOM_MIN_KEY;
 };
 }  // namespace tile_map
 
