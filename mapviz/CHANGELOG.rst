@@ -2,6 +2,11 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improving logic for selecting whether to build against Qt5 or Qt6 (`#988 <https://github.com/swri-robotics/mapviz/issues/988>`_)
+* Contributors: David Anthony
+
 4.1.2 (2026-09-28)
 ------------------
 * Fxing screen and video capture with new OpenGL functionality (`#983 <https://github.com/swri-robotics/mapviz/issues/983>`_)

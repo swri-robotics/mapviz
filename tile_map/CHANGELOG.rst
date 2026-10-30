@@ -2,6 +2,20 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding attribution on map for different sources (`#989 <https://github.com/swri-robotics/mapviz/issues/989>`_)
+* Adding an API key for the Carto tile source (`#986 <https://github.com/swri-robotics/mapviz/issues/986>`_)
+  - Add CartoSource, which appends ?key=<key> to tile URLs
+  - Use it for the built-in Carto source, with a "Carto API Key:" field
+  that is applied on Save and persisted as carto_api_key
+  - Show an API-key placeholder and tooltip for key-based sources instead
+  of the custom URL template example
+  - Document how to get and set a Carto key
+  Co-authored-by: David Anthony <djanthony@gmail.com>
+* Improving logic for selecting whether to build against Qt5 or Qt6 (`#988 <https://github.com/swri-robotics/mapviz/issues/988>`_)
+* Contributors: David Anthony, Logan Elliott
+
 4.1.2 (2026-09-28)
 ------------------
 * Adding tests for malformed messages, Qt signal connections, and config files (`#978 <https://github.com/swri-robotics/mapviz/issues/978>`_)

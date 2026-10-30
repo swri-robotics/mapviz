@@ -2,6 +2,12 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Improving logic for selecting whether to build against Qt5 or Qt6 (`#988 <https://github.com/swri-robotics/mapviz/issues/988>`_)
+* Skip GPS and NavSat fixes without a position (`#985 <https://github.com/swri-robotics/mapviz/issues/985>`_)
+* Contributors: David Anthony
+
 4.1.2 (2026-09-28)
 ------------------
 * Adding font compatibility layer for switching between Qt5 and Qt6 (`#980 <https://github.com/swri-robotics/mapviz/issues/980>`_)
