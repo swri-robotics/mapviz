@@ -12,9 +12,9 @@ Usage
 
 Carto API Key
 -----
-The Tile Map plugin's default `Carto` source now requires an API key; without one every tile reads "API KEY REQUIRED".
+The Tile Map plugin's default `Carto` source requires an API key.
 
-1. Sign up or log in at [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey) and create a key. Non-commercial use is free up to 5M requests per month, commercial use up to 1M.
+1. Sign up or log in at [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey) and create a key. Note there are limits on non-commercial vs. commercial usage.
 2. In the Tile Map plugin, select `Carto` as the source, paste the key into the `Carto API Key` field and click `Save`.
 3. Save the Mapviz config to keep the key; it is stored as `carto_api_key`, e.g.
 
@@ -24,8 +24,6 @@ The Tile Map plugin's default `Carto` source now requires an API key; without on
        carto_api_key: "<your key>"
        source: Carto
    ```
-
-Maps using Carto tiles must credit "© OpenStreetMap contributors, © CARTO".
 
 v4.0.0 Special Note
 -----
