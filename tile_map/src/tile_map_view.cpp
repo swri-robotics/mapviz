@@ -83,6 +83,11 @@ void TileMapView::SetLogger(rclcpp::Logger logger)
   tile_cache_->SetLogger(logger_);
 }
 
+std::shared_ptr<TileSource> TileMapView::GetTileSource() const
+{
+  return tile_source_;
+}
+
 void TileMapView::SetTileSource(const std::shared_ptr<TileSource> & tile_source)
 {
   tile_source_ = tile_source;

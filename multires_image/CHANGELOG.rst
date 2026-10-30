@@ -2,6 +2,11 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.2.0 (2026-10-30)
+------------------
+* Improving logic for selecting whether to build against Qt5 or Qt6 (`#988 <https://github.com/swri-robotics/mapviz/issues/988>`_)
+* Contributors: David Anthony
+
 4.1.2 (2026-09-28)
 ------------------
 * Fixing signal type and scaling viewport by device pixel ratio (`#981 <https://github.com/swri-robotics/mapviz/issues/981>`_)

@@ -10,6 +10,21 @@ Usage
 
 [View the documentation](https://swri-robotics.github.io/mapviz/) for usage information.
 
+Carto API Key
+-----
+The Tile Map plugin's default `Carto` source requires an API key.
+
+1. Sign up or log in at [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey) and create a key. Note there are limits on non-commercial vs. commercial usage.
+2. In the Tile Map plugin, select `Carto` as the source, paste the key into the `Carto API Key` field and click `Save`.
+3. Save the Mapviz config to keep the key; it is stored as `carto_api_key`, e.g.
+
+   ```yaml
+   - type: mapviz_plugins/tile_map
+     config:
+       carto_api_key: "<your key>"
+       source: Carto
+   ```
+
 v4.0.0 Special Note
 -----
 v4.0.0 introduced several breaking changes.

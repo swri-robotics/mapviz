@@ -1,6 +1,6 @@
 <package format="3">
   <name>tile_map</name>
-  <version>4.1.2</version>
+  <version>4.2.0</version>
   <description>
      Tile map provides a slippy map style interface for visualizing
      OpenStreetMap and GoogleMap tiles.  A mapviz visualization plug-in is also
@@ -19,6 +19,7 @@
   <build_depend>pluginlib</build_depend>
   <build_depend>qt-base-dev</build_depend>
   <build_depend>rclcpp</build_depend>
+  <build_depend>rqt_gui_cpp</build_depend>
   <build_depend>swri_math_util</build_depend>
   <build_depend>swri_transform_util</build_depend>
   <build_depend>tf2</build_depend>

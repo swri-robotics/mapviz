@@ -34,6 +34,8 @@
 #include <QNetworkReply>
 #include <QOpenGLWidget>
 #include <QObject>
+#include <QPainter>
+#include <QString>
 #include <QWidget>
 
 // C++ standard libraries
@@ -67,8 +69,16 @@ public:
 
   void SetNode(rclcpp::Node & node) override;
 
+  /// Paint() draws the tile source's attribution over the map.
+  bool SupportsPainting() override {return true;}
+
 protected:
   void Draw(double x, double y, double scale) override;
+
+  void Paint(QPainter * painter, double x, double y, double scale) override;
+
+  /// The credit line for the source being drawn, for the area on screen.
+  QString CurrentAttribution() const;
 
   void Transform() override;
 
@@ -142,6 +152,10 @@ private:
   TileMapView tile_map_;
   std::map<QString, std::shared_ptr<TileSource>> tile_sources_;
 
+  /// The area on screen as of the last Draw(), for sources whose
+  /// attribution depends on it.
+  ViewBounds view_bounds_;
+
   double last_center_x_;
   double last_center_y_;
   double last_scale_;
@@ -150,6 +164,7 @@ private:
 
   static std::string BASE_URL_KEY;
   static std::string BING_API_KEY;
+  static std::string CARTO_API_KEY;
   static std::string STADIA_API_KEY;
   static std::string CUSTOM_SOURCES_KEY;
   static std::string MAX_ZOOM_KEY;

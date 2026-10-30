@@ -30,6 +30,21 @@
 
 namespace tile_map
 {
+QString TileSource::GetAttribution(const ViewBounds &) const
+{
+  return attribution_;
+}
+
+void TileSource::SetAttribution(const QString & attribution)
+{
+  attribution_ = attribution;
+}
+
+QImage TileSource::GetAttributionLogo() const
+{
+  return {};
+}
+
 const QString & TileSource::GetBaseUrl() const
 {
   return base_url_;

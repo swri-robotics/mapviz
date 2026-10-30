@@ -2,6 +2,9 @@
 Changelog for package mapviz_interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.2.0 (2026-10-30)
+------------------
+
 4.1.2 (2026-09-28)
 ------------------
 * Standardize BSD license headers and enable ament_copyright (`#944 <https://github.com/swri-robotics/mapviz/issues/944>`_)

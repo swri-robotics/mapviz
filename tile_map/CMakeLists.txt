@@ -31,17 +31,30 @@ find_package(swri_math_util REQUIRED)
 find_package(swri_transform_util REQUIRED)
 find_package(tf2 REQUIRED)
 
-set(QT_VERSION_MAJOR 5)
-find_package(Qt5 QUIET
-  COMPONENTS
-    Core
-    Gui
-    Network
-    OpenGL
-    Widgets
-)
-if(NOT Qt5_FOUND)
+# Link against the same Qt major version as rqt, rather than whichever Qt
+# happens to be installed, so mapviz and its plugins never mix Qt5 and Qt6 when
+# both are present. qt_gui_cpp reports the version it was built with through
+# qt_gui_cpp_USE_QT_MAJOR_VERSION (Humble through Lyrical). Rolling dropped that
+# variable along with Qt5 support, so fall back to the rqt_gui_cpp version,
+# which switched to Qt6 in 1.10.3.
+find_package(rqt_gui_cpp REQUIRED)
+if(qt_gui_cpp_USE_QT_MAJOR_VERSION)
+  set(QT_VERSION_MAJOR ${qt_gui_cpp_USE_QT_MAJOR_VERSION})
+elseif(rqt_gui_cpp_VERSION VERSION_LESS "1.10.3")
+  set(QT_VERSION_MAJOR 5)
+else()
   set(QT_VERSION_MAJOR 6)
+endif()
+if(QT_VERSION_MAJOR EQUAL 5)
+  find_package(Qt5 REQUIRED
+    COMPONENTS
+      Core
+      Gui
+      Network
+      OpenGL
+      Widgets
+  )
+else()
   find_package(Qt6 REQUIRED
     COMPONENTS
       Core
@@ -81,6 +94,7 @@ set(TILE_SRC_FILES
   src/image_cache.cpp
   src/texture_cache.cpp
   src/bing_source.cpp
+  src/carto_source.cpp
   src/stadia_source.cpp
   src/tile_source.cpp
   src/wmts_source.cpp
@@ -91,6 +105,7 @@ set(QT_HEADERS
   include/${PROJECT_NAME}/tile_source.hpp
   include/${PROJECT_NAME}/wmts_source.hpp
   include/${PROJECT_NAME}/bing_source.hpp
+  include/${PROJECT_NAME}/carto_source.hpp
   include/${PROJECT_NAME}/stadia_source.hpp
 )
 
