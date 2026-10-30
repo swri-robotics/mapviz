@@ -94,6 +94,7 @@ set(TILE_SRC_FILES
   src/image_cache.cpp
   src/texture_cache.cpp
   src/bing_source.cpp
+  src/carto_source.cpp
   src/stadia_source.cpp
   src/tile_source.cpp
   src/wmts_source.cpp
@@ -104,6 +105,7 @@ set(QT_HEADERS
   include/${PROJECT_NAME}/tile_source.hpp
   include/${PROJECT_NAME}/wmts_source.hpp
   include/${PROJECT_NAME}/bing_source.hpp
+  include/${PROJECT_NAME}/carto_source.hpp
   include/${PROJECT_NAME}/stadia_source.hpp
 )
 
