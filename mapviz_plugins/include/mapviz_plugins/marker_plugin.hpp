@@ -178,11 +178,10 @@ private:
 
   std::string topic_;
   rmw_qos_profile_t qos_;
-  // The topic's message type once known (from the topic list or a saved config), so the
-  // plugin can subscribe before the topic is advertised. Empty: wait until it is advertised.
+  // The type the plugin subscribes with and saves: from the saved config, replaced by the
+  // advertised type whenever the topic is advertised as Marker or MarkerArray. Empty: wait
+  // until it is.
   std::string message_type_;
-  // The type of the current subscription; empty when there is none.
-  std::string subscribed_type_;
 
   rclcpp::Subscription<visualization_msgs::msg::Marker>::SharedPtr marker_sub_;
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_sub_;

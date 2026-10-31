@@ -133,26 +133,26 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
 
   marker_sub_.reset();
   marker_array_sub_.reset();
-  subscribed_type_.clear();
   if (!topic_.empty()) {
     // ROS 2 does not allow for a simple way to subscribe to a general type of message
     // (i.e. Marker and MarkerArray). That would require a way to de-serialize the data
     // for mapviz to consume (based on message type).
-    // Subscribe with the type the topic is advertised with. If it is not advertised yet
-    // (mapviz started before its publisher), use the saved type: like any typed
-    // subscription, it connects when the topic appears, and timerEvent() switches to the
-    // advertised type if the saved one turns out to be wrong. With neither, timerEvent()
-    // subscribes once the topic is advertised.
-    std::string topic_type = advertisedType();
-    if (topic_type.empty()) {
-      topic_type = message_type_;
+    // Subscribe with message_type_: the advertised type if the topic is advertised, else
+    // the saved one (mapviz started before its publisher), which connects when the topic
+    // appears like any typed subscription. timerEvent() switches to the advertised type if
+    // the saved one turns out to be wrong, and subscribes once the topic is advertised if
+    // there is no type yet.
+    const std::string advertised = advertisedType();
+    if (!advertised.empty()) {
+      message_type_ = advertised;
     }
-    if (topic_type.empty()) {
+    if (message_type_.empty()) {
       RCLCPP_WARN(
         Logger(),
         "Topic %s is not advertised yet; subscribing once it is.", topic_.c_str());
       return;
     }
+    const std::string & topic_type = message_type_;
     if (topic_type == kMarkerType) {
       // Subscribe() delivers each message to handleMarker() on the GUI
       // thread, where plugin state may be touched without locking.
@@ -175,24 +175,22 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
       return;
     }
 
-    subscribed_type_ = topic_type;
-    message_type_ = topic_type;  // saved with the config
     RCLCPP_INFO(Logger(), "Subscribing to %s (%s)", topic_.c_str(), topic_type.c_str());
   }
 }
 
 std::string MarkerPlugin::advertisedType()
 {
-  // The topic's advertised type: the saved type if it is one of them (a topic can have
-  // publishers of several types), else the first type this plugin supports, else the first
-  // listed. Empty if the topic is not advertised.
+  // The topic's advertised Marker or MarkerArray type: message_type_ if the topic has
+  // publishers of it (it can have several types), else the other. Empty if the topic is not
+  // advertised as either.
   auto known_topics = TopicSource().topics();
   auto topic = known_topics.find(topic_);
-  if (topic == known_topics.end() || topic->second.empty()) {
+  if (topic == known_topics.end()) {
     return "";
   }
   const auto & types = topic->second;
-  if (!message_type_.empty() &&
+  if ((message_type_ == kMarkerType || message_type_ == kMarkerArrayType) &&
     std::find(types.begin(), types.end(), message_type_) != types.end())
   {
     return message_type_;
@@ -202,7 +200,7 @@ std::string MarkerPlugin::advertisedType()
       return type;
     }
   }
-  return types[0];
+  return "";
 }
 
 void MarkerPlugin::handleMarker(const visualization_msgs::msg::Marker::ConstSharedPtr marker)
@@ -805,13 +803,11 @@ void MarkerPlugin::timerEvent([[maybe_unused]] QTimerEvent * event)
     // connected, or be advertised as the other type than the saved one we subscribed with.
     // Resubscribe with the advertised type. Once a publisher matches, the type is right.
     const std::string advertised = advertisedType();
-    if ((advertised == kMarkerType || advertised == kMarkerArrayType) &&
-      advertised != subscribed_type_)
-    {
-      if (!subscribed_type_.empty()) {
+    if (!advertised.empty() && advertised != message_type_) {
+      if (!message_type_.empty()) {
         RCLCPP_WARN(
           Logger(), "Topic %s is published as %s, not %s; resubscribing.",
-          topic_.c_str(), advertised.c_str(), subscribed_type_.c_str());
+          topic_.c_str(), advertised.c_str(), message_type_.c_str());
       }
       connectCallback(topic_, qos_);
     }
