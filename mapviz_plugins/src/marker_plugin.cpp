@@ -181,21 +181,14 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
 
 std::string MarkerPlugin::advertisedType()
 {
-  // The topic's advertised Marker or MarkerArray type: message_type_ if the topic has
-  // publishers of it (it can have several types), else the other. Empty if the topic is not
-  // advertised as either.
+  // The topic's advertised Marker or MarkerArray type; empty if it is not advertised as
+  // either.
   auto known_topics = TopicSource().topics();
   auto topic = known_topics.find(topic_);
   if (topic == known_topics.end()) {
     return "";
   }
-  const auto & types = topic->second;
-  if ((message_type_ == kMarkerType || message_type_ == kMarkerArrayType) &&
-    std::find(types.begin(), types.end(), message_type_) != types.end())
-  {
-    return message_type_;
-  }
-  for (const auto & type : types) {
+  for (const auto & type : topic->second) {
     if (type == kMarkerType || type == kMarkerArrayType) {
       return type;
     }
