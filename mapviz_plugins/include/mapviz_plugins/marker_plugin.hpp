@@ -185,7 +185,6 @@ private:
 
   rclcpp::Subscription<visualization_msgs::msg::Marker>::SharedPtr marker_sub_;
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_sub_;
-  bool connected_;
   bool has_message_{};
 
   std::unordered_map<MarkerId, MarkerData, MarkerIdHash> markers_;

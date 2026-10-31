@@ -57,7 +57,6 @@ MarkerPlugin::MarkerPlugin()
   config_widget_(new QWidget()),
   topic_(""),
   qos_(rmw_qos_profile_default),
-  connected_(false),
   has_message_(false)
 {
   ui_.setupUi(config_widget_);
@@ -125,7 +124,6 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
 
     marker_sub_.reset();
     marker_array_sub_.reset();
-    connected_ = false;
 
     topic_ = topic;
     qos_ = qos;
@@ -203,7 +201,6 @@ void MarkerPlugin::handleMarker(const visualization_msgs::msg::Marker::ConstShar
 
 void MarkerPlugin::processMarker(const visualization_msgs::msg::Marker & marker)
 {
-  connected_ = true;
   if (marker.type == visualization_msgs::msg::Marker::ARROW &&
     marker.points.size() == 1)
   {
@@ -787,24 +784,23 @@ void MarkerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & /*pat
 
 void MarkerPlugin::timerEvent([[maybe_unused]] QTimerEvent * event)
 {
-  bool new_connected = (marker_sub_ && marker_sub_->get_publisher_count() > 0) ||
+  // A matched publisher means the subscription has the right type. Until one matches, the
+  // topic may get advertised (mapviz started first, no saved type) or turn out to be
+  // published as the other type than the saved one: resubscribe with the advertised type.
+  const bool matched = (marker_sub_ && marker_sub_->get_publisher_count() > 0) ||
     (marker_array_sub_ && marker_array_sub_->get_publisher_count() > 0);
-  if (connected_ && !new_connected) {
-    connectCallback(topic_, qos_);
-  } else if (!new_connected && !topic_.empty()) {
-    // Nothing has matched our subscription: the topic may have been advertised since we
-    // connected, or be advertised as the other type than the saved one we subscribed with.
-    // Resubscribe with the advertised type. Once a publisher matches, the type is right.
-    const std::string advertised = advertisedType();
-    if (!advertised.empty() && advertised != message_type_) {
-      if (!message_type_.empty()) {
-        RCLCPP_WARN(
-          Logger(), "Topic %s is published as %s, not %s; resubscribing.",
-          topic_.c_str(), advertised.c_str(), message_type_.c_str());
-      }
-      connectCallback(topic_, qos_);
-    }
+  if (matched || topic_.empty()) {
+    return;
   }
-  connected_ = new_connected;
+  const std::string advertised = advertisedType();
+  if (advertised.empty() || advertised == message_type_) {
+    return;
+  }
+  if (!message_type_.empty()) {
+    RCLCPP_WARN(
+      Logger(), "Topic %s is published as %s, not %s; resubscribing.",
+      topic_.c_str(), advertised.c_str(), message_type_.c_str());
+  }
+  connectCallback(topic_, qos_);
 }
 }   // namespace mapviz_plugins
