@@ -179,8 +179,10 @@ private:
   std::string topic_;
   rmw_qos_profile_t qos_;
   // The topic's message type once known (from the topic list or a saved config), so the
-  // plugin can subscribe before the topic is advertised. Empty: look it up when connecting.
+  // plugin can subscribe before the topic is advertised. Empty: wait until it is advertised.
   std::string message_type_;
+  // The type of the current subscription; empty when there is none.
+  std::string subscribed_type_;
 
   rclcpp::Subscription<visualization_msgs::msg::Marker>::SharedPtr marker_sub_;
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_sub_;
@@ -192,6 +194,7 @@ private:
 
   void processMarker(const visualization_msgs::msg::Marker & marker);
   void connectCallback(const std::string & topic, const rmw_qos_profile_t & qos);
+  std::string advertisedType();
   void transformArrow(
     MarkerData & markerData,
     const swri_transform_util::Transform & transform);
