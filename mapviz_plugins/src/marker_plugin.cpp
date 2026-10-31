@@ -45,13 +45,18 @@ PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MarkerPlugin, mapviz::MapvizPlugin)
 
 namespace mapviz_plugins
 {
+namespace
+{
+const char * const kMarkerType = "visualization_msgs/msg/Marker";
+const char * const kMarkerArrayType = "visualization_msgs/msg/MarkerArray";
+}  // namespace
+
 MarkerPlugin::MarkerPlugin()
 : MapvizPlugin(),
   ui_(),
   config_widget_(new QWidget()),
   topic_(""),
   qos_(rmw_qos_profile_default),
-  connected_(false),
   has_message_(false)
 {
   ui_.setupUi(config_widget_);
@@ -85,10 +90,13 @@ void MarkerPlugin::SelectTopic()
 {
   auto [topic, qos] = SelectTopicDialog::selectTopic(
     TopicSource(),
-    "visualization_msgs/msg/Marker",
-    "visualization_msgs/msg/MarkerArray",
+    kMarkerType,
+    kMarkerArrayType,
     qos_);
   if (!topic.empty()) {
+    if (topic != topic_) {
+      message_type_.clear();  // the new topic's type comes from the topic list
+    }
     connectCallback(topic, qos);
   }
 }
@@ -96,6 +104,9 @@ void MarkerPlugin::SelectTopic()
 void MarkerPlugin::TopicEdited()
 {
   std::string topic = ui_.topic->text().trimmed().toStdString();
+  if (topic != topic_) {
+    message_type_.clear();  // a typed-in topic's type is unknown until it is looked up
+  }
   connectCallback(topic, qos_);
 }
 
@@ -113,7 +124,6 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
 
     marker_sub_.reset();
     marker_array_sub_.reset();
-    connected_ = false;
 
     topic_ = topic;
     qos_ = qos;
@@ -124,42 +134,64 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
   if (!topic_.empty()) {
     // ROS 2 does not allow for a simple way to subscribe to a general type of message
     // (i.e. Marker and MarkerArray). That would require a way to de-serialize the data
-    // for mapviz to consume (based on message type)
-    // The code below checks for the topic type and subscribes in the appropriate manner
-
-    auto known_topics = TopicSource().topics();
-    if (known_topics.count(topic_) > 0) {
-      std::string topic_type = known_topics[topic_][0];
-      if (topic_type == "visualization_msgs/msg/Marker") {
-        // Subscribe() delivers each message to handleMarker() on the GUI
-        // thread, where plugin state may be touched without locking.
-        Subscribe<visualization_msgs::msg::Marker>(
-          topic_, qos, marker_sub_,
-          [this](visualization_msgs::msg::Marker::ConstSharedPtr marker) {
-            handleMarker(marker);
-          });
-      } else if (topic_type == "visualization_msgs/msg/MarkerArray") {
-        Subscribe<visualization_msgs::msg::MarkerArray>(
-          topic_, qos, marker_array_sub_,
-          [this](visualization_msgs::msg::MarkerArray::ConstSharedPtr markers) {
-            handleMarkerArray(markers);
-          });
-      } else {
-        RCLCPP_ERROR(
-          Logger(),
-          "Unable to subscribe to topic %s (unsupported type %s).",
-          topic_.c_str(), topic_type.c_str());
-        return;
-      }
+    // for mapviz to consume (based on message type).
+    // Subscribe with message_type_: the advertised type if the topic is advertised, else
+    // the saved one (mapviz started before its publisher), which connects when the topic
+    // appears like any typed subscription. timerEvent() switches to the advertised type if
+    // the saved one turns out to be wrong, and subscribes once the topic is advertised if
+    // there is no type yet.
+    const std::string advertised = advertisedType();
+    if (!advertised.empty()) {
+      message_type_ = advertised;
+    }
+    if (message_type_.empty()) {
+      RCLCPP_WARN(
+        Logger(),
+        "Topic %s is not advertised yet; subscribing once it is.", topic_.c_str());
+      return;
+    }
+    const std::string & topic_type = message_type_;
+    if (topic_type == kMarkerType) {
+      // Subscribe() delivers each message to handleMarker() on the GUI
+      // thread, where plugin state may be touched without locking.
+      Subscribe<visualization_msgs::msg::Marker>(
+        topic_, qos, marker_sub_,
+        [this](visualization_msgs::msg::Marker::ConstSharedPtr marker) {
+          handleMarker(marker);
+        });
+    } else if (topic_type == kMarkerArrayType) {
+      Subscribe<visualization_msgs::msg::MarkerArray>(
+        topic_, qos, marker_array_sub_,
+        [this](visualization_msgs::msg::MarkerArray::ConstSharedPtr markers) {
+          handleMarkerArray(markers);
+        });
     } else {
       RCLCPP_ERROR(
         Logger(),
-        "Unable to subscribe to topic %s (does not exist).", topic_.c_str());
+        "Unable to subscribe to topic %s (unsupported type %s).",
+        topic_.c_str(), topic_type.c_str());
       return;
     }
 
-    RCLCPP_INFO(Logger(), "Subscribing to %s", topic_.c_str());
+    RCLCPP_INFO(Logger(), "Subscribing to %s (%s)", topic_.c_str(), topic_type.c_str());
   }
+}
+
+std::string MarkerPlugin::advertisedType()
+{
+  // The topic's advertised Marker or MarkerArray type; empty if it is not advertised as
+  // either.
+  auto known_topics = TopicSource().topics();
+  auto topic = known_topics.find(topic_);
+  if (topic == known_topics.end()) {
+    return "";
+  }
+  for (const auto & type : topic->second) {
+    if (type == kMarkerType || type == kMarkerArrayType) {
+      return type;
+    }
+  }
+  return "";
 }
 
 void MarkerPlugin::handleMarker(const visualization_msgs::msg::Marker::ConstSharedPtr marker)
@@ -169,7 +201,6 @@ void MarkerPlugin::handleMarker(const visualization_msgs::msg::Marker::ConstShar
 
 void MarkerPlugin::processMarker(const visualization_msgs::msg::Marker & marker)
 {
-  connected_ = true;
   if (marker.type == visualization_msgs::msg::Marker::ARROW &&
     marker.points.size() == 1)
   {
@@ -719,11 +750,15 @@ void MarkerPlugin::LoadConfig(const YAML::Node & node, const std::string & /*pat
   if (node["use_pixel_scale"]) {
     ui_.usePixelScale->setChecked(node["use_pixel_scale"].as<bool>());
   }
+  if (node["message_type"]) {
+    message_type_ = TrimString(node["message_type"].as<std::string>());
+  }
   if (node["topic"]) {
     std::string topic = TrimString(node["topic"].as<std::string>());
     ui_.topic->setText(topic.c_str());
 
-    TopicEdited();
+    // Not TopicEdited(), which forgets the type of a changed topic.
+    connectCallback(topic, qos_);
   }
 }
 
@@ -738,16 +773,34 @@ void MarkerPlugin::SaveConfig(YAML::Emitter & emitter, const std::string & /*pat
           << "use_pixel_scale"
           << YAML::Value
           << ui_.usePixelScale->isChecked();
+  if (!message_type_.empty()) {
+    emitter << YAML::Key
+            << "message_type"
+            << YAML::Value
+            << message_type_;
+  }
   SaveQosConfig(emitter, qos_);
 }
 
 void MarkerPlugin::timerEvent([[maybe_unused]] QTimerEvent * event)
 {
-  bool new_connected = (marker_sub_ && marker_sub_->get_publisher_count() > 0) ||
+  // A matched publisher means the subscription has the right type. Until one matches, the
+  // topic may get advertised (mapviz started first, no saved type) or turn out to be
+  // published as the other type than the saved one: resubscribe with the advertised type.
+  const bool matched = (marker_sub_ && marker_sub_->get_publisher_count() > 0) ||
     (marker_array_sub_ && marker_array_sub_->get_publisher_count() > 0);
-  if (connected_ && !new_connected) {
-    connectCallback(topic_, qos_);
+  if (matched || topic_.empty()) {
+    return;
   }
-  connected_ = new_connected;
+  const std::string advertised = advertisedType();
+  if (advertised.empty() || advertised == message_type_) {
+    return;
+  }
+  if (!message_type_.empty()) {
+    RCLCPP_WARN(
+      Logger(), "Topic %s is published as %s, not %s; resubscribing.",
+      topic_.c_str(), advertised.c_str(), message_type_.c_str());
+  }
+  connectCallback(topic_, qos_);
 }
 }   // namespace mapviz_plugins
