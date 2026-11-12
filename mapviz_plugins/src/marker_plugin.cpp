@@ -33,6 +33,7 @@
 // C++ Standard Libraries
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <mapviz_plugins/topic_select.hpp>
 #include "swri_math_util/constants.h"
@@ -179,19 +180,30 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
 
 std::string MarkerPlugin::advertisedType()
 {
-  // The topic's advertised Marker or MarkerArray type; empty if it is not advertised as
-  // either.
-  auto known_topics = TopicSource().topics();
-  auto topic = known_topics.find(topic_);
-  if (topic == known_topics.end()) {
-    return "";
+  // The Marker or MarkerArray type the topic is published with; empty if nothing publishes
+  // it as either. Only publishers count: the topic list also carries the types of
+  // subscriptions, including this plugin's own while it waits with a stale saved type,
+  // which would hide the type the topic is really published with.
+  std::vector<rclcpp::TopicEndpointInfo> publishers;
+  try {
+    publishers = NodeUnsafe()->get_publishers_info_by_topic(topic_);
+  } catch (const std::exception &) {
+    return "";  // a name ROS rejects; Subscribe() reports it
   }
-  for (const auto & type : topic->second) {
-    if (type == kMarkerType || type == kMarkerArrayType) {
-      return type;
+  std::string advertised;
+  for (const auto & publisher : publishers) {
+    const std::string & type = publisher.topic_type();
+    if (type != kMarkerType && type != kMarkerArrayType) {
+      continue;
+    }
+    if (type == message_type_) {
+      return type;  // published as both types: stay with the current one
+    }
+    if (advertised.empty()) {
+      advertised = type;
     }
   }
-  return "";
+  return advertised;
 }
 
 void MarkerPlugin::handleMarker(const visualization_msgs::msg::Marker::ConstSharedPtr marker)

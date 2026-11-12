@@ -50,6 +50,7 @@
 #include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <mapviz_plugins/attitude_indicator_plugin.hpp>
 #include <mapviz_plugins/disparity_plugin.hpp>
 #include <mapviz_plugins/draw_marker_plugin.hpp>
@@ -688,6 +689,67 @@ TEST_F(MeasuringPluginTest, ShowsNothingForASinglePoint)
   EXPECT_DOUBLE_EQ(0.0, Measurements(plugin)[0]);
   EXPECT_EQ("", TotalText(plugin));
   EXPECT_EQ("", LastSegmentText(plugin));
+}
+
+/// Loads a marker display saved with @p saved_type while its topic is published
+/// as PublishedT, and waits for the display to switch to the published type.
+template<typename PublishedT>
+void ExpectMarkerTypeCorrected(
+  const std::string & topic, const std::string & saved_type, const std::string & published_type)
+{
+  // Fast DDS refuses two types on one topic within a participant, so the
+  // publisher gets a context, and so a participant, of its own.
+  auto context = std::make_shared<rclcpp::Context>();
+  context->init(0, nullptr);
+  auto publisher_node = std::make_shared<rclcpp::Node>(
+    "test_marker_type_publisher", rclcpp::NodeOptions().context(context));
+
+  mapviz_plugins::MarkerPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  // Mapviz started before the publisher: the display subscribes with the saved
+  // type, which puts that type in the topic list next to the published one.
+  YAML::Node config;
+  config["topic"] = topic;
+  config["message_type"] = saved_type;
+  plugin.LoadConfigPlugin(config, "");
+  ASSERT_TRUE(HasSubscribers(topic));
+
+  auto publisher = publisher_node->create_publisher<PublishedT>(topic, 10);
+
+  // The display checks from a 1 s Qt timer.
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  while (publisher->get_subscription_count() == 0 &&
+    std::chrono::steady_clock::now() < deadline)
+  {
+    QCoreApplication::processEvents();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  EXPECT_EQ(1u, publisher->get_subscription_count());
+
+  YAML::Emitter emitter;
+  emitter << YAML::BeginMap;
+  plugin.SaveConfigPlugin(emitter, "");
+  emitter << YAML::EndMap;
+  EXPECT_EQ(published_type, YAML::Load(emitter.c_str())["message_type"].as<std::string>(""));
+
+  publisher.reset();
+  publisher_node.reset();
+  context->shutdown("test finished");
+}
+
+TEST(MarkerType, CorrectsASavedMarkerTypeToMarkerArray)
+{
+  ExpectMarkerTypeCorrected<visualization_msgs::msg::MarkerArray>(
+    "/test_marker_type/saved_marker",
+    "visualization_msgs/msg/Marker", "visualization_msgs/msg/MarkerArray");
+}
+
+TEST(MarkerType, CorrectsASavedMarkerArrayTypeToMarker)
+{
+  ExpectMarkerTypeCorrected<visualization_msgs::msg::Marker>(
+    "/test_marker_type/saved_marker_array",
+    "visualization_msgs/msg/MarkerArray", "visualization_msgs/msg/Marker");
 }
 
 int main(int argc, char ** argv)
