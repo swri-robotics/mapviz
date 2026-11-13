@@ -2,8 +2,8 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.2.1 (2026-11-13)
+------------------
 * Let the marker plugin subscribe before its topic is advertised (`#990 <https://github.com/swri-robotics/mapviz/issues/990>`_)
 * Contributors: Alex Youngs
 
