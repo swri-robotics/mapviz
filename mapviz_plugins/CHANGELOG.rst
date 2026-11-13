@@ -2,6 +2,11 @@
 Changelog for package mapviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Let the marker plugin subscribe before its topic is advertised (`#990 <https://github.com/swri-robotics/mapviz/issues/990>`_)
+* Contributors: Alex Youngs
+
 4.2.0 (2026-10-30)
 ------------------
 * Improving logic for selecting whether to build against Qt5 or Qt6 (`#988 <https://github.com/swri-robotics/mapviz/issues/988>`_)
