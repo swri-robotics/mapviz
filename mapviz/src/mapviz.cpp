@@ -241,6 +241,7 @@ Mapviz::Mapviz(bool is_standalone, int argc, char ** argv, QWidget * parent, Qt:
 
     connect(pin_button_, SIGNAL(toggled(bool)), this, SLOT(TogglePinConfigPanel(bool)));
     ui_.configdock->installEventFilter(this);
+    ui_.configs->viewport()->installEventFilter(this);
   }
 
   // Add vertical label to dock contents for collapsed state
@@ -1711,6 +1712,7 @@ void Mapviz::Screenshot()
 
 void Mapviz::UpdateSizeHints()
 {
+  const int width = ui_.configs->viewport()->width();
   for (int i = 0; i < ui_.configs->count(); i++) {
     QListWidgetItem * item = ui_.configs->item(i);
     auto * widget = dynamic_cast<ConfigItem *>(ui_.configs->itemWidget(item));
@@ -1718,7 +1720,14 @@ void Mapviz::UpdateSizeHints()
       // Make sure the ConfigItem in the QListWidgetItem we're getting really
       // exists; if this method is called before it's been initialized, it would
       // cause a crash.
-      item->setSizeHint(QSize(0, widget->sizeHint().height()));
+      // A form with word-wrapped text (a long status message, say) needs
+      // more height the narrower the panel is, which sizeHint() doesn't
+      // account for; ask for the height at the list's actual width.
+      int height = widget->sizeHint().height();
+      if (widget->hasHeightForWidth() && width > 0) {
+        height = std::max(height, widget->heightForWidth(width));
+      }
+      item->setSizeHint(QSize(0, height));
     }
   }
 }
@@ -1990,6 +1999,12 @@ void Mapviz::HandleProfileTimer()
 
 bool Mapviz::eventFilter(QObject * object, QEvent * event)
 {
+  if (object == ui_.configs->viewport() && event->type() == QEvent::Resize) {
+    // Wrapped text in the display forms reflows when the panel width changes.
+    UpdateSizeHints();
+    return false;
+  }
+
   if (object == ui_.configdock && config_panel_pinned_ &&
     event->type() == QEvent::Resize)
   {
