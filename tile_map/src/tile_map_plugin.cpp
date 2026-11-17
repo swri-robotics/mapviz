@@ -35,6 +35,7 @@
 #include <QUrl>
 #include <QNetworkRequest>
 #include <QDateTime>
+#include <QFontInfo>
 #include <QFontMetrics>
 #include <QPalette>
 
@@ -89,6 +90,11 @@ constexpr qint64 TILE_ERROR_TIMEOUT_MS = 5000;
 constexpr double ATTRIBUTION_FONT_SCALE = 0.9;
 constexpr double ATTRIBUTION_MARGIN_LINES = 0.3;
 constexpr double ATTRIBUTION_PADDING_LINES = 0.2;
+// The spacing never drops below these, in pixels, however small the font.
+constexpr int ATTRIBUTION_MIN_MARGIN = 4;
+constexpr int ATTRIBUTION_MIN_PADDING = 3;
+// The smallest the attribution text is shrunk to on a narrow canvas.
+constexpr int ATTRIBUTION_MIN_FONT_PIXELS = 7;
 
 namespace
 {
@@ -642,32 +648,55 @@ void TileMapPlugin::Paint(QPainter * painter, double, double, double)
   } else {
     font.setPixelSize(std::max(1, qRound(font.pixelSize() * ATTRIBUTION_FONT_SCALE)));
   }
-  painter->setFont(font);
-  const QFontMetrics metrics(font);
-  const int margin = std::max(1, qRound(metrics.height() * ATTRIBUTION_MARGIN_LINES));
-  const int padding = std::max(1, qRound(metrics.height() * ATTRIBUTION_PADDING_LINES));
+  // Work in pixels from here on, so the text can be shrunk a pixel at a time.
+  font.setPixelSize(QFontInfo(font).pixelSize());
 
   const int canvas_width = painter->device()->width();
   const int canvas_height = painter->device()->height();
+  const int text_flags = Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter;
 
-  // The logo is scaled to the height of one line of text.
+  QFontMetrics metrics(font);
+  int margin = 0;
+  int padding = 0;
   int logo_width = 0;
   int logo_height = 0;
-  if (!logo.isNull()) {
-    logo_height = metrics.height();
-    logo_width = logo.width() * logo_height / std::max(1, logo.height());
-  }
-  const int gap = (logo_width > 0 && !text.isEmpty()) ? padding : 0;
-
-  // Wrap rather than run off the left edge of a narrow canvas.
-  const int text_flags = Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter;
+  int gap = 0;
+  int max_text_width = 0;
   QRect text_bounds;
-  if (!text.isEmpty()) {
-    const int max_text_width = std::max(
-      1, canvas_width - 2 * (margin + padding) - logo_width - gap);
-    text_bounds = metrics.boundingRect(
-      QRect(0, 0, max_text_width, canvas_height), text_flags, text);
+  while (true) {
+    metrics = QFontMetrics(font);
+    margin = std::max(
+      ATTRIBUTION_MIN_MARGIN, qRound(metrics.height() * ATTRIBUTION_MARGIN_LINES));
+    padding = std::max(
+      ATTRIBUTION_MIN_PADDING, qRound(metrics.height() * ATTRIBUTION_PADDING_LINES));
+
+    // The logo is scaled to the height of one line of text.
+    if (!logo.isNull()) {
+      logo_height = metrics.height();
+      logo_width = logo.width() * logo_height / std::max(1, logo.height());
+    }
+    gap = (logo_width > 0 && !text.isEmpty()) ? padding : 0;
+
+    // Wrap rather than run off the left edge of a narrow canvas.
+    max_text_width = std::max(1, canvas_width - 2 * (margin + padding) - logo_width - gap);
+    if (!text.isEmpty()) {
+      text_bounds = metrics.boundingRect(
+        QRect(0, 0, max_text_width, canvas_height), text_flags, text);
+    }
+
+    // A single word wider than the canvas can't wrap; make the text smaller
+    // until it fits, down to a floor.
+    if (text.isEmpty() || text_bounds.width() <= max_text_width ||
+      font.pixelSize() <= ATTRIBUTION_MIN_FONT_PIXELS)
+    {
+      break;
+    }
+    font.setPixelSize(font.pixelSize() - 1);
   }
+  painter->setFont(font);
+  // On a canvas too narrow even for that, cut the text off rather than let it
+  // run past the left edge.
+  text_bounds.setWidth(std::min(text_bounds.width(), max_text_width));
 
   const int box_width = logo_width + gap + text_bounds.width() + 2 * padding;
   const int box_height =
@@ -681,6 +710,7 @@ void TileMapPlugin::Paint(QPainter * painter, double, double, double)
   painter->setPen(Qt::NoPen);
   painter->setBrush(QColor(255, 255, 255, 200));
   painter->drawRect(box);
+  painter->setClipRect(box);
 
   if (logo_width > 0) {
     painter->drawImage(
