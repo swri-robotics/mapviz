@@ -96,6 +96,7 @@ private:
   void contextMenuEvent(QContextMenuEvent * event) override;
   void resizeEvent(QResizeEvent * event) override;
   void changeEvent(QEvent * event) override;
+  bool event(QEvent * event) override;
   void updateNameLabel();
   void updateCollapseIndicator();
   void restyle();

@@ -246,6 +246,18 @@ void ConfigItem::RefreshAppearance()
   NormalizeConfigForm(ui_.content);
 }
 
+bool ConfigItem::event(QEvent * event)
+{
+  const bool handled = QWidget::event(event);
+  if (event->type() == QEvent::LayoutRequest) {
+    // The form asked for a different size, e.g. a status message that now
+    // wraps onto a second line.  The list row holding this item is sized
+    // separately and has to be told.
+    Q_EMIT UpdateSizeHint();
+  }
+  return handled;
+}
+
 void ConfigItem::changeEvent(QEvent * event)
 {
   QWidget::changeEvent(event);
