@@ -82,11 +82,13 @@ QString TileMapPlugin::USGS_NAME = "USGS Satellite";
 // per-tile success signal, so the message ages out rather than being cleared.
 constexpr qint64 TILE_ERROR_TIMEOUT_MS = 5000;
 
-// Size of the attribution text, its distance from the canvas edges, and the
-// space between it and the edge of its background.
-constexpr int ATTRIBUTION_FONT_PIXELS = 11;
-constexpr int ATTRIBUTION_MARGIN = 4;
-constexpr int ATTRIBUTION_PADDING = 3;
+// Size of the attribution text relative to the user interface font, and its
+// distance from the canvas edges and from the edge of its background, in
+// lines of that text.  Following the interface font keeps the credits legible
+// for people who use larger text, at any display scale.
+constexpr double ATTRIBUTION_FONT_SCALE = 0.9;
+constexpr double ATTRIBUTION_MARGIN_LINES = 0.3;
+constexpr double ATTRIBUTION_PADDING_LINES = 0.2;
 
 namespace
 {
@@ -183,13 +185,7 @@ TileMapPlugin::TileMapPlugin()
   std::shared_ptr<BingSource> bing = std::make_shared<BingSource>(BING_NAME);
   tile_sources_[BING_NAME] = bing;
 
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  QPalette p2(ui_.status->palette());
-  p2.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p2);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   source_frame_ = swri_transform_util::_wgs84_frame;
 
@@ -355,7 +351,7 @@ void TileMapPlugin::UpdateStatus()
   }
 
   if (IsDirty()) {
-    PrintWarning("Unsaved changes.  Click Save to apply them.");
+    PrintWarning("Unsaved changes: click Save to apply them");
     return;
   }
 
@@ -365,7 +361,7 @@ void TileMapPlugin::UpdateStatus()
   }
 
   if (!CurrentSource()) {
-    PrintWarning("Enter a tile URL and click Save to create this source.");
+    PrintWarning("Enter a tile URL and click Save to create this source");
     return;
   }
 
@@ -525,41 +521,38 @@ void TileMapPlugin::ResetTileCache()
 
 void TileMapPlugin::PrintError(const std::string & message)
 {
-  if (message == ui_.status->text().toStdString()) {
+  const std::string text = mapviz::StatusText(message);
+  if (text == ui_.status->text().toStdString()) {
     return;
   }
 
   RCLCPP_ERROR(Logger(), "Error: %s", message.c_str());
-  QPalette p(ui_.status->palette());
-  p.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p);
-  ui_.status->setText(message.c_str());
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
+  ui_.status->setText(QString::fromStdString(text));
 }
 
 void TileMapPlugin::PrintInfo(const std::string & message)
 {
-  if (message == ui_.status->text().toStdString()) {
+  const std::string text = mapviz::StatusText(message);
+  if (text == ui_.status->text().toStdString()) {
     return;
   }
 
   RCLCPP_INFO(Logger(), "%s", message.c_str());
-  QPalette p(ui_.status->palette());
-  p.setColor(QPalette::Text, Qt::green);
-  ui_.status->setPalette(p);
-  ui_.status->setText(message.c_str());
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Info);
+  ui_.status->setText(QString::fromStdString(text));
 }
 
 void TileMapPlugin::PrintWarning(const std::string & message)
 {
-  if (message == ui_.status->text().toStdString()) {
+  const std::string text = mapviz::StatusText(message);
+  if (text == ui_.status->text().toStdString()) {
     return;
   }
 
   RCLCPP_WARN(Logger(), "%s", message.c_str());
-  QPalette p(ui_.status->palette());
-  p.setColor(QPalette::Text, Qt::darkYellow);
-  ui_.status->setPalette(p);
-  ui_.status->setText(message.c_str());
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Warning);
+  ui_.status->setText(QString::fromStdString(text));
 }
 
 QWidget * TileMapPlugin::GetConfigWidget(QWidget * parent)
@@ -644,9 +637,15 @@ void TileMapPlugin::Paint(QPainter * painter, double, double, double)
   painter->resetTransform();
 
   QFont font = painter->font();
-  font.setPixelSize(ATTRIBUTION_FONT_PIXELS);
+  if (font.pointSizeF() > 0) {
+    font.setPointSizeF(font.pointSizeF() * ATTRIBUTION_FONT_SCALE);
+  } else {
+    font.setPixelSize(std::max(1, qRound(font.pixelSize() * ATTRIBUTION_FONT_SCALE)));
+  }
   painter->setFont(font);
   const QFontMetrics metrics(font);
+  const int margin = std::max(1, qRound(metrics.height() * ATTRIBUTION_MARGIN_LINES));
+  const int padding = std::max(1, qRound(metrics.height() * ATTRIBUTION_PADDING_LINES));
 
   const int canvas_width = painter->device()->width();
   const int canvas_height = painter->device()->height();
@@ -658,24 +657,24 @@ void TileMapPlugin::Paint(QPainter * painter, double, double, double)
     logo_height = metrics.height();
     logo_width = logo.width() * logo_height / std::max(1, logo.height());
   }
-  const int gap = (logo_width > 0 && !text.isEmpty()) ? ATTRIBUTION_PADDING : 0;
+  const int gap = (logo_width > 0 && !text.isEmpty()) ? padding : 0;
 
   // Wrap rather than run off the left edge of a narrow canvas.
   const int text_flags = Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter;
   QRect text_bounds;
   if (!text.isEmpty()) {
     const int max_text_width = std::max(
-      1, canvas_width - 2 * (ATTRIBUTION_MARGIN + ATTRIBUTION_PADDING) - logo_width - gap);
+      1, canvas_width - 2 * (margin + padding) - logo_width - gap);
     text_bounds = metrics.boundingRect(
       QRect(0, 0, max_text_width, canvas_height), text_flags, text);
   }
 
-  const int box_width = logo_width + gap + text_bounds.width() + 2 * ATTRIBUTION_PADDING;
+  const int box_width = logo_width + gap + text_bounds.width() + 2 * padding;
   const int box_height =
-    std::max(logo_height, text_bounds.height()) + 2 * ATTRIBUTION_PADDING;
+    std::max(logo_height, text_bounds.height()) + 2 * padding;
   const QRect box(
-    canvas_width - ATTRIBUTION_MARGIN - box_width,
-    canvas_height - ATTRIBUTION_MARGIN - box_height,
+    canvas_width - margin - box_width,
+    canvas_height - margin - box_height,
     box_width,
     box_height);
 
@@ -686,7 +685,7 @@ void TileMapPlugin::Paint(QPainter * painter, double, double, double)
   if (logo_width > 0) {
     painter->drawImage(
       QRect(
-        box.left() + ATTRIBUTION_PADDING,
+        box.left() + padding,
         box.top() + (box.height() - logo_height) / 2,
         logo_width,
         logo_height),
@@ -697,10 +696,10 @@ void TileMapPlugin::Paint(QPainter * painter, double, double, double)
     painter->setPen(QColor(51, 51, 51));
     painter->drawText(
       QRect(
-        box.left() + ATTRIBUTION_PADDING + logo_width + gap,
-        box.top() + ATTRIBUTION_PADDING,
+        box.left() + padding + logo_width + gap,
+        box.top() + padding,
         text_bounds.width(),
-        box.height() - 2 * ATTRIBUTION_PADDING),
+        box.height() - 2 * padding),
       text_flags,
       text);
   }

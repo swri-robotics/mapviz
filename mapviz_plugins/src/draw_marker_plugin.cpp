@@ -45,6 +45,7 @@
 #include <visualization_msgs/msg/marker.hpp>
 #include <mapviz/select_frame_dialog.hpp>
 #include <mapviz/qt_mouse_event_compat.hpp>
+#include <mapviz_plugins/default_colors.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -68,15 +69,8 @@ DrawMarkerPlugin::DrawMarkerPlugin()
 {
   ui_.setupUi(config_widget_);
 
-  ui_.color->setColor(Qt::green);
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  ui_.color->setColor(DefaultDrawColor());
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(
     ui_.selectframe, SIGNAL(clicked()), this,
@@ -134,7 +128,7 @@ void DrawMarkerPlugin::SelectFrame()
 void DrawMarkerPlugin::FrameEdited()
 {
   source_frame_ = ui_.frame->text().toStdString();
-  PrintWarning("Waiting for transform.");
+  PrintWarning("Waiting for transform");
 
   RCLCPP_INFO(Logger(), "Setting target frame to %s", source_frame_.c_str());
 
@@ -402,7 +396,7 @@ void DrawMarkerPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   // Preview the shape the way it will be published, so that switching the
   // type shows what the marker will look like before anything is sent.
   if (SelectedShapeIsLine() && transformed_vertices_.size() > 1) {
-    glLineWidth(2);
+    glLineWidth(DevicePixels(2));
     glColor4d(color.redF(), color.greenF(), color.blueF(), alpha);
     glBegin(GL_LINE_STRIP);
     for (const auto & vertex : transformed_vertices_) {
@@ -418,7 +412,7 @@ void DrawMarkerPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 
   // The vertices are always drawn so that they stay grabbable regardless of
   // which shape is selected.
-  glPointSize(9);
+  glPointSize(DevicePixels(9));
   glColor4d(color.redF(), color.greenF(), color.blueF(), alpha);
   glBegin(GL_POINTS);
   for (const auto & vertex : transformed_vertices_) {

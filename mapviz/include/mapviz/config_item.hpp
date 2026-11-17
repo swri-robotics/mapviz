@@ -31,6 +31,7 @@
 
 // QT libraries
 #include <QWidget>
+#include <QEvent>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QResizeEvent>
@@ -45,6 +46,12 @@
 
 namespace mapviz
 {
+/// Brings a plugin's config form in line with mapviz's layout conventions:
+/// spin boxes sized to their contents with arrow buttons, color swatches that
+/// grow with the font, and no empty space reserved by vertical spacers.
+/// Layout and appearance only.
+void NormalizeConfigForm(QWidget * widget);
+
 class ConfigItem : public QWidget
 {
   Q_OBJECT
@@ -59,6 +66,10 @@ public:
 
   void SetListItem(QListWidgetItem * item) {item_ = item;}
   bool Collapsed() const {return ui_.content->isHidden();}
+
+  /// Highlights this item as the one the Duplicate / Remove / Rename buttons
+  /// act on.  Purely cosmetic.
+  void SetSelected(bool selected);
   QString Name() const {return name_;}
 
   Ui::configitem ui_;
@@ -79,7 +90,10 @@ public Q_SLOTS:
 private:
   void contextMenuEvent(QContextMenuEvent * event) override;
   void resizeEvent(QResizeEvent * event) override;
+  void changeEvent(QEvent * event) override;
   void updateNameLabel();
+  void updateCollapseIndicator();
+  void restyle();
 
 protected:
   QListWidgetItem * item_;

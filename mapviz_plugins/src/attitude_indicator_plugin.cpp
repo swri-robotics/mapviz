@@ -120,15 +120,8 @@ AttitudeIndicatorPlugin::AttitudeIndicatorPlugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
   roll_ = pitch_ = yaw_ = 0;
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   placer_.setRect(QRect(0, 0, 100, 100));
   QObject::connect(
@@ -165,7 +158,7 @@ void AttitudeIndicatorPlugin::connectCallback(
   ui_.topic->setText(QString::fromStdString(topic));
   if ((topic != topic_) || !qosEqual(qos, qos_)) {
     initialized_ = true;
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
 
     odom_sub_.reset();
     imu_sub_.reset();
@@ -316,7 +309,7 @@ void AttitudeIndicatorPlugin::drawBall()
 
   glPushMatrix();
 
-  glLineWidth(2);
+  glLineWidth(DevicePixels(2));
   glColor3f(1.0f, 1.0f, 1.0f);
   glRotated(90.0 + pitch_, 1.0, 0.0, 0.0);
   glRotated(roll_, 0.0, 1.0, 0.0);
@@ -402,7 +395,7 @@ void AttitudeIndicatorPlugin::drawBackground()
 
 void AttitudeIndicatorPlugin::drawPanel()
 {
-  glLineWidth(2);
+  glLineWidth(DevicePixels(2));
 
   glBegin(GL_LINE_STRIP);
   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

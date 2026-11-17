@@ -278,7 +278,7 @@ bool MeasuringPlugin::handleMouseMove(QMouseEvent * event)
 
 void MeasuringPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 {
-  glLineWidth(1);
+  glLineWidth(DevicePixels(1));
   const QColor color = ui_.main_color->color();
   glColor4d(color.redF(), color.greenF(), color.blueF(), ui_.alpha->value() / 2.0);
   glBegin(GL_LINE_STRIP);
@@ -296,7 +296,7 @@ void MeasuringPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   glEnd();
 
   // Draw vertices
-  glPointSize(9);
+  glPointSize(DevicePixels(9));
   glBegin(GL_POINTS);
 
   for (const auto & vertex : vertices_) {

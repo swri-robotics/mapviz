@@ -39,6 +39,7 @@
 #include <cmath>
 #include <string>
 
+#include <mapviz_plugins/default_colors.hpp>
 #include <mapviz_plugins/topic_select.hpp>
 
 // ROS libraries
@@ -77,17 +78,9 @@ SpeedometerPlugin::SpeedometerPlugin()
 {
   ui_.setupUi(config_widget_);
 
-  ui_.color->setColor(Qt::green);
+  ui_.color->setColor(DefaultDrawColor());
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   max_speed_ = ui_.max_speed->value();
 
@@ -155,7 +148,7 @@ void SpeedometerPlugin::connectCallback(
   if ((topic != topic_) || !qosEqual(qos, qos_)) {
     has_message_ = false;
     speed_ = 0.0;
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
 
     odom_sub_.reset();
 
@@ -308,7 +301,7 @@ void SpeedometerPlugin::Paint(QPainter * painter, double, double, double)
   if (has_message_) {
     PrintInfo("OK");
   } else {
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
   }
 }
 

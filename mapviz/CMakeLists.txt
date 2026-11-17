@@ -169,6 +169,7 @@ set(SRC_FILES
   src/map_canvas.cpp
   src/select_frame_dialog.cpp
   src/select_service_dialog.cpp
+  src/theme.cpp
   src/video_writer.cpp
   src/resources/icons.qrc
 )
@@ -341,6 +342,12 @@ if(BUILD_TESTING)
     ENV QT_QPA_PLATFORM=offscreen)
   if(TARGET test_qt_font_compat)
     target_link_libraries(test_qt_font_compat ${PROJECT_NAME}_core)
+  endif()
+
+  ament_add_gtest(test_theme test/test_theme.cpp
+    ENV QT_QPA_PLATFORM=offscreen)
+  if(TARGET test_theme)
+    target_link_libraries(test_theme ${PROJECT_NAME}_core)
   endif()
 
   ament_add_gtest(test_video_writer test/test_video_writer.cpp)

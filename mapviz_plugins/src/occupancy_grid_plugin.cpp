@@ -153,15 +153,7 @@ OccupancyGridPlugin::OccupancyGridPlugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(ui_.select_grid, SIGNAL(clicked()), this, SLOT(SelectTopicGrid()));
 
@@ -191,8 +183,7 @@ OccupancyGridPlugin::OccupancyGridPlugin()
 void OccupancyGridPlugin::DrawIcon()
 {
   if (icon_) {
-    QPixmap icon(16, 16);
-    icon.fill(Qt::transparent);
+    QPixmap icon = mapviz::IconWidget::CreatePixmap();
 
     QPainter painter(&icon);
     painter.setRenderHint(QPainter::Antialiasing, true);

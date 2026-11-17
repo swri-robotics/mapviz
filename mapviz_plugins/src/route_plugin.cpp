@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 
+#include <mapviz_plugins/default_colors.hpp>
 #include <mapviz_plugins/topic_select.hpp>
 #include <opencv2/core/core.hpp>
 
@@ -71,15 +72,8 @@ RoutePlugin::RoutePlugin()
 {
   ui_.setupUi(config_widget_);
 
-  ui_.color->setColor(Qt::green);
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  ui_.color->setColor(DefaultDrawColor());
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
   QObject::connect(
     ui_.selecttopic, SIGNAL(clicked()), this,
     SLOT(SelectTopic()));
@@ -104,8 +98,7 @@ RoutePlugin::RoutePlugin()
 void RoutePlugin::DrawIcon()
 {
   if (icon_) {
-    QPixmap icon(16, 16);
-    icon.fill(Qt::transparent);
+    QPixmap icon = mapviz::IconWidget::CreatePixmap();
 
     QPainter painter(&icon);
     painter.setRenderHint(QPainter::Antialiasing, true);
@@ -268,7 +261,7 @@ bool RoutePlugin::Initialize(QOpenGLWidget * canvas)
 void RoutePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 {
   if (!src_route_.valid()) {
-    PrintError("No valid route received.");
+    PrintError("No valid route received");
     return;
   }
 
@@ -295,7 +288,7 @@ void RoutePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
     if (sru::interpolateRoutePosition(point, route, *src_route_position_, true)) {
       DrawRoutePoint(point);
     } else {
-      PrintError("Failed to find route position in route.");
+      PrintError("Failed to find route position in route");
       ok = false;
     }
   }
@@ -332,10 +325,10 @@ void RoutePlugin::DrawRoute(const sru::Route & route)
   glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
 
   if (draw_style_ == LINES) {
-    glLineWidth(3);
+    glLineWidth(DevicePixels(3));
     glBegin(GL_LINE_STRIP);
   } else {
-    glPointSize(2);
+    glPointSize(DevicePixels(2));
     glBegin(GL_POINTS);
   }
 
@@ -362,7 +355,7 @@ void RoutePlugin::DrawRoutePoint(const sru::RoutePoint & point)
   v3 = point_g * v3;
 
   const QColor color = ui_.positioncolor->color();
-  glLineWidth(3);
+  glLineWidth(DevicePixels(3));
   glBegin(GL_POLYGON);
   glColor4d(color.redF(), color.greenF(), color.blueF(), 1.0);
   glVertex2d(v1.x(), v1.y());

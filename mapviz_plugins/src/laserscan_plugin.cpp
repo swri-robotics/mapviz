@@ -70,15 +70,7 @@ LaserScanPlugin::LaserScanPlugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   // Initialize color selector colors
   ui_.min_color->setColor(Qt::white);
@@ -179,8 +171,7 @@ void LaserScanPlugin::ClearHistory()
 void LaserScanPlugin::DrawIcon()
 {
   if (icon_) {
-    QPixmap icon(16, 16);
-    icon.fill(Qt::transparent);
+    QPixmap icon = mapviz::IconWidget::CreatePixmap();
 
     QPainter painter(&icon);
     painter.setRenderHint(QPainter::Antialiasing, true);
@@ -289,7 +280,7 @@ void LaserScanPlugin::connectCallback(const std::string & topic, const rmw_qos_p
     initialized_ = false;
     scans_.clear();
     has_message_ = false;
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
 
     laserscan_sub_.reset();
 
@@ -467,7 +458,7 @@ bool LaserScanPlugin::Initialize(QOpenGLWidget * canvas)
 
 void LaserScanPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 {
-  glPointSize(point_size_);
+  glPointSize(DevicePixels(point_size_));
   glBegin(GL_POINTS);
 
   std::deque<Scan>::const_iterator scan_it = scans_.begin();

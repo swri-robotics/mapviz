@@ -1,0 +1,318 @@
+/*
+ * Mapviz style sheet.
+ *
+ * Names wrapped in at-signs are replaced at runtime with colors derived from the
+ * active palette (see Theme::StyleSheet in theme.cpp), so this one sheet serves
+ * the light theme, the dark theme, and whatever palette a host application
+ * such as rqt provides.
+ *
+ * Text colors are deliberately left to the palette: plugins color their status
+ * labels through QPalette, and a "color:" rule here would override them.
+ * Input widgets (line edits, combo boxes, spin boxes, check boxes) are likewise
+ * left to the Fusion style, which draws them from the palette.
+ */
+
+/* ---- Main window chrome ------------------------------------------------- */
+
+QMenuBar {
+  background: @window@;
+  border-bottom: 1px solid @border@;
+  padding: 2px 4px;
+}
+
+QMenuBar::item {
+  background: transparent;
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+
+QMenuBar::item:selected {
+  background: @hover@;
+}
+
+QMenuBar::item:pressed {
+  background: @pressed@;
+}
+
+QStatusBar {
+  background: @window@;
+  border-top: 1px solid @border@;
+}
+
+QStatusBar::item {
+  border: none;
+}
+
+QMainWindow::separator {
+  background: @window@;
+  width: 5px;
+  height: 5px;
+}
+
+QMainWindow::separator:hover {
+  background: @accent@;
+}
+
+QToolTip {
+  background: @tooltip@;
+  color: @tooltip_text@;
+  border: 1px solid @border@;
+  padding: 3px 6px;
+}
+
+/* ---- Buttons ------------------------------------------------------------ */
+
+QPushButton {
+  background: @button@;
+  border: 1px solid @border@;
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+
+QPushButton:hover {
+  background: @button_hover@;
+  border-color: @border_strong@;
+}
+
+QPushButton:pressed,
+QPushButton:checked {
+  background: @button_pressed@;
+}
+
+QPushButton:focus,
+QPushButton:default {
+  border-color: @accent@;
+}
+
+QPushButton:disabled {
+  background: @window@;
+  border-color: @border@;
+}
+
+QPushButton:flat {
+  background: transparent;
+  border: none;
+  padding: 2px;
+}
+
+QPushButton:flat:hover {
+  background: @hover@;
+}
+
+QPushButton:flat:pressed,
+QPushButton:flat:checked {
+  background: @pressed@;
+}
+
+QToolButton {
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+QToolButton:hover {
+  background: @hover@;
+}
+
+QToolButton:pressed {
+  background: @pressed@;
+}
+
+/* A color swatch; ColorButton supplies the background itself. */
+mapviz--ColorButton {
+  border: 1px solid @border_strong@;
+  border-radius: 4px;
+  padding: 0px;
+}
+
+mapviz--ColorButton:hover,
+mapviz--ColorButton:focus {
+  border-color: @accent@;
+}
+
+/* ---- Inputs ------------------------------------------------------------- */
+
+/* Drawn by Fusion; this only keeps spin boxes as tall as the line edits and
+   combo boxes beside them, which a style sheet would otherwise let shrink. */
+QAbstractSpinBox {
+  min-height: 18px;
+}
+
+/* ---- Sliders ------------------------------------------------------------ */
+
+QSlider::groove:horizontal {
+  height: 4px;
+  background: @border@;
+  border-radius: 2px;
+}
+
+QSlider::sub-page:horizontal {
+  background: @accent@;
+  border-radius: 2px;
+}
+
+QSlider::groove:vertical {
+  width: 4px;
+  background: @border@;
+  border-radius: 2px;
+}
+
+QSlider::add-page:vertical {
+  background: @accent@;
+  border-radius: 2px;
+}
+
+QSlider::handle {
+  background: @handle@;
+  border: 1px solid @border_strong@;
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+}
+
+QSlider::handle:horizontal {
+  margin: -6px 0px;
+}
+
+QSlider::handle:vertical {
+  margin: 0px -6px;
+}
+
+QSlider::handle:hover,
+QSlider::handle:pressed {
+  border-color: @accent@;
+}
+
+QSlider::sub-page:horizontal:disabled,
+QSlider::add-page:vertical:disabled {
+  background: @border_strong@;
+}
+
+/* ---- Scroll bars -------------------------------------------------------- */
+
+QScrollBar:vertical {
+  background: transparent;
+  width: 12px;
+  margin: 0px;
+}
+
+QScrollBar:horizontal {
+  background: transparent;
+  height: 12px;
+  margin: 0px;
+}
+
+QScrollBar::handle {
+  background: @scroll@;
+  border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+  min-height: 28px;
+  margin: 2px;
+}
+
+QScrollBar::handle:horizontal {
+  min-width: 28px;
+  margin: 2px;
+}
+
+QScrollBar::handle:hover,
+QScrollBar::handle:pressed {
+  background: @scroll_hover@;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+  width: 0px;
+  height: 0px;
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page {
+  background: none;
+}
+
+/* ---- Config panel ------------------------------------------------------- */
+
+#config_title {
+  background: @window@;
+}
+
+/* The list of displays: each row is a card, so the list itself is plain. */
+mapviz--PluginConfigList {
+  background: @window@;
+  border: none;
+  outline: 0;
+}
+
+mapviz--PluginConfigList::item,
+mapviz--PluginConfigList::item:hover,
+mapviz--PluginConfigList::item:selected {
+  background: transparent;
+  border: none;
+}
+
+mapviz--ConfigItem {
+  background: @card@;
+  border: 1px solid @border@;
+  border-radius: 5px;
+}
+
+mapviz--ConfigItem[selected="true"] {
+  border-color: @accent@;
+}
+
+mapviz--ConfigItem > #header {
+  background: @header@;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+mapviz--ConfigItem[collapsed="true"] > #header {
+  border-radius: 4px;
+}
+
+mapviz--ConfigItem > #header:hover {
+  background: @header_hover@;
+}
+
+mapviz--ConfigItem[selected="true"] > #header {
+  background: @header_selected@;
+}
+
+mapviz--ConfigItem > #header > QLabel {
+  background: transparent;
+}
+
+/* The style draws check boxes at a fixed size, which looks undersized next to
+   the bold title.  @indicator@ is derived from the font so the two match at
+   any font size or display scale; Fusion still draws the box and check. */
+mapviz--ConfigItem > #header > QCheckBox::indicator {
+  width: @indicator@px;
+  height: @indicator@px;
+}
+
+/* Plugins set their own (usually white) window color on their config widget;
+   draw it as part of the card instead. */
+mapviz--ConfigItem > #content,
+mapviz--ConfigItem > #content > QWidget {
+  background: transparent;
+}
+
+/* Lists and text boxes inside plugin forms (e.g. the marker namespaces and the
+   coordinate picker's history), framed like the line edits around them. */
+mapviz--ConfigItem QListWidget,
+mapviz--ConfigItem QPlainTextEdit,
+mapviz--ConfigItem QTextEdit {
+  background: @base@;
+  border: 1px solid @border_strong@;
+  border-radius: 3px;
+}
+
+mapviz--ConfigItem QListWidget:focus,
+mapviz--ConfigItem QPlainTextEdit:focus,
+mapviz--ConfigItem QTextEdit:focus {
+  border-color: @accent@;
+}

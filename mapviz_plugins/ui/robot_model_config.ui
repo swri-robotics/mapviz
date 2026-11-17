@@ -195,7 +195,7 @@
       </font>
      </property>
      <property name="text">
-      <string>No source.</string>
+      <string>No source</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

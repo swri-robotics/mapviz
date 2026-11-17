@@ -74,7 +74,7 @@ bool PointClickPublisherPlugin::Initialize(QOpenGLWidget * canvas)
   canvas_ = dynamic_cast<mapviz::MapCanvas *>(canvas);
   canvas_->installEventFilter(&click_filter_);
 
-  PrintInfo("Ready.");
+  PrintInfo("Ready");
 
   return true;
 }

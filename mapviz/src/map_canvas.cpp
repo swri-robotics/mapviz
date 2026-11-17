@@ -216,8 +216,8 @@ void MapCanvas::paintGL()
 
   TransformTarget(&p);
 
-  // Draw test pattern
-  glLineWidth(3);
+  // Draw test pattern.  Line widths are in device pixels.
+  glLineWidth(static_cast<GLfloat>(3 * devicePixelRatioF()));
   glBegin(GL_LINES);
   // Red line to the right
   glColor3f(1, 0, 0);

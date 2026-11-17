@@ -259,11 +259,11 @@ TEST_F(PlanRoutePluginTest, RefusesToPublishWithoutATopic)
   // through a null pointer (#918).
   SetTopic("");
   EXPECT_NO_THROW(Publish());
-  EXPECT_EQ("Route topic may not be empty.", Status());
+  EXPECT_EQ("Route topic may not be empty", Status());
 
   SetTopic("   ");
   EXPECT_NO_THROW(Publish());
-  EXPECT_EQ("Route topic may not be empty.", Status());
+  EXPECT_EQ("Route topic may not be empty", Status());
 }
 
 TEST_F(PlanRoutePluginTest, ReportsAnUnavailableService)
@@ -272,7 +272,7 @@ TEST_F(PlanRoutePluginTest, ReportsAnUnavailableService)
 
   Plan(Waypoints(2));
 
-  EXPECT_EQ("Service is unavailable.", Status());
+  EXPECT_EQ("Service is unavailable", Status());
   EXPECT_FALSE(HasPreview());
 }
 
@@ -283,7 +283,7 @@ TEST_F(PlanRoutePluginTest, ReportsAFailedPlan)
 
   Plan(Waypoints(2));
 
-  ASSERT_TRUE(WaitFor([this]() {return Status() == "No route between the waypoints.";}))
+  ASSERT_TRUE(WaitFor([this]() {return Status() == "No route between the waypoints";}))
     << "status: " << Status();
   EXPECT_FALSE(HasPreview());
 

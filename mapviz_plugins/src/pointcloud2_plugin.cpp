@@ -76,15 +76,7 @@ PointCloud2Plugin::PointCloud2Plugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   // Initialize color selector colors
   ui_.min_color->setColor(Qt::white);
@@ -199,8 +191,7 @@ void PointCloud2Plugin::ClearHistory()
 void PointCloud2Plugin::DrawIcon()
 {
   if (icon_) {
-    QPixmap icon(16, 16);
-    icon.fill(Qt::transparent);
+    QPixmap icon = mapviz::IconWidget::CreatePixmap();
 
     QPainter painter(&icon);
     painter.setRenderHint(QPainter::Antialiasing, true);
@@ -382,7 +373,7 @@ void PointCloud2Plugin::connectCallback(const std::string & topic, const rmw_qos
     initialized_ = false;
     scans_.clear();
     has_message_ = false;
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
 
     topic_ = topic;
     qos_ = qos;
@@ -663,7 +654,7 @@ void PointCloud2Plugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
     color_buffer_.create();
   }
 
-  glPointSize(point_size_);
+  glPointSize(DevicePixels(point_size_));
 
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);

@@ -39,6 +39,7 @@
 #include <vector>
 
 #include <mapviz/select_frame_dialog.hpp>
+#include <mapviz_plugins/default_colors.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -60,17 +61,9 @@ GridPlugin::GridPlugin()
 {
   ui_.setupUi(config_widget_);
 
-  ui_.color->setColor(Qt::red);
+  ui_.color->setColor(DefaultGridColor());
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(ui_.select_frame, SIGNAL(clicked()), this, SLOT(SelectFrame()));
   QObject::connect(ui_.frame, SIGNAL(textEdited(const QString&)), this, SLOT(FrameEdited()));
@@ -86,8 +79,7 @@ GridPlugin::GridPlugin()
 void GridPlugin::DrawIcon()
 {
   if (icon_) {
-    QPixmap icon(16, 16);
-    icon.fill(Qt::transparent);
+    QPixmap icon = mapviz::IconWidget::CreatePixmap();
 
     QPainter painter(&icon);
     painter.setRenderHint(QPainter::Antialiasing, true);
@@ -206,7 +198,7 @@ void GridPlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
   if (transformed_) {
     QColor color = ui_.color->color();
 
-    glLineWidth(3);
+    glLineWidth(DevicePixels(3));
     glColor4d(color.redF(), color.greenF(), color.blueF(), alpha_);
     glBegin(GL_LINES);
 
