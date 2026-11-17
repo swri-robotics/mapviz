@@ -30,6 +30,9 @@
 #define MAPVIZ__WIDGETS_HPP_
 
 // QT libraries
+#include <QApplication>
+#include <QFont>
+#include <QFontMetrics>
 #include <QWidget>
 #include <QListWidget>
 #include <QListWidgetItem>
@@ -38,6 +41,9 @@
 #include <QDropEvent>
 #include <QPainter>
 #include <QPixmap>
+
+#include <algorithm>
+#include <cmath>
 
 namespace mapviz
 {
@@ -147,22 +153,61 @@ public:
 
   ~IconWidget() override = default;
 
+  /// Size, in logical pixels, that header icons are shown at: as tall as the
+  /// bold display title beside them, and never smaller than 16.
+  static int IconSize()
+  {
+    QFont font = QApplication::font();
+    font.setBold(true);
+    return std::max(16, QFontMetrics(font).ascent() + 2);
+  }
+
+  /**
+   * A transparent canvas for a plugin's header icon.  Plugins draw on it in
+   * 16x16 units as they always have; it carries enough device pixels for the
+   * result to stay sharp at the display's scale and at IconSize().
+   */
+  static QPixmap CreatePixmap()
+  {
+    const qreal ratio = qApp ? qApp->devicePixelRatio() : 1.0;
+    const qreal scale = IconSize() / 16.0 * ratio;
+    const int side = static_cast<int>(std::ceil(16 * scale));
+    QPixmap pixmap(side, side);
+    pixmap.setDevicePixelRatio(scale);
+    pixmap.fill(Qt::transparent);
+    return pixmap;
+  }
+
   void SetPixmap(QPixmap pixmap)
   {
     pixmap_ = pixmap;
     update();
   }
 
+  QSize sizeHint() const override
+  {
+    const int side = IconSize() + 4;
+    return QSize(side, side);
+  }
+
 protected:
   void paintEvent(QPaintEvent *) override
   {
+    // No background fill: the icon sits on whatever its parent paints.
     QPainter painter(this);
-    painter.fillRect(0, 0, width(), height(), palette().color(QPalette::Button));
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-    int x_offset = (width() - pixmap_.width()) / 2;
-    int y_offset = (height() - pixmap_.height()) / 2;
-
-    painter.drawPixmap(x_offset, y_offset, pixmap_);
+    // Pixmaps from CreatePixmap() are drawn at IconSize(); a plain one that a
+    // plugin made itself is drawn at its own size, as before.
+    QSize size = pixmap_.size();
+    if (pixmap_.devicePixelRatio() != 1.0) {
+      const int side = IconSize();
+      size = QSize(side, side);
+    }
+    const QRect target(
+      (width() - size.width()) / 2, (height() - size.height()) / 2,
+      size.width(), size.height());
+    painter.drawPixmap(target, pixmap_);
   }
 
   QPixmap pixmap_;

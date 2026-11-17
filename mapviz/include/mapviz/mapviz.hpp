@@ -172,6 +172,17 @@ protected:
   virtual void showEvent(QShowEvent * event);
   virtual void closeEvent(QCloseEvent * event);
   bool eventFilter(QObject * object, QEvent * event) override;
+  bool event(QEvent * event) override;
+
+  // Sizes that follow the font or the display scale (the small icon buttons,
+  // the theme's style sheet, header icons and chevrons) are computed once and
+  // have to be recomputed when either changes: mapviz moving to a monitor
+  // with a different scale factor, a monitor being added or removed, or the
+  // system font changing.  Requests are coalesced into one refresh.
+  void SizeToolButtons();
+  int PinnedPanelMinimumWidth() const;
+  void ScheduleAppearanceRefresh();
+  void RefreshScaledAppearance();
 
   static const QString ROS_WORKSPACE_VAR;
   static const QString MAPVIZ_CONFIG_FILE;
@@ -252,6 +263,9 @@ protected:
   int pinned_panel_width_;
 
   Stopwatch meas_spin_;
+
+  bool appearance_refresh_pending_ = false;
+  bool screen_signals_connected_ = false;
 };
 }   // namespace mapviz
 

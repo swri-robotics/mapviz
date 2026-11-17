@@ -37,11 +37,6 @@
    </item>
    <item row="11" column="2" colspan="2">
     <widget class="QLabel" name="status">
-     <property name="font">
-      <font>
-       <pointsize>-1</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
@@ -55,11 +50,6 @@
    </item>
    <item row="6" column="0">
     <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <pointsize>-1</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Preview Color:</string>
      </property>
@@ -67,11 +57,6 @@
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label">
-     <property name="font">
-      <font>
-       <pointsize>-1</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Plan Route Service:</string>
      </property>
@@ -98,11 +83,6 @@
    </item>
    <item row="2" column="2">
     <widget class="QLineEdit" name="service">
-     <property name="font">
-      <font>
-       <pointsize>-1</pointsize>
-      </font>
-     </property>
     </widget>
    </item>
    <item row="10" column="2">
@@ -120,11 +100,6 @@
    </item>
    <item row="11" column="0">
     <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <pointsize>-1</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Status:</string>
      </property>
@@ -132,11 +107,6 @@
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <pointsize>-1</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Route Topic:</string>
      </property>

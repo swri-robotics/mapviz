@@ -40,12 +40,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
@@ -56,22 +50,10 @@
    </item>
    <item row="2" column="1">
     <widget class="QLineEdit" name="topic">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
     </widget>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Topic:</string>
      </property>
@@ -108,12 +90,6 @@
    </item>
    <item row="6" column="0">
     <widget class="QLabel" name="label_9">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Alpha:</string>
      </property>
@@ -134,12 +110,6 @@
    </item>
    <item row="4" column="0">
     <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Point Size:</string>
      </property>
@@ -160,12 +130,6 @@
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label_5">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Buffer Size:</string>
      </property>
@@ -173,12 +137,6 @@
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="label_6">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Color Transformer:</string>
      </property>
@@ -186,12 +144,6 @@
    </item>
    <item row="7" column="0">
     <widget class="QLabel" name="color_label">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Color:</string>
      </property>
@@ -201,12 +153,6 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QCheckBox" name="use_rainbow">
-       <property name="font">
-        <font>
-         <family>Sans Serif</family>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Use Rainbow</string>
        </property>
@@ -214,11 +160,6 @@
      </item>
      <item>
       <widget class="QCheckBox" name="use_automaxmin">
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Use Auto Max/Min</string>
        </property>
@@ -226,11 +167,6 @@
      </item>
      <item>
       <widget class="QCheckBox" name="unpack_rgb">
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
        <property name="text">
         <string>Unpack RGB</string>
        </property>
@@ -253,13 +189,6 @@
         </property>
         <item>
          <widget class="QLabel" name="minColorLabel">
-          <property name="font">
-           <font>
-            <family>Sans Serif</family>
-            <pointsize>8</pointsize>
-            <italic>false</italic>
-           </font>
-          </property>
           <property name="text">
            <string>Min:</string>
           </property>
@@ -283,12 +212,6 @@
         </item>
         <item>
          <widget class="QLabel" name="maxColorLabel">
-          <property name="font">
-           <font>
-            <family>Sans Serif</family>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
           <property name="text">
            <string>Max:</string>
           </property>
@@ -360,12 +283,6 @@
           <height>0</height>
          </size>
         </property>
-        <property name="font">
-         <font>
-          <family>Sans Serif</family>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>Min Value:</string>
         </property>
@@ -373,12 +290,6 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="maxValueLabel">
-        <property name="font">
-         <font>
-          <family>Sans Serif</family>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>Max Value:</string>
         </property>
@@ -412,12 +323,6 @@
    </item>
    <item row="12" column="1">
     <widget class="QLabel" name="status">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
@@ -431,12 +336,6 @@
    </item>
    <item row="12" column="0">
     <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Status:</string>
      </property>

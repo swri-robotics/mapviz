@@ -62,15 +62,7 @@ MarkerPlugin::MarkerPlugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
   QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
@@ -121,7 +113,7 @@ void MarkerPlugin::connectCallback(const std::string & topic, const rmw_qos_prof
     marker_visible_.clear();
     ui_.nsList->clear();
     has_message_ = false;
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
 
     marker_sub_.reset();
     marker_array_sub_.reset();
@@ -542,11 +534,11 @@ void MarkerPlugin::Draw(double /*x*/, double /*y*/, double scale)
     if (marker.display_type == visualization_msgs::msg::Marker::ARROW) {
       if (marker.points.size() == 1) {
         // If the marker only has one point, use scale_y as the arrow width.
-        glLineWidth(width_in_pixels(marker.scale_y));
+        glLineWidth(DevicePixels(width_in_pixels(marker.scale_y)));
       } else {
         // If the marker has both start and end points explicitly specified, use
         // scale_x as the shaft diameter.
-        glLineWidth(width_in_pixels(marker.scale_x));
+        glLineWidth(DevicePixels(width_in_pixels(marker.scale_x)));
       }
       glBegin(GL_LINES);
 
@@ -575,7 +567,7 @@ void MarkerPlugin::Draw(double /*x*/, double /*y*/, double scale)
 
       glEnd();
     } else if (marker.display_type == visualization_msgs::msg::Marker::LINE_STRIP) {
-      glLineWidth(width_in_pixels(marker.scale_x));
+      glLineWidth(DevicePixels(width_in_pixels(marker.scale_x)));
       glBegin(GL_LINE_STRIP);
 
       for (const auto & point : marker.points) {
@@ -588,7 +580,7 @@ void MarkerPlugin::Draw(double /*x*/, double /*y*/, double scale)
 
       glEnd();
     } else if (marker.display_type == visualization_msgs::msg::Marker::LINE_LIST) {
-      glLineWidth(width_in_pixels(marker.scale_x));
+      glLineWidth(DevicePixels(width_in_pixels(marker.scale_x)));
       glBegin(GL_LINES);
 
       for (const auto & point : marker.points) {
@@ -601,7 +593,7 @@ void MarkerPlugin::Draw(double /*x*/, double /*y*/, double scale)
 
       glEnd();
     } else if (marker.display_type == visualization_msgs::msg::Marker::POINTS) {
-      glPointSize(width_in_pixels(marker.scale_x));
+      glPointSize(DevicePixels(width_in_pixels(marker.scale_x)));
       glBegin(GL_POINTS);
 
       for (const auto & point : marker.points) {

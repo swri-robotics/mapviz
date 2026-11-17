@@ -8,4 +8,7 @@
         <file>remove-icon-th.png</file>
         <file>green-arrow.png</file>
     </qresource>
+    <qresource prefix="/style">
+        <file>mapviz.qss</file>
+    </qresource>
 </RCC>

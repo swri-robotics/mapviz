@@ -25,12 +25,6 @@
             </property>
             <item row="2" column="1">
                 <widget class="QLineEdit" name="topic">
-                    <property name="font">
-                        <font>
-                            <family>Sans Serif</family>
-                            <pointsize>8</pointsize>
-                        </font>
-                    </property>
                     <property name="text">
                         <string>clicked_point</string>
                     </property>
@@ -38,12 +32,6 @@
             </item>
             <item row="2" column="0">
                 <widget class="QLabel" name="label">
-                    <property name="font">
-                        <font>
-                            <family>Sans Serif</family>
-                            <pointsize>8</pointsize>
-                        </font>
-                    </property>
                     <property name="text">
                         <string>Topic:</string>
                     </property>
@@ -51,12 +39,6 @@
             </item>
             <item row="3" column="0">
                 <widget class="QLabel" name="output_frame">
-                    <property name="font">
-                        <font>
-                            <family>Sans Serif</family>
-                            <pointsize>8</pointsize>
-                        </font>
-                    </property>
                     <property name="text">
                         <string>Frame:</string>
                     </property>
@@ -76,12 +58,6 @@
                             <height>25</height>
                         </size>
                     </property>
-                    <property name="font">
-                        <font>
-                            <family>Sans Serif</family>
-                            <pointsize>8</pointsize>
-                        </font>
-                    </property>
                     <property name="toolTip">
                         <string>The reference frame that points will be published in.
                         </string>
@@ -94,12 +70,6 @@
 
             <item row="4" column="0">
                 <widget class="QLabel" name="point_publisher_status">
-                    <property name="font">
-                        <font>
-                            <family>Sans Serif</family>
-                            <pointsize>8</pointsize>
-                        </font>
-                    </property>
                     <property name="text">
                         <string>Status:</string>
                     </property>
@@ -107,12 +77,6 @@
             </item>
             <item row="4" column="1">
                 <widget class="QLabel" name="status">
-                    <property name="font">
-                        <font>
-                            <family>Sans Serif</family>
-                            <pointsize>8</pointsize>
-                        </font>
-                    </property>
                     <property name="styleSheet">
                         <string notr="true"/>
                     </property>

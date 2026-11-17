@@ -103,15 +103,8 @@ MoveBasePlugin::MoveBasePlugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
   ui_.status->setText("OK");
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::green);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Info);
 
   QObject::connect(
     ui_.pushButtonInitialPose, &QPushButton::toggled,
@@ -357,7 +350,7 @@ void MoveBasePlugin::Draw(double /*x*/, double /*y*/, double scale)
     }
     const QColor fill_color(kArrowFillColor);
     glColor3d(fill_color.redF(), fill_color.greenF(), fill_color.blueF());
-    glLineWidth(kArrowLineWidth);
+    glLineWidth(DevicePixels(kArrowLineWidth));
     glBegin(GL_TRIANGLE_FAN);
     for (const QPointF & point : transformed_points) {
       glVertex2d(point.x(), point.y());

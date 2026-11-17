@@ -39,6 +39,7 @@
 #include <vector>
 
 #include <mapviz/select_frame_dialog.hpp>
+#include <mapviz_plugins/default_colors.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -54,17 +55,9 @@ TfFramePlugin::TfFramePlugin()
 {
   ui_.setupUi(config_widget_);
 
-  ui_.color->setColor(Qt::green);
+  ui_.color->setColor(DefaultDrawColor());
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(
     ui_.selectframe, SIGNAL(clicked()), this,
@@ -107,7 +100,7 @@ void TfFramePlugin::SelectFrame()
 void TfFramePlugin::FrameEdited()
 {
   source_frame_ = ui_.frame->text().toStdString();
-  PrintWarning("Waiting for transform.");
+  PrintWarning("Waiting for transform");
 
   RCLCPP_INFO(Logger(), "Setting target frame to to %s", source_frame_.c_str());
 

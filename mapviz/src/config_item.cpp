@@ -31,10 +31,78 @@
 #include <QMenu>
 #include <QAction>
 #include <QFontMetrics>
+#include <QAbstractSpinBox>
 #include <QInputDialog>
+#include <QLayout>
+#include <QList>
+#include <QSizePolicy>
+#include <QSpacerItem>
+#include <QStyle>
+
+#include <algorithm>
+
+#include "mapviz/color_button.hpp"
+#include "mapviz/theme.hpp"
+#include "mapviz/widgets.hpp"
 
 namespace mapviz
 {
+namespace
+{
+/// Collapses vertical spacers to zero height.  They still absorb any spare
+/// height, but no longer reserve empty space at the bottom of a form.
+void CollapseVerticalSpacers(QLayout * layout)
+{
+  if (layout == nullptr) {
+    return;
+  }
+  for (int i = 0; i < layout->count(); i++) {
+    QLayoutItem * item = layout->itemAt(i);
+    if (QSpacerItem * spacer = item->spacerItem()) {
+      const QSizePolicy policy = spacer->sizePolicy();
+      if (spacer->expandingDirections() & Qt::Vertical) {
+        spacer->changeSize(
+          spacer->sizeHint().width(), 0,
+          policy.horizontalPolicy(), policy.verticalPolicy());
+      }
+    } else if (item->layout() != nullptr) {
+      CollapseVerticalSpacers(item->layout());
+    }
+  }
+  layout->invalidate();
+}
+}  // namespace
+
+void NormalizeConfigForm(QWidget * widget)
+{
+  // Plugin forms stretch their spin boxes across the whole panel, leaving a
+  // couple of digits floating in a wide box.  A spin box's size hint already
+  // fits its range, decimals, prefix and suffix, so hold it to that width.
+  // The forms also mix arrow and +/- buttons; use arrows throughout.
+  const QList<QAbstractSpinBox *> spin_boxes = widget->findChildren<QAbstractSpinBox *>();
+  for (QAbstractSpinBox * spin_box : spin_boxes) {
+    QSizePolicy policy = spin_box->sizePolicy();
+    policy.setHorizontalPolicy(QSizePolicy::Fixed);
+    spin_box->setSizePolicy(policy);
+    spin_box->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
+  }
+
+  // Color swatches are capped at 24 pixels in the forms; let them keep pace
+  // with larger fonts.
+  const int swatch = std::max(24, IconWidget::IconSize() + 8);
+  const QList<ColorButton *> swatches = widget->findChildren<ColorButton *>();
+  for (ColorButton * button : swatches) {
+    button->setMaximumSize(swatch, swatch);
+    button->setMinimumSize(swatch, swatch);
+  }
+
+  CollapseVerticalSpacers(widget->layout());
+  const QList<QWidget *> children = widget->findChildren<QWidget *>();
+  for (QWidget * child : children) {
+    CollapseVerticalSpacers(child->layout());
+  }
+}
+
 ConfigItem::ConfigItem(QWidget * parent, Qt::WindowFlags flags)
 : QWidget(parent, flags),
   item_(nullptr),
@@ -42,10 +110,17 @@ ConfigItem::ConfigItem(QWidget * parent, Qt::WindowFlags flags)
 {
   ui_.setupUi(this);
 
+  // Let the style sheet paint the backgrounds of these custom widgets.
+  setAttribute(Qt::WA_StyledBackground, true);
+  ui_.header->setAttribute(Qt::WA_StyledBackground, true);
+  setProperty("selected", false);
+  setProperty("collapsed", false);
+  updateCollapseIndicator();
+
   edit_name_action_ = new QAction("Edit Name", this);
   edit_name_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
   remove_item_action_ = new QAction("Remove", this);
-  remove_item_action_->setIcon(QIcon(":/images/remove-icon-th.png"));
+  remove_item_action_->setIcon(Theme::Icon(ThemeIcon::Remove));
   remove_item_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X));
   duplicate_item_action_ = new QAction("Duplicate", this);
   duplicate_item_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
@@ -109,6 +184,12 @@ void ConfigItem::updateNameLabel()
 void ConfigItem::SetWidget(QWidget * widget)
 {
   ui_.label->hide();
+  // Plugins' config forms come with assorted margins (some none at all); give
+  // them all the same inset so the cards line up.
+  if (widget->layout() != nullptr) {
+    widget->layout()->setContentsMargins(8, 6, 8, 8);
+  }
+  NormalizeConfigForm(widget);
   ui_.content_layout->addWidget(widget);
 }
 
@@ -141,12 +222,68 @@ void ConfigItem::Hide()
 {
   if (!ui_.content->isHidden()) {
     ui_.content->hide();
-    ui_.signlabel->setText(" + ");
   } else {
     ui_.content->show();
-    ui_.signlabel->setText(" - ");
   }
+  setProperty("collapsed", ui_.content->isHidden());
+  updateCollapseIndicator();
+  restyle();
 
   Q_EMIT UpdateSizeHint();
+}
+
+void ConfigItem::SetSelected(bool selected)
+{
+  if (property("selected").toBool() != selected) {
+    setProperty("selected", selected);
+    restyle();
+  }
+}
+
+void ConfigItem::RefreshAppearance()
+{
+  updateCollapseIndicator();
+  NormalizeConfigForm(ui_.content);
+}
+
+bool ConfigItem::event(QEvent * event)
+{
+  const bool handled = QWidget::event(event);
+  if (event->type() == QEvent::LayoutRequest) {
+    // The form asked for a different size, e.g. a status message that now
+    // wraps onto a second line.  The list row holding this item is sized
+    // separately and has to be told.
+    Q_EMIT UpdateSizeHint();
+  }
+  return handled;
+}
+
+void ConfigItem::changeEvent(QEvent * event)
+{
+  QWidget::changeEvent(event);
+  if (event->type() == QEvent::PaletteChange || event->type() == QEvent::StyleChange) {
+    // The chevron is a pixmap rendered in the palette's colors.
+    updateCollapseIndicator();
+  }
+}
+
+void ConfigItem::updateCollapseIndicator()
+{
+  const QIcon icon = Theme::Icon(
+    ui_.content->isHidden() ? ThemeIcon::ChevronRight : ThemeIcon::ChevronDown);
+  const int side = IconWidget::IconSize();
+  ui_.signlabel->setFixedSize(side + 4, side + 4);
+  ui_.signlabel->setPixmap(icon.pixmap(QSize(side, side)));
+}
+
+void ConfigItem::restyle()
+{
+  // Style sheet rules that match on dynamic properties are only re-evaluated
+  // when a widget is re-polished.
+  for (QWidget * widget : {static_cast<QWidget *>(this), static_cast<QWidget *>(ui_.header)}) {
+    widget->style()->unpolish(widget);
+    widget->style()->polish(widget);
+    widget->update();
+  }
 }
 }   // namespace mapviz

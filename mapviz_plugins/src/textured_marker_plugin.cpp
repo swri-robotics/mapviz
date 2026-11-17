@@ -67,15 +67,7 @@ TexturedMarkerPlugin::TexturedMarkerPlugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
   QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
@@ -103,7 +95,7 @@ void TexturedMarkerPlugin::SetAlphaLevel(int alpha)
     alpha < min)    // ignore negative min and max
   {
     alphaVal_ = 1.0f;
-    PrintWarning("Invalid alpha input.");
+    PrintWarning("Invalid alpha input");
   } else {
     // Ex. convert int in range 0-100 to float in range 0-1
     alphaVal_ = (static_cast<float>(alpha) / max);
@@ -138,7 +130,7 @@ void TexturedMarkerPlugin::connectCallback(const std::string & topic, const rmw_
     initialized_ = false;
     markers_.clear();
     has_message_ = false;
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
 
     marker_sub_.reset();
     marker_arr_sub_.reset();

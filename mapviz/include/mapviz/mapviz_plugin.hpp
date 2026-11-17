@@ -53,6 +53,7 @@
 #include <tf2_ros/transform_listener.hpp>
 #include <mapviz/topic_source.hpp>
 #include <mapviz/widgets.hpp>
+#include "mapviz/status_label.hpp"
 #include "mapviz/stopwatch.hpp"
 
 namespace mapviz
@@ -576,6 +577,19 @@ protected:
     emitter << YAML::Key << prefix + "qos_durability" << YAML::Value << qos.durability;
   }
 
+  /**
+   * Converts a size in the canvas's logical pixels to device pixels.
+   *
+   * The canvas lays the map out in logical pixels, but glLineWidth() and
+   * glPointSize() take device pixels, so pass sizes through this to keep lines
+   * and points the same apparent width at every display scale.
+   */
+  float DevicePixels(double logical_pixels) const
+  {
+    const double ratio = canvas_ ? canvas_->devicePixelRatioF() : 1.0;
+    return static_cast<float>(logical_pixels * ratio);
+  }
+
   // Dealing with YAML frequently requires trimming whitespace from strings
   inline std::string TrimString(const std::string & str)
   {
@@ -651,10 +665,8 @@ inline void MapvizPlugin::PrintErrorHelper(
     RCLCPP_ERROR(logger, "%s", message.c_str());
   }
   auto update_label = [status_label, message]() {
-      QPalette p(status_label->palette());
-      p.setColor(QPalette::Text, Qt::red);
-      status_label->setPalette(p);
-      status_label->setText(message.c_str());
+      SetStatusLevel(status_label, StatusLevel::Error);
+      status_label->setText(QString::fromStdString(StatusText(message)));
     };
   if (QThread::currentThread() == status_label->thread()) {
     update_label();
@@ -678,10 +690,8 @@ inline void MapvizPlugin::PrintInfoHelper(
     RCLCPP_INFO(logger, "%s", message.c_str());
   }
   auto update_label = [status_label, message]() {
-      QPalette p(status_label->palette());
-      p.setColor(QPalette::Text, Qt::darkGreen);
-      status_label->setPalette(p);
-      status_label->setText(message.c_str());
+      SetStatusLevel(status_label, StatusLevel::Info);
+      status_label->setText(QString::fromStdString(StatusText(message)));
     };
   if (QThread::currentThread() == status_label->thread()) {
     update_label();
@@ -705,10 +715,8 @@ inline void MapvizPlugin::PrintWarningHelper(
     RCLCPP_WARN(logger, "%s", message.c_str());
   }
   auto update_label = [status_label, message]() {
-      QPalette p(status_label->palette());
-      p.setColor(QPalette::Text, Qt::darkYellow);
-      status_label->setPalette(p);
-      status_label->setText(message.c_str());
+      SetStatusLevel(status_label, StatusLevel::Warning);
+      status_label->setText(QString::fromStdString(StatusText(message)));
     };
   if (QThread::currentThread() == status_label->thread()) {
     update_label();

@@ -74,15 +74,7 @@ ImagePlugin::ImagePlugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(ui_.selecttopic, SIGNAL(clicked()), this, SLOT(SelectTopic()));
   QObject::connect(ui_.topic, SIGNAL(editingFinished()), this, SLOT(TopicEdited()));
@@ -291,7 +283,7 @@ void ImagePlugin::connectCallback(const std::string & topic, const rmw_qos_profi
     has_message_ = false;
     topic_ = topic;
     qos_ = qos;
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
 
     image_sub_.shutdown();
 

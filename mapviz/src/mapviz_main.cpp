@@ -26,6 +26,9 @@
 //
 // *****************************************************************************
 
+#include <QCoreApplication>
+#include <QGuiApplication>
+
 #include "mapviz/mapviz.hpp"
 #include "mapviz/mapviz_application.hpp"
 
@@ -36,6 +39,21 @@ int main(int argc, char ** argv)
 
   // Initialize Qt resources
   Q_INIT_RESOURCE(icons);
+
+#if QT_VERSION < 0x060000
+  // Qt 6 always scales the interface to each monitor's scale factor; Qt 5 only
+  // does if asked before the application object exists.  Without this, mapviz
+  // on Qt 5 is drawn at 1x everywhere: tiny on a high-DPI monitor, and the
+  // same size on every monitor.  Fractional factors (1.25, 1.5) are passed
+  // through rather than rounded, as Qt 6 does.  QT_ENABLE_HIGHDPI_SCALING and
+  // the other QT_* scaling variables still take precedence.
+  QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+  QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#if QT_VERSION >= 0x050E00
+  QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+    Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif
+#endif
 
   // Initialize QT
   mapviz::MapvizApplication app(argc, argv);

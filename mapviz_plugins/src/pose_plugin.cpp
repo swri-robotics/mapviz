@@ -39,6 +39,7 @@
 #include <utility>
 #include <vector>
 
+#include <mapviz_plugins/default_colors.hpp>
 #include <mapviz_plugins/topic_select.hpp>
 #include <opencv2/core/core.hpp>
 
@@ -63,17 +64,9 @@ PosePlugin::PosePlugin()
 {
   ui_.setupUi(config_widget_);
 
-  ui_.color->setColor(Qt::green);
+  ui_.color->setColor(DefaultDrawColor());
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(
     ui_.selecttopic, SIGNAL(clicked()), this,
@@ -132,7 +125,7 @@ void PosePlugin::connectCallback(const std::string & topic, const rmw_qos_profil
     initialized_ = false;
     ClearPoints();
     has_message_ = false;
-    PrintWarning("No messages received.");
+    PrintWarning("No messages received");
 
     // pose_sub_.shutdown();
     pose_sub_.reset();

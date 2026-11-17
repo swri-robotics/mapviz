@@ -61,13 +61,7 @@ MultiresImagePlugin::MultiresImagePlugin()
 {
   ui_.setupUi(config_widget_);
 
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  QPalette p2(ui_.status->palette());
-  p2.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p2);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   QObject::connect(ui_.browse, SIGNAL(clicked()), this, SLOT(SelectFile()));
   QObject::connect(ui_.path, SIGNAL(editingFinished()), this, SLOT(AcceptConfiguration()));
@@ -89,41 +83,38 @@ MultiresImagePlugin::~MultiresImagePlugin()
 
 void MultiresImagePlugin::PrintError(const std::string & message)
 {
-  if (message == ui_.status->text().toStdString()) {
+  const std::string text = mapviz::StatusText(message);
+  if (text == ui_.status->text().toStdString()) {
     return;
   }
 
   RCLCPP_ERROR(Logger(), "Error: %s", message.c_str());
-  QPalette p(ui_.status->palette());
-  p.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p);
-  ui_.status->setText(message.c_str());
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
+  ui_.status->setText(QString::fromStdString(text));
 }
 
 void MultiresImagePlugin::PrintInfo(const std::string & message)
 {
-  if (message == ui_.status->text().toStdString()) {
+  const std::string text = mapviz::StatusText(message);
+  if (text == ui_.status->text().toStdString()) {
     return;
   }
 
   RCLCPP_INFO(Logger(), "%s", message.c_str());
-  QPalette p(ui_.status->palette());
-  p.setColor(QPalette::Text, Qt::green);
-  ui_.status->setPalette(p);
-  ui_.status->setText(message.c_str());
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Info);
+  ui_.status->setText(QString::fromStdString(text));
 }
 
 void MultiresImagePlugin::PrintWarning(const std::string & message)
 {
-  if (message == ui_.status->text().toStdString()) {
+  const std::string text = mapviz::StatusText(message);
+  if (text == ui_.status->text().toStdString()) {
     return;
   }
 
   RCLCPP_WARN(Logger(), "%s", message.c_str());
-  QPalette p(ui_.status->palette());
-  p.setColor(QPalette::Text, Qt::darkYellow);
-  ui_.status->setPalette(p);
-  ui_.status->setText(message.c_str());
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Warning);
+  ui_.status->setText(QString::fromStdString(text));
 }
 
 void MultiresImagePlugin::AcceptConfiguration()
@@ -145,9 +136,7 @@ void MultiresImagePlugin::AcceptConfiguration()
         source_frame_ = std::string("/") + source_frame_;
       }
 
-      QPalette p(ui_.status->palette());
-      p.setColor(QPalette::Text, Qt::green);
-      ui_.status->setPalette(p);
+      mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Info);
       ui_.status->setText("OK");
 
       initialized_ = true;
@@ -155,7 +144,7 @@ void MultiresImagePlugin::AcceptConfiguration()
       MultiresView * view = new MultiresView(tile_set_, canvas_);
       tile_view_ = view;
     } else {
-      PrintError("Failed to load image.");
+      PrintError("Failed to load image");
       delete tile_set_;
       tile_set_ = 0;
       tile_view_ = 0;

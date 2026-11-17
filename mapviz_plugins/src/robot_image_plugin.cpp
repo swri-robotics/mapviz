@@ -79,15 +79,7 @@ RobotImagePlugin::RobotImagePlugin()
 {
   ui_.setupUi(config_widget_);
 
-  // Set background white
-  QPalette p(config_widget_->palette());
-  p.setColor(QPalette::Window, Qt::white);
-  config_widget_->setPalette(p);
-
-  // Set status text red
-  QPalette p3(ui_.status->palette());
-  p3.setColor(QPalette::Text, Qt::red);
-  ui_.status->setPalette(p3);
+  mapviz::SetStatusLevel(ui_.status, mapviz::StatusLevel::Error);
 
   UpdateShape();
 
@@ -151,7 +143,7 @@ void RobotImagePlugin::ImageEdited()
 void RobotImagePlugin::FrameEdited()
 {
   source_frame_ = ui_.frame->text().toStdString();
-  PrintWarning("Waiting for transform.");
+  PrintWarning("Waiting for transform");
 
   RCLCPP_INFO(Logger(), "Setting target frame to to %s", source_frame_.c_str());
 
@@ -384,10 +376,10 @@ void RobotImagePlugin::LoadImage()
         RatioOriginalToggled(true);
       }
     } else {
-      PrintError("Failed to load image.");
+      PrintError("Failed to load image");
     }
   } catch (const std::exception & e) {
-    PrintError("Failed to load image.  Exception occured.");
+    PrintError("Failed to load image: exception occurred");
   }
 }
 
