@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
   // Initialize Qt resources
   Q_INIT_RESOURCE(icons);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < 0x060000
   // Qt 6 always scales the interface to each monitor's scale factor; Qt 5 only
   // does if asked before the application object exists.  Without this, mapviz
   // on Qt 5 is drawn at 1x everywhere: tiny on a high-DPI monitor, and the
@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
   // the other QT_* scaling variables still take precedence.
   QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+#if QT_VERSION >= 0x050E00
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
     Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif

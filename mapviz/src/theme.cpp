@@ -371,7 +371,7 @@ void Theme::Apply(ThemeMode mode)
     // Fusion looks the same on every desktop and draws entirely from the
     // palette, which is what lets one palette swap restyle everything.
     QApplication::setStyle(new MapvizStyle());
-#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#if QT_VERSION >= 0x060500
     QObject::connect(
       QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, app,
       []() {
@@ -417,7 +417,7 @@ void Theme::SaveMode(ThemeMode mode)
 
 bool Theme::SystemPrefersDark()
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#if QT_VERSION >= 0x060500
   const Qt::ColorScheme scheme = QGuiApplication::styleHints()->colorScheme();
   if (scheme != Qt::ColorScheme::Unknown) {
     return scheme == Qt::ColorScheme::Dark;
