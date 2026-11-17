@@ -38,7 +38,9 @@
 #include <cmath>
 #include <string>
 
+#include <mapviz/config_item.hpp>
 #include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/widgets.hpp>
 #include <mapviz/status_label.hpp>
 #include <mapviz/theme.hpp>
 
@@ -204,6 +206,37 @@ TEST(Theme, ApplySwitchesThePaletteAndRecolorsStatusLabels)
   EXPECT_EQ(mapviz::StatusColor(StatusLevel::Error, true), label.palette().color(QPalette::Text));
   EXPECT_EQ(
     mapviz::StatusColor(StatusLevel::Error, true), label.palette().color(QPalette::WindowText));
+}
+
+TEST(Theme, SizesFollowTheApplicationFont)
+{
+  const QFont original = QApplication::font();
+  QFont small = original;
+  small.setPointSizeF(9);
+  QApplication::setFont(small);
+  const int small_icon = mapviz::IconWidget::IconSize();
+  const QString small_sheet = Theme::StyleSheet(Theme::Palette(false));
+
+  mapviz::ConfigItem item;
+  item.RefreshAppearance();
+  const int small_chevron = item.ui_.signlabel->width();
+
+  QFont large = original;
+  large.setPointSizeF(18);
+  QApplication::setFont(large);
+  const int large_icon = mapviz::IconWidget::IconSize();
+  item.RefreshAppearance();
+
+  EXPECT_GT(large_icon, small_icon);
+  EXPECT_GT(item.ui_.signlabel->width(), small_chevron);
+  EXPECT_NE(small_sheet, Theme::StyleSheet(Theme::Palette(false)));
+
+  // Header icons are drawn on a 16-unit canvas sized for the current font.
+  const QPixmap icon = mapviz::IconWidget::CreatePixmap();
+  EXPECT_NEAR(16.0, icon.width() / icon.devicePixelRatio(), 0.5);
+  EXPECT_NEAR(large_icon * qApp->devicePixelRatio(), icon.width(), 1.0);
+
+  QApplication::setFont(original);
 }
 
 int main(int argc, char ** argv)

@@ -38,6 +38,21 @@
 
 namespace
 {
+/// A frame that is red on top and blue below, in the format
+/// QOpenGLWidget::grabFramebuffer() returns: top row first, in ARGB32, which
+/// is BGRA in memory.
+QImage SplitFrame(int width, int height)
+{
+  QImage frame(width, height, QImage::Format_ARGB32);
+  frame.fill(QColor(255, 0, 0));
+  for (int row = height / 2; row < height; row++) {
+    for (int col = 0; col < width; col++) {
+      frame.setPixelColor(col, row, QColor(0, 0, 255));
+    }
+  }
+  return frame;
+}
+
 /// The average BGR color of a region of @p frame.
 cv::Scalar Mean(const cv::Mat & frame, int top, int bottom)
 {
@@ -81,4 +96,43 @@ TEST(VideoWriter, WritesFramesTheRightWayUp)
   EXPECT_LT(top[0], 60) << "top: " << top;
   EXPECT_GT(bottom[0], 200) << "bottom: " << bottom;
   EXPECT_LT(bottom[2], 60) << "bottom: " << bottom;
+}
+
+TEST(VideoWriter, KeepsRecordingWhenTheFrameSizeChanges)
+{
+  // Moving mapviz to a monitor with a different scale factor changes the size
+  // of the canvas in device pixels partway through a recording.  Those frames
+  // must still be written, at the size the video was opened with.
+  const std::string path = ::testing::TempDir() + "test_video_writer_resize.avi";
+  const int width = 64;
+  const int height = 48;
+
+  mapviz::VideoWriter writer;
+  ASSERT_TRUE(writer.initializeWriter(path, width, height));
+  for (int i = 0; i < 2; i++) {
+    writer.processFrame(SplitFrame(width, height));
+  }
+  for (int i = 0; i < 3; i++) {
+    writer.processFrame(SplitFrame(width * 2, height * 2));
+  }
+  for (int i = 0; i < 2; i++) {
+    writer.processFrame(SplitFrame(width * 3 / 4, height * 3 / 4));
+  }
+  writer.stop();
+
+  cv::VideoCapture video(path);
+  int frames = 0;
+  cv::Mat written;
+  while (video.read(written)) {
+    frames++;
+    ASSERT_EQ(width, written.cols);
+    ASSERT_EQ(height, written.rows);
+    const cv::Scalar top = Mean(written, 0, height / 2 - 4);
+    const cv::Scalar bottom = Mean(written, height / 2 + 4, height);
+    EXPECT_GT(top[2], 200) << "frame " << frames << " top: " << top;
+    EXPECT_GT(bottom[0], 200) << "frame " << frames << " bottom: " << bottom;
+  }
+  std::remove(path.c_str());
+
+  EXPECT_EQ(7, frames);
 }

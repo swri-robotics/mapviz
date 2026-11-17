@@ -240,6 +240,12 @@ void ConfigItem::SetSelected(bool selected)
   }
 }
 
+void ConfigItem::RefreshAppearance()
+{
+  updateCollapseIndicator();
+  NormalizeConfigForm(ui_.content);
+}
+
 void ConfigItem::changeEvent(QEvent * event)
 {
   QWidget::changeEvent(event);

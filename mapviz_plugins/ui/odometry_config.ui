@@ -19,12 +19,6 @@
   <layout class="QGridLayout" name="gridLayout" columnminimumwidth="0,1,0">
    <item row="9" column="0">
     <widget class="QLabel" name="label_10">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Timestamp Interval:</string>
      </property>
@@ -32,12 +26,6 @@
    </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Topic:</string>
      </property>
@@ -59,12 +47,6 @@
    </item>
    <item row="0" column="1">
     <widget class="QLineEdit" name="topic">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
     </widget>
    </item>
    <item row="7" column="1">
@@ -88,12 +70,6 @@
    </item>
    <item row="10" column="1">
     <widget class="QLabel" name="status">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
@@ -126,12 +102,6 @@
    </item>
    <item row="10" column="0">
     <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Status:</string>
      </property>
@@ -145,12 +115,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
@@ -161,12 +125,6 @@
    </item>
    <item row="8" column="0">
     <widget class="QLabel" name="label_6">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Buffer Size:</string>
      </property>
@@ -197,12 +155,6 @@
    </item>
    <item row="4" column="0">
     <widget class="QLabel" name="label_5">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Show Covariance:</string>
      </property>
@@ -215,12 +167,6 @@
        <width>16777215</width>
        <height>25</height>
       </size>
-     </property>
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>9</pointsize>
-      </font>
      </property>
      <item>
       <property name="text">
@@ -241,12 +187,6 @@
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_7">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Draw Style:</string>
      </property>
@@ -267,11 +207,6 @@
    </item>
    <item row="6" column="0">
     <widget class="QLabel" name="label_8">
-     <property name="font">
-      <font>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Show Laps</string>
      </property>
@@ -279,12 +214,6 @@
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Color:</string>
      </property>
@@ -292,12 +221,6 @@
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label_9">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Static Arrow Sizes:</string>
      </property>
@@ -305,12 +228,6 @@
    </item>
    <item row="7" column="0">
     <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Position Tolerance:</string>
      </property>
@@ -370,12 +287,6 @@
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="label_11">
-     <property name="font">
-      <font>
-       <family>Sans Serif</family>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>All Covariances:</string>
      </property>

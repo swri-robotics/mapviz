@@ -37,6 +37,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <filesystem>
+#include <initializer_list>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -69,6 +70,10 @@
 #include <QHBoxLayout>
 #include <QPainter>
 #include <QVBoxLayout>
+#include <QAbstractButton>
+#include <QScreen>
+#include <QTimer>
+#include <QWindow>
 #include <QtGui/QtGui>
 
 // YAML libraries
@@ -208,11 +213,6 @@ Mapviz::Mapviz(bool is_standalone, int argc, char ** argv, QWidget * parent, Qt:
   }
   NormalizeConfigForm(ui_.widget_2);
 
-  // Small icon buttons (the pin and the status bar tools) follow the font
-  // size, so they don't shrink beside larger text.
-  const int icon_size = IconWidget::IconSize();
-  const int tool_button_size = icon_size + 6;
-
   // Set up custom title bar for configdock with pin button
   {
     QWidget * title_bar = new QWidget(ui_.configdock);
@@ -227,8 +227,6 @@ Mapviz::Mapviz(bool is_standalone, int argc, char ** argv, QWidget * parent, Qt:
     pin_button_->setToolTip("Pin panel (unpin to auto-hide)");
     pin_button_->setIcon(Theme::Icon(ThemeIcon::Pin));
     pin_button_->setAutoRaise(true);
-    pin_button_->setFixedSize(tool_button_size, tool_button_size);
-    pin_button_->setIconSize(QSize(icon_size, icon_size));
     title_layout->addWidget(pin_button_);
 
     title_label_ = new QLabel("Config", title_bar);
@@ -257,57 +255,41 @@ Mapviz::Mapviz(bool is_standalone, int argc, char ** argv, QWidget * parent, Qt:
   ui_.statusbar->addPermanentWidget(lat_lon_pos_label_);
 
   spacer1_ = new QWidget(ui_.statusbar);
-  spacer1_->setMaximumSize(tool_button_size, tool_button_size);
-  spacer1_->setMinimumSize(tool_button_size, tool_button_size);
   ui_.statusbar->addPermanentWidget(spacer1_);
 
   screenshot_button_ = new QPushButton();
-  screenshot_button_->setMinimumSize(tool_button_size, tool_button_size);
-  screenshot_button_->setMaximumSize(tool_button_size, tool_button_size);
   screenshot_button_->setIcon(Theme::Icon(ThemeIcon::Screenshot));
-  screenshot_button_->setIconSize(QSize(icon_size, icon_size));
   screenshot_button_->setFlat(true);
   screenshot_button_->setToolTip("Capture screenshot of display canvas");
   ui_.statusbar->addPermanentWidget(screenshot_button_);
 
   spacer2_ = new QWidget(ui_.statusbar);
-  spacer2_->setMaximumSize(tool_button_size, tool_button_size);
-  spacer2_->setMinimumSize(tool_button_size, tool_button_size);
   ui_.statusbar->addPermanentWidget(spacer2_);
 
   rec_button_ = new QPushButton();
-  rec_button_->setMinimumSize(tool_button_size, tool_button_size);
-  rec_button_->setMaximumSize(tool_button_size, tool_button_size);
   rec_button_->setIcon(Theme::Icon(ThemeIcon::Record));
-  rec_button_->setIconSize(QSize(icon_size, icon_size));
   rec_button_->setCheckable(true);
   rec_button_->setFlat(true);
   rec_button_->setToolTip("Start recording video of display canvas");
   ui_.statusbar->addPermanentWidget(rec_button_);
 
   stop_button_ = new QPushButton();
-  stop_button_->setMinimumSize(tool_button_size, tool_button_size);
-  stop_button_->setMaximumSize(tool_button_size, tool_button_size);
   stop_button_->setIcon(Theme::Icon(ThemeIcon::Stop));
-  stop_button_->setIconSize(QSize(icon_size, icon_size));
   stop_button_->setToolTip("Stop recording video of display canvas");
   stop_button_->setEnabled(false);
   stop_button_->setFlat(true);
   ui_.statusbar->addPermanentWidget(stop_button_);
 
   spacer3_ = new QWidget(ui_.statusbar);
-  spacer3_->setMaximumSize(tool_button_size, tool_button_size);
-  spacer3_->setMinimumSize(tool_button_size, tool_button_size);
   ui_.statusbar->addPermanentWidget(spacer3_);
 
   recenter_button_ = new QPushButton();
-  recenter_button_->setMinimumSize(tool_button_size, tool_button_size);
-  recenter_button_->setMaximumSize(tool_button_size, tool_button_size);
   recenter_button_->setIcon(Theme::Icon(ThemeIcon::Recenter));
-  recenter_button_->setIconSize(QSize(icon_size, icon_size));
   recenter_button_->setToolTip("Reset the viewport to the default location and zoom level");
   recenter_button_->setFlat(true);
   ui_.statusbar->addPermanentWidget(recenter_button_);
+
+  SizeToolButtons();
 
   ui_.statusbar->setVisible(true);
 
@@ -456,6 +438,22 @@ void Mapviz::closeEvent([[maybe_unused]] QCloseEvent * event)
 
 void Mapviz::Initialize()
 {
+  if (!screen_signals_connected_ && window()->windowHandle() != nullptr) {
+    // Qt 6.6 and later also deliver QEvent::DevicePixelRatioChange (see
+    // event()); these signals cover older versions, and a monitor being
+    // plugged in or removed, which can change the sharpest scale in use.
+    screen_signals_connected_ = true;
+    connect(
+      window()->windowHandle(), &QWindow::screenChanged, this,
+      [this](QScreen *) {ScheduleAppearanceRefresh();});
+    connect(
+      qApp, &QGuiApplication::screenAdded, this,
+      [this](QScreen *) {ScheduleAppearanceRefresh();});
+    connect(
+      qApp, &QGuiApplication::screenRemoved, this,
+      [this](QScreen *) {ScheduleAppearanceRefresh();});
+  }
+
   if (!initialized_) {
     // executor_ only services the GUI callback group; this timer runs in
     // both standalone and rqt modes.
@@ -886,7 +884,7 @@ void Mapviz::Open(const std::string & filename)
       if (panel_width >= CONFIG_PANEL_PINNED_WIDTH) {
         pinned_panel_width_ = panel_width;
         resizeDocks({ui_.configdock}, {panel_width}, Qt::Horizontal);
-        ui_.configdock->setMinimumWidth(CONFIG_PANEL_PINNED_WIDTH);
+        ui_.configdock->setMinimumWidth(PinnedPanelMinimumWidth());
       }
     }
 
@@ -1534,11 +1532,11 @@ void Mapviz::TogglePinConfigPanel(bool pinned)
   if (pinned) {
     pin_button_->setToolTip("Panel pinned (click to auto-hide)");
     // Restore full dock
-    const int target = std::max(pinned_panel_width_, CONFIG_PANEL_PINNED_WIDTH);
+    const int target = std::max(pinned_panel_width_, PinnedPanelMinimumWidth());
     title_label_->setText("Config");
     ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
     resizeDocks({ui_.configdock}, {target}, Qt::Horizontal);
-    ui_.configdock->setMinimumWidth(CONFIG_PANEL_PINNED_WIDTH);
+    ui_.configdock->setMinimumWidth(PinnedPanelMinimumWidth());
     collapsed_label_->setVisible(false);
     ui_.widget_2->show();
     ui_.configs->show();
@@ -1725,6 +1723,109 @@ void Mapviz::UpdateSizeHints()
   }
 }
 
+void Mapviz::SizeToolButtons()
+{
+  // The pin and the status bar tools follow the font size, so they don't
+  // shrink beside larger text.
+  const int icon_size = IconWidget::IconSize();
+  const int button_size = icon_size + 6;
+  const QSize button(button_size, button_size);
+  const QSize icon(icon_size, icon_size);
+
+  for (QAbstractButton * tool : std::initializer_list<QAbstractButton *>{
+      pin_button_, screenshot_button_, rec_button_, stop_button_, recenter_button_})
+  {
+    if (tool != nullptr) {
+      tool->setFixedSize(button);
+      tool->setIconSize(icon);
+    }
+  }
+  for (QWidget * spacer : {spacer1_, spacer2_, spacer3_}) {
+    if (spacer != nullptr) {
+      spacer->setFixedSize(button);
+    }
+  }
+}
+
+int Mapviz::PinnedPanelMinimumWidth() const
+{
+  // The settings grid and the Add/Duplicate/Remove/Rename row grow with the
+  // font, so the floor has to as well, or they'd be clipped.  A hidden
+  // widget still reports the size its layout needs.
+  int contents = std::max(
+    ui_.widget->minimumSizeHint().width(), ui_.widget_2->minimumSizeHint().width());
+  if (const QLayout * layout = ui_.dockWidgetContents->layout()) {
+    const QMargins margins = layout->contentsMargins();
+    contents += margins.left() + margins.right();
+  }
+  return std::max(CONFIG_PANEL_PINNED_WIDTH, contents);
+}
+
+bool Mapviz::event(QEvent * event)
+{
+  switch (event->type()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    case QEvent::DevicePixelRatioChange:
+#endif
+    case QEvent::ApplicationFontChange:
+      ScheduleAppearanceRefresh();
+      break;
+    default:
+      break;
+  }
+  return QMainWindow::event(event);
+}
+
+void Mapviz::ScheduleAppearanceRefresh()
+{
+  if (appearance_refresh_pending_) {
+    return;
+  }
+  appearance_refresh_pending_ = true;
+  QTimer::singleShot(
+    0, this, [this]() {
+      appearance_refresh_pending_ = false;
+      RefreshScaledAppearance();
+    });
+}
+
+void Mapviz::RefreshScaledAppearance()
+{
+  // The style sheet sizes the display visibility check boxes from the font.
+  if (is_standalone_) {
+    Theme::Apply(Theme::CurrentMode());
+  } else {
+    Theme::ApplyTo(this);
+  }
+
+  SizeToolButtons();
+  NormalizeConfigForm(ui_.widget_2);
+
+  // Widen the panel if larger text no longer fits.
+  if (config_panel_pinned_) {
+    const int minimum = PinnedPanelMinimumWidth();
+    ui_.configdock->setMinimumWidth(minimum);
+    if (ui_.configdock->width() < minimum) {
+      resizeDocks({ui_.configdock}, {minimum}, Qt::Horizontal);
+    }
+  }
+
+  // Header icons and chevrons are pixmaps, rendered for the font size and the
+  // sharpest display at the time; draw them again.
+  for (int i = 0; i < ui_.configs->count(); i++) {
+    QListWidgetItem * item = ui_.configs->item(i);
+    auto * config_item = dynamic_cast<ConfigItem *>(ui_.configs->itemWidget(item));
+    if (config_item != nullptr) {
+      config_item->RefreshAppearance();
+    }
+    auto plugin = plugins_.find(item);
+    if (plugin != plugins_.end() && plugin->second) {
+      plugin->second->DrawIcon();
+    }
+  }
+  UpdateSizeHints();
+}
+
 void Mapviz::RemoveDisplay()
 {
   QListWidgetItem * item = ui_.configs->takeItem(ui_.configs->currentRow());
@@ -1897,11 +1998,11 @@ bool Mapviz::eventFilter(QObject * object, QEvent * event)
   } else if (object == ui_.configdock && !config_panel_pinned_) {
     if (event->type() == QEvent::Enter) {
       // Expand on mouse enter
-      const int target = std::max(pinned_panel_width_, CONFIG_PANEL_PINNED_WIDTH);
+      const int target = std::max(pinned_panel_width_, PinnedPanelMinimumWidth());
       title_label_->setText("Config");
       ui_.configdock->setMaximumWidth(QWIDGETSIZE_MAX);
       resizeDocks({ui_.configdock}, {target}, Qt::Horizontal);
-      ui_.configdock->setMinimumWidth(CONFIG_PANEL_PINNED_WIDTH);
+      ui_.configdock->setMinimumWidth(PinnedPanelMinimumWidth());
       collapsed_label_->setVisible(false);
       ui_.widget_2->show();
       ui_.configs->show();

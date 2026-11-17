@@ -70,6 +70,11 @@ public:
   /// Highlights this item as the one the Duplicate / Remove / Rename buttons
   /// act on.  Purely cosmetic.
   void SetSelected(bool selected);
+
+  /// Redraws what depends on the font size or display scale (the chevron,
+  /// color swatches); called when either changes.
+  void RefreshAppearance();
+
   QString Name() const {return name_;}
 
   Ui::configitem ui_;

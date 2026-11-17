@@ -36,11 +36,6 @@
          <height>0</height>
         </size>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Abort [2D Nav Goal] execution&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
@@ -66,11 +61,6 @@
          <width>100</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Publish robot pose on topic [/initialpose]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -100,11 +90,6 @@
          <width>100</width>
          <height>0</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
        </property>
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Send a goal to [move_base] action server&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
