@@ -30,6 +30,8 @@
 
 #include <QStringList>
 
+#include <algorithm>
+#include <cmath>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -68,6 +70,7 @@ void Map25d::SetBuildingsEnabled(bool enabled)
 
 void Map25d::SetImagery(const std::shared_ptr<TileSource> & source, const ImageCachePtr & cache)
 {
+  imagery_cache_ = cache;
   // A new source has different tiles to look in; the view usually hasn't
   // changed, so it won't be passed in again on its own.
   if (trees_.SetImagery(source, cache) && view_ &&
@@ -98,9 +101,64 @@ void Map25d::SetShading(const ShadingParameters & shading)
 
 void Map25d::SetTransform(const swri_transform_util::Transform & wgs84_to_target)
 {
+  transform_ = wgs84_to_target;
   terrain_view_.SetTransform(wgs84_to_target);
   buildings_->SetTransform(wgs84_to_target);
   trees_.SetTransform(wgs84_to_target);
+}
+
+void Map25d::UpdateCullArea()
+{
+  if (!view_) {
+    return;
+  }
+  const tf2::Vector3 center =
+    transform_ * tf2::Vector3(view_->longitude, view_->latitude, 0.0);
+  const double view_radius = 0.5 * view_->scale * std::hypot(view_->width, view_->height);
+  auto planar = [](const tf2::Vector3 & a, const tf2::Vector3 & b) {
+      return std::hypot(a.x() - b.x(), a.y() - b.y());
+    };
+  // Move the kept area only when the view nears its edge or zooms, so what
+  // is drawn (and so the triangles) stays the same while panning a little.
+  if (!cull_ || planar(center, cull_->center) > 0.25 * view_radius ||
+    view_->scale > 1.25 * cull_->scale || view_->scale < 0.8 * cull_->scale)
+  {
+    // Tall things just outside can lean into view.
+    const double margin = lean_ * 60.0;
+    cull_ = CullArea{center, 1.5 * view_radius + margin, view_radius, view_->scale};
+    ++cull_generation_;
+  }
+}
+
+void Map25d::Cull(
+  std::vector<const ProjectedBuilding *> & buildings,
+  std::vector<const ProjectedCrown *> & crowns)
+{
+  if (!cull_) {
+    return;
+  }
+  auto planar = [](const tf2::Vector3 & a, const tf2::Vector3 & b) {
+      return std::hypot(a.x() - b.x(), a.y() - b.y());
+    };
+  const CullArea & area = *cull_;
+  buildings.erase(
+    std::remove_if(
+      buildings.begin(), buildings.end(), [&](const ProjectedBuilding * building) {
+        return planar(building->center, area.center) > area.radius + building->extent;
+      }), buildings.end());
+  crowns.erase(
+    std::remove_if(
+      crowns.begin(), crowns.end(), [&](const ProjectedCrown * crown) {
+        return planar(crown->center, area.center) > area.radius + crown->radius;
+      }), crowns.end());
+  if (crowns.size() > MAX_CROWNS) {
+    std::nth_element(
+      crowns.begin(), crowns.begin() + MAX_CROWNS, crowns.end(),
+      [&](const ProjectedCrown * a, const ProjectedCrown * b) {
+        return planar(a->center, area.center) < planar(b->center, area.center);
+      });
+    crowns.resize(MAX_CROWNS);
+  }
 }
 
 void Map25d::SetView(
@@ -131,28 +189,65 @@ void Map25d::Draw()
 
   const bool map_trees = trees_enabled_ && tree_source_ == TreeSource::Map;
   const bool imagery_trees = trees_enabled_ && tree_source_ == TreeSource::Imagery;
-  std::vector<const ProjectedBuilding *> buildings;
-  std::vector<const ProjectedCrown *> crowns;
-  if (MapDataNeeded()) {
-    buildings_->Collect(buildings_enabled_ ? &buildings : nullptr, map_trees ? &crowns : nullptr);
-  }
   if (imagery_trees) {
     trees_.Update();
-    trees_.Collect(&crowns);
   }
+  UpdateCullArea();
+
+  // Collecting and culling every building and tree costs more than drawing
+  // them, so do it again only when something it depends on has changed.
+  const uint64_t source_revision =
+    buildings_->Revision() * 1000003ULL + trees_.Revision() * 8191ULL +
+    cull_generation_ * 524287ULL +
+    (buildings_enabled_ ? 1u : 0u) + (map_trees ? 2u : 0u) + (imagery_trees ? 4u : 0u);
+  if (source_revision != collected_revision_) {
+    collected_buildings_.clear();
+    collected_crowns_.clear();
+    if (MapDataNeeded()) {
+      buildings_->Collect(
+        buildings_enabled_ ? &collected_buildings_ : nullptr,
+        map_trees ? &collected_crowns_ : nullptr);
+    }
+    if (imagery_trees) {
+      trees_.Collect(&collected_crowns_);
+    }
+    Cull(collected_buildings_, collected_crowns_);
+    collected_revision_ = source_revision;
+  }
+  const std::vector<const ProjectedBuilding *> & buildings = collected_buildings_;
+  const std::vector<const ProjectedCrown *> & crowns = collected_crowns_;
   if (buildings.empty() && crowns.empty()) {
     return;
   }
-  // Anything that changes what is drawn changes the revision, so the
-  // renderer rebuilds its triangles only when it has to.  That includes the
-  // imagery tiles: the triangles refer to their textures.
-  static const std::vector<ImageryTile> no_tiles;
-  const uint64_t revision =
-    buildings_->Revision() * 1000003ULL + trees_.Revision() * 8191ULL +
-    (imagery_textures_ ? drawn_tiles_revision_ * 131ULL + 8u : 0u) +
-    (buildings_enabled_ ? 1u : 0u) + (map_trees ? 2u : 0u) + (imagery_trees ? 4u : 0u);
-  renderer_.Draw(
-    buildings, crowns, imagery_textures_ ? drawn_tiles_ : no_tiles, lean_, revision);
+
+  // Anything that changes what is drawn changes the revision.  That includes
+  // the imagery tiles, which the atlas is packed from.
+  const uint64_t revision = source_revision +
+    (imagery_textures_ ? drawn_tiles_revision_ * 131ULL + 8u : 0u);
+  // While data arrives the revision changes every few frames; rebuilding
+  // that often would stall the map, so wait a little between rebuilds.
+  const bool due = !since_build_.isValid() ||
+    since_build_.elapsed() >= static_cast<qint64>(1000.0 / REBUILDS_PER_SECOND);
+  if (!renderer_.Built() || (revision != built_revision_ && due)) {
+    if (!imagery_textures_) {
+      atlas_ = ImageryAtlas();
+      atlas_revision_ = 0;
+    } else if (atlas_revision_ != drawn_tiles_revision_ && imagery_cache_) {
+      std::vector<std::pair<ImageryTile, QImage>> images;
+      images.reserve(drawn_tiles_.size());
+      for (const ImageryTile & tile : drawn_tiles_) {
+        const ImagePtr image = imagery_cache_->GetImage(tile.url_hash, tile.url);
+        const std::shared_ptr<QImage> pixels = image ? image->GetImage() : nullptr;
+        images.emplace_back(tile, pixels ? *pixels : QImage());
+      }
+      atlas_.Build(images);
+      atlas_revision_ = drawn_tiles_revision_;
+    }
+    renderer_.Rebuild(buildings, crowns, atlas_, cull_ ? cull_->scale : 0.1);
+    built_revision_ = revision;
+    since_build_.restart();
+  }
+  renderer_.Draw(lean_);
 }
 
 QString Map25d::Attribution() const

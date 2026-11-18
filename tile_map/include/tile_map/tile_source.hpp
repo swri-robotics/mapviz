@@ -49,6 +49,9 @@ struct ImageryTile
   int64_t x;
   int64_t y;
   uint32_t texture;
+  /// The tile's URL and its hash, for finding its image in the image cache.
+  QString url = QString();
+  size_t url_hash = 0;
 };
 
 struct ViewBounds

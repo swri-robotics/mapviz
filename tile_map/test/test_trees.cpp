@@ -30,8 +30,10 @@
 #include <QImage>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include <tf2/LinearMath/Vector3.hpp>
@@ -104,26 +106,64 @@ tile_map::ProjectedBuilding MappedSquare(double x, double y, double size)
   return building;
 }
 
-/// Area covered by the triangles of the batch's runs with `texture`.
-double TexturedArea(const tile_map::Batch25d & batch, uint32_t texture)
+/// A tile image of one colour.
+QImage Tile(QRgb color)
+{
+  QImage image(256, 256, QImage::Format_RGB32);
+  image.fill(color);
+  return image;
+}
+
+/// An atlas holding the given LEVEL tiles (or other levels via `level`).
+tile_map::ImageryAtlas Atlas(
+  const std::vector<std::pair<int64_t, int64_t>> & tiles, int32_t level = LEVEL)
+{
+  std::vector<std::pair<tile_map::ImageryTile, QImage>> images;
+  for (const auto & tile : tiles) {
+    images.push_back({{level, tile.first, tile.second, 0}, Tile(qRgb(10, 120, 30))});
+  }
+  tile_map::ImageryAtlas atlas;
+  atlas.Build(images);
+  return atlas;
+}
+
+/// Ground area of the batch's triangles that are draped with imagery (or,
+/// with `draped` false, plain).  Walls stand upright, so they cover none.
+double GroundArea(const tile_map::Batch25d & batch, bool draped)
 {
   double area = 0.0;
   const std::vector<double> & v = batch.Vertices();
-  for (const auto & run : batch.Runs()) {
-    if (run.texture != texture) {
+  for (size_t i = 0; i + 3 <= batch.VertexCount(); i += 3) {
+    if (batch.Draped(i) != draped) {
       continue;
     }
-    for (size_t i = run.first; i + 3 <= run.first + run.count; i += 3) {
-      const double ax = v[2 * i];
-      const double ay = v[2 * i + 1];
-      const double bx = v[2 * i + 2];
-      const double by = v[2 * i + 3];
-      const double cx = v[2 * i + 4];
-      const double cy = v[2 * i + 5];
-      area += std::abs((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) / 2.0;
-    }
+    const double ax = v[3 * i];
+    const double ay = v[3 * i + 1];
+    const double bx = v[3 * i + 3];
+    const double by = v[3 * i + 4];
+    const double cx = v[3 * i + 6];
+    const double cy = v[3 * i + 7];
+    area += std::abs((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) / 2.0;
   }
   return area;
+}
+
+/// True if every draped vertex's texture coordinates are inside `rect`.
+bool AllDrapedIn(const tile_map::Batch25d & batch, const std::array<float, 4> & rect)
+{
+  for (size_t i = 0; i < batch.VertexCount(); ++i) {
+    if (!batch.Draped(i)) {
+      continue;
+    }
+    const float u = batch.TexCoords()[2 * i];
+    const float v = batch.TexCoords()[2 * i + 1];
+    if (u < rect[0] - 1e-6f || u > rect[2] + 1e-6f || v < rect[1] - 1e-6f ||
+      v > rect[3] + 1e-6f)
+    {
+      return false;
+    }
+  }
+  return true;
 }
 }  // namespace
 
@@ -282,141 +322,165 @@ TEST(TreeLayer, FindsTreesInAnImageryTile)
   }
 }
 
-TEST(Scene25d, LeansRoofsUpTheScreen)
+TEST(Scene25d, StandsBuildingsUpWithTheirHeightInZ)
 {
-  const tf2::Vector3 up(0.0, 1.0, 0.0);
-  const tf2::Vector3 right(1.0, 0.0, 0.0);
-  const tile_map::ProjectedBuilding building = Square(0.0, 0.0, 10.0, 10.0);
-
   tile_map::Batch25d batch;
-  batch.AddBuilding(building, up, right, 0.5);
-  // Three walls (the back one faces away) of two triangles, then the roof.
-  ASSERT_EQ(3u * 6u + 6u, batch.VertexCount());
-  // The roof is the last six vertices, 10 m * 0.5 up the screen.
+  batch.AddBuilding(Square(0.0, 0.0, 10.0, 10.0));
+  // All four walls (the depth test hides the back ones), then the roof.
+  ASSERT_EQ(4u * 6u + 6u, batch.VertexCount());
   const std::vector<double> & v = batch.Vertices();
-  double lowest_roof_y = 1e9;
-  for (size_t i = 18; i < 24; ++i) {
-    lowest_roof_y = std::min(lowest_roof_y, v[2 * i + 1]);
+  for (size_t i = 24; i < 30; ++i) {
+    EXPECT_DOUBLE_EQ(10.0, v[3 * i + 2]);
   }
-  EXPECT_DOUBLE_EQ(5.0, lowest_roof_y);
-
-  // No lean: flat, no walls.
-  batch.Clear();
-  batch.AddBuilding(building, up, right, 0.0);
-  EXPECT_EQ(6u, batch.VertexCount());
+  // Opposite walls share a tone; neighbouring ones differ.
+  const std::vector<uint8_t> & c = batch.Colors();
+  EXPECT_EQ(c[0], c[4 * 12]);
+  EXPECT_NE(c[0], c[4 * 6]);
 }
 
-TEST(Scene25d, DrawsCrownsAsRoundTops)
+TEST(Scene25d, DrawsSmallCrownsSimply)
 {
-  const tf2::Vector3 up(0.0, 1.0, 0.0);
-  const tf2::Vector3 right(1.0, 0.0, 0.0);
   tile_map::ProjectedCrown crown;
   crown.center = tf2::Vector3(0.0, 0.0, 0.0);
   crown.radius = 3.0;
   crown.height = 10.0;
 
-  tile_map::Batch25d batch;
-  batch.AddCrown(crown, up, right, 0.0);
-  const size_t flat = batch.VertexCount();
-  EXPECT_GT(flat, 0u);
-  batch.Clear();
-  batch.AddCrown(crown, up, right, 0.6);
-  // Standing up adds a trunk and the crown's underside and sides.
-  EXPECT_GT(batch.VertexCount(), flat);
+  // Up close (0.1 m per pixel): trunk, sides, top and lighter middle.
+  tile_map::Batch25d close;
+  close.SetScale(0.1);
+  close.AddCrown(crown);
+  // Far out (1.4 m per pixel, about two pixels across): a six-sided top.
+  tile_map::Batch25d far;
+  far.SetScale(1.4);
+  far.AddCrown(crown);
+  EXPECT_EQ(6u * 3u, far.VertexCount());
+  EXPECT_LT(far.VertexCount() * 4, close.VertexCount());
+  for (size_t i = 0; i < far.VertexCount(); ++i) {
+    EXPECT_DOUBLE_EQ(10.0, far.Vertices()[3 * i + 2]);
+  }
 }
 
-TEST(Scene25d, DrawsFromTheTopOfTheScreenDown)
+TEST(Scene25d, LeansAndSortsByTheMatrix)
 {
-  const tf2::Vector3 up(0.0, 1.0, 0.0);
-  const tf2::Vector3 right(1.0, 0.0, 0.0);
-  // A building higher up the screen than a tree, so behind it.
-  const tile_map::ProjectedBuilding far = Square(0.0, 100.0, 10.0, 10.0);
-  tile_map::ProjectedCrown near;
-  near.center = tf2::Vector3(5.0, 0.0, 0.0);
-  near.radius = 3.0;
-  near.height = 8.0;
+  // The matrix moves a vertex lean * z up the screen and gives higher points
+  // a smaller depth, so turning the map or changing the lean needs no new
+  // triangles.
+  double m[16];
+  tile_map::LeanMatrix(tf2::Vector3(0.6, 0.8, 0.0), 0.5, m);
+  auto apply = [&m](double x, double y, double z, int row) {
+      // Column major: row r, column c is m[c * 4 + r].
+      return m[row] * x + m[4 + row] * y + m[8 + row] * z + m[12 + row];
+    };
+  EXPECT_DOUBLE_EQ(3.0 + 0.6 * 0.5 * 10.0, apply(3.0, 4.0, 10.0, 0));
+  EXPECT_DOUBLE_EQ(4.0 + 0.8 * 0.5 * 10.0, apply(3.0, 4.0, 10.0, 1));
+  // mapviz's projection maps larger eye z to smaller (nearer) depth.
+  EXPECT_GT(apply(0.0, 0.0, 20.0, 2), apply(0.0, 0.0, 10.0, 2));
+  // Within mapviz's -0.5..0.5 depth range for heights up to 500 m.
+  EXPECT_LT(apply(0.0, 0.0, 500.0, 2), 0.5);
+}
 
-  EXPECT_GT(tile_map::FrontEdge(far, up), tile_map::FrontEdge(near, up));
+TEST(ImageryAtlas, PacksTilesAndKeepsAWhiteCorner)
+{
+  const tile_map::ImageryAtlas atlas = Atlas({{100, 200}, {101, 200}});
+  ASSERT_FALSE(atlas.Empty());
+  EXPECT_EQ(std::vector<int32_t>{LEVEL}, atlas.Levels());
+  std::array<float, 4> first;
+  std::array<float, 4> second;
+  ASSERT_TRUE(atlas.Find(LEVEL, 100, 200, first));
+  ASSERT_TRUE(atlas.Find(LEVEL, 101, 200, second));
+  EXPECT_FALSE(atlas.Find(LEVEL, 102, 200, first));
+  EXPECT_LT(first[0], first[2]);
+  EXPECT_LT(first[1], first[3]);
+  EXPECT_NE(first[0], second[0]);
 
-  tile_map::Batch25d batch;
-  tile_map::BuildBatch({&far}, {&near}, up, right, 0.5, batch);
-  ASSERT_GT(batch.VertexCount(), 0u);
-  // The building comes first.
-  EXPECT_GE(batch.Vertices()[1], 100.0);
-  // The tree comes last.
-  EXPECT_LT(batch.Vertices()[batch.Vertices().size() - 1], 50.0);
+  // The white texel is white, and the tiles' colour is where they were put.
+  const QImage & image = atlas.Image();
+  auto pixel = [&image](float u, float v) {
+      return image.pixel(
+        static_cast<int>(u * image.width()), static_cast<int>((1.0f - v) * image.height()));
+    };
+  EXPECT_EQ(qRgb(255, 255, 255), pixel(atlas.WhiteU(), atlas.WhiteV()) | 0xff000000);
+  const QRgb middle = pixel((first[0] + first[2]) / 2, (first[1] + first[3]) / 2);
+  EXPECT_EQ(qRgb(10, 120, 30), middle | 0xff000000);
+}
+
+TEST(ImageryAtlas, ShrinksTilesToFitThem)
+{
+  std::vector<std::pair<int64_t, int64_t>> tiles;
+  for (int64_t i = 0; i < 200; ++i) {
+    tiles.emplace_back(i, 0);
+  }
+  const tile_map::ImageryAtlas atlas = Atlas(tiles);
+  std::array<float, 4> rect;
+  for (const auto & tile : tiles) {
+    ASSERT_TRUE(atlas.Find(LEVEL, tile.first, tile.second, rect));
+  }
+  // 200 tiles at 2048 px: 128 px each.
+  EXPECT_NEAR(128.0 / tile_map::ImageryAtlas::SIZE, rect[2] - rect[0] + 1.0 / 2048, 1e-6);
 }
 
 TEST(Scene25d, DrapesTheImageryOverARoof)
 {
-  const tf2::Vector3 up(0.0, 1.0, 0.0);
-  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  const tile_map::ImageryAtlas atlas = Atlas({{100, 200}});
   tile_map::Batch25d batch;
-  batch.SetImagery({{LEVEL, 100, 200, 7}});
-  // A roof in the middle of tile (100, 200), with no lean so it stays put.
-  batch.AddBuilding(MappedSquare(100.25, 200.25, 0.5), up, right, 0.0);
-
-  ASSERT_EQ(1u, batch.Runs().size());
-  EXPECT_EQ(7u, batch.Runs()[0].texture);
-  EXPECT_NEAR(0.25, TexturedArea(batch, 7), 1e-9);
-  // Texture coordinates are the roof's place in the tile, with v up.
-  const std::vector<float> & uv = batch.TexCoords();
-  for (size_t i = 0; i < batch.VertexCount(); ++i) {
-    EXPECT_NEAR(batch.Vertices()[2 * i] - 100.0, uv[2 * i], 1e-6);
-    EXPECT_NEAR(1.0 - (-batch.Vertices()[2 * i + 1] - 200.0), uv[2 * i + 1], 1e-6);
-  }
+  batch.SetAtlas(&atlas);
+  // A roof in the middle of tile (100, 200).
+  batch.AddBuilding(MappedSquare(100.25, 200.25, 0.5));
+  EXPECT_NEAR(0.25, GroundArea(batch, true), 1e-9);
+  EXPECT_NEAR(0.0, GroundArea(batch, false), 1e-9);
+  std::array<float, 4> rect;
+  ASSERT_TRUE(atlas.Find(LEVEL, 100, 200, rect));
+  EXPECT_TRUE(AllDrapedIn(batch, rect));
+  // Inside one tile nothing is cut: four walls and two roof triangles.
+  EXPECT_EQ(4u * 6u + 6u, batch.VertexCount());
 }
 
 TEST(Scene25d, CutsARoofAlongTileEdges)
 {
-  const tf2::Vector3 up(0.0, 1.0, 0.0);
-  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  const tile_map::ImageryAtlas atlas = Atlas({{100, 200}, {101, 200}});
   tile_map::Batch25d batch;
-  batch.SetImagery({{LEVEL, 100, 200, 7}, {LEVEL, 101, 200, 8}});
+  batch.SetAtlas(&atlas);
   // Half in each of two tiles side by side.
-  batch.AddBuilding(MappedSquare(100.75, 200.25, 0.5), up, right, 0.0);
-
-  EXPECT_NEAR(0.125, TexturedArea(batch, 7), 1e-9);
-  EXPECT_NEAR(0.125, TexturedArea(batch, 8), 1e-9);
-  EXPECT_NEAR(0.0, TexturedArea(batch, 0), 1e-9);
+  batch.AddBuilding(MappedSquare(100.75, 200.25, 0.5));
+  EXPECT_NEAR(0.25, GroundArea(batch, true), 1e-9);
+  EXPECT_NEAR(0.0, GroundArea(batch, false), 1e-9);
 }
 
 TEST(Scene25d, DrawsRoofsPlainWhereTheImageryIsMissing)
 {
-  const tf2::Vector3 up(0.0, 1.0, 0.0);
-  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  // Only one of the two tiles the roof needs is in the atlas.
+  const tile_map::ImageryAtlas atlas = Atlas({{100, 200}});
   tile_map::Batch25d batch;
-  // Only one of the two tiles the roof needs has loaded.
-  batch.SetImagery({{LEVEL, 100, 200, 7}});
-  batch.AddBuilding(MappedSquare(100.75, 200.25, 0.5), up, right, 0.0);
-  // Each roof triangle is either fully draped or fully plain; none is left
-  // half done.
-  EXPECT_NEAR(0.25, TexturedArea(batch, 7) + TexturedArea(batch, 0), 1e-9);
-  EXPECT_LT(TexturedArea(batch, 7), 0.25 - 1e-9);
+  batch.SetAtlas(&atlas);
+  batch.AddBuilding(MappedSquare(100.75, 200.25, 0.5));
+  // Each roof triangle is draped whole or drawn plain whole.
+  EXPECT_NEAR(0.25, GroundArea(batch, true) + GroundArea(batch, false), 1e-9);
+  EXPECT_LT(GroundArea(batch, true), 0.25 - 1e-9);
 
-  // With no imagery, everything is plain.
+  // With no atlas, everything is plain.
   tile_map::Batch25d plain;
-  plain.AddBuilding(MappedSquare(100.75, 200.25, 0.5), up, right, 0.0);
-  ASSERT_EQ(1u, plain.Runs().size());
-  EXPECT_EQ(0u, plain.Runs()[0].texture);
+  plain.AddBuilding(MappedSquare(100.75, 200.25, 0.5));
+  EXPECT_NEAR(0.25, GroundArea(plain, false), 1e-9);
 }
 
 TEST(Scene25d, PrefersTheFinerImagery)
 {
-  const tf2::Vector3 up(0.0, 1.0, 0.0);
-  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  std::vector<std::pair<tile_map::ImageryTile, QImage>> images = {
+    {{LEVEL - 1, 50, 100, 0}, Tile(qRgb(1, 1, 1))},
+    {{LEVEL, 100, 200, 0}, Tile(qRgb(2, 2, 2))}};
+  tile_map::ImageryAtlas atlas;
+  atlas.Build(images);
   tile_map::Batch25d batch;
-  // The coarser tile (50, 100) at level 9 also covers the roof.
-  batch.SetImagery({{LEVEL - 1, 50, 100, 3}, {LEVEL, 100, 200, 7}});
-  batch.AddBuilding(MappedSquare(100.25, 200.25, 0.5), up, right, 0.0);
-  EXPECT_NEAR(0.25, TexturedArea(batch, 7), 1e-9);
-  EXPECT_NEAR(0.0, TexturedArea(batch, 3), 1e-9);
+  batch.SetAtlas(&atlas);
+  batch.AddBuilding(MappedSquare(100.25, 200.25, 0.5));
+  std::array<float, 4> fine;
+  ASSERT_TRUE(atlas.Find(LEVEL, 100, 200, fine));
+  EXPECT_NEAR(0.25, GroundArea(batch, true), 1e-9);
+  EXPECT_TRUE(AllDrapedIn(batch, fine));
 }
 
 TEST(Scene25d, DrapesTheImageryOverTreetops)
 {
-  const tf2::Vector3 up(0.0, 1.0, 0.0);
-  const tf2::Vector3 right(1.0, 0.0, 0.0);
   tile_map::ProjectedCrown crown;
   crown.center = tf2::Vector3(0.0, 0.0, 0.0);
   crown.radius = 3.0;
@@ -426,20 +490,22 @@ TEST(Scene25d, DrapesTheImageryOverTreetops)
   crown.mercator_y = 200.5 * TILE;
   crown.mercator_per_meter = 1e-8;
 
+  const tile_map::ImageryAtlas atlas = Atlas({{100, 200}});
   tile_map::Batch25d batch;
-  batch.SetImagery({{LEVEL, 100, 200, 7}});
-  batch.AddCrown(crown, up, right, 0.6);
+  batch.SetAtlas(&atlas);
+  batch.SetScale(0.1);
+  batch.AddCrown(crown);
   // The trunk and sides are plain; the top is draped.
-  ASSERT_GE(batch.Runs().size(), 2u);
-  EXPECT_EQ(0u, batch.Runs().front().texture);
-  EXPECT_EQ(7u, batch.Runs().back().texture);
+  EXPECT_FALSE(batch.Draped(0));
+  EXPECT_TRUE(batch.Draped(batch.VertexCount() - 1));
+  // A sixteen-sided top of radius 3 m.
+  EXPECT_NEAR(8.0 * 9.0 * std::sin(2.0 * 3.14159265358979 / 16.0), GroundArea(batch, true), 1e-6);
 
-  // Off the loaded imagery, the whole top is plain.
+  // Off the imagery, the whole top is plain.
   crown.mercator_x = 300.5 * TILE;
   tile_map::Batch25d plain;
-  plain.SetImagery({{LEVEL, 100, 200, 7}});
-  plain.AddCrown(crown, up, right, 0.6);
-  for (const auto & run : plain.Runs()) {
-    EXPECT_EQ(0u, run.texture);
-  }
+  plain.SetAtlas(&atlas);
+  plain.SetScale(0.1);
+  plain.AddCrown(crown);
+  EXPECT_NEAR(0.0, GroundArea(plain, true), 1e-9);
 }

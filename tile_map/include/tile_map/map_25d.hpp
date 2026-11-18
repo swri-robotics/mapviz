@@ -29,6 +29,7 @@
 #ifndef TILE_MAP__MAP_25D_HPP_
 #define TILE_MAP__MAP_25D_HPP_
 
+#include <QElapsedTimer>
 #include <QImage>
 #include <QString>
 
@@ -97,6 +98,13 @@ public:
   /// The imagery tile_map is drawing, for finding trees in.
   void SetImagery(const std::shared_ptr<TileSource> & source, const ImageCachePtr & cache);
 
+  /// The most trees drawn at once; beyond it, those farthest from the middle
+  /// of the view are left out.
+  static constexpr size_t MAX_CROWNS = 15000;
+  /// While data is arriving, the buildings and trees are rebuilt at most this
+  /// often; turning the map or changing the lean never needs a rebuild.
+  static constexpr double REBUILDS_PER_SECOND = 4.0;
+
   /// The imagery tiles tile_map has drawn this frame and their revision (see
   /// TileMapView::DrawnTiles()), for draping over roofs and treetops.
   void SetDrawnTiles(std::vector<ImageryTile> tiles, uint64_t revision);
@@ -152,6 +160,29 @@ private:
   /// the trees OpenStreetMap maps.
   bool MapDataNeeded() const;
 
+  /// Moves the area kept by Cull() when the view nears its edge or zooms.
+  void UpdateCullArea();
+
+  /// Leaves out what is off screen and, beyond MAX_CROWNS, the trees
+  /// farthest from the middle of the view.
+  void Cull(
+    std::vector<const ProjectedBuilding *> & buildings,
+    std::vector<const ProjectedCrown *> & crowns);
+
+  /// The area kept when culling: a circle in the frame being drawn, larger
+  /// than the view so that small pans don't change what is drawn (which would
+  /// rebuild it).  Moved when the view nears its edge or zooms.
+  struct CullArea
+  {
+    tf2::Vector3 center;
+    double radius;
+    double view_radius;
+    double scale;
+  };
+  std::optional<CullArea> cull_;
+  uint64_t cull_generation_ = 0;
+  swri_transform_util::Transform transform_;
+
   /// The last view passed to SetView(), for layers that need it again.
   struct View
   {
@@ -172,6 +203,19 @@ private:
   bool imagery_textures_ = true;
   std::vector<ImageryTile> drawn_tiles_;
   uint64_t drawn_tiles_revision_ = 0;
+  /// Where the drawn tiles' images come from, for packing the atlas.
+  ImageCachePtr imagery_cache_;
+  ImageryAtlas atlas_;
+  /// The drawn tiles' revision the atlas was packed from (0: never).
+  uint64_t atlas_revision_ = 0;
+  /// What is in view, collected and culled again only when the data, the
+  /// layers shown or the culled area change (`collected_revision_`).
+  std::vector<const ProjectedBuilding *> collected_buildings_;
+  std::vector<const ProjectedCrown *> collected_crowns_;
+  uint64_t collected_revision_ = 0;
+  /// What the renderer last built, and when.
+  uint64_t built_revision_ = 0;
+  QElapsedTimer since_build_;
   Renderer25d renderer_;
 };
 }  // namespace tile_map

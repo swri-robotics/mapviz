@@ -91,7 +91,8 @@ std::vector<ImageryTile> TileMapView::DrawnTiles() const
         if (tile.texture && tile.texture->GetTexture()) {
           drawn.push_back(
             {tile.level, tile.x, tile.y,
-              static_cast<uint32_t>(tile.texture->GetTexture()->textureId())});
+              static_cast<uint32_t>(tile.texture->GetTexture()->textureId()), tile.url,
+              tile.url_hash});
         }
       }
     };

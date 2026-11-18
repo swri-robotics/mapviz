@@ -450,6 +450,21 @@ void BuildingLayer::Project(TileData & tile)
       area += p.x() * q.y() - q.x() * p.y();
     }
     projected.counterclockwise = area >= 0.0;
+    if (!projected.outline.empty()) {
+      tf2::Vector3 low = projected.outline.front();
+      tf2::Vector3 high = low;
+      for (const tf2::Vector3 & point : projected.outline) {
+        low.setMin(point);
+        high.setMax(point);
+      }
+      projected.center = (low + high) / 2.0;
+      projected.center.setZ(0.0);
+      for (const tf2::Vector3 & point : projected.outline) {
+        projected.extent = std::max(
+          projected.extent, std::hypot(
+            point.x() - projected.center.x(), point.y() - projected.center.y()));
+      }
+    }
     tile.projected.push_back(std::move(projected));
   }
 
