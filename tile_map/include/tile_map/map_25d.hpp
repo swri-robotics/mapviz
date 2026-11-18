@@ -35,6 +35,7 @@
 #include <memory>
 
 #include <rclcpp/logger.hpp>
+#include <tile_map/building_layer.hpp>
 #include <tile_map/terrain.hpp>
 #include <tile_map/tile_map_view.hpp>
 #include "swri_transform_util/transform.h"
@@ -48,8 +49,9 @@ class WmtsSource;
  *
  * Everything stays in mapviz's top-down view and is lit evenly from every
  * direction, with no light source and no shadows.  Depth comes from shading
- * steep ground (and, in later layers, from heights drawn as a lean), so the
- * imagery and every other plugin stay where they are on the map.
+ * steep ground and from buildings whose roofs lean up the screen in
+ * proportion to their height, so the imagery and every other plugin stay
+ * where they are on the map.
  *
  * Runs on the render thread: the setters only record what changed, and
  * anything that touches OpenGL waits for Draw().
@@ -68,6 +70,19 @@ public:
   void SetShading(const ShadingParameters & shading);
   const ShadingParameters & Shading() const {return shading_;}
 
+  /// Buildings standing up out of the map.
+  void SetBuildingsEnabled(bool enabled);
+  bool BuildingsEnabled() const {return buildings_enabled_;}
+
+  /// How far a roof moves up the screen per metre of height (0 draws
+  /// buildings flat).
+  void SetLean(double lean) {lean_ = lean;}
+  double Lean() const {return lean_;}
+
+  /// Where building data comes from, and what that needs.
+  BuildingLayer & Buildings() {return *buildings_;}
+  const BuildingLayer & Buildings() const {return *buildings_;}
+
   /// The transform from WGS84 into the frame being drawn.
   void SetTransform(const swri_transform_util::Transform & wgs84_to_target);
 
@@ -79,6 +94,10 @@ public:
 
   /// Credit lines for the data the enabled layers draw.
   QString Attribution() const;
+
+  /// Progress or a problem to show in the status line; empty when there is
+  /// nothing to say.
+  QString Status(bool & is_error) const;
 
   /// The cache that downloads elevation tiles, to connect to its errors.
   ImageCachePtr GetTerrainImageCache();
@@ -96,6 +115,10 @@ private:
   /// Set when the shading changes; the textures are rebuilt in Draw(), where
   /// the GL context is current.
   bool refresh_textures_ = false;
+
+  std::unique_ptr<BuildingLayer> buildings_;
+  bool buildings_enabled_ = true;
+  double lean_ = 0.6;
 };
 }  // namespace tile_map
 

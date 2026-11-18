@@ -249,6 +249,12 @@ TEST(TileMap25d, IsOffByDefault)
   EXPECT_TRUE(saved["render_25d"]["terrain_shading"].as<bool>());
   EXPECT_DOUBLE_EQ(0.6, saved["render_25d"]["shading_strength"].as<double>());
   EXPECT_DOUBLE_EQ(2.0, saved["render_25d"]["exaggeration"].as<double>());
+  EXPECT_TRUE(saved["render_25d"]["buildings"].as<bool>());
+  EXPECT_EQ("overpass", saved["render_25d"]["building_source"].as<std::string>());
+  EXPECT_DOUBLE_EQ(0.6, saved["render_25d"]["lean"].as<double>());
+  EXPECT_EQ(
+    "https://overpass-api.de/api/interpreter",
+    saved["render_25d"]["overpass_url"].as<std::string>());
 }
 
 TEST(TileMap25d, RoundTripsItsSettings)
@@ -259,7 +265,11 @@ TEST(TileMap25d, RoundTripsItsSettings)
     "  enabled: true\n"
     "  terrain_shading: false\n"
     "  shading_strength: 0.3\n"
-    "  exaggeration: 4.5\n";
+    "  exaggeration: 4.5\n"
+    "  buildings: false\n"
+    "  building_source: stadia\n"
+    "  lean: 1.2\n"
+    "  overpass_url: https://overpass.example.com/api/interpreter\n";
 
   tile_map::TileMapPlugin plugin;
   plugin.SetNode(*g_node);
@@ -270,9 +280,15 @@ TEST(TileMap25d, RoundTripsItsSettings)
   EXPECT_FALSE(saved["render_25d"]["terrain_shading"].as<bool>());
   EXPECT_DOUBLE_EQ(0.3, saved["render_25d"]["shading_strength"].as<double>());
   EXPECT_DOUBLE_EQ(4.5, saved["render_25d"]["exaggeration"].as<double>());
+  EXPECT_FALSE(saved["render_25d"]["buildings"].as<bool>());
+  EXPECT_EQ("stadia", saved["render_25d"]["building_source"].as<std::string>());
+  EXPECT_DOUBLE_EQ(1.2, saved["render_25d"]["lean"].as<double>());
+  EXPECT_EQ(
+    "https://overpass.example.com/api/interpreter",
+    saved["render_25d"]["overpass_url"].as<std::string>());
 }
 
-TEST(TileMap25d, CreditsTheElevationDataWhileShading)
+TEST(TileMap25d, CreditsTheDataItDraws)
 {
   TestTileMapPlugin plugin;
   plugin.SetNode(*g_node);
@@ -283,13 +299,23 @@ TEST(TileMap25d, CreditsTheElevationDataWhileShading)
   plugin.LoadConfigPlugin(
     YAML::Load("source: OpenStreetMap\nrender_25d: {enabled: true}"), "");
   EXPECT_EQ(
-    QString("© OpenStreetMap contributors | ") + tile_map::terrarium::ATTRIBUTION,
+    QString("© OpenStreetMap contributors | ") + tile_map::terrarium::ATTRIBUTION +
+    " | Buildings: © OpenStreetMap contributors",
     plugin.CurrentAttribution());
 
-  // No shading, no elevation data to credit.
   plugin.LoadConfigPlugin(
-    YAML::Load("source: OpenStreetMap\nrender_25d: {enabled: true, terrain_shading: false}"),
-    "");
+    YAML::Load(
+      "source: OpenStreetMap\n"
+      "render_25d: {enabled: true, terrain_shading: false, building_source: stadia}"), "");
+  EXPECT_EQ(
+    "© OpenStreetMap contributors | Buildings: © Stadia Maps © OpenMapTiles © OpenStreetMap",
+    plugin.CurrentAttribution());
+
+  // Nothing extra drawn, nothing extra to credit.
+  plugin.LoadConfigPlugin(
+    YAML::Load(
+      "source: OpenStreetMap\n"
+      "render_25d: {enabled: true, terrain_shading: false, buildings: false}"), "");
   EXPECT_EQ("© OpenStreetMap contributors", plugin.CurrentAttribution());
 }
 

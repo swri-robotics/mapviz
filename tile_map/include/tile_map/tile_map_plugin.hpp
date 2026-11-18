@@ -31,6 +31,7 @@
 
 // QT libraries
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -179,6 +180,9 @@ private:
   QCheckBox * terrain_check_;
   QSpinBox * shading_strength_spin_;
   QDoubleSpinBox * exaggeration_spin_;
+  QCheckBox * buildings_check_;
+  QComboBox * building_source_combo_;
+  QSpinBox * lean_spin_;
   /// The settings rows, shown only while 2.5D rendering is on.
   std::vector<QWidget *> settings_25d_widgets_;
 

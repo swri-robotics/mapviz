@@ -104,9 +104,16 @@ const char RENDER_25D_ENABLED_KEY[] = "enabled";
 const char TERRAIN_SHADING_KEY[] = "terrain_shading";
 const char SHADING_STRENGTH_KEY[] = "shading_strength";
 const char EXAGGERATION_KEY[] = "exaggeration";
+const char BUILDINGS_KEY[] = "buildings";
+const char BUILDING_SOURCE_KEY[] = "building_source";
+const char LEAN_KEY[] = "lean";
+const char OVERPASS_URL_KEY[] = "overpass_url";
+// Values of building_source, in the order of the Building data menu.
+const char OVERPASS_SOURCE[] = "overpass";
+const char STADIA_SOURCE[] = "stadia";
 
-// The 2.5D controls go in rows 6 to 9 of the grid in tile_map_config.ui,
-// between the Max Zoom/Test rows and Status, which is on row 10.
+// The 2.5D controls go in rows 6 to 12 of the grid in tile_map_config.ui,
+// between the Max Zoom/Test rows and Status, which is on row 13.
 constexpr int RENDER_25D_FIRST_ROW = 6;
 
 namespace
@@ -293,6 +300,29 @@ void TileMapPlugin::SetUp25dControls()
   exaggeration_spin_->setToolTip("Multiplies terrain heights, so gentle slopes still show.");
   add_row("Exaggeration:", exaggeration_spin_);
 
+  buildings_check_ = new QCheckBox("Show buildings", config_widget_);
+  buildings_check_->setChecked(true);
+  buildings_check_->setToolTip(
+    "Draws buildings standing up out of the map, when zoomed in to 3 m per pixel or closer.");
+  add_row("Buildings:", buildings_check_);
+
+  building_source_combo_ = new QComboBox(config_widget_);
+  building_source_combo_->addItem("OpenStreetMap (Overpass)");
+  building_source_combo_->addItem("Stadia vector tiles");
+  building_source_combo_->setToolTip(
+    "OpenStreetMap needs no key but can be slow to load a new area.  Stadia needs the Stadia "
+    "API key entered on a Stamen source.  Either way, each area is kept on disk for 30 days.");
+  add_row("Building data:", building_source_combo_);
+
+  lean_spin_ = new QSpinBox(config_widget_);
+  lean_spin_->setRange(0, 200);
+  lean_spin_->setSingleStep(10);
+  lean_spin_->setSuffix(" %");
+  lean_spin_->setValue(static_cast<int>(std::lround(map_25d_.Lean() * 100.0)));
+  lean_spin_->setToolTip(
+    "How far a roof moves up the screen, as a percentage of the building's height.");
+  add_row("Lean:", lean_spin_);
+
   for (QWidget * widget : settings_25d_widgets_) {
     widget->setVisible(false);
   }
@@ -307,6 +337,22 @@ void TileMapPlugin::SetUp25dControls()
   QObject::connect(
     exaggeration_spin_, qOverload<double>(&QDoubleSpinBox::valueChanged),
     this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    buildings_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    building_source_combo_, qOverload<int>(&QComboBox::currentIndexChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    lean_spin_, qOverload<int>(&QSpinBox::valueChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  // Newly downloaded buildings should appear without waiting for the next
+  // reason to redraw.
+  QObject::connect(
+    &map_25d_.Buildings(), &BuildingLayer::Updated, this, [this]() {
+      if (canvas_) {
+        canvas_->update();
+      }
+    });
 }
 
 void TileMapPlugin::Render25dToggled(bool checked)
@@ -330,6 +376,13 @@ void TileMapPlugin::Settings25dChanged()
   shading.exaggeration = exaggeration_spin_->value();
   map_25d_.SetShading(shading);
   map_25d_.SetTerrainEnabled(terrain_check_->isChecked());
+  map_25d_.SetBuildingsEnabled(buildings_check_->isChecked());
+  map_25d_.Buildings().SetSource(
+    building_source_combo_->currentIndex() == 1 ? BuildingSource::Stadia :
+    BuildingSource::Overpass);
+  map_25d_.SetLean(lean_spin_->value() / 100.0);
+  // A layer that was just turned on needs to be told what is in view.
+  last_height_ = 0;
   if (canvas_) {
     canvas_->update();
   }
@@ -475,6 +528,19 @@ void TileMapPlugin::UpdateStatus()
   if (!CurrentSource()) {
     PrintWarning("Enter a tile URL and click Save to create this source");
     return;
+  }
+
+  if (render_25d_) {
+    bool is_error = false;
+    const QString status = map_25d_.Status(is_error);
+    if (!status.isEmpty()) {
+      if (is_error) {
+        PrintError(status.toStdString());
+      } else {
+        PrintInfo(status.toStdString());
+      }
+      return;
+    }
   }
 
   PrintInfo("OK");
@@ -723,6 +789,11 @@ void TileMapPlugin::Draw(double x, double y, double scale)
     }
     tile_map_.Draw();
     if (render_25d_) {
+      // All the Stadia sources share one key.
+      auto stadia = std::dynamic_pointer_cast<StadiaSource>(tile_sources_[STAMEN_TERRAIN_NAME]);
+      if (stadia) {
+        map_25d_.Buildings().SetStadiaApiKey(stadia->GetApiKey());
+      }
       map_25d_.Draw();
     }
   }
@@ -953,6 +1024,9 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
       const QSignalBlocker block_terrain(terrain_check_);
       const QSignalBlocker block_strength(shading_strength_spin_);
       const QSignalBlocker block_exaggeration(exaggeration_spin_);
+      const QSignalBlocker block_buildings(buildings_check_);
+      const QSignalBlocker block_building_source(building_source_combo_);
+      const QSignalBlocker block_lean(lean_spin_);
       if (render_25d[TERRAIN_SHADING_KEY]) {
         terrain_check_->setChecked(render_25d[TERRAIN_SHADING_KEY].as<bool>());
       }
@@ -962,6 +1036,21 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
       }
       if (render_25d[EXAGGERATION_KEY]) {
         exaggeration_spin_->setValue(render_25d[EXAGGERATION_KEY].as<double>());
+      }
+      if (render_25d[BUILDINGS_KEY]) {
+        buildings_check_->setChecked(render_25d[BUILDINGS_KEY].as<bool>());
+      }
+      if (render_25d[BUILDING_SOURCE_KEY]) {
+        building_source_combo_->setCurrentIndex(
+          render_25d[BUILDING_SOURCE_KEY].as<std::string>() == STADIA_SOURCE ? 1 : 0);
+      }
+      if (render_25d[LEAN_KEY]) {
+        lean_spin_->setValue(
+          static_cast<int>(std::lround(render_25d[LEAN_KEY].as<double>() * 100.0)));
+      }
+      if (render_25d[OVERPASS_URL_KEY]) {
+        map_25d_.Buildings().SetOverpassUrl(
+          QString::fromStdString(render_25d[OVERPASS_URL_KEY].as<std::string>()));
       }
     }
     Settings25dChanged();
@@ -1012,6 +1101,12 @@ void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
   emitter << YAML::Key << SHADING_STRENGTH_KEY << YAML::Value <<
     shading_strength_spin_->value() / 100.0;
   emitter << YAML::Key << EXAGGERATION_KEY << YAML::Value << exaggeration_spin_->value();
+  emitter << YAML::Key << BUILDINGS_KEY << YAML::Value << buildings_check_->isChecked();
+  emitter << YAML::Key << BUILDING_SOURCE_KEY << YAML::Value <<
+    (building_source_combo_->currentIndex() == 1 ? STADIA_SOURCE : OVERPASS_SOURCE);
+  emitter << YAML::Key << LEAN_KEY << YAML::Value << lean_spin_->value() / 100.0;
+  emitter << YAML::Key << OVERPASS_URL_KEY << YAML::Value <<
+    map_25d_.Buildings().OverpassUrl().toStdString();
   emitter << YAML::EndMap;
 }
 
