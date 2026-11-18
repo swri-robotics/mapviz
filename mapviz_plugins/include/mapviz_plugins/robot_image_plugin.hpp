@@ -104,6 +104,7 @@ private:
   int dimension_;
   int texture_id_;
   bool texture_loaded_;
+  bool texture_pending_;
 
   bool transformed_;
 
@@ -119,6 +120,7 @@ private:
 
   void UpdateShape();
   void LoadImage();
+  void UploadTexture();
 };
 }   // namespace mapviz_plugins
 
