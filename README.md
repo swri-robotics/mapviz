@@ -3,7 +3,7 @@ Mapviz
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RViz](https://github.com/ros2/rviz) focused on visualizing 2D data.
 
-![](https://github.com/swri-robotics/mapviz/wiki/mapviz.png)
+![Mapviz showing USGS satellite imagery from the Tile Map plugin, a lidar point cloud, a route, and a vehicle icon](docs/assets/images/mapviz.png)
 
 Usage
 -----
