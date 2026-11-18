@@ -75,6 +75,7 @@ RobotImagePlugin::RobotImagePlugin()
   , dimension_(0)
   , texture_id_(0)
   , texture_loaded_(false)
+  , texture_pending_(false)
   , transformed_(false)
 {
   ui_.setupUi(config_widget_);
@@ -251,6 +252,12 @@ bool RobotImagePlugin::Initialize(QOpenGLWidget * canvas)
 
 void RobotImagePlugin::Draw(double /*x*/, double /*y*/, double /*scale*/)
 {
+  // LoadImage() runs from config loading and UI slots, where the canvas's GL
+  // context is not current; the texture is uploaded here, where it is.
+  if (texture_pending_) {
+    UploadTexture();
+  }
+
   if (texture_loaded_ && transformed_) {
     glColor3f(1.0f, 1.0f, 1.0f);
     glEnable(GL_TEXTURE_2D);
@@ -293,13 +300,7 @@ void RobotImagePlugin::LoadImage()
   try {
     QImage nullImage;
     image_ = nullImage;
-
-    if (texture_loaded_) {
-      GLuint ids[1];
-      ids[0] = static_cast<GLuint>(texture_id_);
-      glDeleteTextures(1, &ids[0]);
-      texture_loaded_ = false;
-    }
+    texture_pending_ = false;
 
     const std::string prefix = "$(find ";
     std::string real_filename;
@@ -349,29 +350,7 @@ void RobotImagePlugin::LoadImage()
       image_ = image_.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
 #endif
 
-      GLuint ids[1];
-      glGenTextures(1, &ids[0]);
-      texture_id_ = ids[0];
-
-      glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture_id_));
-      glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        dimension_,
-        dimension_,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        image_.bits());
-
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-      texture_loaded_ = true;
+      texture_pending_ = true;
       if (ui_.ratio_original->isChecked() ) {
         RatioOriginalToggled(true);
       }
@@ -381,6 +360,46 @@ void RobotImagePlugin::LoadImage()
   } catch (const std::exception & e) {
     PrintError("Failed to load image: exception occurred");
   }
+}
+
+void RobotImagePlugin::UploadTexture()
+{
+  texture_pending_ = false;
+
+  if (texture_loaded_) {
+    GLuint ids[1];
+    ids[0] = static_cast<GLuint>(texture_id_);
+    glDeleteTextures(1, &ids[0]);
+    texture_loaded_ = false;
+  }
+
+  if (image_.isNull()) {
+    return;
+  }
+
+  GLuint ids[1];
+  glGenTextures(1, &ids[0]);
+  texture_id_ = ids[0];
+
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture_id_));
+  glTexImage2D(
+    GL_TEXTURE_2D,
+    0,
+    GL_RGBA,
+    dimension_,
+    dimension_,
+    0,
+    GL_RGBA,
+    GL_UNSIGNED_BYTE,
+    image_.bits());
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  texture_loaded_ = true;
 }
 
 void RobotImagePlugin::LoadConfig(const YAML::Node & node, const std::string & /*path*/)
