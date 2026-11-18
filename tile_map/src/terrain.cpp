@@ -42,7 +42,10 @@ namespace terrarium
 {
 const char URL_TEMPLATE[] =
   "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{level}/{x}/{y}.png";
-const char ATTRIBUTION[] = "Elevation: Terrain Tiles (Mapzen, AWS Open Data)";
+// The data sets behind Terrain Tiles each ask for their own credit (see
+// tilezen/joerd docs/attribution.md); this short form names Mapzen and the
+// USGS sources that cover the US, and the docs list the rest.
+const char ATTRIBUTION[] = "Elevation: Mapzen Terrain Tiles; USGS 3DEP, SRTM, GMTED2010 and others";
 
 std::vector<float> DecodeImage(const QImage & image)
 {

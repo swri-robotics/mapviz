@@ -3,7 +3,7 @@ Mapviz
 
 Mapviz is a [ROS](http://www.ros.org/) based visualization tool with a plug-in system similar to [RViz](https://github.com/ros2/rviz) focused on visualizing 2D data.
 
-![Mapviz showing USGS satellite imagery from the Tile Map plugin, a lidar point cloud, a route, and a vehicle icon](docs/assets/images/mapviz.png)
+![Mapviz showing USGS satellite imagery from the Tile Map plugin in 2.5D, with trees standing up from the map, a lidar point cloud, a route, and a vehicle icon](docs/assets/images/mapviz.png)
 
 Usage
 -----
@@ -67,7 +67,7 @@ Plugin | Subscribes to | Description
 `string` | `std_msgs/String`<br>`marti_common_msgs/StringStamped` | Shows the latest text message at a fixed spot on the map.
 `textured_marker` | `marti_visualization_msgs/TexturedMarker`<br>`marti_visualization_msgs/TexturedMarkerArray` | Draws images that marker messages place on the map.
 `tf_frame` | `tf` tree | Draws where a TF frame is, with an optional trail as it moves.
-`tile_map` | None | Shows map or satellite imagery from tile servers such as OpenStreetMap, Carto, Stadia, Bing, or USGS.
+`tile_map` | None | Shows map or satellite imagery from tile servers such as OpenStreetMap, Carto, Stadia, Bing, or USGS, optionally in 2.5D with shaded terrain and buildings and trees that stand up from the map.
 
 Build Status
 ------
