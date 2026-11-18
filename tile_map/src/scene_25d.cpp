@@ -239,6 +239,8 @@ bool Batch25d::TexturedTriangle(const MapPoint & a, const MapPoint & b, const Ma
   // mercator coordinates, carrying the drawn position along.
   auto clip = [](const Polygon & polygon, bool along_x, double limit, bool keep_below) {
       Polygon out;
+      // Already 0, but cppcheck 2.7 doesn't see the member's initializer.
+      out.count = 0;
       auto inside = [&](const MapPoint & p) {
           const double value = along_x ? p.mx : p.my;
           return keep_below ? value <= limit : value >= limit;

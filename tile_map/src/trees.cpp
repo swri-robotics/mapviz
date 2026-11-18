@@ -63,8 +63,8 @@ uint64_t Mix(uint64_t value)
 /// A repeatable number in [0, 1) for a position and a seed.
 double Unit(uint64_t seed, int64_t a, int64_t b, uint64_t salt)
 {
-  const uint64_t h = Mix(seed ^ Mix(static_cast<uint64_t>(a) * 0x100000001b3ULL ^
-    Mix(static_cast<uint64_t>(b) + salt)));
+  const uint64_t salted = Mix(static_cast<uint64_t>(b) + salt);
+  const uint64_t h = Mix(seed ^ Mix(static_cast<uint64_t>(a) * 0x100000001b3ULL ^ salted));
   return static_cast<double>(h >> 11) / static_cast<double>(1ULL << 53);
 }
 
@@ -175,8 +175,9 @@ std::vector<PixelCrown> PlaceCrowns(
       if (d == 0) {
         continue;
       }
-      d = std::min({d, at(row, col - 1) + 3, at(row - 1, col) + 3,
-            at(row - 1, col - 1) + 4, at(row - 1, col + 1) + 4});
+      const int straight = std::min(at(row, col - 1), at(row - 1, col)) + 3;
+      const int diagonal = std::min(at(row - 1, col - 1), at(row - 1, col + 1)) + 4;
+      d = std::min({d, straight, diagonal});
     }
   }
   for (int row = height - 1; row >= 0; --row) {
@@ -185,8 +186,9 @@ std::vector<PixelCrown> PlaceCrowns(
       if (d == 0) {
         continue;
       }
-      d = std::min({d, at(row, col + 1) + 3, at(row + 1, col) + 3,
-            at(row + 1, col + 1) + 4, at(row + 1, col - 1) + 4});
+      const int straight = std::min(at(row, col + 1), at(row + 1, col)) + 3;
+      const int diagonal = std::min(at(row + 1, col + 1), at(row + 1, col - 1)) + 4;
+      d = std::min({d, straight, diagonal});
     }
   }
 
