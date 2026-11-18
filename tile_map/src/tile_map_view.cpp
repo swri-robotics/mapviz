@@ -56,6 +56,7 @@ bool TileMapView::IsReady()
 void TileMapView::ResetCache()
 {
   tile_cache_->Clear();
+  ++texture_revision_;
 }
 
 ImageCachePtr TileMapView::GetImageCache()
@@ -82,8 +83,28 @@ void TileMapView::SetImageFilter(TextureCache::ImageFilter filter)
   tile_cache_->SetImageFilter(std::move(filter));
 }
 
+std::vector<ImageryTile> TileMapView::DrawnTiles() const
+{
+  std::vector<ImageryTile> drawn;
+  auto add = [&drawn](const std::vector<Tile> & tiles) {
+      for (const Tile & tile : tiles) {
+        if (tile.texture && tile.texture->GetTexture()) {
+          drawn.push_back(
+            {tile.level, tile.x, tile.y,
+              static_cast<uint32_t>(tile.texture->GetTexture()->textureId())});
+        }
+      }
+    };
+  add(tiles_);
+  if (draw_precache_) {
+    add(precache_);
+  }
+  return drawn;
+}
+
 void TileMapView::RefreshTextures()
 {
+  ++texture_revision_;
   for (auto & tile : tiles_) {
     tile.texture.reset();
   }
@@ -108,6 +129,7 @@ void TileMapView::SetTileSource(const std::shared_ptr<TileSource> & tile_source)
 {
   tile_source_ = tile_source;
   level_ = -1;
+  ++texture_revision_;
   // Clear existing tiles to avoid using stale textures from the old source
   // which can cause segfaults when switching tile sources
   for (auto & tile : tiles_) {
@@ -210,6 +232,7 @@ void TileMapView::SetView(
   }
 
   if (size_ != size || level_ != level || center_x_ != center_x || center_y_ != center_y) {
+    ++texture_revision_;
     size_ = size;
     level_ = level;
     center_x_ = center_x;
@@ -276,6 +299,9 @@ void TileMapView::DrawTiles(std::vector<Tile> & tiles, int priority)
     if (!texture) {
       bool failed;
       texture = tile_cache_->GetTexture(tile.url_hash, tile.url, failed, priority);
+      if (texture) {
+        ++texture_revision_;
+      }
     }
 
     if (texture) {
@@ -352,6 +378,8 @@ void TileMapView::InitializeTile(int32_t level, int64_t x, int64_t y, Tile & til
   tile.url_hash = tile_source_->GenerateTileHash(level, x, y);
 
   tile.level = level;
+  tile.x = x;
+  tile.y = y;
 
   bool failed;
   tile.texture = tile_cache_->GetTexture(tile.url_hash, tile.url, failed, priority);

@@ -254,6 +254,7 @@ TEST(TileMap25d, IsOffByDefault)
   EXPECT_DOUBLE_EQ(0.6, saved["render_25d"]["lean"].as<double>());
   EXPECT_TRUE(saved["render_25d"]["trees"].as<bool>());
   EXPECT_EQ("imagery", saved["render_25d"]["tree_source"].as<std::string>());
+  EXPECT_TRUE(saved["render_25d"]["imagery_textures"].as<bool>());
   EXPECT_EQ(
     "https://overpass-api.de/api/interpreter",
     saved["render_25d"]["overpass_url"].as<std::string>());
@@ -272,6 +273,7 @@ TEST(TileMap25d, RoundTripsItsSettings)
     "  building_source: stadia\n"
     "  trees: false\n"
     "  tree_source: osm\n"
+    "  imagery_textures: false\n"
     "  lean: 1.2\n"
     "  overpass_url: https://overpass.example.com/api/interpreter\n";
 
@@ -288,6 +290,7 @@ TEST(TileMap25d, RoundTripsItsSettings)
   EXPECT_EQ("stadia", saved["render_25d"]["building_source"].as<std::string>());
   EXPECT_FALSE(saved["render_25d"]["trees"].as<bool>());
   EXPECT_EQ("osm", saved["render_25d"]["tree_source"].as<std::string>());
+  EXPECT_FALSE(saved["render_25d"]["imagery_textures"].as<bool>());
   EXPECT_DOUBLE_EQ(1.2, saved["render_25d"]["lean"].as<double>());
   EXPECT_EQ(
     "https://overpass.example.com/api/interpreter",

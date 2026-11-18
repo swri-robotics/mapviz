@@ -86,6 +86,45 @@ tile_map::ProjectedBuilding Square(double x, double y, double size, double heigh
   building.counterclockwise = true;
   return building;
 }
+
+/// A level 10 tile is 1/1024 of the mercator map; mercator y grows southward,
+/// so a square's corners there run the other way round from the drawn ones.
+constexpr int32_t LEVEL = 10;
+constexpr double TILE = 1.0 / 1024.0;
+
+/// A square roof from (x, y) to (x + size, y + size) in tiles at LEVEL,
+/// drawn one unit per tile.
+tile_map::ProjectedBuilding MappedSquare(double x, double y, double size)
+{
+  tile_map::ProjectedBuilding building = Square(x, -y - size, size, 10.0);
+  // Drawn y is up; mercator y is down.
+  building.mercator = {
+    x * TILE, (y + size) * TILE, (x + size) * TILE, (y + size) * TILE,
+    (x + size) * TILE, y * TILE, x * TILE, y * TILE};
+  return building;
+}
+
+/// Area covered by the triangles of the batch's runs with `texture`.
+double TexturedArea(const tile_map::Batch25d & batch, uint32_t texture)
+{
+  double area = 0.0;
+  const std::vector<double> & v = batch.Vertices();
+  for (const auto & run : batch.Runs()) {
+    if (run.texture != texture) {
+      continue;
+    }
+    for (size_t i = run.first; i + 3 <= run.first + run.count; i += 3) {
+      const double ax = v[2 * i];
+      const double ay = v[2 * i + 1];
+      const double bx = v[2 * i + 2];
+      const double by = v[2 * i + 3];
+      const double cx = v[2 * i + 4];
+      const double cy = v[2 * i + 5];
+      area += std::abs((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) / 2.0;
+    }
+  }
+  return area;
+}
 }  // namespace
 
 TEST(Canopy, FindsDarkGreenCanopyOnly)
@@ -306,4 +345,101 @@ TEST(Scene25d, DrawsFromTheTopOfTheScreenDown)
   EXPECT_GE(batch.Vertices()[1], 100.0);
   // The tree comes last.
   EXPECT_LT(batch.Vertices()[batch.Vertices().size() - 1], 50.0);
+}
+
+TEST(Scene25d, DrapesTheImageryOverARoof)
+{
+  const tf2::Vector3 up(0.0, 1.0, 0.0);
+  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  tile_map::Batch25d batch;
+  batch.SetImagery({{LEVEL, 100, 200, 7}});
+  // A roof in the middle of tile (100, 200), with no lean so it stays put.
+  batch.AddBuilding(MappedSquare(100.25, 200.25, 0.5), up, right, 0.0);
+
+  ASSERT_EQ(1u, batch.Runs().size());
+  EXPECT_EQ(7u, batch.Runs()[0].texture);
+  EXPECT_NEAR(0.25, TexturedArea(batch, 7), 1e-9);
+  // Texture coordinates are the roof's place in the tile, with v up.
+  const std::vector<float> & uv = batch.TexCoords();
+  for (size_t i = 0; i < batch.VertexCount(); ++i) {
+    EXPECT_NEAR(batch.Vertices()[2 * i] - 100.0, uv[2 * i], 1e-6);
+    EXPECT_NEAR(1.0 - (-batch.Vertices()[2 * i + 1] - 200.0), uv[2 * i + 1], 1e-6);
+  }
+}
+
+TEST(Scene25d, CutsARoofAlongTileEdges)
+{
+  const tf2::Vector3 up(0.0, 1.0, 0.0);
+  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  tile_map::Batch25d batch;
+  batch.SetImagery({{LEVEL, 100, 200, 7}, {LEVEL, 101, 200, 8}});
+  // Half in each of two tiles side by side.
+  batch.AddBuilding(MappedSquare(100.75, 200.25, 0.5), up, right, 0.0);
+
+  EXPECT_NEAR(0.125, TexturedArea(batch, 7), 1e-9);
+  EXPECT_NEAR(0.125, TexturedArea(batch, 8), 1e-9);
+  EXPECT_NEAR(0.0, TexturedArea(batch, 0), 1e-9);
+}
+
+TEST(Scene25d, DrawsRoofsPlainWhereTheImageryIsMissing)
+{
+  const tf2::Vector3 up(0.0, 1.0, 0.0);
+  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  tile_map::Batch25d batch;
+  // Only one of the two tiles the roof needs has loaded.
+  batch.SetImagery({{LEVEL, 100, 200, 7}});
+  batch.AddBuilding(MappedSquare(100.75, 200.25, 0.5), up, right, 0.0);
+  // Each roof triangle is either fully draped or fully plain; none is left
+  // half done.
+  EXPECT_NEAR(0.25, TexturedArea(batch, 7) + TexturedArea(batch, 0), 1e-9);
+  EXPECT_LT(TexturedArea(batch, 7), 0.25 - 1e-9);
+
+  // With no imagery, everything is plain.
+  tile_map::Batch25d plain;
+  plain.AddBuilding(MappedSquare(100.75, 200.25, 0.5), up, right, 0.0);
+  ASSERT_EQ(1u, plain.Runs().size());
+  EXPECT_EQ(0u, plain.Runs()[0].texture);
+}
+
+TEST(Scene25d, PrefersTheFinerImagery)
+{
+  const tf2::Vector3 up(0.0, 1.0, 0.0);
+  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  tile_map::Batch25d batch;
+  // The coarser tile (50, 100) at level 9 also covers the roof.
+  batch.SetImagery({{LEVEL - 1, 50, 100, 3}, {LEVEL, 100, 200, 7}});
+  batch.AddBuilding(MappedSquare(100.25, 200.25, 0.5), up, right, 0.0);
+  EXPECT_NEAR(0.25, TexturedArea(batch, 7), 1e-9);
+  EXPECT_NEAR(0.0, TexturedArea(batch, 3), 1e-9);
+}
+
+TEST(Scene25d, DrapesTheImageryOverTreetops)
+{
+  const tf2::Vector3 up(0.0, 1.0, 0.0);
+  const tf2::Vector3 right(1.0, 0.0, 0.0);
+  tile_map::ProjectedCrown crown;
+  crown.center = tf2::Vector3(0.0, 0.0, 0.0);
+  crown.radius = 3.0;
+  crown.height = 10.0;
+  // In the middle of tile (100, 200) at LEVEL, a few metres across.
+  crown.mercator_x = 100.5 * TILE;
+  crown.mercator_y = 200.5 * TILE;
+  crown.mercator_per_meter = 1e-8;
+
+  tile_map::Batch25d batch;
+  batch.SetImagery({{LEVEL, 100, 200, 7}});
+  batch.AddCrown(crown, up, right, 0.6);
+  // The trunk and sides are plain; the top is draped.
+  ASSERT_GE(batch.Runs().size(), 2u);
+  EXPECT_EQ(0u, batch.Runs().front().texture);
+  EXPECT_EQ(7u, batch.Runs().back().texture);
+
+  // Off the loaded imagery, the whole top is plain.
+  crown.mercator_x = 300.5 * TILE;
+  tile_map::Batch25d plain;
+  plain.SetImagery({{LEVEL, 100, 200, 7}});
+  plain.AddCrown(crown, up, right, 0.6);
+  for (const auto & run : plain.Runs()) {
+    EXPECT_EQ(0u, run.texture);
+  }
 }

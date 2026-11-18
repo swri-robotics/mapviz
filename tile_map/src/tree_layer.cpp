@@ -34,6 +34,8 @@
 
 #include <tile_map/terrain.hpp>
 #include <tile_map/tile_source.hpp>
+#include "swri_math_util/constants.h"
+#include "swri_transform_util/earth_constants.h"
 
 namespace tile_map
 {
@@ -177,6 +179,23 @@ ProjectedCrown TreeLayer::ProjectCrown(
   projected.center.setZ(0.0);
   projected.radius = crown.radius;
   projected.height = crown.height;
+
+  // For draping the imagery over the top: where the crown is on the
+  // mercator map, the map's scale there, and which way east is when drawn.
+  LatLonToMercator(
+    crown.center.latitude, crown.center.longitude, projected.mercator_x, projected.mercator_y);
+  const double cos_lat = std::cos(
+    crown.center.latitude * static_cast<double>(swri_math_util::_deg_2_rad));
+  projected.mercator_per_meter =
+    1.0 / (swri_transform_util::_earth_equator_circumference * std::max(cos_lat, 1e-6));
+  tf2::Vector3 east =
+    wgs84_to_target * tf2::Vector3(crown.center.longitude + 1e-5, crown.center.latitude, 0.0) -
+    wgs84_to_target * tf2::Vector3(crown.center.longitude, crown.center.latitude, 0.0);
+  east.setZ(0.0);
+  if (east.length() > 0.0) {
+    projected.east = east.normalized();
+  }
+
   const double hash = std::fmod(
     std::abs(crown.center.latitude * 7919.0 + crown.center.longitude * 104729.0), 1.0);
   projected.shade = static_cast<float>(0.88 + 0.24 * hash);

@@ -96,6 +96,15 @@ public:
   /// The imagery tile_map is drawing, for finding trees in.
   void SetImagery(const std::shared_ptr<TileSource> & source, const ImageCachePtr & cache);
 
+  /// The imagery tiles tile_map has drawn this frame and their revision (see
+  /// TileMapView::DrawnTiles()), for draping over roofs and treetops.
+  void SetDrawnTiles(std::vector<ImageryTile> tiles, uint64_t revision);
+
+  /// Whether roofs and treetops show the imagery that was under them, rather
+  /// than plain colours.
+  void SetImageryTextures(bool enabled) {imagery_textures_ = enabled;}
+  bool ImageryTextures() const {return imagery_textures_;}
+
   /// How far the top of a building or tree moves up the screen per metre of
   /// height (0 draws them flat).
   void SetLean(double lean) {lean_ = lean;}
@@ -159,6 +168,9 @@ private:
   bool trees_enabled_ = true;
   TreeSource tree_source_ = TreeSource::Imagery;
   double lean_ = 0.6;
+  bool imagery_textures_ = true;
+  std::vector<ImageryTile> drawn_tiles_;
+  uint64_t drawn_tiles_revision_ = 0;
   Renderer25d renderer_;
 };
 }  // namespace tile_map

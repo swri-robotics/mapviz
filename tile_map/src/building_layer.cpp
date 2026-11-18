@@ -434,9 +434,15 @@ void BuildingLayer::Project(TileData & tile)
     projected.min_height = building.min_height;
 
     double area = 0.0;
+    projected.mercator.reserve(2 * building.outline.size());
     for (const LatLon & point : building.outline) {
       projected.outline.push_back(
         transform_ * tf2::Vector3(point.longitude, point.latitude, 0.0));
+      double mx;
+      double my;
+      LatLonToMercator(point.latitude, point.longitude, mx, my);
+      projected.mercator.push_back(mx);
+      projected.mercator.push_back(my);
     }
     for (size_t i = 0; i < projected.outline.size(); ++i) {
       const tf2::Vector3 & p = projected.outline[i];

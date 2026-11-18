@@ -82,6 +82,14 @@ double MetersPerPixel(int32_t level, double latitude)
          std::cos(latitude * swri_math_util::_deg_2_rad) / std::pow(2.0, level + 8);
 }
 
+void LatLonToMercator(double latitude, double longitude, double & x, double & y)
+{
+  const double lat =
+    std::clamp(latitude, -85.0511, 85.0511) * static_cast<double>(swri_math_util::_deg_2_rad);
+  x = (longitude + 180.0) / 360.0;
+  y = (1.0 - std::asinh(std::tan(lat)) / static_cast<double>(swri_math_util::_pi)) / 2.0;
+}
+
 double TileRowLatitude(int32_t level, double y)
 {
   const double r = swri_math_util::_pi - swri_math_util::_2pi * y / std::pow(2.0, level);

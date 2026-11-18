@@ -184,6 +184,7 @@ private:
   QComboBox * building_source_combo_;
   QCheckBox * trees_check_;
   QComboBox * tree_source_combo_;
+  QCheckBox * textures_check_;
   QSpinBox * lean_spin_;
   /// The settings rows, shown only while 2.5D rendering is on.
   std::vector<QWidget *> settings_25d_widgets_;

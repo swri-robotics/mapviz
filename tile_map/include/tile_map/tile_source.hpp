@@ -41,6 +41,16 @@ namespace tile_map
  * The part of the world currently on screen, in degrees, and the zoom level
  * it is drawn at.  The defaults describe the whole world at level 0.
  */
+/// An imagery tile being drawn, and the GL texture it is drawn with, so the
+/// 2.5D layers can drape the same imagery over roofs and treetops.
+struct ImageryTile
+{
+  int32_t level;
+  int64_t x;
+  int64_t y;
+  uint32_t texture;
+};
+
 struct ViewBounds
 {
   int32_t level = 0;

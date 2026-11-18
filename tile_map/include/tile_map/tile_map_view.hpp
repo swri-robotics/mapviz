@@ -51,6 +51,8 @@ public:
   QString url;
   size_t url_hash;
   int32_t level;
+  int64_t x = 0;
+  int64_t y = 0;
   int32_t subdiv_count;
   double subwidth;
 
@@ -110,6 +112,13 @@ public:
   /// would otherwise be drawn twice wherever both levels have loaded.
   void SetDrawPrecache(bool draw_precache) {draw_precache_ = draw_precache;}
 
+  /// The tiles being drawn that have their textures, finer level first.
+  /// The textures stay valid until TextureRevision() changes.
+  std::vector<ImageryTile> DrawnTiles() const;
+
+  /// Changes whenever a drawn tile gets, loses or changes its texture.
+  uint64_t TextureRevision() const {return texture_revision_;}
+
   /// The image cache is created once and outlives every tile source set on
   /// this view, so its signals can be connected a single time.
   ImageCachePtr GetImageCache();
@@ -143,6 +152,8 @@ private:
   bool gl_initialized_ = false;
 
   bool draw_precache_ = true;
+
+  uint64_t texture_revision_ = 1;
 
   rclcpp::Logger logger_;
 

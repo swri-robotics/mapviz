@@ -67,6 +67,11 @@ bool ParseUrl(const QString & url, int32_t & level, int64_t & x, int64_t & y);
 /// Ground distance covered by one pixel of a 256 pixel web mercator tile.
 double MetersPerPixel(int32_t level, double latitude);
 
+/// Where a point is on the web mercator map, as a fraction of the map's width
+/// from the antimeridian (x) and from the north edge (y), so that a tile at
+/// `level` spans 2^-level of each.
+void LatLonToMercator(double latitude, double longitude, double & x, double & y);
+
 /// Latitude of the north edge of tile row y (fractional rows are allowed).
 double TileRowLatitude(int32_t level, double y);
 

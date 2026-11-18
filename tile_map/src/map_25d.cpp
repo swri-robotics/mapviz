@@ -31,6 +31,7 @@
 #include <QStringList>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include <tile_map/wmts_source.hpp>
@@ -74,6 +75,12 @@ void Map25d::SetImagery(const std::shared_ptr<TileSource> & source, const ImageC
   {
     trees_.SetView(view_->latitude, view_->longitude, view_->scale, view_->width, view_->height);
   }
+}
+
+void Map25d::SetDrawnTiles(std::vector<ImageryTile> tiles, uint64_t revision)
+{
+  drawn_tiles_ = std::move(tiles);
+  drawn_tiles_revision_ = revision;
 }
 
 bool Map25d::MapDataNeeded() const
@@ -137,11 +144,15 @@ void Map25d::Draw()
     return;
   }
   // Anything that changes what is drawn changes the revision, so the
-  // renderer rebuilds its triangles only when it has to.
+  // renderer rebuilds its triangles only when it has to.  That includes the
+  // imagery tiles: the triangles refer to their textures.
+  static const std::vector<ImageryTile> no_tiles;
   const uint64_t revision =
     buildings_->Revision() * 1000003ULL + trees_.Revision() * 8191ULL +
+    (imagery_textures_ ? drawn_tiles_revision_ * 131ULL + 8u : 0u) +
     (buildings_enabled_ ? 1u : 0u) + (map_trees ? 2u : 0u) + (imagery_trees ? 4u : 0u);
-  renderer_.Draw(buildings, crowns, lean_, revision);
+  renderer_.Draw(
+    buildings, crowns, imagery_textures_ ? drawn_tiles_ : no_tiles, lean_, revision);
 }
 
 QString Map25d::Attribution() const

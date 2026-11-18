@@ -108,6 +108,7 @@ const char BUILDINGS_KEY[] = "buildings";
 const char BUILDING_SOURCE_KEY[] = "building_source";
 const char LEAN_KEY[] = "lean";
 const char TREES_KEY[] = "trees";
+const char IMAGERY_TEXTURES_KEY[] = "imagery_textures";
 const char TREE_SOURCE_KEY[] = "tree_source";
 // Values of tree_source, in the order of the Tree data menu.
 const char IMAGERY_TREES[] = "imagery";
@@ -117,8 +118,8 @@ const char OVERPASS_URL_KEY[] = "overpass_url";
 const char OVERPASS_SOURCE[] = "overpass";
 const char STADIA_SOURCE[] = "stadia";
 
-// The 2.5D controls go in rows 6 to 14 of the grid in tile_map_config.ui,
-// between the Max Zoom/Test rows and Status, which is on row 15.
+// The 2.5D controls go in rows 6 to 15 of the grid in tile_map_config.ui,
+// between the Max Zoom/Test rows and Status, which is on row 16.
 constexpr int RENDER_25D_FIRST_ROW = 6;
 
 namespace
@@ -334,6 +335,13 @@ void TileMapPlugin::SetUp25dControls()
     "download as the buildings.");
   add_row("Tree data:", tree_source_combo_);
 
+  textures_check_ = new QCheckBox("Imagery on roofs and treetops", config_widget_);
+  textures_check_->setChecked(true);
+  textures_check_->setToolTip(
+    "Drapes the imagery over the tops of buildings and trees, lifted with them.  "
+    "Otherwise they are drawn in plain colours.");
+  add_row("Textures:", textures_check_);
+
   lean_spin_ = new QSpinBox(config_widget_);
   lean_spin_->setRange(0, 200);
   lean_spin_->setSingleStep(10);
@@ -365,6 +373,8 @@ void TileMapPlugin::SetUp25dControls()
     this, &TileMapPlugin::Settings25dChanged);
   QObject::connect(
     trees_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    textures_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
   QObject::connect(
     tree_source_combo_, qOverload<int>(&QComboBox::currentIndexChanged),
     this, &TileMapPlugin::Settings25dChanged);
@@ -409,6 +419,7 @@ void TileMapPlugin::Settings25dChanged()
   map_25d_.SetTreesEnabled(trees_check_->isChecked());
   map_25d_.SetTreeSource(
     tree_source_combo_->currentIndex() == 1 ? TreeSource::Map : TreeSource::Imagery);
+  map_25d_.SetImageryTextures(textures_check_->isChecked());
   map_25d_.SetLean(lean_spin_->value() / 100.0);
   // A layer that was just turned on needs to be told what is in view.
   last_height_ = 0;
@@ -824,6 +835,7 @@ void TileMapPlugin::Draw(double x, double y, double scale)
         map_25d_.Buildings().SetStadiaApiKey(stadia->GetApiKey());
       }
       map_25d_.SetImagery(tile_map_.GetTileSource(), tile_map_.GetImageCache());
+      map_25d_.SetDrawnTiles(tile_map_.DrawnTiles(), tile_map_.TextureRevision());
       map_25d_.Draw();
     }
   }
@@ -1058,6 +1070,7 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
       const QSignalBlocker block_building_source(building_source_combo_);
       const QSignalBlocker block_trees(trees_check_);
       const QSignalBlocker block_tree_source(tree_source_combo_);
+      const QSignalBlocker block_textures(textures_check_);
       const QSignalBlocker block_lean(lean_spin_);
       if (render_25d[TERRAIN_SHADING_KEY]) {
         terrain_check_->setChecked(render_25d[TERRAIN_SHADING_KEY].as<bool>());
@@ -1082,6 +1095,9 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
       if (render_25d[TREE_SOURCE_KEY]) {
         tree_source_combo_->setCurrentIndex(
           render_25d[TREE_SOURCE_KEY].as<std::string>() == MAP_TREES ? 1 : 0);
+      }
+      if (render_25d[IMAGERY_TEXTURES_KEY]) {
+        textures_check_->setChecked(render_25d[IMAGERY_TEXTURES_KEY].as<bool>());
       }
       if (render_25d[LEAN_KEY]) {
         lean_spin_->setValue(
@@ -1146,6 +1162,7 @@ void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
   emitter << YAML::Key << TREES_KEY << YAML::Value << trees_check_->isChecked();
   emitter << YAML::Key << TREE_SOURCE_KEY << YAML::Value <<
     (tree_source_combo_->currentIndex() == 1 ? MAP_TREES : IMAGERY_TREES);
+  emitter << YAML::Key << IMAGERY_TEXTURES_KEY << YAML::Value << textures_check_->isChecked();
   emitter << YAML::Key << LEAN_KEY << YAML::Value << lean_spin_->value() / 100.0;
   emitter << YAML::Key << OVERPASS_URL_KEY << YAML::Value <<
     map_25d_.Buildings().OverpassUrl().toStdString();
