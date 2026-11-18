@@ -35,6 +35,9 @@
 #include <cmath>
 #include <cstddef>
 #include <functional>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "swri_math_util/constants.h"
 
@@ -494,47 +497,31 @@ void Renderer25d::InitializeGl()
   }
 }
 
-void Renderer25d::Rebuild(
-  const std::vector<const ProjectedBuilding *> & buildings,
-  const std::vector<const ProjectedCrown *> & crowns,
-  const ImageryAtlas & atlas, double scale)
+Mesh25d BuildMesh25d(
+  const std::vector<ProjectedBuilding> & buildings,
+  const std::vector<ProjectedCrown> & crowns,
+  const std::shared_ptr<const ImageryAtlas> & atlas, double scale)
 {
-  InitializeGl();
-
-  batch_.Clear();
-  batch_.SetAtlas(atlas.Empty() ? nullptr : &atlas);
-  batch_.SetScale(scale);
-  for (const ProjectedBuilding * building : buildings) {
-    batch_.AddBuilding(*building);
+  Mesh25d mesh;
+  if (atlas && !atlas->Empty()) {
+    mesh.atlas = atlas;
   }
-  for (const ProjectedCrown * crown : crowns) {
-    batch_.AddCrown(*crown);
-  }
-  batch_.SetAtlas(nullptr);
 
-  // The atlas, flipped so its top row is at v = 1 as GL expects.
-  texture_.reset();
-  if (!atlas.Empty()) {
-#if QT_VERSION >= 0x060000
-    const QImage gl_image = atlas.Image().flipped(Qt::Vertical);
-#else
-    const QImage gl_image = atlas.Image().mirrored(false, true);
-#endif
-    texture_ = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
-    texture_->setFormat(QOpenGLTexture::RGBA8_UNorm);
-    texture_->setSize(ImageryAtlas::SIZE, ImageryAtlas::SIZE);
-    texture_->allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
-    texture_->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, gl_image.constBits());
-    texture_->setMinificationFilter(QOpenGLTexture::Linear);
-    texture_->setMagnificationFilter(QOpenGLTexture::Linear);
-    texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
+  Batch25d batch;
+  batch.SetAtlas(mesh.atlas.get());
+  batch.SetScale(scale);
+  for (const ProjectedBuilding & building : buildings) {
+    batch.AddBuilding(building);
+  }
+  for (const ProjectedCrown & crown : crowns) {
+    batch.AddCrown(crown);
   }
 
   // Interleaved floats around the middle of the batch.
-  const size_t count = batch_.VertexCount();
-  const std::vector<double> & positions = batch_.Vertices();
-  const std::vector<uint8_t> & colors = batch_.Colors();
-  const std::vector<float> & texcoords = batch_.TexCoords();
+  const size_t count = batch.VertexCount();
+  const std::vector<double> & positions = batch.Vertices();
+  const std::vector<uint8_t> & colors = batch.Colors();
+  const std::vector<float> & texcoords = batch.TexCoords();
   double low_x = 1e300;
   double high_x = -1e300;
   double low_y = 1e300;
@@ -545,29 +532,54 @@ void Renderer25d::Rebuild(
     low_y = std::min(low_y, positions[3 * i + 1]);
     high_y = std::max(high_y, positions[3 * i + 1]);
   }
-  origin_x_ = count > 0 ? 0.5 * (low_x + high_x) : 0.0;
-  origin_y_ = count > 0 ? 0.5 * (low_y + high_y) : 0.0;
-  upload_.resize(count);
+  mesh.origin_x = count > 0 ? 0.5 * (low_x + high_x) : 0.0;
+  mesh.origin_y = count > 0 ? 0.5 * (low_y + high_y) : 0.0;
+  mesh.vertices.resize(count);
   for (size_t i = 0; i < count; ++i) {
-    GpuVertex & vertex = upload_[i];
-    vertex.x = static_cast<float>(positions[3 * i] - origin_x_);
-    vertex.y = static_cast<float>(positions[3 * i + 1] - origin_y_);
+    GpuVertex25d & vertex = mesh.vertices[i];
+    vertex.x = static_cast<float>(positions[3 * i] - mesh.origin_x);
+    vertex.y = static_cast<float>(positions[3 * i + 1] - mesh.origin_y);
     vertex.z = static_cast<float>(positions[3 * i + 2]);
     vertex.u = texcoords[2 * i];
-    vertex.v = texcoords[2 * i + 1];
+    // The batch has the image's top row at v = 1; the texture is uploaded
+    // top row first, which puts it at v = 0.
+    vertex.v = 1.0f - texcoords[2 * i + 1];
     std::copy(&colors[4 * i], &colors[4 * i] + 4, vertex.rgba);
   }
+  return mesh;
+}
+
+void Renderer25d::Upload(Mesh25d mesh)
+{
+  InitializeGl();
+
+  if (!mesh.atlas) {
+    texture_.reset();
+    texture_atlas_.reset();
+  } else if (mesh.atlas != texture_atlas_) {
+    const QImage & image = mesh.atlas->Image();
+    texture_ = std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
+    texture_->setFormat(QOpenGLTexture::RGBA8_UNorm);
+    texture_->setSize(image.width(), image.height());
+    texture_->allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
+    texture_->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, image.constBits());
+    texture_->setMinificationFilter(QOpenGLTexture::Linear);
+    texture_->setMagnificationFilter(QOpenGLTexture::Linear);
+    texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
+    texture_atlas_ = mesh.atlas;
+  }
+
   if (!buffer_.isCreated()) {
     buffer_.create();
     buffer_.setUsagePattern(QOpenGLBuffer::StaticDraw);
   }
   buffer_.bind();
-  buffer_.allocate(upload_.data(), static_cast<int>(count * sizeof(GpuVertex)));
+  buffer_.allocate(
+    mesh.vertices.data(), static_cast<int>(mesh.vertices.size() * sizeof(GpuVertex25d)));
   buffer_.release();
-  vertex_count_ = static_cast<GLsizei>(count);
-  upload_.clear();
-  upload_.shrink_to_fit();
-  batch_.Clear();
+  vertex_count_ = static_cast<GLsizei>(mesh.vertices.size());
+  origin_x_ = mesh.origin_x;
+  origin_y_ = mesh.origin_y;
   built_ = true;
 }
 
@@ -609,11 +621,11 @@ void Renderer25d::Draw(double lean)
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
-  const GLsizei stride = sizeof(GpuVertex);
-  glVertexPointer(3, GL_FLOAT, stride, reinterpret_cast<const void *>(offsetof(GpuVertex, x)));
-  glTexCoordPointer(2, GL_FLOAT, stride, reinterpret_cast<const void *>(offsetof(GpuVertex, u)));
+  const GLsizei stride = sizeof(GpuVertex25d);
+  glVertexPointer(3, GL_FLOAT, stride, reinterpret_cast<const void *>(offsetof(GpuVertex25d, x)));
+  glTexCoordPointer(2, GL_FLOAT, stride, reinterpret_cast<const void *>(offsetof(GpuVertex25d, u)));
   glColorPointer(
-    4, GL_UNSIGNED_BYTE, stride, reinterpret_cast<const void *>(offsetof(GpuVertex, rgba)));
+    4, GL_UNSIGNED_BYTE, stride, reinterpret_cast<const void *>(offsetof(GpuVertex25d, rgba)));
   if (texture_) {
     glEnable(GL_TEXTURE_2D);
     texture_->bind();

@@ -33,6 +33,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -508,4 +509,49 @@ TEST(Scene25d, DrapesTheImageryOverTreetops)
   plain.SetScale(0.1);
   plain.AddCrown(crown);
   EXPECT_NEAR(0.0, GroundArea(plain, true), 1e-9);
+}
+
+TEST(Mesh25d, StoresTheBatchAroundItsMiddle)
+{
+  auto atlas = std::make_shared<tile_map::ImageryAtlas>(Atlas({{100, 200}}));
+  // Far from the frame's origin, where floats alone would lose centimetres.
+  const std::vector<tile_map::ProjectedBuilding> buildings = {
+    MappedSquare(100.25, 200.25, 0.5), Square(50000.0, 70000.0, 10.0, 6.0)};
+  const tile_map::Mesh25d mesh = tile_map::BuildMesh25d(buildings, {}, atlas, 0.1);
+
+  tile_map::Batch25d batch;
+  batch.SetAtlas(atlas.get());
+  batch.AddBuilding(buildings[0]);
+  batch.AddBuilding(buildings[1]);
+  ASSERT_EQ(batch.VertexCount(), mesh.vertices.size());
+  EXPECT_EQ(atlas, mesh.atlas);
+  EXPECT_NEAR(0.5 * (100.25 + 50010.0), mesh.origin_x, 1e-9);
+  EXPECT_NEAR(0.5 * (-200.75 + 70010.0), mesh.origin_y, 1e-9);
+
+  for (size_t i = 0; i < mesh.vertices.size(); ++i) {
+    const tile_map::GpuVertex25d & vertex = mesh.vertices[i];
+    EXPECT_NEAR(batch.Vertices()[3 * i], mesh.origin_x + vertex.x, 0.01);
+    EXPECT_NEAR(batch.Vertices()[3 * i + 1], mesh.origin_y + vertex.y, 0.01);
+    EXPECT_FLOAT_EQ(static_cast<float>(batch.Vertices()[3 * i + 2]), vertex.z);
+    if (batch.Draped(i)) {
+      // The texture is the atlas image top row first: draped corners land
+      // on the tile's pixels in it.
+      const int x = std::clamp(
+        static_cast<int>(vertex.u * tile_map::ImageryAtlas::SIZE), 0,
+        tile_map::ImageryAtlas::SIZE - 1);
+      const int y = std::clamp(
+        static_cast<int>(vertex.v * tile_map::ImageryAtlas::SIZE), 0,
+        tile_map::ImageryAtlas::SIZE - 1);
+      EXPECT_EQ(qRgb(10, 120, 30), atlas->Image().pixel(x, y) | 0xff000000);
+    }
+  }
+}
+
+TEST(Mesh25d, LeavesAnEmptyAtlasOut)
+{
+  const auto atlas = std::make_shared<tile_map::ImageryAtlas>();
+  const tile_map::Mesh25d mesh =
+    tile_map::BuildMesh25d({Square(0.0, 0.0, 10.0, 6.0)}, {}, atlas, 0.1);
+  EXPECT_EQ(nullptr, mesh.atlas);
+  EXPECT_EQ(4u * 6u + 6u, mesh.vertices.size());
 }

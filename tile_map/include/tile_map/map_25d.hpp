@@ -33,8 +33,10 @@
 #include <QImage>
 #include <QString>
 
+#include <future>
 #include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include <rclcpp/logger.hpp>
@@ -69,12 +71,16 @@ enum class TreeSource
  * where they are on the map.
  *
  * Runs on the render thread: the setters only record what changed, and
- * anything that touches OpenGL waits for Draw().
+ * anything that touches OpenGL waits for Draw().  The triangles are built on
+ * a worker thread from copies of what is in view, and the last ones built
+ * keep being drawn until the new ones are ready.
  */
 class Map25d
 {
 public:
   explicit Map25d(rclcpp::Logger logger = rclcpp::get_logger("tile_map::Map25d"));
+  /// Waits for a build in progress.
+  ~Map25d();
 
   void SetLogger(rclcpp::Logger logger);
 
@@ -101,8 +107,8 @@ public:
   /// The most trees drawn at once; beyond it, those farthest from the middle
   /// of the view are left out.
   static constexpr size_t MAX_CROWNS = 15000;
-  /// While data is arriving, the buildings and trees are rebuilt at most this
-  /// often; turning the map or changing the lean never needs a rebuild.
+  /// While data is arriving, rebuilds of the buildings and trees start at most
+  /// this often; turning the map or changing the lean never needs a rebuild.
   static constexpr double REBUILDS_PER_SECOND = 4.0;
 
   /// The imagery tiles tile_map has drawn this frame and their revision (see
@@ -205,16 +211,32 @@ private:
   uint64_t drawn_tiles_revision_ = 0;
   /// Where the drawn tiles' images come from, for packing the atlas.
   ImageCachePtr imagery_cache_;
-  ImageryAtlas atlas_;
-  /// The drawn tiles' revision the atlas was packed from (0: never).
+  /// The atlas last packed (null: none yet) and the drawn tiles' revision
+  /// it was packed from.
+  std::shared_ptr<const ImageryAtlas> atlas_;
   uint64_t atlas_revision_ = 0;
   /// What is in view, collected and culled again only when the data, the
   /// layers shown or the culled area change (`collected_revision_`).
   std::vector<const ProjectedBuilding *> collected_buildings_;
   std::vector<const ProjectedCrown *> collected_crowns_;
   uint64_t collected_revision_ = 0;
-  /// What the renderer last built, and when.
-  uint64_t built_revision_ = 0;
+
+  /// What a build on the worker thread hands back.
+  struct BuildResult
+  {
+    Mesh25d mesh;
+    /// Set when the build packed a new atlas, for the next builds to reuse.
+    std::shared_ptr<const ImageryAtlas> atlas;
+    uint64_t atlas_revision = 0;
+  };
+  /// Starts building what is in view on the worker thread.
+  void StartBuild(
+    const std::vector<const ProjectedBuilding *> & buildings,
+    const std::vector<const ProjectedCrown *> & crowns);
+  /// The build in progress, if any (see StartBuild()).
+  std::future<BuildResult> build_;
+  /// The revision of the last build started, and when it started.
+  std::optional<uint64_t> started_revision_;
   QElapsedTimer since_build_;
   Renderer25d renderer_;
 };

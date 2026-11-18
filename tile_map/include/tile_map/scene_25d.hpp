@@ -232,53 +232,72 @@ constexpr double DEPTH_PER_METER = 0.0008;
  */
 void LeanMatrix(const tf2::Vector3 & up, double lean, double matrix[16]);
 
+/// One vertex as uploaded: position, texture coordinates, colour.
+struct GpuVertex25d
+{
+  float x;
+  float y;
+  float z;
+  float u;
+  float v;
+  uint8_t rgba[4];
+};
+
 /**
- * Draws a Batch25d in one call from a vertex buffer, with one texture (the
- * atlas) and the depth test on.  Turning the map or changing the lean only
- * changes the matrix; the buffer is refilled only by Rebuild().
+ * Everything Renderer25d uploads, built without OpenGL so it can be made on a
+ * worker thread.
  *
  * Vertices are stored as floats relative to the middle of the batch, so
- * they keep centimetre precision in frames far from their origin.
+ * they keep centimetre precision in frames far from their origin.  Their
+ * texture coordinates point into the atlas image as it is stored, with its
+ * top row first, so the image can be uploaded without flipping it.
+ */
+struct Mesh25d
+{
+  std::vector<GpuVertex25d> vertices;
+  /// Added back to the stored vertices when drawing.
+  double origin_x = 0.0;
+  double origin_y = 0.0;
+  /// The imagery the vertices are draped with; null or empty when nothing is.
+  std::shared_ptr<const ImageryAtlas> atlas;
+};
+
+/// Builds the triangles for the buildings and crowns (see Batch25d).  Doesn't
+/// touch OpenGL or anything but its arguments, so it is safe to call from any
+/// thread.
+Mesh25d BuildMesh25d(
+  const std::vector<ProjectedBuilding> & buildings,
+  const std::vector<ProjectedCrown> & crowns,
+  const std::shared_ptr<const ImageryAtlas> & atlas, double scale);
+
+/**
+ * Draws a Mesh25d in one call from a vertex buffer, with one texture (the
+ * atlas) and the depth test on.  Turning the map or changing the lean only
+ * changes the matrix; the buffer is refilled only by Upload().
  */
 class Renderer25d : protected QOpenGLFunctions_1_1
 {
 public:
-  /// Builds the triangles and uploads them and the atlas.  Needs the GL
-  /// context.
-  void Rebuild(
-    const std::vector<const ProjectedBuilding *> & buildings,
-    const std::vector<const ProjectedCrown *> & crowns,
-    const ImageryAtlas & atlas, double scale);
+  /// Uploads the mesh, and its atlas if that changed.  Needs the GL context.
+  void Upload(Mesh25d mesh);
 
-  /// Draws what was last built.  Needs the GL context.
+  /// Draws what was last uploaded.  Needs the GL context.
   void Draw(double lean);
 
   bool Built() const {return built_;}
 
 private:
-  /// One vertex as uploaded: position, texture coordinates, colour.
-  struct GpuVertex
-  {
-    float x;
-    float y;
-    float z;
-    float u;
-    float v;
-    uint8_t rgba[4];
-  };
-
   void InitializeGl();
 
   bool gl_initialized_ = false;
   bool built_ = false;
   QOpenGLBuffer buffer_{QOpenGLBuffer::VertexBuffer};
   GLsizei vertex_count_ = 0;
-  /// Added back to the stored vertices when drawing.
   double origin_x_ = 0.0;
   double origin_y_ = 0.0;
   std::unique_ptr<QOpenGLTexture> texture_;
-  Batch25d batch_;
-  std::vector<GpuVertex> upload_;
+  /// The atlas in `texture_`, so an unchanged atlas isn't uploaded again.
+  std::shared_ptr<const ImageryAtlas> texture_atlas_;
 };
 }  // namespace tile_map
 

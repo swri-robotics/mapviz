@@ -31,7 +31,9 @@
 #include <QStringList>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
+#include <future>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -55,6 +57,14 @@ Map25d::Map25d(rclcpp::Logger logger)
     [this](const QImage & image, const QString & url) {
       return ShadeTerrariumTile(image, url, shading_);
     });
+}
+
+Map25d::~Map25d()
+{
+  // The build only uses its own copies, so it is safe to let it finish.
+  if (build_.valid()) {
+    build_.wait();
+  }
 }
 
 void Map25d::SetLogger(rclcpp::Logger logger)
@@ -214,9 +224,17 @@ void Map25d::Draw()
     Cull(collected_buildings_, collected_crowns_);
     collected_revision_ = source_revision;
   }
-  const std::vector<const ProjectedBuilding *> & buildings = collected_buildings_;
-  const std::vector<const ProjectedCrown *> & crowns = collected_crowns_;
-  if (buildings.empty() && crowns.empty()) {
+  // Upload a finished build.
+  if (build_.valid() && build_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+    BuildResult result = build_.get();
+    if (result.atlas) {
+      atlas_ = std::move(result.atlas);
+      atlas_revision_ = result.atlas_revision;
+    }
+    renderer_.Upload(std::move(result.mesh));
+  }
+
+  if (collected_buildings_.empty() && collected_crowns_.empty()) {
     return;
   }
 
@@ -225,29 +243,67 @@ void Map25d::Draw()
   const uint64_t revision = source_revision +
     (imagery_textures_ ? drawn_tiles_revision_ * 131ULL + 8u : 0u);
   // While data arrives the revision changes every few frames; rebuilding
-  // that often would stall the map, so wait a little between rebuilds.
+  // that often would keep a core busy, so wait a little between rebuilds.
   const bool due = !since_build_.isValid() ||
     since_build_.elapsed() >= static_cast<qint64>(1000.0 / REBUILDS_PER_SECOND);
-  if (!renderer_.Built() || (revision != built_revision_ && due)) {
-    if (!imagery_textures_) {
-      atlas_ = ImageryAtlas();
-      atlas_revision_ = 0;
-    } else if (atlas_revision_ != drawn_tiles_revision_ && imagery_cache_) {
-      std::vector<std::pair<ImageryTile, QImage>> images;
-      images.reserve(drawn_tiles_.size());
-      for (const ImageryTile & tile : drawn_tiles_) {
-        const ImagePtr image = imagery_cache_->GetImage(tile.url_hash, tile.url);
-        const std::shared_ptr<QImage> pixels = image ? image->GetImage() : nullptr;
-        images.emplace_back(tile, pixels ? *pixels : QImage());
-      }
-      atlas_.Build(images);
-      atlas_revision_ = drawn_tiles_revision_;
-    }
-    renderer_.Rebuild(buildings, crowns, atlas_, cull_ ? cull_->scale : 0.1);
-    built_revision_ = revision;
+  if (!build_.valid() && revision != started_revision_ && due) {
+    StartBuild(collected_buildings_, collected_crowns_);
+    started_revision_ = revision;
     since_build_.restart();
   }
   renderer_.Draw(lean_);
+}
+
+void Map25d::StartBuild(
+  const std::vector<const ProjectedBuilding *> & buildings,
+  const std::vector<const ProjectedCrown *> & crowns)
+{
+  // The layers own what the pointers point to and may change it while the
+  // worker runs, so it gets copies.
+  std::vector<ProjectedBuilding> building_copies;
+  building_copies.reserve(buildings.size());
+  for (const ProjectedBuilding * building : buildings) {
+    building_copies.push_back(*building);
+  }
+  std::vector<ProjectedCrown> crown_copies;
+  crown_copies.reserve(crowns.size());
+  for (const ProjectedCrown * crown : crowns) {
+    crown_copies.push_back(*crown);
+  }
+
+  // The atlas is packed again only when the drawn tiles have changed.  The
+  // images are shared with the cache, not copied.
+  std::shared_ptr<const ImageryAtlas> atlas = imagery_textures_ ? atlas_ : nullptr;
+  const bool repack = imagery_textures_ && imagery_cache_ &&
+    (!atlas_ || atlas_revision_ != drawn_tiles_revision_);
+  std::vector<std::pair<ImageryTile, QImage>> images;
+  if (repack) {
+    images.reserve(drawn_tiles_.size());
+    for (const ImageryTile & tile : drawn_tiles_) {
+      const ImagePtr image = imagery_cache_->GetImage(tile.url_hash, tile.url);
+      const std::shared_ptr<QImage> pixels = image ? image->GetImage() : nullptr;
+      images.emplace_back(tile, pixels ? *pixels : QImage());
+    }
+  }
+
+  const double scale = cull_ ? cull_->scale : 0.1;
+  const uint64_t tiles_revision = drawn_tiles_revision_;
+  build_ = std::async(
+    std::launch::async,
+    [buildings = std::move(building_copies), crowns = std::move(crown_copies),
+    images = std::move(images), atlas, repack, scale, tiles_revision]() {
+      BuildResult result;
+      std::shared_ptr<const ImageryAtlas> drape = atlas;
+      if (repack) {
+        auto packed = std::make_shared<ImageryAtlas>();
+        packed->Build(images);
+        drape = packed;
+        result.atlas = packed;
+        result.atlas_revision = tiles_revision;
+      }
+      result.mesh = BuildMesh25d(buildings, crowns, drape, scale);
+      return result;
+    });
 }
 
 QString Map25d::Attribution() const
