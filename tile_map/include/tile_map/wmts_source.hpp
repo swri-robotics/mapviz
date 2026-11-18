@@ -97,10 +97,11 @@ public:
   /**
    * For a built-in source served by ArcGIS (".../arcgis/rest/services/<name>/
    * MapServer/..."), fetches the service description once and lowers or
-   * raises the maximum zoom to the deepest level the service has cached.
-   * Until the reply arrives, or if it never does, the max zoom passed to the
-   * constructor stays in effect.  Custom sources keep the max zoom the user
-   * entered.
+   * raises the maximum zoom to the deepest level the service says it has
+   * cached.  Until the reply arrives, or if it never does, or if the level it
+   * gives is outside [min zoom, MAX_SUPPORTED_ZOOM], the max zoom passed to
+   * the constructor stays in effect.  Custom sources keep the max zoom the
+   * user entered.
    */
   void RequestServiceLimits() override;
 
@@ -113,10 +114,14 @@ public:
 
   /**
    * The deepest tile level an ArcGIS MapServer description says is
-   * available, or -1 if it can't be determined.  That is the level named by
-   * "maxLOD" when the service sets one, otherwise the deepest level in
-   * "tileInfo.lods" whose scale is no finer than "maxScale" (0 means no
-   * limit).
+   * available, or -1 if it doesn't say.  That is the level named by "maxLOD"
+   * when the service sets one, otherwise the deepest level in
+   * "tileInfo.lods" whose scale is no finer than "maxScale".
+   *
+   * A description with neither (a "maxScale" of 0 means "no limit") gives -1:
+   * "tileInfo.lods" lists the levels of the tiling scheme, not the levels
+   * that are actually cached, and many services list 24 levels while caching
+   * far fewer.
    */
   static int32_t ParseArcGisMaxLevel(const QByteArray & service_info);
 

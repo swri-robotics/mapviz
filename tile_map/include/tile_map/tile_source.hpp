@@ -137,6 +137,13 @@ public:
    */
   virtual void RequestServiceLimits() {}
 
+  /**
+   * The deepest zoom level tile_map can handle.  Bing quadkeys are built
+   * with a 32-bit mask, so anything past 31 would overflow; 30 is already
+   * far finer (about 0.15 mm/pixel) than any imagery a server will have.
+   */
+  static constexpr int32_t MAX_SUPPORTED_ZOOM = 30;
+
 Q_SIGNALS:
   void ErrorMessage(const std::string & error_msg) const;
   void InfoMessage(const std::string & info_msg) const;

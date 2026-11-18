@@ -70,11 +70,12 @@ public:
 };
 
 /// An ArcGIS MapServer description in the shape USGSImageryOnly returns:
-/// 24 web-mercator levels, with the extra fields given by `limits`.
-QByteArray ArcGisServiceInfo(const std::string & limits)
+/// `levels` web-mercator levels (24 for USGS), with the extra fields given by
+/// `limits`.
+QByteArray ArcGisServiceInfo(const std::string & limits, int levels = 24)
 {
   std::string lods;
-  for (int level = 0; level < 24; ++level) {
+  for (int level = 0; level < levels; ++level) {
     // Scales as the service prints them, rounded to six decimals.
     const double scale = std::round(591657527.591555 / std::pow(2.0, level) * 1e6) / 1e6;
     lods += (level ? "," : "") + std::string("{\"level\":") + std::to_string(level) +
@@ -305,9 +306,6 @@ TEST(WmtsSource, ReadsTheDeepestCachedArcGisLevel)
       ArcGisServiceInfo("\"minScale\":295828763.795777,\"maxScale\":9027.977411,")));
   // A maxScale between two levels allows the coarser one only.
   EXPECT_EQ(15, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxScale\":12000,")));
-  // maxScale 0 means no limit.
-  EXPECT_EQ(23, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxScale\":0,")));
-  EXPECT_EQ(23, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("")));
   // maxLOD, when set, wins.
   EXPECT_EQ(
     12, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxLOD\":12,\"maxScale\":0,")));
@@ -321,6 +319,14 @@ TEST(WmtsSource, IgnoresUnusableArcGisDescriptions)
   EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel("{\"tileInfo\":{\"lods\":[]}}"));
   // A maxLOD the service doesn't list.
   EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxLOD\":40,")));
+}
+
+TEST(WmtsSource, NeedsAnExplicitArcGisLimit)
+{
+  // Without maxLOD or a maxScale, the lods only describe the tiling scheme;
+  // reporting its deepest level (23) would ask for tiles that aren't cached.
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxScale\":0,")));
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("")));
 }
 
 TEST(WmtsSource, AppliesTheServiceMaxZoom)
@@ -338,14 +344,40 @@ TEST(WmtsSource, AppliesTheServiceMaxZoom)
   EXPECT_EQ(1, changes);
 
   // A deeper cache raises it.
-  source.HandleServiceInfo(ArcGisServiceInfo("\"maxScale\":0,"));
-  EXPECT_EQ(23, source.GetMaxZoom());
+  source.HandleServiceInfo(ArcGisServiceInfo("\"maxLOD\":18,"));
+  EXPECT_EQ(18, source.GetMaxZoom());
   EXPECT_EQ(2, changes);
 
-  // A reply that can't be read keeps the current value.
+  // Replies that can't be read, or that set no limit, keep the current value.
   source.HandleServiceInfo("not json");
-  EXPECT_EQ(23, source.GetMaxZoom());
+  source.HandleServiceInfo(ArcGisServiceInfo("\"maxScale\":0,"));
+  EXPECT_EQ(18, source.GetMaxZoom());
   EXPECT_EQ(2, changes);
+}
+
+TEST(WmtsSource, IgnoresServiceMaxZoomOutOfRange)
+{
+  TestWmtsSource source(16);
+  int changes = 0;
+  QObject::connect(&source, &WmtsSource::MaxZoomChanged, [&changes]() {++changes;});
+
+  // Past the deepest level tile_map can draw: ignored, not clamped.
+  source.HandleServiceInfo(
+    ArcGisServiceInfo(
+      "\"maxLOD\":" + std::to_string(WmtsSource::MAX_SUPPORTED_ZOOM + 1) + ",", 40));
+  EXPECT_EQ(16, source.GetMaxZoom());
+
+  // Below the source's minimum zoom (1 for WMTS).
+  source.HandleServiceInfo(ArcGisServiceInfo("\"maxLOD\":0,"));
+  EXPECT_EQ(16, source.GetMaxZoom());
+  EXPECT_EQ(0, changes);
+
+  // The deepest supported level itself is accepted.
+  source.HandleServiceInfo(
+    ArcGisServiceInfo(
+      "\"maxLOD\":" + std::to_string(WmtsSource::MAX_SUPPORTED_ZOOM) + ",", 40));
+  EXPECT_EQ(WmtsSource::MAX_SUPPORTED_ZOOM, source.GetMaxZoom());
+  EXPECT_EQ(1, changes);
 }
 
 int main(int argc, char ** argv)

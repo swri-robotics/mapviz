@@ -219,6 +219,7 @@ TileMapPlugin::TileMapPlugin()
   QObject::connect(
     ui_.max_zoom_spin_box, SIGNAL(valueChanged(int)),
     this, SLOT(SourceEdited()));
+  ui_.max_zoom_spin_box->setMaximum(TileSource::MAX_SUPPORTED_ZOOM);
   QObject::connect(
     &test_network_manager_, SIGNAL(finished(QNetworkReply*)),
     this, SLOT(HandleTestReply(QNetworkReply*)));

@@ -137,8 +137,11 @@ void WmtsSource::RequestServiceLimits()
 
 void WmtsSource::HandleServiceInfo(const QByteArray & service_info)
 {
+  // A level outside the range we can draw means the description is wrong,
+  // so keep the current value rather than clamping to a number that came
+  // from it.
   const int32_t level = ParseArcGisMaxLevel(service_info);
-  if (level < min_zoom_ || level == max_zoom_) {
+  if (level < min_zoom_ || level > MAX_SUPPORTED_ZOOM || level == max_zoom_) {
     return;
   }
 
@@ -182,15 +185,20 @@ int32_t WmtsSource::ParseArcGisMaxLevel(const QByteArray & service_info)
     return -1;
   }
 
-  // maxScale is the most detailed scale the service draws.  The scales in
-  // the description are rounded, so allow a little slack when comparing.
+  // maxScale is the most detailed scale the service draws; 0 means it sets
+  // no limit, which says nothing about how deep its cache goes.  The scales
+  // in the description are rounded, so allow a little slack when comparing.
   const double max_scale = root["maxScale"].isNumeric() ? root["maxScale"].asDouble() : 0.0;
+  if (max_scale <= 0.0) {
+    return -1;
+  }
+
   int32_t deepest = -1;
   for (const Json::Value & lod : lods) {
     if (!lod["level"].isIntegral() || !lod["scale"].isNumeric()) {
       continue;
     }
-    if (max_scale <= 0.0 || lod["scale"].asDouble() >= max_scale * (1.0 - 1e-6)) {
+    if (lod["scale"].asDouble() >= max_scale * (1.0 - 1e-6)) {
       deepest = std::max(deepest, static_cast<int32_t>(lod["level"].asInt()));
     }
   }
