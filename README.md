@@ -32,6 +32,43 @@ v4.0.0 introduced several breaking changes.
 - Many header files had their extensions changed from `.h` to `.hpp` to conform to ROS conventions.
 - The UI and ROS callbacks were split into separate threads. This significantly impacts the plugin architecture. Please see the documentation for instructions on how to safely apply these changes and for examples of plugins that use the new architecture.
 
+Plugins
+-----
+Mapviz comes with these plugins.
+
+Plugin | Subscribes to | Description
+:--- | :--- | :---
+`attitude_indicator` | `geometry_msgs/Pose`<br>`nav_msgs/Odometry`<br>`sensor_msgs/Imu` | Shows the vehicle's roll, pitch, and heading on an aircraft-style attitude indicator.
+`coordinate_picker` | None | Converts the points you click into a frame of your choice, lists them, and copies the latest one to the clipboard.
+`disparity` | `stereo_msgs/DisparityImage` | Shows a stereo disparity image over the map.
+`draw_marker` | None | Lets you draw points, lines, or polygons on the map and publishes them as a `visualization_msgs/Marker`.
+`draw_polygon` | None | Lets you draw a polygon on the map and publishes it as a `geometry_msgs/PolygonStamped`.
+`float` | `std_msgs/Float32`<br>`std_msgs/Float64`<br>`marti_common_msgs/Float32Stamped`<br>`marti_common_msgs/Float64Stamped`<br>`marti_sensor_msgs/Velocity` | Shows the latest number from a topic as text at a fixed spot on the map.
+`gps` | `gps_msgs/GPSFix` | Plots GPS fixes on the map as points, lines, or arrows.
+`grid` | None | Draws a grid of evenly spaced lines over the map.
+`image` | `sensor_msgs/Image` | Shows a camera image at a chosen spot on the map view.
+`laserscan` | `sensor_msgs/LaserScan` | Draws laser scan returns, colored by intensity, range, or position.
+`marker` | `visualization_msgs/Marker`<br>`visualization_msgs/MarkerArray` | Draws RViz-style markers such as arrows, lines, shapes, and text.
+`measuring` | None | Measures the distance between points you click on the map.
+`move_base` | None | Lets you click on the map to set the robot's initial pose or send it a Nav2 navigation goal.
+`multires_image` | None | Displays a large georeferenced image from disk.
+`navsat` | `sensor_msgs/NavSatFix` | Plots GPS fixes from `NavSatFix` messages on the map.
+`occupancy_grid` | `nav_msgs/OccupancyGrid`<br>`map_msgs/OccupancyGridUpdate` | Displays occupancy grid maps.
+`odometry` | `nav_msgs/Odometry` | Draws the robot's position and heading from odometry, with an optional trail of past positions.
+`path` | `nav_msgs/Path` | Draws a path as a line on the map.
+`plan_route` | `marti_nav_msgs/PlanRoute` | Lets you click waypoints, asks a route planning service for a route through them, and publishes the result.
+`point_click_publisher` | None | Publishes a `geometry_msgs/PointStamped` for every point you click on the map.
+`pointcloud2` | `sensor_msgs/PointCloud2` | Draws point clouds from above, colored by a field such as height or intensity.
+`pose` | `geometry_msgs/PoseStamped` | Draws a pose as an arrow, with an optional trail of past poses.
+`robot_image` | None | Draws a picture of your robot from an image file.
+`robot_model` | `std_msgs/String` | Draws a top-down view of the robot's URDF model.
+`route` | `marti_nav_msgs/Route`<br>`marti_nav_msgs/RoutePosition` | Draws a route and the vehicle's current position along it.
+`speedometer` | `nav_msgs/Odometry` | Shows the vehicle's speed on a dial.
+`string` | `std_msgs/String`<br>`marti_common_msgs/StringStamped` | Shows the latest text message at a fixed spot on the map.
+`textured_marker` | `marti_visualization_msgs/TexturedMarker`<br>`marti_visualization_msgs/TexturedMarkerArray` | Draws images that marker messages place on the map.
+`tf_frame` | `tf` tree | Draws where a TF frame is, with an optional trail as it moves.
+`tile_map` | None | Shows map or satellite imagery from tile servers such as OpenStreetMap, Carto, Stadia, Bing, or USGS.
+
 Build Status
 ------
 
