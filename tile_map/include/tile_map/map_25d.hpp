@@ -34,6 +34,7 @@
 
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include <rclcpp/logger.hpp>
 #include <tile_map/building_layer.hpp>
