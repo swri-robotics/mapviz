@@ -31,6 +31,8 @@
 // QT libraries
 #include <QOpenGLWidget>
 #include <QInputDialog>
+#include <QLabel>
+#include <QSignalBlocker>
 #include <QMessageBox>
 #include <QUrl>
 #include <QNetworkRequest>
@@ -71,6 +73,7 @@ std::string TileMapPlugin::MAX_ZOOM_KEY = "max_zoom";  // NOLINT(runtime/string)
 std::string TileMapPlugin::NAME_KEY = "name";  // NOLINT(runtime/string)
 std::string TileMapPlugin::SOURCE_KEY = "source";  // NOLINT(runtime/string)
 std::string TileMapPlugin::TYPE_KEY = "type";  // NOLINT(runtime/string)
+std::string TileMapPlugin::RENDER_25D_KEY = "render_25d";  // NOLINT(runtime/string)
 QString TileMapPlugin::BING_NAME = "Bing Maps (terrain)";
 QString TileMapPlugin::CARTO_NAME = "Carto";
 QString TileMapPlugin::STAMEN_TERRAIN_NAME = "Stamen (terrain)";
@@ -95,6 +98,29 @@ constexpr int ATTRIBUTION_MIN_MARGIN = 4;
 constexpr int ATTRIBUTION_MIN_PADDING = 3;
 // The smallest the attribution text is shrunk to on a narrow canvas.
 constexpr int ATTRIBUTION_MIN_FONT_PIXELS = 7;
+
+// Keys inside the render_25d map of the config.
+const char RENDER_25D_ENABLED_KEY[] = "enabled";
+const char TERRAIN_SHADING_KEY[] = "terrain_shading";
+const char SHADING_STRENGTH_KEY[] = "shading_strength";
+const char EXAGGERATION_KEY[] = "exaggeration";
+const char BUILDINGS_KEY[] = "buildings";
+const char BUILDING_SOURCE_KEY[] = "building_source";
+const char LEAN_KEY[] = "lean";
+const char TREES_KEY[] = "trees";
+const char IMAGERY_TEXTURES_KEY[] = "imagery_textures";
+const char TREE_SOURCE_KEY[] = "tree_source";
+// Values of tree_source, in the order of the Tree data menu.
+const char IMAGERY_TREES[] = "imagery";
+const char MAP_TREES[] = "osm";
+const char OVERPASS_URL_KEY[] = "overpass_url";
+// Values of building_source, in the order of the Building data menu.
+const char OVERPASS_SOURCE[] = "overpass";
+const char STADIA_SOURCE[] = "stadia";
+
+// The 2.5D controls go in rows 6 to 15 of the grid in tile_map_config.ui,
+// between the Max Zoom/Test rows and Status, which is on row 16.
+constexpr int RENDER_25D_FIRST_ROW = 6;
 
 namespace
 {
@@ -130,6 +156,7 @@ TileMapPlugin::TileMapPlugin()
   , transform_ok_(false)
   , dirty_(false)
   , transformed_(false)
+  , render_25d_(false)
   , last_center_x_(0.0)
   , last_center_y_(0.0)
   , last_scale_(0.0)
@@ -137,6 +164,7 @@ TileMapPlugin::TileMapPlugin()
   , last_width_(0)
 {
   ui_.setupUi(config_widget_);
+  SetUp25dControls();
 
   // The attribution for each built-in source is the credit line that the
   // provider's terms of use require on the map; Bing works out its own from
@@ -229,8 +257,175 @@ TileMapPlugin::TileMapPlugin()
     tile_map_.GetImageCache().get(),
     SIGNAL(RequestFailed(QString,QString)),  // NOLINT(whitespace/comma)
     this, SLOT(HandleTileFailure(QString,QString)));  // NOLINT(whitespace/comma)
+  QObject::connect(
+    map_25d_.GetTerrainImageCache().get(),
+    SIGNAL(RequestFailed(QString,QString)),  // NOLINT(whitespace/comma)
+    this, SLOT(HandleTileFailure(QString,QString)));  // NOLINT(whitespace/comma)
 
   UpdateControlState();
+}
+
+void TileMapPlugin::SetUp25dControls()
+{
+  const ShadingParameters defaults;
+  int row = RENDER_25D_FIRST_ROW;
+
+  render_25d_check_ = new QCheckBox("2.5D rendering", config_widget_);
+  render_25d_check_->setToolTip(
+    "Draw depth cues over the imagery, such as shading that makes hills and slopes stand "
+    "out.  The map stays top-down, so other displays line up with it as before.");
+  ui_.gridLayout->addWidget(render_25d_check_, row++, 0, 1, 4);
+
+  auto add_row = [this, &row](const QString & label, QWidget * control) {
+      auto * label_widget = new QLabel(label, config_widget_);
+      ui_.gridLayout->addWidget(label_widget, row, 0);
+      ui_.gridLayout->addWidget(control, row, 1, 1, 3);
+      settings_25d_widgets_.push_back(label_widget);
+      settings_25d_widgets_.push_back(control);
+      ++row;
+    };
+
+  terrain_check_ = new QCheckBox("Shade slopes", config_widget_);
+  terrain_check_->setChecked(true);
+  terrain_check_->setToolTip("Uses elevation from the free AWS Terrain Tiles data set.");
+  add_row("Terrain:", terrain_check_);
+
+  shading_strength_spin_ = new QSpinBox(config_widget_);
+  shading_strength_spin_->setRange(0, 100);
+  shading_strength_spin_->setSuffix(" %");
+  shading_strength_spin_->setValue(static_cast<int>(std::lround(defaults.strength * 100.0)));
+  shading_strength_spin_->setToolTip("How dark the steepest slopes get.");
+  add_row("Shading:", shading_strength_spin_);
+
+  exaggeration_spin_ = new QDoubleSpinBox(config_widget_);
+  exaggeration_spin_->setRange(0.1, 20.0);
+  exaggeration_spin_->setSingleStep(0.5);
+  exaggeration_spin_->setDecimals(1);
+  exaggeration_spin_->setSuffix(" x");
+  exaggeration_spin_->setValue(defaults.exaggeration);
+  exaggeration_spin_->setToolTip("Multiplies terrain heights, so gentle slopes still show.");
+  add_row("Exaggeration:", exaggeration_spin_);
+
+  buildings_check_ = new QCheckBox("Show buildings", config_widget_);
+  buildings_check_->setChecked(true);
+  buildings_check_->setToolTip(
+    "Draws buildings standing up out of the map, when zoomed in to 3 m per pixel or closer.");
+  add_row("Buildings:", buildings_check_);
+
+  building_source_combo_ = new QComboBox(config_widget_);
+  building_source_combo_->addItem("OpenStreetMap (Overpass)");
+  building_source_combo_->addItem("Stadia vector tiles");
+  building_source_combo_->setToolTip(
+    "OpenStreetMap needs no key but can be slow to load a new area.  Stadia needs the Stadia "
+    "API key entered on a Stamen source.  Either way, each area is kept on disk for 30 days.");
+  add_row("Building data:", building_source_combo_);
+
+  trees_check_ = new QCheckBox("Show trees", config_widget_);
+  trees_check_->setChecked(true);
+  trees_check_->setToolTip(
+    "Draws trees standing up out of the map, when zoomed in to 1.5 m per pixel or closer.");
+  add_row("Trees:", trees_check_);
+
+  tree_source_combo_ = new QComboBox(config_widget_);
+  tree_source_combo_->addItem("From the imagery");
+  tree_source_combo_->addItem("OpenStreetMap");
+  tree_source_combo_->setToolTip(
+    "From the imagery finds tree canopy in satellite or aerial photos (map styles have "
+    "none).  OpenStreetMap uses mapped woods, forests and single trees, from the same "
+    "download as the buildings.");
+  add_row("Tree data:", tree_source_combo_);
+
+  textures_check_ = new QCheckBox("Imagery on roofs and treetops", config_widget_);
+  textures_check_->setChecked(true);
+  textures_check_->setToolTip(
+    "Drapes the imagery over the tops of buildings and trees, lifted with them.  "
+    "Otherwise they are drawn in plain colours.");
+  add_row("Textures:", textures_check_);
+
+  lean_spin_ = new QSpinBox(config_widget_);
+  lean_spin_->setRange(0, 200);
+  lean_spin_->setSingleStep(10);
+  lean_spin_->setSuffix(" %");
+  lean_spin_->setValue(static_cast<int>(std::lround(map_25d_.Lean() * 100.0)));
+  lean_spin_->setToolTip(
+    "How far the top of a building or tree moves up the screen, as a percentage of its "
+    "height.");
+  add_row("Lean:", lean_spin_);
+
+  for (QWidget * widget : settings_25d_widgets_) {
+    widget->setVisible(false);
+  }
+
+  QObject::connect(
+    render_25d_check_, &QCheckBox::toggled, this, &TileMapPlugin::Render25dToggled);
+  QObject::connect(
+    terrain_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    shading_strength_spin_, qOverload<int>(&QSpinBox::valueChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    exaggeration_spin_, qOverload<double>(&QDoubleSpinBox::valueChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    buildings_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    building_source_combo_, qOverload<int>(&QComboBox::currentIndexChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    trees_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    textures_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    tree_source_combo_, qOverload<int>(&QComboBox::currentIndexChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    lean_spin_, qOverload<int>(&QSpinBox::valueChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  // Newly downloaded buildings should appear without waiting for the next
+  // reason to redraw.
+  QObject::connect(
+    &map_25d_.Buildings(), &BuildingLayer::Updated, this, [this]() {
+      if (canvas_) {
+        canvas_->update();
+      }
+    });
+}
+
+void TileMapPlugin::Render25dToggled(bool checked)
+{
+  render_25d_ = checked;
+  for (QWidget * widget : settings_25d_widgets_) {
+    widget->setVisible(checked);
+  }
+  // The 2.5D layers only follow the view while they are on, so make the next
+  // Draw() pass the current view to them.
+  last_height_ = 0;
+  if (canvas_) {
+    canvas_->update();
+  }
+}
+
+void TileMapPlugin::Settings25dChanged()
+{
+  ShadingParameters shading;
+  shading.strength = shading_strength_spin_->value() / 100.0;
+  shading.exaggeration = exaggeration_spin_->value();
+  map_25d_.SetShading(shading);
+  map_25d_.SetTerrainEnabled(terrain_check_->isChecked());
+  map_25d_.SetBuildingsEnabled(buildings_check_->isChecked());
+  map_25d_.Buildings().SetSource(
+    building_source_combo_->currentIndex() == 1 ? BuildingSource::Stadia :
+    BuildingSource::Overpass);
+  map_25d_.SetTreesEnabled(trees_check_->isChecked());
+  map_25d_.SetTreeSource(
+    tree_source_combo_->currentIndex() == 1 ? TreeSource::Map : TreeSource::Imagery);
+  map_25d_.SetImageryTextures(textures_check_->isChecked());
+  map_25d_.SetLean(lean_spin_->value() / 100.0);
+  // A layer that was just turned on needs to be told what is in view.
+  last_height_ = 0;
+  if (canvas_) {
+    canvas_->update();
+  }
 }
 
 void TileMapPlugin::DeleteTileSource()
@@ -373,6 +568,19 @@ void TileMapPlugin::UpdateStatus()
   if (!CurrentSource()) {
     PrintWarning("Enter a tile URL and click Save to create this source");
     return;
+  }
+
+  if (render_25d_) {
+    bool is_error = false;
+    const QString status = map_25d_.Status(is_error);
+    if (!status.isEmpty()) {
+      if (is_error) {
+        PrintError(status.toStdString());
+      } else {
+        PrintInfo(status.toStdString());
+      }
+      return;
+    }
   }
 
   PrintInfo("OK");
@@ -606,6 +814,9 @@ void TileMapPlugin::Draw(double x, double y, double scale)
       last_width_ = canvas_->width();
       last_height_ = canvas_->height();
       tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+      if (render_25d_) {
+        map_25d_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+      }
       RCLCPP_DEBUG(Logger(), "TileMapPlugin::Draw: Successfully set view");
 
       int32_t level;
@@ -617,6 +828,16 @@ void TileMapPlugin::Draw(double x, double y, double scale)
       }
     }
     tile_map_.Draw();
+    if (render_25d_) {
+      // All the Stadia sources share one key.
+      auto stadia = std::dynamic_pointer_cast<StadiaSource>(tile_sources_[STAMEN_TERRAIN_NAME]);
+      if (stadia) {
+        map_25d_.Buildings().SetStadiaApiKey(stadia->GetApiKey());
+      }
+      map_25d_.SetImagery(tile_map_.GetTileSource(), tile_map_.GetImageCache());
+      map_25d_.SetDrawnTiles(tile_map_.DrawnTiles(), tile_map_.TextureRevision());
+      map_25d_.Draw();
+    }
   }
 }
 
@@ -632,7 +853,12 @@ QString TileMapPlugin::CurrentAttribution() const
   if (!source) {
     return {};
   }
-  return source->GetAttribution(view_bounds_);
+  QString attribution = source->GetAttribution(view_bounds_);
+  const QString extra = render_25d_ ? map_25d_.Attribution() : QString();
+  if (!extra.isEmpty()) {
+    attribution = attribution.isEmpty() ? extra : attribution + " | " + extra;
+  }
+  return attribution;
 }
 
 void TileMapPlugin::Paint(QPainter * painter, double, double, double)
@@ -752,6 +978,7 @@ void TileMapPlugin::Transform()
   swri_transform_util::Transform to_target;
   if (tf_manager_->GetTransform(target_frame_, source_frame_, to_target)) {
     tile_map_.SetTransform(to_target);
+    map_25d_.SetTransform(to_target);
     transform_ok_ = true;
     transform_status_.clear();
   } else {
@@ -831,6 +1058,61 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
 
     SelectSource(QString::fromStdString(source));
   }
+
+  if (node[RENDER_25D_KEY]) {
+    const YAML::Node & render_25d = node[RENDER_25D_KEY];
+    // Set every control before applying them, so the layers see one change.
+    {
+      const QSignalBlocker block_terrain(terrain_check_);
+      const QSignalBlocker block_strength(shading_strength_spin_);
+      const QSignalBlocker block_exaggeration(exaggeration_spin_);
+      const QSignalBlocker block_buildings(buildings_check_);
+      const QSignalBlocker block_building_source(building_source_combo_);
+      const QSignalBlocker block_trees(trees_check_);
+      const QSignalBlocker block_tree_source(tree_source_combo_);
+      const QSignalBlocker block_textures(textures_check_);
+      const QSignalBlocker block_lean(lean_spin_);
+      if (render_25d[TERRAIN_SHADING_KEY]) {
+        terrain_check_->setChecked(render_25d[TERRAIN_SHADING_KEY].as<bool>());
+      }
+      if (render_25d[SHADING_STRENGTH_KEY]) {
+        shading_strength_spin_->setValue(
+          static_cast<int>(std::lround(render_25d[SHADING_STRENGTH_KEY].as<double>() * 100.0)));
+      }
+      if (render_25d[EXAGGERATION_KEY]) {
+        exaggeration_spin_->setValue(render_25d[EXAGGERATION_KEY].as<double>());
+      }
+      if (render_25d[BUILDINGS_KEY]) {
+        buildings_check_->setChecked(render_25d[BUILDINGS_KEY].as<bool>());
+      }
+      if (render_25d[BUILDING_SOURCE_KEY]) {
+        building_source_combo_->setCurrentIndex(
+          render_25d[BUILDING_SOURCE_KEY].as<std::string>() == STADIA_SOURCE ? 1 : 0);
+      }
+      if (render_25d[TREES_KEY]) {
+        trees_check_->setChecked(render_25d[TREES_KEY].as<bool>());
+      }
+      if (render_25d[TREE_SOURCE_KEY]) {
+        tree_source_combo_->setCurrentIndex(
+          render_25d[TREE_SOURCE_KEY].as<std::string>() == MAP_TREES ? 1 : 0);
+      }
+      if (render_25d[IMAGERY_TEXTURES_KEY]) {
+        textures_check_->setChecked(render_25d[IMAGERY_TEXTURES_KEY].as<bool>());
+      }
+      if (render_25d[LEAN_KEY]) {
+        lean_spin_->setValue(
+          static_cast<int>(std::lround(render_25d[LEAN_KEY].as<double>() * 100.0)));
+      }
+      if (render_25d[OVERPASS_URL_KEY]) {
+        map_25d_.Buildings().SetOverpassUrl(
+          QString::fromStdString(render_25d[OVERPASS_URL_KEY].as<std::string>()));
+      }
+    }
+    Settings25dChanged();
+    if (render_25d[RENDER_25D_ENABLED_KEY]) {
+      render_25d_check_->setChecked(render_25d[RENDER_25D_ENABLED_KEY].as<bool>());
+    }
+  }
 }
 
 void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
@@ -867,6 +1149,24 @@ void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
 
   std::string combo_str = TrimString(ui_.source_combo->currentText().toStdString());
   emitter << YAML::Key << SOURCE_KEY << YAML::Value << combo_str;
+
+  emitter << YAML::Key << RENDER_25D_KEY << YAML::Value << YAML::BeginMap;
+  emitter << YAML::Key << RENDER_25D_ENABLED_KEY << YAML::Value << render_25d_;
+  emitter << YAML::Key << TERRAIN_SHADING_KEY << YAML::Value << terrain_check_->isChecked();
+  emitter << YAML::Key << SHADING_STRENGTH_KEY << YAML::Value <<
+    shading_strength_spin_->value() / 100.0;
+  emitter << YAML::Key << EXAGGERATION_KEY << YAML::Value << exaggeration_spin_->value();
+  emitter << YAML::Key << BUILDINGS_KEY << YAML::Value << buildings_check_->isChecked();
+  emitter << YAML::Key << BUILDING_SOURCE_KEY << YAML::Value <<
+    (building_source_combo_->currentIndex() == 1 ? STADIA_SOURCE : OVERPASS_SOURCE);
+  emitter << YAML::Key << TREES_KEY << YAML::Value << trees_check_->isChecked();
+  emitter << YAML::Key << TREE_SOURCE_KEY << YAML::Value <<
+    (tree_source_combo_->currentIndex() == 1 ? MAP_TREES : IMAGERY_TREES);
+  emitter << YAML::Key << IMAGERY_TEXTURES_KEY << YAML::Value << textures_check_->isChecked();
+  emitter << YAML::Key << LEAN_KEY << YAML::Value << lean_spin_->value() / 100.0;
+  emitter << YAML::Key << OVERPASS_URL_KEY << YAML::Value <<
+    map_25d_.Buildings().OverpassUrl().toStdString();
+  emitter << YAML::EndMap;
 }
 
 void TileMapPlugin::selectTileSource(const std::shared_ptr<TileSource> & tile_source)
@@ -907,5 +1207,6 @@ void TileMapPlugin::SetNode(rclcpp::Node & node)
 {
   MapvizPlugin::SetNode(node);
   tile_map_.SetLogger(node.get_logger());
+  map_25d_.SetLogger(node.get_logger());
 }
 }  // namespace tile_map

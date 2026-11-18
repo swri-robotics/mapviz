@@ -30,6 +30,7 @@
 #define TILE_MAP__TILE_MAP_VIEW_HPP_
 
 #include <QOpenGLFunctions_1_1>
+#include <QString>
 
 #include <memory>
 #include <string>
@@ -50,6 +51,8 @@ public:
   QString url;
   size_t url_hash;
   int32_t level;
+  int64_t x = 0;
+  int64_t y = 0;
   int32_t subdiv_count;
   double subwidth;
 
@@ -70,7 +73,11 @@ class TileMapView : protected QOpenGLFunctions_1_1
   friend class TileMapViewTest;
 
 public:
-  explicit TileMapView(rclcpp::Logger logger = rclcpp::get_logger("tile_map::TileMapView"));
+  /// @param cache_dir Where downloaded tiles are kept on disk.  Views drawing
+  ///   different kinds of tiles should use different directories.
+  explicit TileMapView(
+    rclcpp::Logger logger = rclcpp::get_logger("tile_map::TileMapView"),
+    const QString & cache_dir = "/tmp/tile_map");
 
   bool IsReady();
 
@@ -92,6 +99,25 @@ public:
     int32_t height);
 
   void Draw();
+
+  /// See TextureCache::SetImageFilter().
+  void SetImageFilter(TextureCache::ImageFilter filter);
+
+  /// Rebuilds every tile's texture from its downloaded image, e.g. after the
+  /// image filter's settings change.
+  void RefreshTextures();
+
+  /// Whether to draw the next coarser level under the current one while its
+  /// tiles load (on by default).  Turn it off for translucent overlays, which
+  /// would otherwise be drawn twice wherever both levels have loaded.
+  void SetDrawPrecache(bool draw_precache) {draw_precache_ = draw_precache;}
+
+  /// The tiles being drawn that have their textures, finer level first.
+  /// The textures stay valid until TextureRevision() changes.
+  std::vector<ImageryTile> DrawnTiles() const;
+
+  /// Changes whenever a drawn tile gets, loses or changes its texture.
+  uint64_t TextureRevision() const {return texture_revision_;}
 
   /// The image cache is created once and outlives every tile source set on
   /// this view, so its signals can be connected a single time.
@@ -124,6 +150,10 @@ private:
   TextureCachePtr tile_cache_;
 
   bool gl_initialized_ = false;
+
+  bool draw_precache_ = true;
+
+  uint64_t texture_revision_ = 1;
 
   rclcpp::Logger logger_;
 
