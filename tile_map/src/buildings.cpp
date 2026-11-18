@@ -50,6 +50,17 @@ constexpr double LEVEL_HEIGHT = 3.5;
 constexpr double ROOF_ALLOWANCE = 1.0;
 /// Used when a building has no height, levels or recognised type.
 constexpr double DEFAULT_HEIGHT = 6.0;
+/// Used for a mapped tree with no height or crown diameter.
+constexpr double DEFAULT_TREE_HEIGHT = 8.0;
+constexpr double DEFAULT_CROWN_RADIUS = 3.0;
+
+bool IsWoodland(const std::map<std::string, std::string> & tags)
+{
+  const auto natural = tags.find("natural");
+  const auto landuse = tags.find("landuse");
+  return (natural != tags.end() && natural->second == "wood") ||
+         (landuse != tags.end() && landuse->second == "forest");
+}
 
 /// Typical heights for common "building" values, in metres.
 double TypicalHeight(const std::string & type)
@@ -250,6 +261,7 @@ struct TileValue
   bool is_number = false;
   double number = 0.0;
   bool boolean = false;
+  std::string text;
 };
 
 TileValue ReadValue(std::string_view bytes)
@@ -258,6 +270,7 @@ TileValue ReadValue(std::string_view bytes)
   PbfReader reader(bytes);
   while (reader.Next()) {
     switch (reader.Field()) {
+      case 1: value.text = std::string(reader.Bytes()); break;
       case 2: value.is_number = true; value.number = reader.Fixed(4); break;
       case 3: value.is_number = true; value.number = reader.Fixed(8); break;
       case 4: value.is_number = true; value.number = static_cast<int64_t>(reader.Varint()); break;
@@ -443,17 +456,46 @@ void BuildingHeightFromTags(
   min_height = std::min(min_height, height);
 }
 
-QString OverpassBuildingQuery(double south, double west, double north, double east)
+MapTree TreeFromTags(const LatLon & position, const std::map<std::string, std::string> & tags)
+{
+  auto tag = [&tags](const char * key) {
+      const auto it = tags.find(key);
+      return it == tags.end() ? std::string() : it->second;
+    };
+  MapTree tree{position, ParseLength(tag("height")), ParseLength(tag("diameter_crown")) / 2.0};
+  if (tree.height <= 0.0) {
+    tree.height = DEFAULT_TREE_HEIGHT;
+  }
+  if (tree.crown_radius <= 0.0) {
+    tree.crown_radius = DEFAULT_CROWN_RADIUS;
+  }
+  return tree;
+}
+
+QString OverpassFeatureQuery(double south, double west, double north, double east)
 {
   const QString box = QString("(%1,%2,%3,%4)")
     .arg(south, 0, 'f', 7).arg(west, 0, 'f', 7).arg(north, 0, 'f', 7).arg(east, 0, 'f', 7);
-  return "[out:json][timeout:90];(way[\"building\"]" + box +
-         ";relation[\"building\"][\"type\"=\"multipolygon\"]" + box + ";);out tags geom;";
+  QString query = "[out:json][timeout:90];(";
+  for (const char * filter : {"[\"building\"]", "[\"natural\"=\"wood\"]",
+      "[\"landuse\"=\"forest\"]"})
+  {
+    query += QString("way") + filter + box + ";";
+    query += QString("relation") + filter + "[\"type\"=\"multipolygon\"]" + box + ";";
+  }
+  query += "node[\"natural\"=\"tree\"]" + box + ";);out tags geom;";
+  return query;
 }
 
 std::vector<Building> ParseOverpassBuildings(const QByteArray & json, QString * error)
 {
-  std::vector<Building> buildings;
+  return ParseOverpassFeatures(json, error).buildings;
+}
+
+MapFeatures ParseOverpassFeatures(const QByteArray & json, QString * error)
+{
+  MapFeatures features;
+  std::vector<Building> & buildings = features.buildings;
   Json::Reader reader;
   Json::Value root;
   if (!reader.parse(json.toStdString(), root) || !root.isObject() ||
@@ -462,7 +504,7 @@ std::vector<Building> ParseOverpassBuildings(const QByteArray & json, QString * 
     if (error) {
       *error = "Overpass returned something other than building data";
     }
-    return buildings;
+    return features;
   }
   // Overpass reports a query that ran out of time or memory in "remark",
   // alongside whatever partial result it has.  Partial data would leave gaps
@@ -473,16 +515,28 @@ std::vector<Building> ParseOverpassBuildings(const QByteArray & json, QString * 
     if (error) {
       *error = QString::fromStdString("Overpass: " + root["remark"].asString());
     }
-    return buildings;
+    return features;
   }
 
   for (const Json::Value & element : root["elements"]) {
     const std::string type = element["type"].asString();
     const std::map<std::string, std::string> tags = Tags(element["tags"]);
-    if (type == "way") {
+    const bool building = tags.count("building") > 0;
+    const bool woodland = !building && IsWoodland(tags);
+    if (type == "node") {
+      if (element["lat"].isNumeric() && element["lon"].isNumeric()) {
+        features.trees.push_back(
+          TreeFromTags({element["lat"].asDouble(), element["lon"].asDouble()}, tags));
+      }
+    } else if (type == "way") {
       std::vector<LatLon> outline = ClosedOutline(element["geometry"]);
-      if (!outline.empty()) {
+      if (outline.empty()) {
+        continue;
+      }
+      if (building) {
         buildings.push_back(MakeBuilding(element["id"].asInt64(), std::move(outline), tags));
+      } else if (woodland) {
+        features.woodlands.push_back({std::move(outline)});
       }
     } else if (type == "relation" && element["members"].isArray()) {
       for (const Json::Value & member : element["members"]) {
@@ -490,20 +544,32 @@ std::vector<Building> ParseOverpassBuildings(const QByteArray & json, QString * 
           continue;
         }
         std::vector<LatLon> outline = ClosedOutline(member["geometry"]);
-        if (!outline.empty()) {
+        if (outline.empty()) {
+          continue;
+        }
+        if (building) {
           // Relation and way ids are separate number spaces in OSM.
           buildings.push_back(MakeBuilding(-element["id"].asInt64(), std::move(outline), tags));
+        } else if (woodland) {
+          features.woodlands.push_back({std::move(outline)});
         }
       }
     }
   }
-  return buildings;
+  return features;
 }
 
 std::vector<Building> DecodeVectorTileBuildings(
   const QByteArray & tile, int32_t level, int64_t x, int64_t y, QString * error)
 {
-  std::vector<Building> buildings;
+  return DecodeVectorTileFeatures(tile, level, x, y, error).buildings;
+}
+
+MapFeatures DecodeVectorTileFeatures(
+  const QByteArray & tile, int32_t level, int64_t x, int64_t y, QString * error)
+{
+  MapFeatures features;
+  std::vector<Building> & buildings = features.buildings;
   PbfReader tile_reader(tile.constData(), static_cast<size_t>(tile.size()));
   while (tile_reader.Next()) {
     if (tile_reader.Field() != 3 || tile_reader.WireType() != 2) {
@@ -518,11 +584,11 @@ std::vector<Building> DecodeVectorTileBuildings(
     double extent = 4096.0;
     std::vector<std::string> keys;
     std::vector<TileValue> values;
-    std::vector<std::string_view> features;
+    std::vector<std::string_view> messages;
     while (layer.Next()) {
       switch (layer.Field()) {
         case 1: name = std::string(layer.Bytes()); break;
-        case 2: features.push_back(layer.Bytes()); break;
+        case 2: messages.push_back(layer.Bytes()); break;
         case 3: keys.emplace_back(layer.Bytes()); break;
         case 4: values.push_back(ReadValue(layer.Bytes())); break;
         case 5: extent = static_cast<double>(layer.Varint()); break;
@@ -535,11 +601,18 @@ std::vector<Building> DecodeVectorTileBuildings(
       }
       return {};
     }
-    if (name != "building" || extent <= 0.0) {
+    if ((name != "building" && name != "landcover") || extent <= 0.0) {
       continue;
     }
+    const bool landcover = name == "landcover";
 
-    for (std::string_view feature_bytes : features) {
+    auto to_lat_lon = [&](const TilePoint & point) {
+        const double fx = static_cast<double>(x) + point.x / extent;
+        const double fy = static_cast<double>(y) + point.y / extent;
+        return LatLon{TileRowLatitude(level, fy), fx / std::pow(2.0, level) * 360.0 - 180.0};
+      };
+
+    for (std::string_view feature_bytes : messages) {
       PbfReader feature(feature_bytes);
       uint32_t geometry_type = 0;
       std::vector<uint32_t> tags;
@@ -559,6 +632,7 @@ std::vector<Building> DecodeVectorTileBuildings(
       double height = -1.0;
       double min_height = 0.0;
       bool hide = false;
+      std::string landcover_class;
       for (size_t i = 0; i + 1 < tags.size(); i += 2) {
         if (tags[i] >= keys.size() || tags[i + 1] >= values.size()) {
           continue;
@@ -571,7 +645,26 @@ std::vector<Building> DecodeVectorTileBuildings(
           min_height = value.number;
         } else if (key == "hide_3d") {
           hide = value.boolean;
+        } else if (key == "class") {
+          landcover_class = value.text;
         }
+      }
+      if (landcover) {
+        if (landcover_class != "wood") {
+          continue;
+        }
+        for (const std::vector<TilePoint> & ring : DecodeRings(geometry)) {
+          const std::vector<TilePoint> clipped = ClipToTile(ring, extent);
+          if (RingArea(ring) <= 0.0 || clipped.size() < 3) {
+            continue;
+          }
+          Woodland woodland;
+          for (const TilePoint & point : clipped) {
+            woodland.outline.push_back(to_lat_lon(point));
+          }
+          features.woodlands.push_back(std::move(woodland));
+        }
+        continue;
       }
       if (hide) {
         continue;
@@ -597,10 +690,7 @@ std::vector<Building> DecodeVectorTileBuildings(
         building.min_height = std::min(min_height, height);
         for (size_t i = 0; i < clipped.size(); ++i) {
           const TilePoint & point = clipped[i];
-          const double fx = static_cast<double>(x) + point.x / extent;
-          const double fy = static_cast<double>(y) + point.y / extent;
-          building.outline.push_back(
-            {TileRowLatitude(level, fy), fx / std::pow(2.0, level) * 360.0 - 180.0});
+          building.outline.push_back(to_lat_lon(point));
           building.walls.push_back(!OnTileEdge(point, clipped[(i + 1) % clipped.size()], extent));
         }
         buildings.push_back(std::move(building));
@@ -613,7 +703,7 @@ std::vector<Building> DecodeVectorTileBuildings(
     }
     return {};
   }
-  return buildings;
+  return features;
 }
 
 std::vector<int> Triangulate(const std::vector<double> & points)

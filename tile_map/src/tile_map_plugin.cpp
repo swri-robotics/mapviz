@@ -107,13 +107,18 @@ const char EXAGGERATION_KEY[] = "exaggeration";
 const char BUILDINGS_KEY[] = "buildings";
 const char BUILDING_SOURCE_KEY[] = "building_source";
 const char LEAN_KEY[] = "lean";
+const char TREES_KEY[] = "trees";
+const char TREE_SOURCE_KEY[] = "tree_source";
+// Values of tree_source, in the order of the Tree data menu.
+const char IMAGERY_TREES[] = "imagery";
+const char MAP_TREES[] = "osm";
 const char OVERPASS_URL_KEY[] = "overpass_url";
 // Values of building_source, in the order of the Building data menu.
 const char OVERPASS_SOURCE[] = "overpass";
 const char STADIA_SOURCE[] = "stadia";
 
-// The 2.5D controls go in rows 6 to 12 of the grid in tile_map_config.ui,
-// between the Max Zoom/Test rows and Status, which is on row 13.
+// The 2.5D controls go in rows 6 to 14 of the grid in tile_map_config.ui,
+// between the Max Zoom/Test rows and Status, which is on row 15.
 constexpr int RENDER_25D_FIRST_ROW = 6;
 
 namespace
@@ -314,13 +319,29 @@ void TileMapPlugin::SetUp25dControls()
     "API key entered on a Stamen source.  Either way, each area is kept on disk for 30 days.");
   add_row("Building data:", building_source_combo_);
 
+  trees_check_ = new QCheckBox("Show trees", config_widget_);
+  trees_check_->setChecked(true);
+  trees_check_->setToolTip(
+    "Draws trees standing up out of the map, when zoomed in to 1.5 m per pixel or closer.");
+  add_row("Trees:", trees_check_);
+
+  tree_source_combo_ = new QComboBox(config_widget_);
+  tree_source_combo_->addItem("From the imagery");
+  tree_source_combo_->addItem("OpenStreetMap");
+  tree_source_combo_->setToolTip(
+    "From the imagery finds tree canopy in satellite or aerial photos (map styles have "
+    "none).  OpenStreetMap uses mapped woods, forests and single trees, from the same "
+    "download as the buildings.");
+  add_row("Tree data:", tree_source_combo_);
+
   lean_spin_ = new QSpinBox(config_widget_);
   lean_spin_->setRange(0, 200);
   lean_spin_->setSingleStep(10);
   lean_spin_->setSuffix(" %");
   lean_spin_->setValue(static_cast<int>(std::lround(map_25d_.Lean() * 100.0)));
   lean_spin_->setToolTip(
-    "How far a roof moves up the screen, as a percentage of the building's height.");
+    "How far the top of a building or tree moves up the screen, as a percentage of its "
+    "height.");
   add_row("Lean:", lean_spin_);
 
   for (QWidget * widget : settings_25d_widgets_) {
@@ -341,6 +362,11 @@ void TileMapPlugin::SetUp25dControls()
     buildings_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
   QObject::connect(
     building_source_combo_, qOverload<int>(&QComboBox::currentIndexChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    trees_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    tree_source_combo_, qOverload<int>(&QComboBox::currentIndexChanged),
     this, &TileMapPlugin::Settings25dChanged);
   QObject::connect(
     lean_spin_, qOverload<int>(&QSpinBox::valueChanged),
@@ -380,6 +406,9 @@ void TileMapPlugin::Settings25dChanged()
   map_25d_.Buildings().SetSource(
     building_source_combo_->currentIndex() == 1 ? BuildingSource::Stadia :
     BuildingSource::Overpass);
+  map_25d_.SetTreesEnabled(trees_check_->isChecked());
+  map_25d_.SetTreeSource(
+    tree_source_combo_->currentIndex() == 1 ? TreeSource::Map : TreeSource::Imagery);
   map_25d_.SetLean(lean_spin_->value() / 100.0);
   // A layer that was just turned on needs to be told what is in view.
   last_height_ = 0;
@@ -794,6 +823,7 @@ void TileMapPlugin::Draw(double x, double y, double scale)
       if (stadia) {
         map_25d_.Buildings().SetStadiaApiKey(stadia->GetApiKey());
       }
+      map_25d_.SetImagery(tile_map_.GetTileSource(), tile_map_.GetImageCache());
       map_25d_.Draw();
     }
   }
@@ -1026,6 +1056,8 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
       const QSignalBlocker block_exaggeration(exaggeration_spin_);
       const QSignalBlocker block_buildings(buildings_check_);
       const QSignalBlocker block_building_source(building_source_combo_);
+      const QSignalBlocker block_trees(trees_check_);
+      const QSignalBlocker block_tree_source(tree_source_combo_);
       const QSignalBlocker block_lean(lean_spin_);
       if (render_25d[TERRAIN_SHADING_KEY]) {
         terrain_check_->setChecked(render_25d[TERRAIN_SHADING_KEY].as<bool>());
@@ -1043,6 +1075,13 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
       if (render_25d[BUILDING_SOURCE_KEY]) {
         building_source_combo_->setCurrentIndex(
           render_25d[BUILDING_SOURCE_KEY].as<std::string>() == STADIA_SOURCE ? 1 : 0);
+      }
+      if (render_25d[TREES_KEY]) {
+        trees_check_->setChecked(render_25d[TREES_KEY].as<bool>());
+      }
+      if (render_25d[TREE_SOURCE_KEY]) {
+        tree_source_combo_->setCurrentIndex(
+          render_25d[TREE_SOURCE_KEY].as<std::string>() == MAP_TREES ? 1 : 0);
       }
       if (render_25d[LEAN_KEY]) {
         lean_spin_->setValue(
@@ -1104,6 +1143,9 @@ void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
   emitter << YAML::Key << BUILDINGS_KEY << YAML::Value << buildings_check_->isChecked();
   emitter << YAML::Key << BUILDING_SOURCE_KEY << YAML::Value <<
     (building_source_combo_->currentIndex() == 1 ? STADIA_SOURCE : OVERPASS_SOURCE);
+  emitter << YAML::Key << TREES_KEY << YAML::Value << trees_check_->isChecked();
+  emitter << YAML::Key << TREE_SOURCE_KEY << YAML::Value <<
+    (tree_source_combo_->currentIndex() == 1 ? MAP_TREES : IMAGERY_TREES);
   emitter << YAML::Key << LEAN_KEY << YAML::Value << lean_spin_->value() / 100.0;
   emitter << YAML::Key << OVERPASS_URL_KEY << YAML::Value <<
     map_25d_.Buildings().OverpassUrl().toStdString();

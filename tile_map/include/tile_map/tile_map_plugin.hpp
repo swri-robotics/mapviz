@@ -182,6 +182,8 @@ private:
   QDoubleSpinBox * exaggeration_spin_;
   QCheckBox * buildings_check_;
   QComboBox * building_source_combo_;
+  QCheckBox * trees_check_;
+  QComboBox * tree_source_combo_;
   QSpinBox * lean_spin_;
   /// The settings rows, shown only while 2.5D rendering is on.
   std::vector<QWidget *> settings_25d_widgets_;

@@ -156,6 +156,22 @@ QByteArray TestTile()
   return QByteArray(tile.data(), static_cast<int>(tile.size()));
 }
 
+/// A tile with a "landcover" layer holding a wood and a field.
+QByteArray LandcoverTile()
+{
+  // Key 0 "class"; values 0 "wood", 1 "farmland".
+  const std::string values = Bytes(4, Bytes(1, "wood")) + Bytes(4, Bytes(1, "farmland"));
+  const std::string keys = Bytes(3, "class");
+  const std::string wood = Feature(
+    3, {0, 0}, Ring({{100, 100}, {900, 100}, {900, 900}, {100, 900}}));
+  const std::string field = Feature(
+    3, {0, 1}, Ring({{1000, 1000}, {1900, 1000}, {1900, 1900}, {1000, 1900}}));
+  const std::string layer = VarintField(15, 2) + Bytes(1, "landcover") +
+    Bytes(2, wood) + Bytes(2, field) + keys + values + VarintField(5, 4096);
+  const std::string tile = Bytes(3, layer);
+  return QByteArray(tile.data(), static_cast<int>(tile.size()));
+}
+
 double TriangleArea(const std::vector<double> & points, const std::vector<int> & triangles)
 {
   double area = 0.0;
@@ -226,11 +242,47 @@ TEST(Buildings, WorksOutHeightsFromTags)
 
 TEST(Buildings, BuildsTheOverpassQuery)
 {
-  const QString query = tile_map::OverpassBuildingQuery(29.4, -98.7, 29.5, -98.6);
+  const QString query = tile_map::OverpassFeatureQuery(29.4, -98.7, 29.5, -98.6);
+  const QString box = "(29.4000000,-98.7000000,29.5000000,-98.6000000)";
   EXPECT_TRUE(query.startsWith("[out:json]"));
-  EXPECT_TRUE(query.contains("way[\"building\"](29.4000000,-98.7000000,29.5000000,-98.6000000)"));
-  EXPECT_TRUE(query.contains("relation[\"building\"][\"type\"=\"multipolygon\"]"));
+  EXPECT_TRUE(query.contains("way[\"building\"]" + box));
+  EXPECT_TRUE(query.contains("relation[\"building\"][\"type\"=\"multipolygon\"]" + box));
+  EXPECT_TRUE(query.contains("way[\"natural\"=\"wood\"]" + box));
+  EXPECT_TRUE(query.contains("way[\"landuse\"=\"forest\"]" + box));
+  EXPECT_TRUE(query.contains("node[\"natural\"=\"tree\"]" + box));
   EXPECT_TRUE(query.endsWith("out tags geom;"));
+}
+
+TEST(Buildings, ParsesMappedWoodsAndTrees)
+{
+  const QByteArray json =
+    R"({
+    "elements": [
+      {"type": "node", "id": 1, "lat": 29.45, "lon": -98.6,
+       "tags": {"natural": "tree", "height": "15"}},
+      {"type": "way", "id": 2, "tags": {"natural": "wood"},
+       "geometry": [{"lat": 0, "lon": 0}, {"lat": 0, "lon": 1}, {"lat": 1, "lon": 1},
+                    {"lat": 0, "lon": 0}]},
+      {"type": "relation", "id": 3, "tags": {"landuse": "forest", "type": "multipolygon"},
+       "members": [
+         {"type": "way", "role": "outer",
+          "geometry": [{"lat": 5, "lon": 5}, {"lat": 5, "lon": 6}, {"lat": 6, "lon": 6},
+                       {"lat": 5, "lon": 5}]}]},
+      {"type": "way", "id": 4, "tags": {"building": "yes", "natural": "wood"},
+       "geometry": [{"lat": 2, "lon": 2}, {"lat": 2, "lon": 3}, {"lat": 3, "lon": 3},
+                    {"lat": 2, "lon": 2}]}
+    ]})";
+
+  QString error;
+  const tile_map::MapFeatures features = tile_map::ParseOverpassFeatures(json, &error);
+  EXPECT_TRUE(error.isEmpty());
+  ASSERT_EQ(1u, features.trees.size());
+  EXPECT_DOUBLE_EQ(15.0, features.trees[0].height);
+  EXPECT_DOUBLE_EQ(29.45, features.trees[0].position.latitude);
+  EXPECT_EQ(2u, features.woodlands.size());
+  // Tagged as both, it is a building.
+  ASSERT_EQ(1u, features.buildings.size());
+  EXPECT_EQ(4, features.buildings[0].id);
 }
 
 TEST(Buildings, ParsesOverpassResponses)
@@ -338,6 +390,18 @@ TEST(Buildings, DecodesVectorTileBuildings)
   EXPECT_EQ(1, on_edge);
 }
 
+TEST(Buildings, DecodesVectorTileWoods)
+{
+  QString error;
+  const tile_map::MapFeatures features =
+    tile_map::DecodeVectorTileFeatures(LandcoverTile(), 14, 3703, 6788, &error);
+  EXPECT_TRUE(error.isEmpty()) << error.toStdString();
+  EXPECT_TRUE(features.buildings.empty());
+  // The wood, not the field.
+  ASSERT_EQ(1u, features.woodlands.size());
+  EXPECT_EQ(4u, features.woodlands[0].outline.size());
+}
+
 TEST(Buildings, RejectsCorruptVectorTiles)
 {
   QString error;
@@ -390,7 +454,7 @@ TEST(BuildingLayer, CoversTheViewWithZ14Tiles)
 TEST(BuildingLayer, CachesEachSourceSeparately)
 {
   EXPECT_EQ(
-    "/cache/overpass/14/3703/6788.json",
+    "/cache/overpass2/14/3703/6788.json",
     BuildingLayer::CachePath("/cache", tile_map::BuildingSource::Overpass, {3703, 6788}));
   EXPECT_EQ(
     "/cache/stadia/14/3703/6788.pbf",

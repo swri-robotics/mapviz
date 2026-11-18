@@ -33,10 +33,13 @@
 #include <QString>
 
 #include <memory>
+#include <optional>
 
 #include <rclcpp/logger.hpp>
 #include <tile_map/building_layer.hpp>
+#include <tile_map/scene_25d.hpp>
 #include <tile_map/terrain.hpp>
+#include <tile_map/tree_layer.hpp>
 #include <tile_map/tile_map_view.hpp>
 #include "swri_transform_util/transform.h"
 
@@ -44,12 +47,22 @@ namespace tile_map
 {
 class WmtsSource;
 
+/// Where trees come from.
+enum class TreeSource
+{
+  /// Canopy picked out of the imagery being drawn.
+  Imagery,
+  /// Woods, forests and single trees mapped in OpenStreetMap, from the same
+  /// download as the buildings.
+  Map,
+};
+
 /**
  * The layers tile_map draws over its imagery when "2.5D rendering" is on.
  *
  * Everything stays in mapviz's top-down view and is lit evenly from every
  * direction, with no light source and no shadows.  Depth comes from shading
- * steep ground and from buildings whose roofs lean up the screen in
+ * steep ground and from buildings and trees whose tops lean up the screen in
  * proportion to their height, so the imagery and every other plugin stay
  * where they are on the map.
  *
@@ -74,8 +87,17 @@ public:
   void SetBuildingsEnabled(bool enabled);
   bool BuildingsEnabled() const {return buildings_enabled_;}
 
-  /// How far a roof moves up the screen per metre of height (0 draws
-  /// buildings flat).
+  /// Trees standing up out of the map.
+  void SetTreesEnabled(bool enabled) {trees_enabled_ = enabled;}
+  bool TreesEnabled() const {return trees_enabled_;}
+  void SetTreeSource(TreeSource source) {tree_source_ = source;}
+  TreeSource GetTreeSource() const {return tree_source_;}
+
+  /// The imagery tile_map is drawing, for finding trees in.
+  void SetImagery(const std::shared_ptr<TileSource> & source, const ImageCachePtr & cache);
+
+  /// How far the top of a building or tree moves up the screen per metre of
+  /// height (0 draws them flat).
   void SetLean(double lean) {lean_ = lean;}
   double Lean() const {return lean_;}
 
@@ -116,9 +138,28 @@ private:
   /// the GL context is current.
   bool refresh_textures_ = false;
 
+  /// True when the building layer's data is needed: for buildings, or for
+  /// the trees OpenStreetMap maps.
+  bool MapDataNeeded() const;
+
+  /// The last view passed to SetView(), for layers that need it again.
+  struct View
+  {
+    double latitude;
+    double longitude;
+    double scale;
+    int32_t width;
+    int32_t height;
+  };
+  std::optional<View> view_;
+
   std::unique_ptr<BuildingLayer> buildings_;
   bool buildings_enabled_ = true;
+  TreeLayer trees_;
+  bool trees_enabled_ = true;
+  TreeSource tree_source_ = TreeSource::Imagery;
   double lean_ = 0.6;
+  Renderer25d renderer_;
 };
 }  // namespace tile_map
 

@@ -43,6 +43,8 @@
 
 #include <rclcpp/logging.hpp>
 #include <tile_map/terrain.hpp>
+#include <tile_map/tree_layer.hpp>
+#include <tile_map/trees.hpp>
 #include "swri_math_util/constants.h"
 
 namespace tile_map
@@ -74,19 +76,6 @@ constexpr auto TILE_Y_ATTRIBUTE =
 constexpr auto GENERATION_ATTRIBUTE =
   static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 2);
 
-int64_t LongitudeToTileX(double longitude, int32_t level)
-{
-  const double n = std::pow(2.0, level);
-  return static_cast<int64_t>(std::floor((longitude + 180.0) / 360.0 * n));
-}
-
-int64_t LatitudeToTileY(double latitude, int32_t level)
-{
-  const double n = std::pow(2.0, level);
-  const double lat = latitude * swri_math_util::_deg_2_rad;
-  return static_cast<int64_t>(
-    std::floor((1.0 - std::asinh(std::tan(lat)) / swri_math_util::_pi) / 2.0 * n));
-}
 }  // namespace
 
 BuildingLayer::BuildingLayer(rclcpp::Logger logger, const QString & cache_dir)
@@ -134,6 +123,7 @@ void BuildingLayer::Forget()
 {
   // Requests already sent are left to finish, but their replies are ignored.
   ++generation_;
+  ++revision_;
   in_flight_ = 0;
   queue_.clear();
   tiles_.clear();
@@ -149,44 +139,23 @@ void BuildingLayer::Forget()
 std::vector<BuildingLayer::TileKey> BuildingLayer::TilesInView(
   double latitude, double longitude, double scale, int32_t width, int32_t height)
 {
-  std::vector<TileKey> tiles;
   if (scale <= 0.0 || scale > MAX_SCALE) {
-    return tiles;
+    return {};
   }
-
   // Half the canvas diagonal around the centre, so a rotated view is covered.
-  const double radius_m = 0.5 * scale * std::hypot(width, height);
-  const double meters_per_degree = 111320.0;
-  const double cos_lat = std::max(
-    0.01, static_cast<double>(std::cos(latitude * swri_math_util::_deg_2_rad)));
-  const double dlat = radius_m / meters_per_degree;
-  const double dlon = radius_m / (meters_per_degree * cos_lat);
-
-  const int64_t max_index = (int64_t{1} << TILE_LEVEL) - 1;
-  auto clamp = [max_index](int64_t index) {return std::clamp(index, int64_t{0}, max_index);};
-  const int64_t x0 = clamp(LongitudeToTileX(longitude - dlon, TILE_LEVEL));
-  const int64_t x1 = clamp(LongitudeToTileX(longitude + dlon, TILE_LEVEL));
-  const int64_t y0 = clamp(LatitudeToTileY(latitude + dlat, TILE_LEVEL));
-  const int64_t y1 = clamp(LatitudeToTileY(latitude - dlat, TILE_LEVEL));
-
-  if (static_cast<size_t>((x1 - x0 + 1) * (y1 - y0 + 1)) > MAX_TILES) {
-    return tiles;
-  }
-  for (int64_t y = y0; y <= y1; ++y) {
-    for (int64_t x = x0; x <= x1; ++x) {
-      tiles.emplace_back(x, y);
-    }
-  }
-  return tiles;
+  return TilesAround(
+    TILE_LEVEL, latitude, longitude, 0.5 * scale * std::hypot(width, height), MAX_TILES);
 }
 
 QString BuildingLayer::CachePath(
   const QString & cache_dir, BuildingSource source, const TileKey & tile)
 {
   const bool overpass = source == BuildingSource::Overpass;
+  // "overpass2": the query gained woods and trees, so older responses (which
+  // have only buildings) are not reused.
   return QString("%1/%2/%3/%4/%5.%6")
          .arg(cache_dir)
-         .arg(overpass ? "overpass" : "stadia")
+         .arg(overpass ? "overpass2" : "stadia")
          .arg(TILE_LEVEL)
          .arg(tile.first)
          .arg(tile.second)
@@ -197,7 +166,11 @@ void BuildingLayer::SetView(
   double latitude, double longitude, double scale, int32_t width, int32_t height)
 {
   ++frame_;
-  view_tiles_ = TilesInView(latitude, longitude, scale, width, height);
+  std::vector<TileKey> view_tiles = TilesInView(latitude, longitude, scale, width, height);
+  if (view_tiles != view_tiles_) {
+    view_tiles_ = std::move(view_tiles);
+    ++revision_;
+  }
   too_far_out_ = view_tiles_.empty();
 
   const qint64 now = QDateTime::currentMSecsSinceEpoch();
@@ -263,7 +236,7 @@ QNetworkRequest BuildingLayer::MakeRequest(const TileKey & tile) const
     const double east = static_cast<double>(tile.first + 1) / n * 360.0 - 180.0;
     url = QUrl(overpass_url_);
     QUrlQuery query;
-    query.addQueryItem("data", OverpassBuildingQuery(south, west, north, east));
+    query.addQueryItem("data", OverpassFeatureQuery(south, west, north, east));
     url.setQuery(query);
   } else {
     QString text(STADIA_URL);
@@ -379,16 +352,39 @@ void BuildingLayer::ReplyFinished(QNetworkReply * reply)
 
 bool BuildingLayer::LoadTile(const TileKey & key, const QByteArray & data, QString & error)
 {
-  std::vector<Building> buildings = source_ == BuildingSource::Overpass ?
-    ParseOverpassBuildings(data, &error) :
-    DecodeVectorTileBuildings(data, TILE_LEVEL, key.first, key.second, &error);
+  MapFeatures features = source_ == BuildingSource::Overpass ?
+    ParseOverpassFeatures(data, &error) :
+    DecodeVectorTileFeatures(data, TILE_LEVEL, key.first, key.second, &error);
   if (!error.isEmpty()) {
     return false;
   }
 
   TileData & tile = tiles_[key];
   tile.state = TileData::State::Loaded;
-  tile.buildings = std::move(buildings);
+  tile.buildings = std::move(features.buildings);
+
+  // Trees: single mapped trees inside this area, and trees spread through
+  // the part of each wood inside it, so a wood that spans several areas is
+  // filled once.
+  const double north = TileRowLatitude(TILE_LEVEL, static_cast<double>(key.second));
+  const double south = TileRowLatitude(TILE_LEVEL, static_cast<double>(key.second + 1));
+  const double n = std::pow(2.0, TILE_LEVEL);
+  const double west = static_cast<double>(key.first) / n * 360.0 - 180.0;
+  const double east = static_cast<double>(key.first + 1) / n * 360.0 - 180.0;
+  tile.crowns.clear();
+  for (const MapTree & tree : features.trees) {
+    const LatLon & p = tree.position;
+    if (p.latitude >= south && p.latitude < north && p.longitude >= west && p.longitude < east) {
+      tile.crowns.push_back({p, tree.crown_radius, tree.height});
+    }
+  }
+  const uint64_t seed =
+    (static_cast<uint64_t>(key.first) << 32) ^ static_cast<uint64_t>(key.second);
+  for (const Woodland & woodland : features.woodlands) {
+    const std::vector<Crown> crowns =
+      CrownsInWoodland(woodland.outline, south, west, north, east, seed);
+    tile.crowns.insert(tile.crowns.end(), crowns.begin(), crowns.end());
+  }
 
   // Triangulate once, in a local frame where degrees of longitude and
   // latitude are about the same length; the triangles stay valid in any
@@ -425,11 +421,12 @@ void BuildingLayer::SetTransform(const swri_transform_util::Transform & wgs84_to
 
 void BuildingLayer::Project(TileData & tile)
 {
+  ++revision_;
   tile.projected.clear();
   tile.projected.reserve(tile.buildings.size());
   for (size_t b = 0; b < tile.buildings.size(); ++b) {
     const Building & building = tile.buildings[b];
-    Projected projected;
+    ProjectedBuilding projected;
     projected.id = building.id;
     projected.walls = building.walls;
     projected.triangles = tile.triangles[b];
@@ -437,11 +434,9 @@ void BuildingLayer::Project(TileData & tile)
     projected.min_height = building.min_height;
 
     double area = 0.0;
-    tf2::Vector3 sum(0.0, 0.0, 0.0);
     for (const LatLon & point : building.outline) {
       projected.outline.push_back(
         transform_ * tf2::Vector3(point.longitude, point.latitude, 0.0));
-      sum += projected.outline.back();
     }
     for (size_t i = 0; i < projected.outline.size(); ++i) {
       const tf2::Vector3 & p = projected.outline[i];
@@ -449,120 +444,46 @@ void BuildingLayer::Project(TileData & tile)
       area += p.x() * q.y() - q.x() * p.y();
     }
     projected.counterclockwise = area >= 0.0;
-    projected.centroid = sum / static_cast<double>(projected.outline.size());
     tile.projected.push_back(std::move(projected));
+  }
+
+  tile.projected_crowns.clear();
+  tile.projected_crowns.reserve(tile.crowns.size());
+  for (const Crown & crown : tile.crowns) {
+    tile.projected_crowns.push_back(TreeLayer::ProjectCrown(crown, transform_));
   }
 }
 
-void BuildingLayer::Draw(double lean)
+void BuildingLayer::Collect(
+  std::vector<const ProjectedBuilding *> * buildings,
+  std::vector<const ProjectedCrown *> * crowns) const
 {
-  if (!gl_initialized_) {
-    initializeOpenGLFunctions();
-    gl_initialized_ = true;
-  }
-  if (view_tiles_.empty()) {
-    return;
-  }
-
-  // "Up" and "right" on screen, in the frame being drawn, from the
-  // modelview matrix (column major), so the lean follows the screen however
-  // the map is rotated.
-  GLdouble modelview[16];
-  glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-  tf2::Vector3 up(modelview[1], modelview[5], 0.0);
-  tf2::Vector3 right(modelview[0], modelview[4], 0.0);
-  if (up.length() < 1e-9 || right.length() < 1e-9) {
-    return;
-  }
-  up.normalize();
-  right.normalize();
-
-  // Overpass returns a building in every area it touches, so skip repeats.
-  std::vector<const Projected *> visible;
   std::unordered_set<int64_t> seen;
   for (const TileKey & key : view_tiles_) {
     auto found = tiles_.find(key);
     if (found == tiles_.end() || found->second.state != TileData::State::Loaded) {
       continue;
     }
-    for (const Projected & building : found->second.projected) {
-      if (building.id == 0 || seen.insert(building.id).second) {
-        visible.push_back(&building);
+    if (buildings) {
+      for (const ProjectedBuilding & building : found->second.projected) {
+        if (building.id == 0 || seen.insert(building.id).second) {
+          buildings->push_back(&building);
+        }
       }
     }
-  }
-
-  // Back to front: what is higher on the screen is farther away.
-  std::sort(
-    visible.begin(), visible.end(), [&up](const Projected * a, const Projected * b) {
-      return a->centroid.dot(up) > b->centroid.dot(up);
-    });
-
-  for (const Projected * building : visible) {
-    const tf2::Vector3 top = up * (lean * building->height);
-    const tf2::Vector3 bottom = up * (lean * building->min_height);
-    const size_t count = building->outline.size();
-
-    // Walls facing down the screen, toward the viewer.  Those facing up are
-    // behind the building and covered by its roof.
-    glBegin(GL_QUADS);
-    for (size_t i = 0; i < count; ++i) {
-      if (!building->walls[i]) {
-        continue;
+    if (crowns) {
+      for (const ProjectedCrown & crown : found->second.projected_crowns) {
+        crowns->push_back(&crown);
       }
-      const tf2::Vector3 & a = building->outline[i];
-      const tf2::Vector3 & b = building->outline[(i + 1) % count];
-      tf2::Vector3 edge = b - a;
-      edge.setZ(0.0);
-      if (edge.length() < 1e-6) {
-        continue;
-      }
-      edge.normalize();
-      // Outward normal: to the right of the edge on a counterclockwise outline.
-      const tf2::Vector3 normal = building->counterclockwise ?
-        tf2::Vector3(edge.y(), -edge.x(), 0.0) : tf2::Vector3(-edge.y(), edge.x(), 0.0);
-      if (normal.dot(up) > 0.0) {
-        continue;
-      }
-      // Walls facing the viewer are lighter than walls seen side on.
-      const float tone = static_cast<float>(0.62 - 0.16 * std::abs(normal.dot(right)));
-      glColor4f(tone, tone * 0.98f, tone * 0.95f, 1.0f);
-      const tf2::Vector3 a0 = a + bottom;
-      const tf2::Vector3 b0 = b + bottom;
-      const tf2::Vector3 b1 = b + top;
-      const tf2::Vector3 a1 = a + top;
-      glVertex2d(a0.x(), a0.y());
-      glVertex2d(b0.x(), b0.y());
-      glVertex2d(b1.x(), b1.y());
-      glVertex2d(a1.x(), a1.y());
     }
-    glEnd();
-
-    // The roof.
-    glColor4f(0.84f, 0.83f, 0.80f, 1.0f);
-    glBegin(GL_TRIANGLES);
-    for (int index : building->triangles) {
-      const tf2::Vector3 p = building->outline[static_cast<size_t>(index)] + top;
-      glVertex2d(p.x(), p.y());
-    }
-    glEnd();
-
-    // A thin edge around the roof keeps neighbouring buildings apart.
-    glColor4f(0.45f, 0.44f, 0.42f, 1.0f);
-    glBegin(GL_LINE_LOOP);
-    for (const tf2::Vector3 & point : building->outline) {
-      const tf2::Vector3 p = point + top;
-      glVertex2d(p.x(), p.y());
-    }
-    glEnd();
   }
 }
 
 QString BuildingLayer::Attribution() const
 {
   return source_ == BuildingSource::Overpass ?
-         QString("Buildings: © OpenStreetMap contributors") :
-         QString("Buildings: © Stadia Maps © OpenMapTiles © OpenStreetMap");
+         QString("© OpenStreetMap contributors") :
+         QString("© Stadia Maps © OpenMapTiles © OpenStreetMap");
 }
 
 QString BuildingLayer::Status(bool & is_error) const
@@ -590,7 +511,7 @@ QString BuildingLayer::Status(bool & is_error) const
     }
   }
   if (loading > 0) {
-    return QString("Loading buildings (%1 of %2 areas left)").arg(loading).arg(view_tiles_.size());
+    return QString("Loading map data (%1 of %2 areas left)").arg(loading).arg(view_tiles_.size());
   }
   if (!last_error_.isEmpty()) {
     is_error = true;

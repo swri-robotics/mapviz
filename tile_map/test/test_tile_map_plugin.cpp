@@ -252,6 +252,8 @@ TEST(TileMap25d, IsOffByDefault)
   EXPECT_TRUE(saved["render_25d"]["buildings"].as<bool>());
   EXPECT_EQ("overpass", saved["render_25d"]["building_source"].as<std::string>());
   EXPECT_DOUBLE_EQ(0.6, saved["render_25d"]["lean"].as<double>());
+  EXPECT_TRUE(saved["render_25d"]["trees"].as<bool>());
+  EXPECT_EQ("imagery", saved["render_25d"]["tree_source"].as<std::string>());
   EXPECT_EQ(
     "https://overpass-api.de/api/interpreter",
     saved["render_25d"]["overpass_url"].as<std::string>());
@@ -268,6 +270,8 @@ TEST(TileMap25d, RoundTripsItsSettings)
     "  exaggeration: 4.5\n"
     "  buildings: false\n"
     "  building_source: stadia\n"
+    "  trees: false\n"
+    "  tree_source: osm\n"
     "  lean: 1.2\n"
     "  overpass_url: https://overpass.example.com/api/interpreter\n";
 
@@ -282,6 +286,8 @@ TEST(TileMap25d, RoundTripsItsSettings)
   EXPECT_DOUBLE_EQ(4.5, saved["render_25d"]["exaggeration"].as<double>());
   EXPECT_FALSE(saved["render_25d"]["buildings"].as<bool>());
   EXPECT_EQ("stadia", saved["render_25d"]["building_source"].as<std::string>());
+  EXPECT_FALSE(saved["render_25d"]["trees"].as<bool>());
+  EXPECT_EQ("osm", saved["render_25d"]["tree_source"].as<std::string>());
   EXPECT_DOUBLE_EQ(1.2, saved["render_25d"]["lean"].as<double>());
   EXPECT_EQ(
     "https://overpass.example.com/api/interpreter",
@@ -311,11 +317,30 @@ TEST(TileMap25d, CreditsTheDataItDraws)
     "© OpenStreetMap contributors | Buildings: © Stadia Maps © OpenMapTiles © OpenStreetMap",
     plugin.CurrentAttribution());
 
-  // Nothing extra drawn, nothing extra to credit.
+  // Mapped trees come from the same data as the buildings.
+  plugin.LoadConfigPlugin(
+    YAML::Load(
+      "source: OpenStreetMap\n"
+      "render_25d: {enabled: true, terrain_shading: false, building_source: overpass,\n"
+      "  tree_source: osm}"), "");
+  EXPECT_EQ(
+    "© OpenStreetMap contributors | Buildings and trees: © OpenStreetMap contributors",
+    plugin.CurrentAttribution());
   plugin.LoadConfigPlugin(
     YAML::Load(
       "source: OpenStreetMap\n"
       "render_25d: {enabled: true, terrain_shading: false, buildings: false}"), "");
+  EXPECT_EQ(
+    "© OpenStreetMap contributors | Trees: © OpenStreetMap contributors",
+    plugin.CurrentAttribution());
+
+  // Nothing extra drawn, nothing extra to credit.  (Trees found in the
+  // imagery are credited with the imagery.)
+  plugin.LoadConfigPlugin(
+    YAML::Load(
+      "source: OpenStreetMap\n"
+      "render_25d: {enabled: true, terrain_shading: false, buildings: false,\n"
+      "  tree_source: imagery}"), "");
   EXPECT_EQ("© OpenStreetMap contributors", plugin.CurrentAttribution());
 }
 

@@ -65,6 +65,22 @@ void Map25d::SetBuildingsEnabled(bool enabled)
   buildings_enabled_ = enabled;
 }
 
+void Map25d::SetImagery(const std::shared_ptr<TileSource> & source, const ImageCachePtr & cache)
+{
+  // A new source has different tiles to look in; the view usually hasn't
+  // changed, so it won't be passed in again on its own.
+  if (trees_.SetImagery(source, cache) && view_ &&
+    trees_enabled_ && tree_source_ == TreeSource::Imagery)
+  {
+    trees_.SetView(view_->latitude, view_->longitude, view_->scale, view_->width, view_->height);
+  }
+}
+
+bool Map25d::MapDataNeeded() const
+{
+  return buildings_enabled_ || (trees_enabled_ && tree_source_ == TreeSource::Map);
+}
+
 void Map25d::SetShading(const ShadingParameters & shading)
 {
   if (shading != shading_) {
@@ -77,17 +93,22 @@ void Map25d::SetTransform(const swri_transform_util::Transform & wgs84_to_target
 {
   terrain_view_.SetTransform(wgs84_to_target);
   buildings_->SetTransform(wgs84_to_target);
+  trees_.SetTransform(wgs84_to_target);
 }
 
 void Map25d::SetView(
   double latitude, double longitude, double scale, int32_t width, int32_t height)
 {
+  view_ = View{latitude, longitude, scale, width, height};
   if (terrain_enabled_) {
     terrain_view_.SetView(latitude, longitude, scale, width, height);
   }
-  // Only fetch building data while it is shown.
-  if (buildings_enabled_) {
+  // Only fetch data that is shown.
+  if (MapDataNeeded()) {
     buildings_->SetView(latitude, longitude, scale, width, height);
+  }
+  if (trees_enabled_ && tree_source_ == TreeSource::Imagery) {
+    trees_.SetView(latitude, longitude, scale, width, height);
   }
 }
 
@@ -100,9 +121,27 @@ void Map25d::Draw()
     }
     terrain_view_.Draw();
   }
-  if (buildings_enabled_) {
-    buildings_->Draw(lean_);
+
+  const bool map_trees = trees_enabled_ && tree_source_ == TreeSource::Map;
+  const bool imagery_trees = trees_enabled_ && tree_source_ == TreeSource::Imagery;
+  std::vector<const ProjectedBuilding *> buildings;
+  std::vector<const ProjectedCrown *> crowns;
+  if (MapDataNeeded()) {
+    buildings_->Collect(buildings_enabled_ ? &buildings : nullptr, map_trees ? &crowns : nullptr);
   }
+  if (imagery_trees) {
+    trees_.Update();
+    trees_.Collect(&crowns);
+  }
+  if (buildings.empty() && crowns.empty()) {
+    return;
+  }
+  // Anything that changes what is drawn changes the revision, so the
+  // renderer rebuilds its triangles only when it has to.
+  const uint64_t revision =
+    buildings_->Revision() * 1000003ULL + trees_.Revision() * 8191ULL +
+    (buildings_enabled_ ? 1u : 0u) + (map_trees ? 2u : 0u) + (imagery_trees ? 4u : 0u);
+  renderer_.Draw(buildings, crowns, lean_, revision);
 }
 
 QString Map25d::Attribution() const
@@ -111,8 +150,13 @@ QString Map25d::Attribution() const
   if (terrain_enabled_) {
     credits << terrarium::ATTRIBUTION;
   }
-  if (buildings_enabled_) {
-    credits << buildings_->Attribution();
+  // Trees found in the imagery come from the imagery, which tile_map
+  // already credits.
+  const bool map_trees = trees_enabled_ && tree_source_ == TreeSource::Map;
+  if (buildings_enabled_ || map_trees) {
+    const QString what = buildings_enabled_ && map_trees ? "Buildings and trees" :
+      buildings_enabled_ ? "Buildings" : "Trees";
+    credits << what + ": " + buildings_->Attribution();
   }
   return credits.join(" | ");
 }
@@ -120,7 +164,16 @@ QString Map25d::Attribution() const
 QString Map25d::Status(bool & is_error) const
 {
   is_error = false;
-  return buildings_enabled_ ? buildings_->Status(is_error) : QString();
+  if (MapDataNeeded()) {
+    const QString status = buildings_->Status(is_error);
+    if (!status.isEmpty()) {
+      return status;
+    }
+  }
+  if (trees_enabled_ && tree_source_ == TreeSource::Imagery && trees_.TooFarOut()) {
+    return "Zoom in closer to see trees";
+  }
+  return {};
 }
 
 ImageCachePtr Map25d::GetTerrainImageCache()

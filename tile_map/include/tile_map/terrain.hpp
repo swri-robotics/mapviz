@@ -34,6 +34,7 @@
 #include <QString>
 
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 namespace tile_map
@@ -68,6 +69,13 @@ double MetersPerPixel(int32_t level, double latitude);
 
 /// Latitude of the north edge of tile row y (fractional rows are allowed).
 double TileRowLatitude(int32_t level, double y);
+
+/**
+ * The web mercator tiles at `level` within `radius` metres of a point, row by
+ * row from the north west, or none if there would be more than `max_tiles`.
+ */
+std::vector<std::pair<int64_t, int64_t>> TilesAround(
+  int32_t level, double latitude, double longitude, double radius, size_t max_tiles);
 
 struct ShadingParameters
 {

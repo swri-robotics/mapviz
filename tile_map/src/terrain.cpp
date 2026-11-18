@@ -88,6 +88,43 @@ double TileRowLatitude(int32_t level, double y)
   return swri_math_util::_rad_2_deg * std::atan(std::sinh(r));
 }
 
+std::vector<std::pair<int64_t, int64_t>> TilesAround(
+  int32_t level, double latitude, double longitude, double radius, size_t max_tiles)
+{
+  std::vector<std::pair<int64_t, int64_t>> tiles;
+  const double meters_per_degree = swri_transform_util::_earth_equator_circumference / 360.0;
+  const double cos_lat = std::max(
+    0.01, static_cast<double>(std::cos(latitude * swri_math_util::_deg_2_rad)));
+  const double dlat = radius / meters_per_degree;
+  const double dlon = radius / (meters_per_degree * cos_lat);
+
+  const double n = std::pow(2.0, level);
+  const int64_t max_index = static_cast<int64_t>(n) - 1;
+  auto to_x = [n, max_index](double lon) {
+      return std::clamp(
+        static_cast<int64_t>(std::floor((lon + 180.0) / 360.0 * n)), int64_t{0}, max_index);
+    };
+  auto to_y = [n, max_index](double lat) {
+      lat = std::clamp(lat, -85.0511, 85.0511) * static_cast<double>(swri_math_util::_deg_2_rad);
+      const double pi = static_cast<double>(swri_math_util::_pi);
+      const double y = (1.0 - std::asinh(std::tan(lat)) / pi) / 2.0 * n;
+      return std::clamp(static_cast<int64_t>(std::floor(y)), int64_t{0}, max_index);
+    };
+  const int64_t x0 = to_x(longitude - dlon);
+  const int64_t x1 = to_x(longitude + dlon);
+  const int64_t y0 = to_y(latitude + dlat);
+  const int64_t y1 = to_y(latitude - dlat);
+  if (static_cast<size_t>((x1 - x0 + 1) * (y1 - y0 + 1)) > max_tiles) {
+    return tiles;
+  }
+  for (int64_t y = y0; y <= y1; ++y) {
+    for (int64_t x = x0; x <= x1; ++x) {
+      tiles.emplace_back(x, y);
+    }
+  }
+  return tiles;
+}
+
 bool ShadingParameters::operator==(const ShadingParameters & other) const
 {
   return strength == other.strength && exaggeration == other.exaggeration;

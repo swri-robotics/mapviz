@@ -101,6 +101,9 @@ set(TILE_SRC_FILES
   src/terrain.cpp
   src/buildings.cpp
   src/building_layer.cpp
+  src/trees.cpp
+  src/tree_layer.cpp
+  src/scene_25d.cpp
   src/map_25d.cpp
   src/${PROJECT_NAME}_view.cpp
 )
@@ -221,6 +224,11 @@ if(BUILD_TESTING)
   ament_add_gtest(test_${PROJECT_NAME}_buildings test/test_buildings.cpp)
   if(TARGET test_${PROJECT_NAME}_buildings)
     target_link_libraries(test_${PROJECT_NAME}_buildings ${PROJECT_NAME})
+  endif()
+
+  ament_add_gtest(test_${PROJECT_NAME}_trees test/test_trees.cpp)
+  if(TARGET test_${PROJECT_NAME}_trees)
+    target_link_libraries(test_${PROJECT_NAME}_trees ${PROJECT_NAME})
   endif()
 
   # The plugin builds Qt widgets in its constructor, so the test needs a

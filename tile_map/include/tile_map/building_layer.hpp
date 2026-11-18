@@ -33,7 +33,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QObject>
-#include <QOpenGLFunctions_1_1>
 #include <QString>
 
 #include <cstdint>
@@ -43,8 +42,9 @@
 #include <vector>
 
 #include <rclcpp/logger.hpp>
-#include <tf2/LinearMath/Vector3.hpp>
 #include <tile_map/buildings.hpp>
+#include <tile_map/scene_25d.hpp>
+#include <tile_map/trees.hpp>
 #include "swri_transform_util/transform.h"
 
 namespace tile_map
@@ -58,16 +58,14 @@ enum class BuildingSource
 };
 
 /**
- * Buildings drawn standing up out of the map, for tile_map's 2.5D rendering.
+ * Map data for tile_map's 2.5D rendering: buildings, and the trees that
+ * OpenStreetMap maps (woods, forests and single trees).
  *
- * Buildings are fetched for z14 web mercator tiles around the view and kept
- * on disk, so each area is downloaded once.  They are drawn in the top-down
- * view with their roofs moved up the screen in proportion to their height
- * (the "lean"), with the walls in between, so their footprints stay on the
- * imagery.  There is no light source: walls get fixed tones by which way they
- * face on screen, so corners stay readable.
+ * Data is fetched for z14 web mercator tiles around the view and kept on
+ * disk, so each area is downloaded once.  Renderer25d draws what Collect()
+ * returns.
  */
-class BuildingLayer : public QObject, protected QOpenGLFunctions_1_1
+class BuildingLayer : public QObject
 {
   Q_OBJECT
 
@@ -103,11 +101,17 @@ public:
   /// The transform from WGS84 into the frame being drawn.
   void SetTransform(const swri_transform_util::Transform & wgs84_to_target);
 
-  /// Draws the buildings in view.  `lean` is how far a roof moves up the
-  /// screen per metre of height.  Needs the canvas's GL context.
-  void Draw(double lean);
+  /// Adds the buildings and mapped trees in view.  Overpass returns a
+  /// building in every area it touches, so repeats are left out.
+  void Collect(
+    std::vector<const ProjectedBuilding *> * buildings,
+    std::vector<const ProjectedCrown *> * crowns) const;
 
-  /// Credit line for the building data.
+  /// Changes whenever what Collect() returns does.
+  uint64_t Revision() const {return revision_;}
+
+  /// Who to credit for the data: "© OpenStreetMap contributors" or Stadia's
+  /// equivalent.
   QString Attribution() const;
 
   /// Progress or a problem to show in the status line; empty when there is
@@ -131,27 +135,16 @@ private Q_SLOTS:
   void ReplyFinished(QNetworkReply * reply);
 
 private:
-  /// A building in the frame being drawn.
-  struct Projected
-  {
-    int64_t id;
-    std::vector<tf2::Vector3> outline;
-    std::vector<bool> walls;
-    std::vector<int> triangles;
-    double height;
-    double min_height;
-    tf2::Vector3 centroid;
-    /// True when the outline runs counterclockwise in the drawn frame.
-    bool counterclockwise;
-  };
-
   struct TileData
   {
     enum class State {Queued, Loading, Loaded, Failed};
     State state = State::Queued;
     std::vector<Building> buildings;
     std::vector<std::vector<int>> triangles;
-    std::vector<Projected> projected;
+    std::vector<ProjectedBuilding> projected;
+    /// Mapped trees: single trees, and trees spread through woods.
+    std::vector<Crown> crowns;
+    std::vector<ProjectedCrown> projected_crowns;
     /// When a failed tile may be requested again.
     qint64 retry_after_ms = 0;
     uint64_t last_used = 0;
@@ -183,12 +176,11 @@ private:
   int generation_ = 0;
 
   swri_transform_util::Transform transform_;
+  uint64_t revision_ = 1;
 
   QString last_error_;
   bool key_rejected_ = false;
   bool too_far_out_ = false;
-
-  bool gl_initialized_ = false;
 };
 }  // namespace tile_map
 
