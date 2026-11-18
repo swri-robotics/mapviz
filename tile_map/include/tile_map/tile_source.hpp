@@ -130,9 +130,25 @@ public:
    */
   virtual QImage GetAttributionLogo() const;
 
+  /**
+   * Asks the tile server for limits it publishes about itself, such as the
+   * deepest zoom level it has tiles for.  Called when the source is selected;
+   * sources whose servers publish nothing leave this as a no-op.
+   */
+  virtual void RequestServiceLimits() {}
+
+  /**
+   * The deepest zoom level tile_map can handle.  Bing quadkeys are built
+   * with a 32-bit mask, so anything past 31 would overflow; 30 is already
+   * far finer (about 0.15 mm/pixel) than any imagery a server will have.
+   */
+  static constexpr int32_t MAX_SUPPORTED_ZOOM = 30;
+
 Q_SIGNALS:
   void ErrorMessage(const std::string & error_msg) const;
   void InfoMessage(const std::string & info_msg) const;
+  /// GetMaxZoom() changed after the source was created.
+  void MaxZoomChanged() const;
 
 protected:
   TileSource()

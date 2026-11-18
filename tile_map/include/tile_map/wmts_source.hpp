@@ -29,6 +29,9 @@
 #ifndef TILE_MAP__WMTS_SOURCE_HPP_
 #define TILE_MAP__WMTS_SOURCE_HPP_
 
+#include <QByteArray>
+#include <QNetworkAccessManager>
+
 #include <string>
 
 #include "tile_source.hpp"
@@ -91,10 +94,48 @@ public:
 
   virtual QString GetType() const;
 
+  /**
+   * For a built-in source served by ArcGIS (".../arcgis/rest/services/<name>/
+   * MapServer/..."), fetches the service description once and lowers or
+   * raises the maximum zoom to the deepest level the service says it has
+   * cached.  Until the reply arrives, or if it never does, or if the level it
+   * gives is outside [min zoom, MAX_SUPPORTED_ZOOM], the max zoom passed to
+   * the constructor stays in effect.  Custom sources keep the max zoom the
+   * user entered.
+   */
+  void RequestServiceLimits() override;
+
+  /**
+   * The URL of the ArcGIS service description for a tile URL, e.g.
+   * ".../USGSImageryOnly/MapServer?f=json", or an empty string if the URL
+   * is not an ArcGIS MapServer URL.
+   */
+  static QString ArcGisServiceInfoUrl(const QString & base_url);
+
+  /**
+   * The deepest tile level an ArcGIS MapServer description says is
+   * available, or -1 if it doesn't say.  That is the level named by "maxLOD"
+   * when the service sets one, otherwise the deepest level in
+   * "tileInfo.lods" whose scale is no finer than "maxScale".
+   *
+   * A description with neither (a "maxScale" of 0 means "no limit") gives -1:
+   * "tileInfo.lods" lists the levels of the tiling scheme, not the levels
+   * that are actually cached, and many services list 24 levels while caching
+   * far fewer.
+   */
+  static int32_t ParseArcGisMaxLevel(const QByteArray & service_info);
+
   static const QString WMTS_TYPE;
+
+protected:
+  /// Applies an ArcGIS service description fetched by RequestServiceLimits().
+  void HandleServiceInfo(const QByteArray & service_info);
 
 private:
   std::hash<std::string> hash_;
+  /// Created on first use, so sources that never need it don't open one.
+  QNetworkAccessManager * network_manager_ = nullptr;
+  bool limits_requested_ = false;
 };
 }  // namespace tile_map
 

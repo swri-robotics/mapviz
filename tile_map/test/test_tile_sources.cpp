@@ -34,6 +34,7 @@
 #include <QTemporaryDir>
 #include <QUrl>
 
+#include <cmath>
 #include <cstdint>
 #include <set>
 #include <string>
@@ -56,6 +57,34 @@ public:
   using BingSource::GenerateQuadKey;
   using BingSource::HandleMetadata;
 };
+
+/// HandleServiceInfo() is protected.
+class TestWmtsSource : public WmtsSource
+{
+public:
+  explicit TestWmtsSource(int32_t max_zoom)
+  : WmtsSource("test", "https://example.com/arcgis/rest/services/X/MapServer/tile/{level}/{y}/{x}",
+      false, max_zoom) {}
+
+  using WmtsSource::HandleServiceInfo;
+};
+
+/// An ArcGIS MapServer description in the shape USGSImageryOnly returns:
+/// `levels` web-mercator levels (24 for USGS), with the extra fields given by
+/// `limits`.
+QByteArray ArcGisServiceInfo(const std::string & limits, int levels = 24)
+{
+  std::string lods;
+  for (int level = 0; level < levels; ++level) {
+    // Scales as the service prints them, rounded to six decimals.
+    const double scale = std::round(591657527.591555 / std::pow(2.0, level) * 1e6) / 1e6;
+    lods += (level ? "," : "") + std::string("{\"level\":") + std::to_string(level) +
+      ",\"resolution\":1,\"scale\":" + std::to_string(scale) + "}";
+  }
+  return QByteArray::fromStdString(
+    "{\"currentVersion\":10.81," + limits +
+    "\"tileInfo\":{\"rows\":256,\"cols\":256,\"lods\":[" + lods + "]}}");
+}
 
 /// An Imagery Metadata response in the shape Bing returns, with two providers:
 /// one worldwide at every zoom, and one covering part of Texas up close.
@@ -243,6 +272,112 @@ TEST(BingSource, DownloadsTheBrandLogo)
   }
   ASSERT_FALSE(source.GetAttributionLogo().isNull());
   EXPECT_EQ(QSize(40, 10), source.GetAttributionLogo().size());
+}
+
+TEST(WmtsSource, FindsTheArcGisServiceDescription)
+{
+  const QString usgs = "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/"
+    "MapServer";
+  EXPECT_EQ(
+    usgs + "?f=json",
+    WmtsSource::ArcGisServiceInfoUrl(
+      usgs + "/WMTS/tile/1.0.0/USGSImageryOnly/default/default028mm/{level}/{y}/{x}.png"));
+  EXPECT_EQ(
+    usgs + "?f=json", WmtsSource::ArcGisServiceInfoUrl(usgs + "/tile/{level}/{y}/{x}"));
+  // Services can sit in folders.
+  EXPECT_EQ(
+    "https://example.com/arcgis/rest/services/Folder/Name/MapServer?f=json",
+    WmtsSource::ArcGisServiceInfoUrl(
+      "https://example.com/arcgis/rest/services/Folder/Name/MapServer/tile/{z}/{y}/{x}"));
+
+  // Not ArcGIS MapServer tile URLs.
+  EXPECT_EQ("", WmtsSource::ArcGisServiceInfoUrl("https://tile.openstreetmap.org/{z}/{x}/{y}.png"));
+  EXPECT_EQ(
+    "", WmtsSource::ArcGisServiceInfoUrl(
+      "https://example.com/arcgis/rest/services/X/ImageServer/tile/{z}/{y}/{x}"));
+  EXPECT_EQ("", WmtsSource::ArcGisServiceInfoUrl("file:///arcgis/rest/services/X/MapServer/{z}"));
+}
+
+TEST(WmtsSource, ReadsTheDeepestCachedArcGisLevel)
+{
+  // USGSImageryOnly reports maxScale 9027.977411, the scale of level 16.
+  EXPECT_EQ(
+    16, WmtsSource::ParseArcGisMaxLevel(
+      ArcGisServiceInfo("\"minScale\":295828763.795777,\"maxScale\":9027.977411,")));
+  // A maxScale between two levels allows the coarser one only.
+  EXPECT_EQ(15, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxScale\":12000,")));
+  // maxLOD, when set, wins.
+  EXPECT_EQ(
+    12, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxLOD\":12,\"maxScale\":0,")));
+}
+
+TEST(WmtsSource, IgnoresUnusableArcGisDescriptions)
+{
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel(""));
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel("<html>Service unavailable</html>"));
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel("{\"error\":{\"code\":400}}"));
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel("{\"tileInfo\":{\"lods\":[]}}"));
+  // A maxLOD the service doesn't list.
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxLOD\":40,")));
+}
+
+TEST(WmtsSource, NeedsAnExplicitArcGisLimit)
+{
+  // Without maxLOD or a maxScale, the lods only describe the tiling scheme;
+  // reporting its deepest level (23) would ask for tiles that aren't cached.
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("\"maxScale\":0,")));
+  EXPECT_EQ(-1, WmtsSource::ParseArcGisMaxLevel(ArcGisServiceInfo("")));
+}
+
+TEST(WmtsSource, AppliesTheServiceMaxZoom)
+{
+  TestWmtsSource source(19);
+  int changes = 0;
+  QObject::connect(&source, &WmtsSource::MaxZoomChanged, [&changes]() {++changes;});
+
+  source.HandleServiceInfo(ArcGisServiceInfo("\"maxScale\":9027.977411,"));
+  EXPECT_EQ(16, source.GetMaxZoom());
+  EXPECT_EQ(1, changes);
+
+  // The same answer again is not a change.
+  source.HandleServiceInfo(ArcGisServiceInfo("\"maxScale\":9027.977411,"));
+  EXPECT_EQ(1, changes);
+
+  // A deeper cache raises it.
+  source.HandleServiceInfo(ArcGisServiceInfo("\"maxLOD\":18,"));
+  EXPECT_EQ(18, source.GetMaxZoom());
+  EXPECT_EQ(2, changes);
+
+  // Replies that can't be read, or that set no limit, keep the current value.
+  source.HandleServiceInfo("not json");
+  source.HandleServiceInfo(ArcGisServiceInfo("\"maxScale\":0,"));
+  EXPECT_EQ(18, source.GetMaxZoom());
+  EXPECT_EQ(2, changes);
+}
+
+TEST(WmtsSource, IgnoresServiceMaxZoomOutOfRange)
+{
+  TestWmtsSource source(16);
+  int changes = 0;
+  QObject::connect(&source, &WmtsSource::MaxZoomChanged, [&changes]() {++changes;});
+
+  // Past the deepest level tile_map can draw: ignored, not clamped.
+  source.HandleServiceInfo(
+    ArcGisServiceInfo(
+      "\"maxLOD\":" + std::to_string(WmtsSource::MAX_SUPPORTED_ZOOM + 1) + ",", 40));
+  EXPECT_EQ(16, source.GetMaxZoom());
+
+  // Below the source's minimum zoom (1 for WMTS).
+  source.HandleServiceInfo(ArcGisServiceInfo("\"maxLOD\":0,"));
+  EXPECT_EQ(16, source.GetMaxZoom());
+  EXPECT_EQ(0, changes);
+
+  // The deepest supported level itself is accepted.
+  source.HandleServiceInfo(
+    ArcGisServiceInfo(
+      "\"maxLOD\":" + std::to_string(WmtsSource::MAX_SUPPORTED_ZOOM) + ",", 40));
+  EXPECT_EQ(WmtsSource::MAX_SUPPORTED_ZOOM, source.GetMaxZoom());
+  EXPECT_EQ(1, changes);
 }
 
 int main(int argc, char ** argv)
