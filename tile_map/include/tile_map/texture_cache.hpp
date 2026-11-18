@@ -30,8 +30,11 @@
 #define TILE_MAP__TEXTURE_CACHE_HPP_
 
 #include <QCache>
+#include <QImage>
 #include <QOpenGLTexture>
+#include <QString>
 
+#include <functional>
 #include <memory>
 
 #include <rclcpp/logger.hpp>
@@ -64,6 +67,19 @@ public:
   TexturePtr GetTexture(size_t url_hash, const QString & url, bool & failed, int priority);
   void AddTexture(const TexturePtr & texture);
 
+  /// Turns a downloaded tile image into the image that is uploaded as its
+  /// texture, e.g. elevation data into shading.  Gets the tile's URL too.
+  using ImageFilter = std::function<QImage(const QImage & image, const QString & url)>;
+
+  /// Filters every image before upload; an empty filter uploads them as they
+  /// are.  Textures already made are not refiltered; see ClearTextures().
+  void SetImageFilter(ImageFilter filter);
+
+  /// Drops the textures but keeps the downloaded images, so the next request
+  /// for each tile rebuilds its texture (with the current image filter)
+  /// without downloading it again.
+  void ClearTextures();
+
   void IncrementFrame();
 
   void SetLogger(rclcpp::Logger logger);
@@ -78,6 +94,8 @@ private:
   QCache<size_t, TexturePtr> cache_;
 
   ImageCachePtr image_cache_;
+
+  ImageFilter image_filter_;
 
   rclcpp::Logger logger_;
 };

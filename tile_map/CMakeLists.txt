@@ -98,6 +98,8 @@ set(TILE_SRC_FILES
   src/stadia_source.cpp
   src/tile_source.cpp
   src/wmts_source.cpp
+  src/terrain.cpp
+  src/map_25d.cpp
   src/${PROJECT_NAME}_view.cpp
 )
 set(QT_HEADERS
@@ -206,6 +208,11 @@ if(BUILD_TESTING)
   ament_add_gtest(test_${PROJECT_NAME}_sources test/test_tile_sources.cpp)
   if(TARGET test_${PROJECT_NAME}_sources)
     target_link_libraries(test_${PROJECT_NAME}_sources ${PROJECT_NAME})
+  endif()
+
+  ament_add_gtest(test_${PROJECT_NAME}_terrain test/test_terrain.cpp)
+  if(TARGET test_${PROJECT_NAME}_terrain)
+    target_link_libraries(test_${PROJECT_NAME}_terrain ${PROJECT_NAME})
   endif()
 
   # The plugin builds Qt widgets in its constructor, so the test needs a

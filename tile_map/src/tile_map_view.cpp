@@ -38,13 +38,13 @@
 
 namespace tile_map
 {
-TileMapView::TileMapView(rclcpp::Logger logger)
+TileMapView::TileMapView(rclcpp::Logger logger, const QString & cache_dir)
 : level_(-1),
   width_(100),
   height_(100),
   logger_(logger)
 {
-  ImageCachePtr image_cache = std::make_shared<ImageCache>("/tmp/tile_map", 4096, logger);
+  ImageCachePtr image_cache = std::make_shared<ImageCache>(cache_dir, 4096, logger);
   tile_cache_ = std::make_shared<TextureCache>(image_cache, 512, logger);
 }
 
@@ -75,6 +75,22 @@ bool TileMapView::GetCenterTile(int32_t & level, int64_t & x, int64_t & y) const
   x = center_x_;
   y = center_y_;
   return true;
+}
+
+void TileMapView::SetImageFilter(TextureCache::ImageFilter filter)
+{
+  tile_cache_->SetImageFilter(std::move(filter));
+}
+
+void TileMapView::RefreshTextures()
+{
+  for (auto & tile : tiles_) {
+    tile.texture.reset();
+  }
+  for (auto & tile : precache_) {
+    tile.texture.reset();
+  }
+  tile_cache_->ClearTextures();
 }
 
 void TileMapView::SetLogger(rclcpp::Logger logger)
@@ -312,7 +328,9 @@ void TileMapView::Draw()
 
   glEnable(GL_TEXTURE_2D);
 
-  DrawTiles(precache_, 0);
+  if (draw_precache_) {
+    DrawTiles(precache_, 0);
+  }
   DrawTiles(tiles_, 10000);
 
   glDisable(GL_TEXTURE_2D);

@@ -1,0 +1,102 @@
+// *****************************************************************************
+//
+// Copyright (c) 2026, Southwest Research Institute® (SwRI®)
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//     * Neither the name of the Southwest Research Institute® (SwRI®) nor the
+//       names of its contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// *****************************************************************************
+
+#ifndef TILE_MAP__MAP_25D_HPP_
+#define TILE_MAP__MAP_25D_HPP_
+
+#include <QImage>
+#include <QString>
+
+#include <memory>
+
+#include <rclcpp/logger.hpp>
+#include <tile_map/terrain.hpp>
+#include <tile_map/tile_map_view.hpp>
+#include "swri_transform_util/transform.h"
+
+namespace tile_map
+{
+class WmtsSource;
+
+/**
+ * The layers tile_map draws over its imagery when "2.5D rendering" is on.
+ *
+ * Everything stays in mapviz's top-down view and is lit evenly from every
+ * direction, with no light source and no shadows.  Depth comes from shading
+ * steep ground (and, in later layers, from heights drawn as a lean), so the
+ * imagery and every other plugin stay where they are on the map.
+ *
+ * Runs on the render thread: the setters only record what changed, and
+ * anything that touches OpenGL waits for Draw().
+ */
+class Map25d
+{
+public:
+  explicit Map25d(rclcpp::Logger logger = rclcpp::get_logger("tile_map::Map25d"));
+
+  void SetLogger(rclcpp::Logger logger);
+
+  /// Relief shading from elevation tiles.
+  void SetTerrainEnabled(bool enabled) {terrain_enabled_ = enabled;}
+  bool TerrainEnabled() const {return terrain_enabled_;}
+
+  void SetShading(const ShadingParameters & shading);
+  const ShadingParameters & Shading() const {return shading_;}
+
+  /// The transform from WGS84 into the frame being drawn.
+  void SetTransform(const swri_transform_util::Transform & wgs84_to_target);
+
+  /// The area being drawn: its centre, metres per pixel and size in pixels.
+  void SetView(double latitude, double longitude, double scale, int32_t width, int32_t height);
+
+  /// Draws the enabled layers.  Needs the canvas's GL context.
+  void Draw();
+
+  /// Credit lines for the data the enabled layers draw.
+  QString Attribution() const;
+
+  /// The cache that downloads elevation tiles, to connect to its errors.
+  ImageCachePtr GetTerrainImageCache();
+
+  /// Turns a downloaded Terrarium tile into its shading overlay.  Returns a
+  /// null image if `url` isn't a Terrarium tile URL.
+  static QImage ShadeTerrariumTile(
+    const QImage & image, const QString & url, const ShadingParameters & shading);
+
+private:
+  std::shared_ptr<WmtsSource> terrain_source_;
+  TileMapView terrain_view_;
+  bool terrain_enabled_ = true;
+  ShadingParameters shading_;
+  /// Set when the shading changes; the textures are rebuilt in Draw(), where
+  /// the GL context is current.
+  bool refresh_textures_ = false;
+};
+}  // namespace tile_map
+
+#endif  // TILE_MAP__MAP_25D_HPP_

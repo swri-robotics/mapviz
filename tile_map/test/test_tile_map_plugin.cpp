@@ -238,6 +238,61 @@ TEST(TileMapAttribution, WrapsOnANarrowCanvas)
   EXPECT_FALSE(IsPainted(canvas, QRect(0, 0, 4, 300)));
 }
 
+TEST(TileMap25d, IsOffByDefault)
+{
+  tile_map::TileMapPlugin plugin;
+  plugin.SetNode(*g_node);
+  YAML::Node saved = SaveAfterLoading(plugin, "source: OpenStreetMap");
+
+  ASSERT_TRUE(saved["render_25d"]);
+  EXPECT_FALSE(saved["render_25d"]["enabled"].as<bool>());
+  EXPECT_TRUE(saved["render_25d"]["terrain_shading"].as<bool>());
+  EXPECT_DOUBLE_EQ(0.6, saved["render_25d"]["shading_strength"].as<double>());
+  EXPECT_DOUBLE_EQ(2.0, saved["render_25d"]["exaggeration"].as<double>());
+}
+
+TEST(TileMap25d, RoundTripsItsSettings)
+{
+  const char config[] =
+    "source: OpenStreetMap\n"
+    "render_25d:\n"
+    "  enabled: true\n"
+    "  terrain_shading: false\n"
+    "  shading_strength: 0.3\n"
+    "  exaggeration: 4.5\n";
+
+  tile_map::TileMapPlugin plugin;
+  plugin.SetNode(*g_node);
+  YAML::Node saved = SaveAfterLoading(plugin, config);
+
+  ASSERT_TRUE(saved["render_25d"]);
+  EXPECT_TRUE(saved["render_25d"]["enabled"].as<bool>());
+  EXPECT_FALSE(saved["render_25d"]["terrain_shading"].as<bool>());
+  EXPECT_DOUBLE_EQ(0.3, saved["render_25d"]["shading_strength"].as<double>());
+  EXPECT_DOUBLE_EQ(4.5, saved["render_25d"]["exaggeration"].as<double>());
+}
+
+TEST(TileMap25d, CreditsTheElevationDataWhileShading)
+{
+  TestTileMapPlugin plugin;
+  plugin.SetNode(*g_node);
+
+  plugin.LoadConfigPlugin(YAML::Load("source: OpenStreetMap"), "");
+  EXPECT_EQ("© OpenStreetMap contributors", plugin.CurrentAttribution());
+
+  plugin.LoadConfigPlugin(
+    YAML::Load("source: OpenStreetMap\nrender_25d: {enabled: true}"), "");
+  EXPECT_EQ(
+    QString("© OpenStreetMap contributors | ") + tile_map::terrarium::ATTRIBUTION,
+    plugin.CurrentAttribution());
+
+  // No shading, no elevation data to credit.
+  plugin.LoadConfigPlugin(
+    YAML::Load("source: OpenStreetMap\nrender_25d: {enabled: true, terrain_shading: false}"),
+    "");
+  EXPECT_EQ("© OpenStreetMap contributors", plugin.CurrentAttribution());
+}
+
 TEST(TileMapAttribution, PaintsNothingWithoutAnAttribution)
 {
   TestTileMapPlugin plugin;

@@ -31,6 +31,8 @@
 // QT libraries
 #include <QOpenGLWidget>
 #include <QInputDialog>
+#include <QLabel>
+#include <QSignalBlocker>
 #include <QMessageBox>
 #include <QUrl>
 #include <QNetworkRequest>
@@ -71,6 +73,7 @@ std::string TileMapPlugin::MAX_ZOOM_KEY = "max_zoom";  // NOLINT(runtime/string)
 std::string TileMapPlugin::NAME_KEY = "name";  // NOLINT(runtime/string)
 std::string TileMapPlugin::SOURCE_KEY = "source";  // NOLINT(runtime/string)
 std::string TileMapPlugin::TYPE_KEY = "type";  // NOLINT(runtime/string)
+std::string TileMapPlugin::RENDER_25D_KEY = "render_25d";  // NOLINT(runtime/string)
 QString TileMapPlugin::BING_NAME = "Bing Maps (terrain)";
 QString TileMapPlugin::CARTO_NAME = "Carto";
 QString TileMapPlugin::STAMEN_TERRAIN_NAME = "Stamen (terrain)";
@@ -95,6 +98,16 @@ constexpr int ATTRIBUTION_MIN_MARGIN = 4;
 constexpr int ATTRIBUTION_MIN_PADDING = 3;
 // The smallest the attribution text is shrunk to on a narrow canvas.
 constexpr int ATTRIBUTION_MIN_FONT_PIXELS = 7;
+
+// Keys inside the render_25d map of the config.
+const char RENDER_25D_ENABLED_KEY[] = "enabled";
+const char TERRAIN_SHADING_KEY[] = "terrain_shading";
+const char SHADING_STRENGTH_KEY[] = "shading_strength";
+const char EXAGGERATION_KEY[] = "exaggeration";
+
+// The 2.5D controls go in rows 6 to 9 of the grid in tile_map_config.ui,
+// between the Max Zoom/Test rows and Status, which is on row 10.
+constexpr int RENDER_25D_FIRST_ROW = 6;
 
 namespace
 {
@@ -130,6 +143,7 @@ TileMapPlugin::TileMapPlugin()
   , transform_ok_(false)
   , dirty_(false)
   , transformed_(false)
+  , render_25d_(false)
   , last_center_x_(0.0)
   , last_center_y_(0.0)
   , last_scale_(0.0)
@@ -137,6 +151,7 @@ TileMapPlugin::TileMapPlugin()
   , last_width_(0)
 {
   ui_.setupUi(config_widget_);
+  SetUp25dControls();
 
   // The attribution for each built-in source is the credit line that the
   // provider's terms of use require on the map; Bing works out its own from
@@ -229,8 +244,95 @@ TileMapPlugin::TileMapPlugin()
     tile_map_.GetImageCache().get(),
     SIGNAL(RequestFailed(QString,QString)),  // NOLINT(whitespace/comma)
     this, SLOT(HandleTileFailure(QString,QString)));  // NOLINT(whitespace/comma)
+  QObject::connect(
+    map_25d_.GetTerrainImageCache().get(),
+    SIGNAL(RequestFailed(QString,QString)),  // NOLINT(whitespace/comma)
+    this, SLOT(HandleTileFailure(QString,QString)));  // NOLINT(whitespace/comma)
 
   UpdateControlState();
+}
+
+void TileMapPlugin::SetUp25dControls()
+{
+  const ShadingParameters defaults;
+  int row = RENDER_25D_FIRST_ROW;
+
+  render_25d_check_ = new QCheckBox("2.5D rendering", config_widget_);
+  render_25d_check_->setToolTip(
+    "Draw depth cues over the imagery, such as shading that makes hills and slopes stand "
+    "out.  The map stays top-down, so other displays line up with it as before.");
+  ui_.gridLayout->addWidget(render_25d_check_, row++, 0, 1, 4);
+
+  auto add_row = [this, &row](const QString & label, QWidget * control) {
+      auto * label_widget = new QLabel(label, config_widget_);
+      ui_.gridLayout->addWidget(label_widget, row, 0);
+      ui_.gridLayout->addWidget(control, row, 1, 1, 3);
+      settings_25d_widgets_.push_back(label_widget);
+      settings_25d_widgets_.push_back(control);
+      ++row;
+    };
+
+  terrain_check_ = new QCheckBox("Shade slopes", config_widget_);
+  terrain_check_->setChecked(true);
+  terrain_check_->setToolTip("Uses elevation from the free AWS Terrain Tiles data set.");
+  add_row("Terrain:", terrain_check_);
+
+  shading_strength_spin_ = new QSpinBox(config_widget_);
+  shading_strength_spin_->setRange(0, 100);
+  shading_strength_spin_->setSuffix(" %");
+  shading_strength_spin_->setValue(static_cast<int>(std::lround(defaults.strength * 100.0)));
+  shading_strength_spin_->setToolTip("How dark the steepest slopes get.");
+  add_row("Shading:", shading_strength_spin_);
+
+  exaggeration_spin_ = new QDoubleSpinBox(config_widget_);
+  exaggeration_spin_->setRange(0.1, 20.0);
+  exaggeration_spin_->setSingleStep(0.5);
+  exaggeration_spin_->setDecimals(1);
+  exaggeration_spin_->setSuffix(" x");
+  exaggeration_spin_->setValue(defaults.exaggeration);
+  exaggeration_spin_->setToolTip("Multiplies terrain heights, so gentle slopes still show.");
+  add_row("Exaggeration:", exaggeration_spin_);
+
+  for (QWidget * widget : settings_25d_widgets_) {
+    widget->setVisible(false);
+  }
+
+  QObject::connect(
+    render_25d_check_, &QCheckBox::toggled, this, &TileMapPlugin::Render25dToggled);
+  QObject::connect(
+    terrain_check_, &QCheckBox::toggled, this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    shading_strength_spin_, qOverload<int>(&QSpinBox::valueChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+  QObject::connect(
+    exaggeration_spin_, qOverload<double>(&QDoubleSpinBox::valueChanged),
+    this, &TileMapPlugin::Settings25dChanged);
+}
+
+void TileMapPlugin::Render25dToggled(bool checked)
+{
+  render_25d_ = checked;
+  for (QWidget * widget : settings_25d_widgets_) {
+    widget->setVisible(checked);
+  }
+  // The 2.5D layers only follow the view while they are on, so make the next
+  // Draw() pass the current view to them.
+  last_height_ = 0;
+  if (canvas_) {
+    canvas_->update();
+  }
+}
+
+void TileMapPlugin::Settings25dChanged()
+{
+  ShadingParameters shading;
+  shading.strength = shading_strength_spin_->value() / 100.0;
+  shading.exaggeration = exaggeration_spin_->value();
+  map_25d_.SetShading(shading);
+  map_25d_.SetTerrainEnabled(terrain_check_->isChecked());
+  if (canvas_) {
+    canvas_->update();
+  }
 }
 
 void TileMapPlugin::DeleteTileSource()
@@ -606,6 +708,9 @@ void TileMapPlugin::Draw(double x, double y, double scale)
       last_width_ = canvas_->width();
       last_height_ = canvas_->height();
       tile_map_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+      if (render_25d_) {
+        map_25d_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+      }
       RCLCPP_DEBUG(Logger(), "TileMapPlugin::Draw: Successfully set view");
 
       int32_t level;
@@ -617,6 +722,9 @@ void TileMapPlugin::Draw(double x, double y, double scale)
       }
     }
     tile_map_.Draw();
+    if (render_25d_) {
+      map_25d_.Draw();
+    }
   }
 }
 
@@ -632,7 +740,12 @@ QString TileMapPlugin::CurrentAttribution() const
   if (!source) {
     return {};
   }
-  return source->GetAttribution(view_bounds_);
+  QString attribution = source->GetAttribution(view_bounds_);
+  const QString extra = render_25d_ ? map_25d_.Attribution() : QString();
+  if (!extra.isEmpty()) {
+    attribution = attribution.isEmpty() ? extra : attribution + " | " + extra;
+  }
+  return attribution;
 }
 
 void TileMapPlugin::Paint(QPainter * painter, double, double, double)
@@ -752,6 +865,7 @@ void TileMapPlugin::Transform()
   swri_transform_util::Transform to_target;
   if (tf_manager_->GetTransform(target_frame_, source_frame_, to_target)) {
     tile_map_.SetTransform(to_target);
+    map_25d_.SetTransform(to_target);
     transform_ok_ = true;
     transform_status_.clear();
   } else {
@@ -831,6 +945,30 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
 
     SelectSource(QString::fromStdString(source));
   }
+
+  if (node[RENDER_25D_KEY]) {
+    const YAML::Node & render_25d = node[RENDER_25D_KEY];
+    // Set every control before applying them, so the layers see one change.
+    {
+      const QSignalBlocker block_terrain(terrain_check_);
+      const QSignalBlocker block_strength(shading_strength_spin_);
+      const QSignalBlocker block_exaggeration(exaggeration_spin_);
+      if (render_25d[TERRAIN_SHADING_KEY]) {
+        terrain_check_->setChecked(render_25d[TERRAIN_SHADING_KEY].as<bool>());
+      }
+      if (render_25d[SHADING_STRENGTH_KEY]) {
+        shading_strength_spin_->setValue(
+          static_cast<int>(std::lround(render_25d[SHADING_STRENGTH_KEY].as<double>() * 100.0)));
+      }
+      if (render_25d[EXAGGERATION_KEY]) {
+        exaggeration_spin_->setValue(render_25d[EXAGGERATION_KEY].as<double>());
+      }
+    }
+    Settings25dChanged();
+    if (render_25d[RENDER_25D_ENABLED_KEY]) {
+      render_25d_check_->setChecked(render_25d[RENDER_25D_ENABLED_KEY].as<bool>());
+    }
+  }
 }
 
 void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
@@ -867,6 +1005,14 @@ void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
 
   std::string combo_str = TrimString(ui_.source_combo->currentText().toStdString());
   emitter << YAML::Key << SOURCE_KEY << YAML::Value << combo_str;
+
+  emitter << YAML::Key << RENDER_25D_KEY << YAML::Value << YAML::BeginMap;
+  emitter << YAML::Key << RENDER_25D_ENABLED_KEY << YAML::Value << render_25d_;
+  emitter << YAML::Key << TERRAIN_SHADING_KEY << YAML::Value << terrain_check_->isChecked();
+  emitter << YAML::Key << SHADING_STRENGTH_KEY << YAML::Value <<
+    shading_strength_spin_->value() / 100.0;
+  emitter << YAML::Key << EXAGGERATION_KEY << YAML::Value << exaggeration_spin_->value();
+  emitter << YAML::EndMap;
 }
 
 void TileMapPlugin::selectTileSource(const std::shared_ptr<TileSource> & tile_source)
@@ -907,5 +1053,6 @@ void TileMapPlugin::SetNode(rclcpp::Node & node)
 {
   MapvizPlugin::SetNode(node);
   tile_map_.SetLogger(node.get_logger());
+  map_25d_.SetLogger(node.get_logger());
 }
 }  // namespace tile_map
