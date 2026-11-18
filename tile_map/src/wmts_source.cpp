@@ -28,7 +28,14 @@
 
 #include <tile_map/wmts_source.hpp>
 
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QRegularExpression>
 #include <QStringList>
+#include <QUrl>
+#include <json/json.h>
+
+#include <algorithm>
 
 namespace tile_map
 {
@@ -96,5 +103,97 @@ QString WmtsSource::ValidateBaseUrl(const QString & base_url)
          ".  Without them every tile resolves to the same image.  A URL looks "
          "like http://localhost/osm_tiles/{level}/{x}/{y}.png ({z} also works "
          "in place of {level}).";
+}
+
+void WmtsSource::RequestServiceLimits()
+{
+  if (is_custom_ || limits_requested_) {
+    return;
+  }
+
+  const QString url = ArcGisServiceInfoUrl(base_url_);
+  if (url.isEmpty()) {
+    return;
+  }
+
+  limits_requested_ = true;
+  if (network_manager_ == nullptr) {
+    network_manager_ = new QNetworkAccessManager(this);
+  }
+
+  QNetworkReply * reply = network_manager_->get(QNetworkRequest(QUrl(url)));
+  QObject::connect(
+    reply, &QNetworkReply::finished, this, [this, reply]() {
+      reply->deleteLater();
+      if (reply->error() != QNetworkReply::NoError) {
+        // Keep the built-in max zoom, and try again the next time the
+        // source is selected.
+        limits_requested_ = false;
+        return;
+      }
+      HandleServiceInfo(reply->readAll());
+    });
+}
+
+void WmtsSource::HandleServiceInfo(const QByteArray & service_info)
+{
+  const int32_t level = ParseArcGisMaxLevel(service_info);
+  if (level < min_zoom_ || level == max_zoom_) {
+    return;
+  }
+
+  max_zoom_ = level;
+  Q_EMIT MaxZoomChanged();
+}
+
+QString WmtsSource::ArcGisServiceInfoUrl(const QString & base_url)
+{
+  static const QRegularExpression map_server(
+    "^(https?://[^?#]*/arcgis/rest/services/[^?#]+?/MapServer)(?:[/?#]|$)",
+    QRegularExpression::CaseInsensitiveOption);
+
+  const QRegularExpressionMatch match = map_server.match(base_url.trimmed());
+  if (!match.hasMatch()) {
+    return "";
+  }
+  return match.captured(1) + "?f=json";
+}
+
+int32_t WmtsSource::ParseArcGisMaxLevel(const QByteArray & service_info)
+{
+  Json::Reader reader;
+  Json::Value root;
+  if (!reader.parse(service_info.toStdString(), root) || !root.isObject()) {
+    return -1;
+  }
+
+  const Json::Value & lods = root["tileInfo"]["lods"];
+  if (!lods.isArray()) {
+    return -1;
+  }
+
+  if (root["maxLOD"].isIntegral()) {
+    const int32_t max_lod = root["maxLOD"].asInt();
+    for (const Json::Value & lod : lods) {
+      if (lod["level"].isIntegral() && lod["level"].asInt() == max_lod) {
+        return max_lod;
+      }
+    }
+    return -1;
+  }
+
+  // maxScale is the most detailed scale the service draws.  The scales in
+  // the description are rounded, so allow a little slack when comparing.
+  const double max_scale = root["maxScale"].isNumeric() ? root["maxScale"].asDouble() : 0.0;
+  int32_t deepest = -1;
+  for (const Json::Value & lod : lods) {
+    if (!lod["level"].isIntegral() || !lod["scale"].isNumeric()) {
+      continue;
+    }
+    if (max_scale <= 0.0 || lod["scale"].asDouble() >= max_scale * (1.0 - 1e-6)) {
+      deepest = std::max(deepest, static_cast<int32_t>(lod["level"].asInt()));
+    }
+  }
+  return deepest;
 }
 }  // namespace tile_map

@@ -80,6 +80,9 @@ protected:
   /// The credit line for the source being drawn, for the area on screen.
   QString CurrentAttribution() const;
 
+  /// The deepest zoom level the selected source is asked for, or -1 if none.
+  int CurrentMaxZoom() const;
+
   void Transform() override;
 
   void LoadConfig(const YAML::Node & node, const std::string & path) override;
@@ -98,6 +101,8 @@ protected Q_SLOTS:
 
   /// Marks the URL/zoom fields as edited but not yet applied.
   void SourceEdited();
+  /// A source learned its max zoom from its server; refresh the view and UI.
+  void SourceMaxZoomChanged();
   /// Fetches a single tile from the current source and reports the result.
   void TestTileSource();
   /// Result of the request started by TestTileSource().

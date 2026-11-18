@@ -49,6 +49,7 @@ class TestTileMapPlugin : public tile_map::TileMapPlugin
 {
 public:
   using tile_map::TileMapPlugin::CurrentAttribution;
+  using tile_map::TileMapPlugin::CurrentMaxZoom;
   using tile_map::TileMapPlugin::Paint;
 };
 
@@ -193,6 +194,16 @@ TEST(TileMapAttribution, CreditsEachBuiltInSource)
     plugin.LoadConfigPlugin(YAML::Load("source: " + source.first), "");
     EXPECT_EQ(source.second, plugin.CurrentAttribution()) << source.first;
   }
+}
+
+TEST(TileMapSources, UsgsStopsAtTheDeepestCachedLevel)
+{
+  // basemap.nationalmap.gov answers HTTP 400 for USGSImageryOnly tiles past
+  // level 16, so asking for more leaves the map blank when zoomed in.
+  TestTileMapPlugin plugin;
+  plugin.SetNode(*g_node);
+  plugin.LoadConfigPlugin(YAML::Load("source: USGS Satellite"), "");
+  EXPECT_EQ(16, plugin.CurrentMaxZoom());
 }
 
 TEST(TileMapAttribution, PaintsInTheBottomRightCorner)

@@ -185,7 +185,10 @@ TileMapPlugin::TileMapPlugin()
     "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/tile/"
     "1.0.0/USGSImageryOnly/default/default028mm/{level}/{y}/{x}.png",
     false,
-    19);
+    // What the service had cached as of 2026-11; it answers HTTP 400 past
+    // that, which leaves the map blank.  RequestServiceLimits() replaces this
+    // with the level the service currently reports once the source is used.
+    16);
   // USGS imagery is public domain; this is the credit the service asks for.
   tile_sources_[USGS_NAME]->SetAttribution("USDA, USGS The National Map: Orthoimagery");
   std::shared_ptr<BingSource> bing = std::make_shared<BingSource>(BING_NAME);
@@ -616,6 +619,12 @@ void TileMapPlugin::Draw(double x, double y, double scale)
   }
 }
 
+int TileMapPlugin::CurrentMaxZoom() const
+{
+  std::shared_ptr<TileSource> source = tile_map_.GetTileSource();
+  return source ? static_cast<int>(source->GetMaxZoom()) : -1;
+}
+
 QString TileMapPlugin::CurrentAttribution() const
 {
   std::shared_ptr<TileSource> source = tile_map_.GetTileSource();
@@ -863,6 +872,10 @@ void TileMapPlugin::selectTileSource(const std::shared_ptr<TileSource> & tile_so
 {
   last_height_ = 0;   // This will force us to recalculate our view
   tile_map_.SetTileSource(tile_source);
+  QObject::connect(
+    tile_source.get(), &TileSource::MaxZoomChanged,
+    this, &TileMapPlugin::SourceMaxZoomChanged, Qt::UniqueConnection);
+  tile_source->RequestServiceLimits();
   if (tile_source->GetType() == BingSource::BING_TYPE) {
     BingSource * bing_source = dynamic_cast<BingSource *>(tile_source.get());
     ui_.base_url_text->setText(bing_source->GetApiKey());
@@ -876,6 +889,17 @@ void TileMapPlugin::selectTileSource(const std::shared_ptr<TileSource> & tile_so
     ui_.base_url_text->setText(tile_source->GetBaseUrl());
   }
   ui_.max_zoom_spin_box->setValue(tile_source->GetMaxZoom());
+}
+
+void TileMapPlugin::SourceMaxZoomChanged()
+{
+  std::shared_ptr<TileSource> source = CurrentSource();
+  if (!source || source.get() != sender()) {
+    return;
+  }
+
+  last_height_ = 0;   // Recalculate the view, which picks the zoom level
+  ui_.max_zoom_spin_box->setValue(source->GetMaxZoom());
 }
 
 void TileMapPlugin::SetNode(rclcpp::Node & node)
