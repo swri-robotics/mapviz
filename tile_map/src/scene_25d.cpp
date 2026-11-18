@@ -375,7 +375,7 @@ void Batch25d::AddBuilding(const ProjectedBuilding & building)
     if (drape) {
       auto point = [&](size_t index) {
           return MapPoint{AtHeight(building.outline[index], top), building.mercator[2 * index],
-            building.mercator[2 * index + 1]};
+          building.mercator[2 * index + 1]};
         };
       if (TexturedTriangle(point(corners[0]), point(corners[1]), point(corners[2]))) {
         continue;
@@ -437,7 +437,7 @@ void Batch25d::AddCrown(const ProjectedCrown & crown)
         const double dy = crown.radius * std::sin(i * step);
         // Mercator y grows southward.
         return MapPoint{top_center + crown.east * dx + north * dy,
-          crown.mercator_x + dx * k, crown.mercator_y - dy * k};
+        crown.mercator_x + dx * k, crown.mercator_y - dy * k};
       };
     const MapPoint middle{top_center, crown.mercator_x, crown.mercator_y};
     bool draped = true;

@@ -157,9 +157,9 @@ bool AllDrapedIn(const tile_map::Batch25d & batch, const std::array<float, 4> & 
     }
     const float u = batch.TexCoords()[2 * i];
     const float v = batch.TexCoords()[2 * i + 1];
-    if (u < rect[0] - 1e-6f || u > rect[2] + 1e-6f || v < rect[1] - 1e-6f ||
-      v > rect[3] + 1e-6f)
-    {
+    const bool inside_u = rect[0] - 1e-6f <= u && u <= rect[2] + 1e-6f;
+    const bool inside_v = rect[1] - 1e-6f <= v && v <= rect[3] + 1e-6f;
+    if (!inside_u || !inside_v) {
       return false;
     }
   }
