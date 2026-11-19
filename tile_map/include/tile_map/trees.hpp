@@ -42,9 +42,9 @@ namespace tile_map
 struct Crown
 {
   LatLon center;
-  /// Radius in metres.
+  /// Radius in meters.
   double radius;
-  /// Height of the top of the crown above the ground, in metres.
+  /// Height of the top of the crown above the ground, in meters.
   double height;
 };
 
@@ -53,7 +53,7 @@ struct PixelCrown
 {
   double x;
   double y;
-  /// Radius and height in metres.
+  /// Radius and height in meters.
   double radius;
   double height;
 };
@@ -70,13 +70,13 @@ std::vector<uint8_t> CanopyMask(const QImage & image);
 
 /**
  * Packs round crowns into a canopy mask, largest first: each crown is as big
- * as the canopy around its centre allows (up to a limit, so a forest becomes
+ * as the canopy around its center allows (up to a limit, so a forest becomes
  * many trees), and crowns overlap only a little.  Taller trees have wider
  * crowns, with some variation that depends only on where the tree is, so the
  * same canopy always gives the same trees.
  *
  * @param mask      As returned by CanopyMask()
- * @param cell_size Ground distance covered by one pixel, in metres
+ * @param cell_size Ground distance covered by one pixel, in meters
  * @param seed      Mixed into the height variation, e.g. the tile's position
  */
 std::vector<PixelCrown> PlaceCrowns(

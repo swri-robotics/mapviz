@@ -67,7 +67,7 @@ Plugin | Subscribes to | Description
 `string` | `std_msgs/String`<br>`marti_common_msgs/StringStamped` | Shows the latest text message at a fixed spot on the map.
 `textured_marker` | `marti_visualization_msgs/TexturedMarker`<br>`marti_visualization_msgs/TexturedMarkerArray` | Draws images that marker messages place on the map.
 `tf_frame` | `tf` tree | Draws where a TF frame is, with an optional trail as it moves.
-`tile_map` | None | Shows map or satellite imagery from tile servers such as OpenStreetMap, Carto, Stadia, Bing, or USGS, optionally in 2.5D with shaded terrain and buildings and trees that stand up from the map.
+`tile_map` | None | Shows map or satellite imagery from tile servers such as OpenStreetMap, Carto, Stadia, Bing, or USGS, optionally in 2.5D with shaded terrain and buildings and trees that stand up from the map, or with contour lines as a topographic map.
 
 Build Status
 ------

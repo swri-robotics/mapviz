@@ -158,7 +158,7 @@ QImage SlopeShade(
   const double strength = std::clamp(parameters.strength, 0.0, 1.0);
   const double scale = parameters.exaggeration / (8.0 * cell_size);
 
-  // Neighbours past the edge reuse the edge cell.
+  // Neighbors past the edge reuse the edge cell.
   auto at = [&](int row, int col) {
       row = std::clamp(row, 0, height - 1);
       col = std::clamp(col, 0, width - 1);

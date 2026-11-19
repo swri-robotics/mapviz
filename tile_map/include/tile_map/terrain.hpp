@@ -51,14 +51,14 @@ constexpr int32_t MAX_ZOOM = 15;
 /// Credit line for the data set.
 extern const char ATTRIBUTION[];
 
-/// Height in metres encoded in one Terrarium pixel.
+/// Height in meters encoded in one Terrarium pixel.
 inline float DecodePixel(QRgb pixel)
 {
   return static_cast<float>(qRed(pixel)) * 256.0f + static_cast<float>(qGreen(pixel)) +
          static_cast<float>(qBlue(pixel)) / 256.0f - 32768.0f;
 }
 
-/// Heights in metres for a whole tile, row by row from the north edge.
+/// Heights in meters for a whole tile, row by row from the north edge.
 std::vector<float> DecodeImage(const QImage & image);
 
 /// Reads the level and tile coordinates back out of a Terrarium tile URL.
@@ -77,7 +77,7 @@ void LatLonToMercator(double latitude, double longitude, double & x, double & y)
 double TileRowLatitude(int32_t level, double y);
 
 /**
- * The web mercator tiles at `level` within `radius` metres of a point, row by
+ * The web mercator tiles at `level` within `radius` meters of a point, row by
  * row from the north west, or none if there would be more than `max_tiles`.
  */
 std::vector<std::pair<int64_t, int64_t>> TilesAround(
@@ -103,10 +103,10 @@ struct ShadingParameters
  * Flat ground is left fully transparent, so the overlay can be blended over
  * imagery without changing its colors where the ground is level.
  *
- * @param heights      Heights in metres, row by row, row 0 at the north edge
+ * @param heights      Heights in meters, row by row, row 0 at the north edge
  * @param width        Number of columns
  * @param height       Number of rows
- * @param cell_size    Ground distance between neighbouring cells, in metres
+ * @param cell_size    Ground distance between neighboring cells, in meters
  * @param parameters   Strength and height exaggeration
  * @return An ARGB32 image of width x height, or a null image if the input is
  *   empty or the wrong size

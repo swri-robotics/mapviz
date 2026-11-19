@@ -79,10 +79,10 @@ struct ProjectedCrown
   tf2::Vector3 center;
   double radius = 0.0;
   double height = 0.0;
-  /// Multiplies the crown's colours, so neighbouring trees differ a little.
+  /// Multiplies the crown's colors, so neighboring trees differ a little.
   float shade = 1.0f;
   /// Where the crown is on the web mercator map, how many mercator units a
-  /// metre is there, and which way east is in the drawn frame, for draping
+  /// meter is there, and which way east is in the drawn frame, for draping
   /// imagery over its top.  A zero scale means the top is never textured.
   double mercator_x = 0.0;
   double mercator_y = 0.0;
@@ -119,7 +119,7 @@ public:
   /// it isn't in the atlas.
   bool Find(int32_t level, int64_t x, int64_t y, std::array<float, 4> & rect) const;
 
-  /// A texel that is plain white, for drawing in vertex colours alone.
+  /// A texel that is plain white, for drawing in vertex colors alone.
   float WhiteU() const {return white_u_;}
   float WhiteV() const {return white_v_;}
 
@@ -134,8 +134,8 @@ private:
 /**
  * Triangles for the 2.5D objects, ready for one draw call.
  *
- * The view stays top-down: a point h metres above the ground is drawn
- * h * lean metres up the screen.  The batch keeps each vertex on the ground
+ * The view stays top-down: a point h meters above the ground is drawn
+ * h * lean meters up the screen.  The batch keeps each vertex on the ground
  * in x and y and its height in z; LeanMatrix() does the rest when drawing,
  * and the depth test sorts out what is in front, so the triangles don't
  * depend on which way the screen is turned or on the lean.
@@ -146,7 +146,7 @@ private:
  * imagery that was under them; where a roof isn't fully covered by the atlas
  * it is drawn plain instead.
  *
- * Detail follows the scale (metres per pixel): crowns a few pixels across get
+ * Detail follows the scale (meters per pixel): crowns a few pixels across get
  * fewer sides, no trunk or sides, and a plain top.
  */
 class Batch25d
@@ -158,7 +158,7 @@ public:
   /// plain.  The atlas must outlive the batch's use of it.
   void SetAtlas(const ImageryAtlas * atlas) {atlas_ = atlas;}
 
-  /// Metres per pixel on screen, for choosing how much detail to draw.
+  /// Meters per pixel on screen, for choosing how much detail to draw.
   void SetScale(double scale) {scale_ = scale;}
 
   /// Walls, then the roof.
@@ -208,7 +208,7 @@ private:
   void Quad(
     const tf2::Vector3 & a, const tf2::Vector3 & b, const tf2::Vector3 & c,
     const tf2::Vector3 & d, const Color & color);
-  /// A flat disc at the centre's height.
+  /// A flat disc at the center's height.
   void Disc(const tf2::Vector3 & center, double radius, int segments, const Color & color);
   /// Adds a triangle draped with imagery, cut along tile edges.  False, and
   /// nothing added, if the atlas doesn't cover all of it.
@@ -221,7 +221,7 @@ private:
   double scale_ = 0.1;
 };
 
-/// Depth given to each metre of height, so higher points are drawn in front.
+/// Depth given to each meter of height, so higher points are drawn in front.
 /// It keeps heights up to 500 m inside mapviz's -0.5..0.5 depth range.
 constexpr double DEPTH_PER_METER = 0.0008;
 
@@ -234,7 +234,7 @@ constexpr double DEPTH_PER_METER = 0.0008;
  */
 void LeanMatrix(const tf2::Vector3 & up, double lean, double matrix[16]);
 
-/// One vertex as uploaded: position, texture coordinates, colour.
+/// One vertex as uploaded: position, texture coordinates, color.
 struct GpuVertex25d
 {
   float x;

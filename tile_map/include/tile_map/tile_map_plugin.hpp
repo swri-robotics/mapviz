@@ -48,8 +48,10 @@
 #include <vector>
 #include <cstdint>
 
+#include <mapviz/color_button.hpp>
 #include <mapviz/mapviz_plugin.hpp>
 #include "swri_transform_util/transform.h"
+#include <tile_map/contour_layer.hpp>
 #include <tile_map/map_25d.hpp>
 #include <tile_map/tile_map_view.hpp>
 #include <tile_map/tile_source.hpp>
@@ -85,7 +87,8 @@ protected:
   void Paint(QPainter * painter, double x, double y, double scale) override;
 
   /// The credit line for the source being drawn, for the area on screen,
-  /// followed by credits for the data 2.5D rendering adds, when it is on.
+  /// followed by credits for the data 2.5D rendering and the topographic map
+  /// add, when they are on.
   QString CurrentAttribution() const;
 
   /// The deepest zoom level the selected source is asked for, or -1 if none.
@@ -123,11 +126,19 @@ protected Q_SLOTS:
   /// One of the 2.5D settings changed; applies them all.
   void Settings25dChanged();
 
+  /// The "Topographic map" checkbox changed.
+  void TopographicToggled(bool checked);
+  /// One of the topographic map settings changed; applies them all.
+  void TopographicSettingsChanged();
+
 private:
   void selectTileSource(const std::shared_ptr<TileSource> & tile_source);
 
   /// Adds the "2.5D rendering" checkbox and its settings to the panel.
   void SetUp25dControls();
+
+  /// Adds the "Topographic map" checkbox and its settings to the panel.
+  void SetUpTopographicControls();
 
   /// Single place that decides which controls are usable for the selected
   /// source, replacing the enable/disable calls that used to be scattered
@@ -190,6 +201,17 @@ private:
   /// The settings rows, shown only while 2.5D rendering is on.
   std::vector<QWidget *> settings_25d_widgets_;
 
+  /// Contour lines drawn over the imagery while the topographic map is on.
+  ContourLayer contours_;
+  bool topographic_;
+
+  QCheckBox * topographic_check_;
+  QSpinBox * contour_interval_spin_;
+  QCheckBox * contour_labels_check_;
+  mapviz::ColorButton * contour_color_button_;
+  /// The settings rows, shown only while the topographic map is on.
+  std::vector<QWidget *> settings_topographic_widgets_;
+
   /// The area on screen as of the last Draw(), for sources whose
   /// attribution depends on it.
   ViewBounds view_bounds_;
@@ -210,6 +232,7 @@ private:
   static std::string SOURCE_KEY;
   static std::string TYPE_KEY;
   static std::string RENDER_25D_KEY;
+  static std::string TOPOGRAPHIC_KEY;
   static QString BING_NAME;
   static QString CARTO_NAME;
   static QString STAMEN_TERRAIN_NAME;

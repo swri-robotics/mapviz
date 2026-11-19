@@ -441,7 +441,7 @@ TEST(Buildings, TriangulatesConvexAndConcaveOutlines)
 TEST(BuildingLayer, CoversTheViewWithZ14Tiles)
 {
   // Around SwRI at 0.5 m per pixel: a small block of tiles that includes the
-  // one under the centre.
+  // one under the center.
   const auto tiles = BuildingLayer::TilesInView(29.45197, -98.61371, 0.5, 1200, 900);
   ASSERT_FALSE(tiles.empty());
   EXPECT_LE(tiles.size(), 4u);

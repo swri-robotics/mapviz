@@ -113,7 +113,7 @@ tile_map::ProjectedBuilding MappedSquare(double x, double y, double size)
   return building;
 }
 
-/// A tile image of one colour.
+/// A tile image of one color.
 QImage Tile(QRgb color)
 {
   QImage image(256, 256, QImage::Format_RGB32);
@@ -339,7 +339,7 @@ TEST(Scene25d, StandsBuildingsUpWithTheirHeightInZ)
   for (size_t i = 24; i < 30; ++i) {
     EXPECT_DOUBLE_EQ(10.0, v[3 * i + 2]);
   }
-  // Opposite walls share a tone; neighbouring ones differ.
+  // Opposite walls share a tone; neighboring ones differ.
   const std::vector<uint8_t> & c = batch.Colors();
   EXPECT_EQ(c[0], c[4 * 12]);
   EXPECT_NE(c[0], c[4 * 6]);
@@ -400,7 +400,7 @@ TEST(ImageryAtlas, PacksTilesAndKeepsAWhiteCorner)
   EXPECT_LT(first[1], first[3]);
   EXPECT_NE(first[0], second[0]);
 
-  // The white texel is white, and the tiles' colour is where they were put.
+  // The white texel is white, and the tiles' color is where they were put.
   const QImage & image = atlas.Image();
   auto pixel = [&image](float u, float v) {
       return image.pixel(
@@ -492,7 +492,7 @@ TEST(Scene25d, DrapesTheImageryOverTreetops)
   crown.center = tf2::Vector3(0.0, 0.0, 0.0);
   crown.radius = 3.0;
   crown.height = 10.0;
-  // In the middle of tile (100, 200) at LEVEL, a few metres across.
+  // In the middle of tile (100, 200) at LEVEL, a few meters across.
   crown.mercator_x = 100.5 * TILE;
   crown.mercator_y = 200.5 * TILE;
   crown.mercator_per_meter = 1e-8;

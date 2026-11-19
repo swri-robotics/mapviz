@@ -123,7 +123,7 @@ void ImageryAtlas::Build(const std::vector<std::pair<ImageryTile, QImage>> & til
     const int py = (index / per_side) * slot;
     painter.drawImage(QRect(px, py, slot, slot), usable[i]->second);
     // Half a pixel in from the edges, so filtering doesn't pull in the
-    // neighbouring slot.  GL's v runs bottom to top.
+    // neighboring slot.  GL's v runs bottom to top.
     slots_[{tile.level, tile.x, tile.y}] = {
       static_cast<float>((px + 0.5) / SIZE),
       static_cast<float>(1.0 - (py + slot - 0.5) / SIZE),
@@ -172,7 +172,7 @@ void Batch25d::Vertex(const tf2::Vector3 & point, const Color & color, float u, 
 
 void Batch25d::Plain(const tf2::Vector3 & point, const Color & color)
 {
-  // The atlas's white texel leaves the vertex colour as it is.
+  // The atlas's white texel leaves the vertex color as it is.
   if (atlas_ && !atlas_->Empty()) {
     Vertex(point, color, atlas_->WhiteU(), atlas_->WhiteV());
   } else {
@@ -270,7 +270,7 @@ bool Batch25d::TexturedTriangle(const MapPoint & a, const MapPoint & b, const Ma
     };
 
   // A point's place in its tile, in the tile's slot of the atlas.  Draped
-  // with white, so the imagery shows in its own colours.
+  // with white, so the imagery shows in its own colors.
   const Color white{1.0f, 1.0f, 1.0f};
   auto draped_vertex = [&](
     const MapPoint & p, const std::array<float, 4> & rect, double n, int64_t x, int64_t y) {

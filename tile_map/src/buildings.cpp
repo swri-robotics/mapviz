@@ -48,7 +48,7 @@ namespace tile_map
 {
 namespace
 {
-/// Storey height used to turn a level count into metres.
+/// Storey height used to turn a level count into meters.
 constexpr double LEVEL_HEIGHT = 3.5;
 /// Added to a height made from a level count, for the roof.
 constexpr double ROOF_ALLOWANCE = 1.0;
@@ -66,7 +66,7 @@ bool IsWoodland(const std::map<std::string, std::string> & tags)
          (landuse != tags.end() && landuse->second == "forest");
 }
 
-/// Typical heights for common "building" values, in metres.
+/// Typical heights for common "building" values, in meters.
 double TypicalHeight(const std::string & type)
 {
   static const std::map<std::string, double> heights = {
