@@ -2,8 +2,8 @@
 Changelog for package tile_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.0 (2026-11-19)
+------------------
 * Adding topographic map mode (`#999 <https://github.com/swri-robotics/mapviz/issues/999>`_)
 * Fixing remaining IWYU findings and making the check strict on Lyrical (`#998 <https://github.com/swri-robotics/mapviz/issues/998>`_)
   - Lyrical is the only distro with a strict check to avoid contradictory advice from different distros with different rules.

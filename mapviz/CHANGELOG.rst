@@ -2,8 +2,8 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.0 (2026-11-19)
+------------------
 * Fixing remaining IWYU findings and making the check strict on Lyrical (`#998 <https://github.com/swri-robotics/mapviz/issues/998>`_)
   - Lyrical is the only distro with a strict check to avoid contradictory advice from different distros with different rules.
 * Clean up UI (`#991 <https://github.com/swri-robotics/mapviz/issues/991>`_)

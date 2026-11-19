@@ -2,8 +2,8 @@
 Changelog for package multires_image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.0 (2026-11-19)
+------------------
 * Fixing remaining IWYU findings and making the check strict on Lyrical (`#998 <https://github.com/swri-robotics/mapviz/issues/998>`_)
   - Lyrical is the only distro with a strict check to avoid contradictory advice from different distros with different rules.
 * Adding Include What You Use as a pre-commit hook (`#997 <https://github.com/swri-robotics/mapviz/issues/997>`_)
