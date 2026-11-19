@@ -32,9 +32,7 @@
 // QT libraries
 #include <QOpenGLFunctions_1_1>
 #include <QOpenGLWidget>
-#include <QMouseEvent>
 #include <QObject>
-#include <QString>
 #include <QWidget>
 #include <QtGlobal>
 

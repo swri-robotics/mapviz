@@ -39,8 +39,11 @@ The build must export compile commands:
     colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 By default the findings are advice and the exit status is 0; --strict exits 1
-when there are findings.  Nothing is run (exit 0) when IWYU or the compile
-commands are missing, so the hook doesn't get in the way of a fresh clone.
+when there are findings, and --strict-on DISTRO does so only for builds against
+that ROS distro.
+Silence a finding that is wrong for another distro with `// IWYU pragma: keep`.
+Nothing is run (exit 0) when IWYU or the compile commands are missing, so the
+hook doesn't get in the way of a fresh clone.
 """
 
 import argparse
@@ -268,6 +271,31 @@ def write_mappings(path, commands):
         f.write('\n]\n')
 
 
+def ros_distro(commands):
+    """
+    Return the ROS distro the build used.
+
+    Found from the include directories in the compile commands: the install prefix
+    above <prefix>/include holds ros_environment's record of the distro (merged
+    installs such as /opt/ros/<distro>), or a sibling prefix does (isolated colcon
+    installs).  $ROS_DISTRO, which isn't set everywhere, is the fallback.
+    """
+    record = os.path.join('share', 'ros_environment', 'environment', '1.ros_distro.dsv')
+    for include_dir in include_dirs(commands):
+        parts = include_dir.split(os.sep)
+        if 'include' not in parts:
+            continue
+        prefix = os.sep.join(parts[:parts.index('include')])
+        for path in (os.path.join(prefix, record),
+                     os.path.join(os.path.dirname(prefix), 'ros_environment', record)):
+            if os.path.isfile(path):
+                with open(path) as f:
+                    match = re.search(r'ROS_DISTRO;(\w+)', f.read())
+                if match:
+                    return match.group(1)
+    return os.environ.get('ROS_DISTRO')
+
+
 def toolchain_args():
     """
     Return the extra arguments IWYU's clang needs to find the system headers.
@@ -359,8 +387,18 @@ def parse(output):
             section = None
         elif section is not None:
             section.append(restyle(line))
+    for add, remove in findings.values():
+        # The same header with other quotes, as restyle() writes it: nothing to change.
+        same = {header_name(line) for line in add} & {header_name(line) for line in remove}
+        add[:] = [line for line in add if header_name(line) not in same]
+        remove[:] = [line for line in remove if header_name(line) not in same]
     return {path: change for path, change in findings.items()
             if (change[0] or change[1]) and path.startswith(REPO + os.sep)}
+
+
+def header_name(line):
+    match = re.search(r'#include [<"]([^>"]+)[>"]', line)
+    return match.group(1) if match else line
 
 
 def main():
@@ -371,6 +409,9 @@ def main():
                         help='colcon build directory (default: $IWYU_BUILD_DIR or '
                         '<workspace>/build)')
     parser.add_argument('--strict', action='store_true', help='exit 1 when there are findings')
+    parser.add_argument('--strict-on', metavar='DISTRO', action='append', default=[],
+                        help='--strict when the build is for this ROS distro (IWYU versions '
+                        'differ between distros, so only one of them should fail commits)')
     parser.add_argument('--summary', action='store_true',
                         help='print only the number of findings per package')
     parser.add_argument('-j', '--jobs', type=int, default=os.cpu_count())
@@ -387,6 +428,8 @@ def main():
               '  Build with: colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON\n'
               '  or set IWYU_BUILD_DIR to the colcon build directory.')
         return 0
+
+    args.strict = args.strict or ros_distro(commands) in args.strict_on
 
     sources = sorted(commands) if args.all else to_sources(args.files, commands)
     if not sources:
@@ -429,6 +472,9 @@ def main():
     if findings or errors:
         print(f'iwyu_check: {len(findings)} of the checked files could use include changes'
               f'{" (advice only)" if not args.strict else ""}; {len(errors)} errors.')
+        if args.strict and findings:
+            print('  Make these changes, or end an include line that another ROS distro needs '
+                  'with\n  `// IWYU pragma: keep`.')
     return 1 if args.strict and (findings or errors) else 0
 
 

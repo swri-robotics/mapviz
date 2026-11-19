@@ -28,7 +28,7 @@
 
 #include "mapviz/mapviz_application.hpp"
 
-#include "rclcpp/rclcpp.hpp"
+#include <exception>
 
 namespace mapviz
 {

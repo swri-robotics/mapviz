@@ -38,12 +38,26 @@
 #include <QSizePolicy>
 #include <QSpacerItem>
 #include <QStyle>
+#include <QCheckBox>
+#include <QContextMenuEvent>
+#include <QEvent>
+#include <QIcon>
+#include <QKeySequence>
+#include <QLabel>
+#include <QLayoutItem>
+#include <QLineEdit>
+#include <QSize>
+#include <QVBoxLayout>
+#include <QVariant>
+#include <QtGlobal>
 
 #include <algorithm>
+#include <initializer_list>
 
 #include "mapviz/color_button.hpp"
 #include "mapviz/theme.hpp"
 #include "mapviz/widgets.hpp"
+#include "ui_configitem.h"  // NOLINT(build/include_subdir)
 
 namespace mapviz
 {

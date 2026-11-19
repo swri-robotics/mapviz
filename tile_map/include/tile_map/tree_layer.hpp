@@ -46,7 +46,7 @@
 
 namespace tile_map
 {
-class TileSource;
+class TileSource;  // IWYU pragma: keep
 
 /**
  * Trees found in the imagery itself, for tile_map's 2.5D rendering.

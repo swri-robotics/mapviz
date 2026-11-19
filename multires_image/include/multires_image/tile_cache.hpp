@@ -34,7 +34,6 @@
 #include <QThread>
 #include <QRecursiveMutex>
 #include <QOpenGLWidget>
-#include <QString>
 #include <QtGlobal>
 
 // C++ standard libraries

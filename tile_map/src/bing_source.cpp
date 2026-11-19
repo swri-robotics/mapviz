@@ -34,7 +34,6 @@
 #include <QStringList>
 #include <QUrl>
 #include <QVariant>
-#include <QtGlobal>
 #include <json/json.h>
 
 #include <random>

@@ -41,7 +41,6 @@
 #include <QSet>
 #include <QString>
 #include <QThread>
-#include <QtGlobal>
 
 #include <cstddef>
 #include <cstdint>

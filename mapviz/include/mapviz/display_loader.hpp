@@ -36,7 +36,8 @@
 #include <string>
 #include <vector>
 
-#include <rclcpp/logger.hpp>
+#include <rclcpp/logger.hpp>  // IWYU pragma: keep
+#include <rclcpp/rclcpp.hpp>
 
 namespace mapviz
 {

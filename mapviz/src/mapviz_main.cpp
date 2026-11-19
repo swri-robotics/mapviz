@@ -26,11 +26,13 @@
 //
 // *****************************************************************************
 
-#include <QCoreApplication>
-#include <QGuiApplication>
+#include <QtGlobal>
+
+#include <memory>
 
 #include "mapviz/mapviz.hpp"
 #include "mapviz/mapviz_application.hpp"
+#include <rclcpp/rclcpp.hpp>
 
 int main(int argc, char ** argv)
 {

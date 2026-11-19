@@ -39,12 +39,10 @@
 #include <QString>
 
 // C++ standard libraries
-#include <array>
 #include <functional>
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <mapviz/color_button.hpp>
 #include <mapviz/mapviz_plugin.hpp>
@@ -53,7 +51,6 @@
 #include <mapviz_plugins/has_position.hpp>
 #include <mapviz_plugins/point_drawing_plugin.hpp>
 #include <mapviz_plugins/topic_select.hpp>
-#include <std_msgs/msg/header.hpp>
 #include "swri_transform_util/local_xy_util.h"
 #include "swri_transform_util/transform_manager.h"
 #include <tf2/LinearMath/Quaternion.hpp>

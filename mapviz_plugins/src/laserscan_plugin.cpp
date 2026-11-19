@@ -47,9 +47,7 @@
 
 // C++ standard libraries
 #include <algorithm>
-#include <array>
 #include <cmath>
-#include <cstdio>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -62,7 +60,6 @@
 #include <mapviz/status_label.hpp>
 #include <mapviz/widgets.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/header.hpp>
 #include "swri_transform_util/transform.h"
 #include "yaml-cpp/yaml.h"
 

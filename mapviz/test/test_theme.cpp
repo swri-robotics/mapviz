@@ -29,13 +29,21 @@
 #include <gtest/gtest.h>
 
 #include <QApplication>
+#include <QChar>
 #include <QColor>
+#include <QFont>
+#include <QIcon>
 #include <QImage>
 #include <QLabel>
 #include <QPalette>
+#include <QPixmap>
+#include <QRgb>
+#include <QSize>
 #include <QString>
 
+#include <algorithm>
 #include <cmath>
+#include <initializer_list>
 #include <string>
 
 #include <mapviz/config_item.hpp>
@@ -43,6 +51,7 @@
 #include <mapviz/widgets.hpp>
 #include <mapviz/status_label.hpp>
 #include <mapviz/theme.hpp>
+#include "ui_configitem.h"  // NOLINT(build/include_subdir)
 
 using mapviz::StatusLevel;
 using mapviz::Theme;

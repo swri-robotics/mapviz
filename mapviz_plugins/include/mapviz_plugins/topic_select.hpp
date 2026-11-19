@@ -28,13 +28,9 @@
 #ifndef MAPVIZ_PLUGINS__TOPIC_SELECT_HPP_
 #define MAPVIZ_PLUGINS__TOPIC_SELECT_HPP_
 
-#include <QCloseEvent>
 #include <QDialog>
 #include <QObject>
-#include <QString>
-#include <QTimerEvent>
 #include <QWidget>
-#include <QtGlobal>
 
 #include <map>
 #include <set>

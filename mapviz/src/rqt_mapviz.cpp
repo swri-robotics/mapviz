@@ -28,7 +28,21 @@
 
 #include "mapviz/rqt_mapviz.hpp"
 
+#include <QStringAlgorithms>
+#include <Qt>
+
+#include <functional>
+#include <iterator>
+#include <string>
+
+#include <mapviz/mapviz.hpp>
 #include <pluginlib/class_list_macros.hpp>
+// Set by CMake along with rqt_gui_cpp/plugin.h, which uses qt_gui_cpp's .h headers.
+#ifdef MAPVIZ_RQT_GUI_CPP_PLUGIN_H
+#include "qt_gui_cpp/plugin_context.h"
+#else
+#include <qt_gui_cpp/plugin_context.hpp>
+#endif
 
 namespace mapviz
 {

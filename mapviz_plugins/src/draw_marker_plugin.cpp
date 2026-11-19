@@ -45,7 +45,6 @@
 #include <Qt>
 
 // C++ standard libraries
-#include <array>
 #include <cstdio>
 #include <functional>
 #include <limits>
@@ -61,13 +60,8 @@
 #include "swri_transform_util/transform_manager.h"
 #include "yaml-cpp/yaml.h"
 #include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/pose.hpp>
-#include <geometry_msgs/msg/quaternion.hpp>
-#include <geometry_msgs/msg/vector3.hpp>
 #include <mapviz/color_button.hpp>
 #include <mapviz/status_label.hpp>
-#include <std_msgs/msg/color_rgba.hpp>
-#include <std_msgs/msg/header.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

@@ -46,26 +46,29 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <ctime>
+#include <functional>
+#include <iomanip>
+#include <iterator>
+#include <stdexcept>
 
 #if CV_MAJOR_VERSION > 2
-#include <opencv2/videoio/videoio.hpp>
+#include <opencv2/videoio/videoio.hpp>  // IWYU pragma: keep
 #endif
 
 // QT libraries
 #if QT_VERSION >= 0x050000
-#include <QtWidgets/QApplication>
+#include <QtWidgets/QApplication>  // IWYU pragma: keep
 #else
 #include <QtGui/QApplication>
 #endif
 #include <QFileDialog>
 #include <QActionGroup>
-#include <QColorDialog>
 #include <QLabel>
 #include <QMessageBox>
 #include <QProcessEnvironment>
 #include <QFileInfo>
 #include <QListWidgetItem>
-#include <QMutexLocker>
 #include <QEvent>
 #include <QHBoxLayout>
 #include <QPainter>
@@ -74,7 +77,30 @@
 #include <QScreen>
 #include <QTimer>
 #include <QWindow>
-#include <QtGui/QtGui>
+#include <QApplication>
+#include <QChar>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDialog>
+#include <QDir>
+#include <QDockWidget>
+#include <QDoubleSpinBox>
+#include <QFont>
+#include <QFontMetrics>
+#include <QGuiApplication>
+#include <QKeySequence>
+#include <QLayout>
+#include <QList>
+#include <QListWidget>
+#include <QMargins>
+#include <QRect>
+#include <QShortcut>
+#include <QSize>
+#include <QSizePolicy>
+#include <QStatusBar>
+#include <QStringAlgorithms>
+#include <QVariant>
+#include <QtGlobal>
 
 // YAML libraries
 #include <yaml-cpp/yaml.h>
@@ -86,6 +112,20 @@
 #include <mapviz/display_loader.hpp>
 #include <mapviz/theme.hpp>
 #include <image_transport/image_transport.hpp>
+#include "swri_transform_util/transform.h"
+#include "swri_transform_util/transform_manager.h"
+#include "ui_configitem.h"  // NOLINT(build/include_subdir)
+#include "ui_mapviz.h"  // NOLINT(build/include_subdir)
+#include "ui_pluginselect.h"  // NOLINT(build/include_subdir)
+#include <mapviz/color_button.hpp>
+#include <mapviz/map_canvas.hpp>
+#include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/video_writer.hpp>
+#include <mapviz/widgets.hpp>
+#include <marti_common_msgs/msg/key_value.hpp>
+#include <opencv2/core.hpp>
+#include <pluginlib/exceptions.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 namespace mapviz
 {
@@ -1122,7 +1162,6 @@ void Mapviz::AutoSave()
   }
   default_path += MAPVIZ_CONFIG_FILE;
 
-
   Save(default_path.toStdString());
 }
 
@@ -1596,7 +1635,6 @@ void Mapviz::ToggleRecord(bool on)
       if (filename.front() == '~') {
         filename = getenv("HOME") + filename.substr(1);
       }
-
 
       const QSize frame_size = canvas_->CaptureSize();
       if (!vid_writer_->initializeWriter(filename, frame_size.width(), frame_size.height())) {

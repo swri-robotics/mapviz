@@ -33,14 +33,12 @@
 #include <fstream>
 #include <functional>
 #include <optional>
-#include <ostream>
 #include <string>
 #include <vector>
 
 #include <mapviz/display_loader.hpp>
 #include <pluginlib/exceptions.hpp>
-#include <rclcpp/exceptions.hpp>
-#include <rclcpp/logging.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 using mapviz::DisplaySpec;
 using mapviz::LoadConfigFile;

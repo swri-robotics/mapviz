@@ -41,7 +41,6 @@
 #include <QTransform>
 #include <Qt>
 
-#include <array>
 #include <functional>
 #include <memory>
 #include <string>

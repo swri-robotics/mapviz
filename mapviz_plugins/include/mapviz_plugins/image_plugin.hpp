@@ -31,7 +31,6 @@
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
-#include <QOpenGLWidget>
 #include <QObject>
 #include <QWidget>
 #include <QMetaType>
@@ -45,7 +44,6 @@
 #include <opencv2/core.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
-#include "yaml-cpp/yaml.h"
 #ifdef USE_CVBRIDGE_H_FILES
 #include "cv_bridge/cv_bridge.h"
 #else

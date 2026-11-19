@@ -34,7 +34,6 @@
 #include <yaml-cpp/yaml.h>
 
 #include <cmath>
-#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <ostream>

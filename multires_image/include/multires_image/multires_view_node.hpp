@@ -31,9 +31,7 @@
 
 // QT libraries
 #include <QMainWindow>
-#include <QMouseEvent>
 #include <QObject>
-#include <QString>
 #include <QWidget>
 #include <Qt>
 

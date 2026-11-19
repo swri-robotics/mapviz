@@ -51,14 +51,10 @@
 #include <string>
 #include <vector>
 
-#include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/pose.hpp>
-#include <geometry_msgs/msg/quaternion.hpp>
 #include <mapviz/status_label.hpp>
 #include <mapviz/widgets.hpp>
 #include <mapviz_plugins/topic_select.hpp>
-#include <nav_msgs/msg/map_meta_data.hpp>
-#include <std_msgs/msg/header.hpp>
+#include "swri_transform_util/transform.h"
 #include <tf2/LinearMath/Matrix3x3.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2/LinearMath/Scalar.hpp>

@@ -30,7 +30,6 @@
 
 #include <cmath>
 #include <limits>
-#include <memory>
 #include <string>
 
 #include <gps_msgs/msg/gps_fix.hpp>

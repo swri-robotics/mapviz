@@ -38,7 +38,6 @@
 #include <Qt>
 
 #include <cmath>
-#include <cstdlib>
 
 #include <mapviz/qt_mouse_event_compat.hpp>
 

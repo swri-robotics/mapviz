@@ -28,7 +28,14 @@
 #ifndef MAPVIZ__SELECT_FRAME_DIALOG_HPP_
 #define MAPVIZ__SELECT_FRAME_DIALOG_HPP_
 
+#include <QCloseEvent>  // IWYU pragma: keep
 #include <QDialog>
+#include <QObject>
+#include <QPushButton>
+#include <QString>  // IWYU pragma: keep
+#include <QTimerEvent>  // IWYU pragma: keep
+#include <QWidget>
+#include <QtGlobal>
 
 #include <memory>
 #include <string>
@@ -36,11 +43,9 @@
 
 #include <tf2_ros/buffer.hpp>
 
-
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 class QListWidget;
-class QPushButton;
 QT_END_NAMESPACE
 
 namespace mapviz

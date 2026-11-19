@@ -32,24 +32,35 @@
 // QT libraries
 #include <QOpenGLFunctions_1_5>
 #include <QOpenGLWidget>
-#include <QMouseEvent>
-#include <QWheelEvent>
+#include <QMouseEvent>  // IWYU pragma: keep
+#include <QWheelEvent>  // IWYU pragma: keep
 #include <QColor>
 #include <QSize>
 #include <QTimer>
+#include <QEvent>  // IWYU pragma: keep
+#include <QKeyEvent>  // IWYU pragma: keep
+#include <QObject>
+#include <QPainter>
+#include <QPointF>
+#include <QString>  // IWYU pragma: keep
+#include <QTransform>
+#include <QWidget>
+#include <Qt>
 
 // C++ standard libraries
 #include <list>
 #include <memory>
 #include <string>
-#include <vector>
+#include <vector>  // IWYU pragma: keep
 
 // ROS libraries
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/rclcpp.hpp>  // IWYU pragma: keep
 #include <tf2/transform_datatypes.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/transform_listener.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>  // IWYU pragma: keep
+#include <tf2_ros/transform_listener.hpp>  // IWYU pragma: keep
 #include <mapviz/mapviz_plugin.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2_ros/buffer.hpp>
 
 namespace mapviz
 {
@@ -82,7 +93,6 @@ public:
   float ViewScale() const {return view_scale_;}
   float OffsetX() const {return offset_x_;}
   float OffsetY() const {return offset_y_;}
-
 
   void setCanvasAbleToMove(bool assigning)
   {

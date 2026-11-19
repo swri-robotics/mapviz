@@ -30,9 +30,14 @@
 #define MAPVIZ__MAPVIZ_APPLICATION_HPP_
 
 #include <QApplication>
-#include <QEvent>
+#include <QEvent>  // IWYU pragma: keep
+#include <QObject>  // IWYU pragma: keep
 
-#include <rclcpp/logger.hpp>
+#include <memory>  // IWYU pragma: keep
+#include <string>
+
+#include <rclcpp/logger.hpp>  // IWYU pragma: keep
+#include <rclcpp/rclcpp.hpp>
 
 namespace mapviz
 {

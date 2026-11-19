@@ -31,7 +31,6 @@
 #include <QRgb>
 #include <QSize>
 
-#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <string>

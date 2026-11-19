@@ -32,7 +32,6 @@
 #include <QOpenGLFunctions_1_1>
 #include <QString>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -48,7 +47,7 @@
 
 namespace tile_map
 {
-class TileSource;
+class TileSource;  // IWYU pragma: keep
 
 struct Tile
 {
@@ -67,7 +66,7 @@ public:
   std::vector<tf2::Vector3> points_t;
 };
 
-class TileMapViewTest;
+class TileMapViewTest;  // IWYU pragma: keep
 
 class TileMapView : protected QOpenGLFunctions_1_1
 {

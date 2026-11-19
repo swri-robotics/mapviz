@@ -35,10 +35,7 @@
 #include <QOpenGLFunctions>
 #include <QOffscreenSurface>
 #include <QWidget>
-#include <QOpenGLWidget>
-#include <QString>
 
-#include <algorithm>
 #include <array>
 #include <atomic>
 #include <cstdint>
@@ -54,7 +51,6 @@
 #include <std_msgs/msg/string.hpp>
 #include <tf2/LinearMath/Vector3.hpp>
 #include "ui_robot_model_config.h"  // NOLINT(build/include_subdir)
-#include "yaml-cpp/yaml.h"
 
 namespace mapviz_plugins
 {

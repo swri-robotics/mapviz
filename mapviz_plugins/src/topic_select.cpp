@@ -32,16 +32,15 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QTimerEvent>
-#include <QAbstractItemModel>
 #include <QAbstractItemView>
 #include <QItemSelectionModel>
-#include <QList>
 #include <QListWidgetItem>
 #include <QModelIndex>
 #include <QModelIndexList>
 #include <QRadioButton>
 #include <QString>
 #include <Qt>
+#include <QtGlobal>
 
 // *****************************************************************************
 //
@@ -76,11 +75,10 @@
 #include <functional>
 #include <iterator>
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
-#include <type_traits>
 #include <vector>
+// IWYU pragma: no_include <compare>
 
 namespace mapviz_plugins
 {

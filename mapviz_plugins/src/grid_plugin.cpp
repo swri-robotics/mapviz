@@ -54,6 +54,7 @@
 #include <mapviz/widgets.hpp>
 #include <mapviz_plugins/default_colors.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "swri_transform_util/transform.h"
 #include "yaml-cpp/yaml.h"
 
 // Declare plugin

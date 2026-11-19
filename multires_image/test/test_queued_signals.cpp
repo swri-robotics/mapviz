@@ -31,10 +31,8 @@
 #include <QMetaMethod>
 #include <QMetaObject>
 #include <QMetaType>
-#include <QObject>
 #include <QtGlobal>
 
-#include <memory>
 #include <string>
 
 #include <multires_image/QGLMap.hpp>

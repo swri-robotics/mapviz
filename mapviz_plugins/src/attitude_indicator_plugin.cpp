@@ -37,14 +37,12 @@
 #include <QString>
 
 // C++ standard libraries
-#include <array>
 #include <cmath>
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <mapviz/status_label.hpp>
 #include <mapviz_plugins/placeable_window_proxy.hpp>
 #include <mapviz_plugins/topic_select.hpp>

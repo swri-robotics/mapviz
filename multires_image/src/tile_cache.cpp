@@ -41,7 +41,6 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
-#include <memory>
 #include <utility>
 
 #include <multires_image/tile.hpp>

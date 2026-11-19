@@ -34,8 +34,6 @@
 #include <QLineEdit>
 #include <QString>
 
-#include <algorithm>
-#include <array>
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -51,12 +49,9 @@
 #include <marti_nav_msgs/srv/plan_route.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <mapviz_plugins/plan_route_plugin.hpp>
-#include "swri_route_util/route.h"
 #include "ui_plan_route_config.h"  // NOLINT(build/include_subdir)
-#include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/quaternion.hpp>
 #include <marti_nav_msgs/msg/route_point.hpp>
-#include <std_msgs/msg/header.hpp>
+// IWYU pragma: no_include <compare>
 
 using marti_nav_msgs::srv::PlanRoute;
 

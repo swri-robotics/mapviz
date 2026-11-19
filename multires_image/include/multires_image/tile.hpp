@@ -34,7 +34,6 @@
 #include <QMutex>
 #include <QOpenGLFunctions_1_1>
 #include <QOpenGLTexture>
-#include <QtGlobal>
 
 // C++ standard libraries
 #include <cstdint>

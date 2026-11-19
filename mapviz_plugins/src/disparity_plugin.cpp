@@ -45,7 +45,6 @@
 #include "opencv2/imgproc/types_c.h"
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/image_encodings.hpp>
-#include <sensor_msgs/msg/image.hpp>
 #include "yaml-cpp/yaml.h"
 
 #ifdef USE_CVBRIDGE_H_FILES
@@ -56,12 +55,10 @@
 
 // C++ standard libraries
 #include <algorithm>
-#include <array>
 #include <cstdio>
 #include <functional>
 #include <memory>
 #include <string>
-#include <vector>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

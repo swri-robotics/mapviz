@@ -30,6 +30,8 @@
 #include <QGuiApplication>
 #include <QString>
 
+#include <string>
+
 #include <mapviz/qt_font_compat.hpp>
 
 using mapviz::FontFromString;

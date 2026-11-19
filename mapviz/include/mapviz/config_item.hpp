@@ -31,15 +31,20 @@
 
 // QT libraries
 #include <QWidget>
-#include <QEvent>
-#include <QLabel>
-#include <QMouseEvent>
-#include <QResizeEvent>
+#include <QEvent>  // IWYU pragma: keep
+#include <QLabel>  // IWYU pragma: keep
+#include <QMouseEvent>  // IWYU pragma: keep
+#include <QResizeEvent>  // IWYU pragma: keep
 #include <QListWidgetItem>
+#include <QAction>
+#include <QContextMenuEvent>  // IWYU pragma: keep
+#include <QObject>
+#include <QString>
+#include <Qt>
 
 // C++ standard libraries
-#include <string>
-#include <vector>
+#include <string>  // IWYU pragma: keep
+#include <vector>  // IWYU pragma: keep
 
 // Auto-generated UI files
 #include "ui/ui_configitem.h"

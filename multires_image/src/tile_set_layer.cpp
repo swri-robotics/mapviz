@@ -32,12 +32,9 @@
 #include <QString>
 
 // C++ standard libraries
-#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
-#include <memory>
-#include <ostream>
 #include <sstream>
 
 #include <multires_image/tile.hpp>

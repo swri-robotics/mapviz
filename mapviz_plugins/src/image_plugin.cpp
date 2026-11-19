@@ -37,15 +37,12 @@
 #include <QOpenGLWidget>
 #include <QPushButton>
 #include <QSpinBox>
-#include <QtGlobal>
 
 // C++ standard libraries
 #include <cmath>
 #include <functional>
 #include <memory>
-#include <new>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <image_transport/image_transport.hpp>

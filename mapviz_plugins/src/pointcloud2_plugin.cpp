@@ -51,9 +51,7 @@
 
 // C++ standard libraries
 #include <algorithm>
-#include <array>
 #include <cstdint>
-#include <cstdio>
 #include <functional>
 #include <limits>
 #include <map>
@@ -69,7 +67,6 @@
 #include <mapviz/widgets.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_field.hpp>
-#include <std_msgs/msg/header.hpp>
 #include "swri_transform_util/transform.h"
 #include "yaml-cpp/yaml.h"
 

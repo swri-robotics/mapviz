@@ -30,6 +30,9 @@
 
 #include <QPushButton>
 #include <QColor>
+#include <QObject>
+#include <QString>  // IWYU pragma: keep
+#include <QWidget>
 
 namespace mapviz
 {

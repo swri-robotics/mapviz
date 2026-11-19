@@ -30,6 +30,7 @@
 #include <QCoreApplication>
 #include <yaml-cpp/yaml.h>
 
+#include <functional>
 #include <memory>
 #include <string>
 

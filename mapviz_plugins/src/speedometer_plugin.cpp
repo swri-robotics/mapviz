@@ -46,15 +46,11 @@
 
 // C++ standard libraries
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <functional>
 #include <memory>
 #include <string>
 
-#include <geometry_msgs/msg/twist.hpp>
-#include <geometry_msgs/msg/twist_with_covariance.hpp>
-#include <geometry_msgs/msg/vector3.hpp>
 #include <mapviz/color_button.hpp>
 #include <mapviz/status_label.hpp>
 #include <mapviz_plugins/default_colors.hpp>
