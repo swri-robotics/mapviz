@@ -68,6 +68,7 @@
 #include <mapviz/status_label.hpp>
 #include <tf2/LinearMath/Vector3.hpp>
 #include <tile_map/building_layer.hpp>
+#include <tile_map/contour_layer.hpp>
 #include <tile_map/image_cache.hpp>
 #include <tile_map/map_25d.hpp>
 #include <tile_map/terrain.hpp>
@@ -96,6 +97,7 @@ std::string TileMapPlugin::NAME_KEY = "name";  // NOLINT(runtime/string)
 std::string TileMapPlugin::SOURCE_KEY = "source";  // NOLINT(runtime/string)
 std::string TileMapPlugin::TYPE_KEY = "type";  // NOLINT(runtime/string)
 std::string TileMapPlugin::RENDER_25D_KEY = "render_25d";  // NOLINT(runtime/string)
+std::string TileMapPlugin::TOPOGRAPHIC_KEY = "topographic";  // NOLINT(runtime/string)
 QString TileMapPlugin::BING_NAME = "Bing Maps (terrain)";
 QString TileMapPlugin::CARTO_NAME = "Carto";
 QString TileMapPlugin::STAMEN_TERRAIN_NAME = "Stamen (terrain)";
@@ -140,9 +142,17 @@ const char OVERPASS_URL_KEY[] = "overpass_url";
 const char OVERPASS_SOURCE[] = "overpass";
 const char STADIA_SOURCE[] = "stadia";
 
-// The 2.5D controls go in rows 6 to 15 of the grid in tile_map_config.ui,
-// between the Max Zoom/Test rows and Status, which is on row 16.
+// Keys inside the topographic map of the config.
+const char TOPOGRAPHIC_ENABLED_KEY[] = "enabled";
+const char CONTOUR_INTERVAL_KEY[] = "contour_interval";
+const char CONTOUR_LABELS_KEY[] = "contour_labels";
+const char CONTOUR_COLOR_KEY[] = "contour_color";
+
+// The 2.5D controls go in rows 6 to 15 of the grid in tile_map_config.ui and
+// the topographic map controls in rows 16 to 19, between the Max Zoom/Test
+// rows and Status, which is on row 20.
 constexpr int RENDER_25D_FIRST_ROW = 6;
+constexpr int TOPOGRAPHIC_FIRST_ROW = 16;
 
 namespace
 {
@@ -179,6 +189,7 @@ TileMapPlugin::TileMapPlugin()
   , dirty_(false)
   , transformed_(false)
   , render_25d_(false)
+  , topographic_(false)
   , last_center_x_(0.0)
   , last_center_y_(0.0)
   , last_scale_(0.0)
@@ -187,6 +198,9 @@ TileMapPlugin::TileMapPlugin()
 {
   ui_.setupUi(config_widget_);
   SetUp25dControls();
+  SetUpTopographicControls();
+  // Contours read the same elevation tiles as the 2.5D terrain shading.
+  contours_.SetImageCache(map_25d_.GetTerrainImageCache());
 
   // The attribution for each built-in source is the credit line that the
   // provider's terms of use require on the map; Bing works out its own from
@@ -361,7 +375,7 @@ void TileMapPlugin::SetUp25dControls()
   textures_check_->setChecked(true);
   textures_check_->setToolTip(
     "Drapes the imagery over the tops of buildings and trees, lifted with them.  "
-    "Otherwise they are drawn in plain colours.");
+    "Otherwise they are drawn in plain colors.");
   add_row("Textures:", textures_check_);
 
   lean_spin_ = new QSpinBox(config_widget_);
@@ -411,6 +425,86 @@ void TileMapPlugin::SetUp25dControls()
         canvas_->update();
       }
     });
+}
+
+void TileMapPlugin::SetUpTopographicControls()
+{
+  int row = TOPOGRAPHIC_FIRST_ROW;
+
+  topographic_check_ = new QCheckBox("Topographic map", config_widget_);
+  topographic_check_->setToolTip(
+    "Draw contour lines over the imagery, from the free AWS Terrain Tiles elevation data.  "
+    "Every fifth line is heavier and labeled with its height in meters.");
+  ui_.gridLayout->addWidget(topographic_check_, row++, 0, 1, 4);
+
+  auto add_row = [this, &row](const QString & label, QWidget * control) {
+      auto * label_widget = new QLabel(label, config_widget_);
+      ui_.gridLayout->addWidget(label_widget, row, 0);
+      ui_.gridLayout->addWidget(control, row, 1, 1, 3);
+      settings_topographic_widgets_.push_back(label_widget);
+      settings_topographic_widgets_.push_back(control);
+      ++row;
+    };
+
+  contour_interval_spin_ = new QSpinBox(config_widget_);
+  contour_interval_spin_->setRange(0, 1000);
+  contour_interval_spin_->setSuffix(" m");
+  contour_interval_spin_->setSpecialValueText("Auto");
+  contour_interval_spin_->setValue(0);
+  contour_interval_spin_->setToolTip(
+    "Height between contour lines.  Auto picks one from the zoom: closer lines as you "
+    "zoom in.");
+  add_row("Interval:", contour_interval_spin_);
+
+  contour_labels_check_ = new QCheckBox("Label heights", config_widget_);
+  contour_labels_check_->setChecked(true);
+  contour_labels_check_->setToolTip("Labels the heavier lines with their height in meters.");
+  add_row("Labels:", contour_labels_check_);
+
+  contour_color_button_ = new mapviz::ColorButton(config_widget_);
+  contour_color_button_->setColor(contours_.Color());
+  contour_color_button_->setToolTip("The color of the contour lines and their labels.");
+  add_row("Line color:", contour_color_button_);
+
+  for (QWidget * widget : settings_topographic_widgets_) {
+    widget->setVisible(false);
+  }
+
+  QObject::connect(
+    topographic_check_, &QCheckBox::toggled, this, &TileMapPlugin::TopographicToggled);
+  QObject::connect(
+    contour_interval_spin_, qOverload<int>(&QSpinBox::valueChanged),
+    this, &TileMapPlugin::TopographicSettingsChanged);
+  QObject::connect(
+    contour_labels_check_, &QCheckBox::toggled,
+    this, &TileMapPlugin::TopographicSettingsChanged);
+  QObject::connect(
+    contour_color_button_, &mapviz::ColorButton::colorChanged,
+    this, &TileMapPlugin::TopographicSettingsChanged);
+}
+
+void TileMapPlugin::TopographicToggled(bool checked)
+{
+  topographic_ = checked;
+  for (QWidget * widget : settings_topographic_widgets_) {
+    widget->setVisible(checked);
+  }
+  // The contours only follow the view while they are on, so make the next
+  // Draw() pass the current view to them.
+  last_height_ = 0;
+  if (canvas_) {
+    canvas_->update();
+  }
+}
+
+void TileMapPlugin::TopographicSettingsChanged()
+{
+  contours_.SetInterval(contour_interval_spin_->value());
+  contours_.SetLabels(contour_labels_check_->isChecked());
+  contours_.SetColor(contour_color_button_->color());
+  if (canvas_) {
+    canvas_->update();
+  }
 }
 
 void TileMapPlugin::Render25dToggled(bool checked)
@@ -558,7 +652,7 @@ void TileMapPlugin::UpdateControlState()
   ui_.max_zoom_spin_box->setEnabled(is_new_custom || is_custom);
   ui_.delete_button->setEnabled(is_custom);
   // Save is the only thing that applies a custom URL, so leave it live while
-  // there is something to apply and grey it out once there is not.
+  // there is something to apply and gray it out once there is not.
   ui_.save_button->setEnabled(editable && (IsDirty() || is_new_custom));
   // Testing a source the user has not applied yet would probe the old URL.
   ui_.test_button->setEnabled(source && !IsDirty());
@@ -590,6 +684,14 @@ void TileMapPlugin::UpdateStatus()
   if (!CurrentSource()) {
     PrintWarning("Enter a tile URL and click Save to create this source");
     return;
+  }
+
+  if (topographic_) {
+    const QString status = contours_.Status();
+    if (!status.isEmpty()) {
+      PrintWarning(status.toStdString());
+      return;
+    }
   }
 
   if (render_25d_) {
@@ -839,6 +941,9 @@ void TileMapPlugin::Draw(double x, double y, double scale)
       if (render_25d_) {
         map_25d_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
       }
+      if (topographic_) {
+        contours_.SetView(center.y(), center.x(), scale, canvas_->width(), canvas_->height());
+      }
       RCLCPP_DEBUG(Logger(), "TileMapPlugin::Draw: Successfully set view");
 
       int32_t level;
@@ -858,7 +963,15 @@ void TileMapPlugin::Draw(double x, double y, double scale)
       }
       map_25d_.SetImagery(tile_map_.GetTileSource(), tile_map_.GetImageCache());
       map_25d_.SetDrawnTiles(tile_map_.DrawnTiles(), tile_map_.TextureRevision());
-      map_25d_.Draw();
+      map_25d_.DrawGround();
+    }
+    // Contours lie on the ground: over the terrain shading, under buildings
+    // and trees.
+    if (topographic_) {
+      contours_.Draw(canvas_->devicePixelRatioF());
+    }
+    if (render_25d_) {
+      map_25d_.DrawRaised();
     }
   }
 }
@@ -876,7 +989,12 @@ QString TileMapPlugin::CurrentAttribution() const
     return {};
   }
   QString attribution = source->GetAttribution(view_bounds_);
-  const QString extra = render_25d_ ? map_25d_.Attribution() : QString();
+  QString extra = render_25d_ ? map_25d_.Attribution() : QString();
+  // The contours use the elevation data the terrain shading credits.
+  if (topographic_ && !(render_25d_ && map_25d_.TerrainEnabled())) {
+    extra = extra.isEmpty() ? QString(terrarium::ATTRIBUTION) :
+      QString(terrarium::ATTRIBUTION) + " | " + extra;
+  }
   if (!extra.isEmpty()) {
     attribution = attribution.isEmpty() ? extra : attribution + " | " + extra;
   }
@@ -885,6 +1003,10 @@ QString TileMapPlugin::CurrentAttribution() const
 
 void TileMapPlugin::Paint(QPainter * painter, double, double, double)
 {
+  if (topographic_ && tile_map_.IsReady()) {
+    contours_.Paint(painter);
+  }
+
   std::shared_ptr<TileSource> source = tile_map_.GetTileSource();
   if (!source) {
     return;
@@ -1001,6 +1123,7 @@ void TileMapPlugin::Transform()
   if (tf_manager_->GetTransform(target_frame_, source_frame_, to_target)) {
     tile_map_.SetTransform(to_target);
     map_25d_.SetTransform(to_target);
+    contours_.SetTransform(to_target);
     transform_ok_ = true;
     transform_status_.clear();
   } else {
@@ -1135,6 +1258,33 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
       render_25d_check_->setChecked(render_25d[RENDER_25D_ENABLED_KEY].as<bool>());
     }
   }
+
+  if (node[TOPOGRAPHIC_KEY]) {
+    const YAML::Node & topographic = node[TOPOGRAPHIC_KEY];
+    {
+      const QSignalBlocker block_interval(contour_interval_spin_);
+      const QSignalBlocker block_labels(contour_labels_check_);
+      const QSignalBlocker block_color(contour_color_button_);
+      if (topographic[CONTOUR_INTERVAL_KEY]) {
+        contour_interval_spin_->setValue(
+          static_cast<int>(std::lround(topographic[CONTOUR_INTERVAL_KEY].as<double>())));
+      }
+      if (topographic[CONTOUR_LABELS_KEY]) {
+        contour_labels_check_->setChecked(topographic[CONTOUR_LABELS_KEY].as<bool>());
+      }
+      if (topographic[CONTOUR_COLOR_KEY]) {
+        const QColor color(
+          QString::fromStdString(topographic[CONTOUR_COLOR_KEY].as<std::string>()));
+        if (color.isValid()) {
+          contour_color_button_->setColor(color);
+        }
+      }
+    }
+    TopographicSettingsChanged();
+    if (topographic[TOPOGRAPHIC_ENABLED_KEY]) {
+      topographic_check_->setChecked(topographic[TOPOGRAPHIC_ENABLED_KEY].as<bool>());
+    }
+  }
 }
 
 void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
@@ -1188,6 +1338,15 @@ void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
   emitter << YAML::Key << LEAN_KEY << YAML::Value << lean_spin_->value() / 100.0;
   emitter << YAML::Key << OVERPASS_URL_KEY << YAML::Value <<
     map_25d_.Buildings().OverpassUrl().toStdString();
+  emitter << YAML::EndMap;
+
+  emitter << YAML::Key << TOPOGRAPHIC_KEY << YAML::Value << YAML::BeginMap;
+  emitter << YAML::Key << TOPOGRAPHIC_ENABLED_KEY << YAML::Value << topographic_;
+  emitter << YAML::Key << CONTOUR_INTERVAL_KEY << YAML::Value << contour_interval_spin_->value();
+  emitter << YAML::Key << CONTOUR_LABELS_KEY << YAML::Value <<
+    contour_labels_check_->isChecked();
+  emitter << YAML::Key << CONTOUR_COLOR_KEY << YAML::Value <<
+    contour_color_button_->color().name().toStdString();
   emitter << YAML::EndMap;
 }
 

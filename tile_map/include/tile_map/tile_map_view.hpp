@@ -127,7 +127,7 @@ public:
   /// this view, so its signals can be connected a single time.
   ImageCachePtr GetImageCache();
 
-  /// The tile the view is currently centred on, so a source can be probed
+  /// The tile the view is currently centered on, so a source can be probed
   /// without guessing coordinates.  False before the first SetView().
   bool GetCenterTile(int32_t & level, int64_t & x, int64_t & y) const;
 

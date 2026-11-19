@@ -76,7 +76,7 @@ class BuildingLayer : public QObject
 public:
   /// The web mercator level whose tiles buildings are fetched for.
   static constexpr int32_t TILE_LEVEL = 14;
-  /// Buildings are not fetched or drawn when zoomed out past this many metres
+  /// Buildings are not fetched or drawn when zoomed out past this many meters
   /// per pixel; they would be too small to see and too many to download.
   static constexpr double MAX_SCALE = 3.0;
   /// The most tiles fetched for one view.

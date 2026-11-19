@@ -58,7 +58,7 @@ struct Building
   /// (the last entry is the closing edge).  False where a vector tile cut the
   /// building at its edge, and everywhere for a free-standing roof.
   std::vector<bool> walls;
-  /// Top of the building above the ground, in metres.
+  /// Top of the building above the ground, in meters.
   double height = 0.0;
   /// Bottom of the building above the ground, for parts that overhang.
   double min_height = 0.0;
@@ -75,9 +75,9 @@ struct Woodland
 struct MapTree
 {
   LatLon position;
-  /// Metres above the ground.
+  /// Meters above the ground.
   double height;
-  /// Radius of the crown, in metres.
+  /// Radius of the crown, in meters.
   double crown_radius;
 };
 
@@ -89,7 +89,7 @@ struct MapFeatures
   std::vector<MapTree> trees;
 };
 
-/// Metres in a length tag such as "12", "12.5 m", "40 ft" or "12'6\"", or a
+/// Meters in a length tag such as "12", "12.5 m", "40 ft" or "12'6\"", or a
 /// negative number if it can't be read.
 double ParseLength(const std::string & text);
 

@@ -77,7 +77,7 @@ constexpr int DIAL_START_ANGLE = 210;
 constexpr int DIAL_SWEEP_ANGLE = -240;
 
 /// Total tick marks, including both ends of the scale.  Only every other
-/// one is labelled; labelling all nine crowds the numbers together at the
+/// one is labeled; labeling all nine crowds the numbers together at the
 /// top of the dial where the arc is tightest.
 constexpr int TICK_COUNT = 9;
 }    // namespace

@@ -47,9 +47,9 @@ namespace
 constexpr double MIN_CROWN_RADIUS = 1.2;
 /// Wider canopy is split into several crowns of at most this radius.
 constexpr double MAX_CROWN_RADIUS = 6.0;
-/// How much neighbouring crowns may overlap, as a fraction of their radii.
+/// How much neighboring crowns may overlap, as a fraction of their radii.
 constexpr double CROWN_OVERLAP = 0.25;
-/// Spacing of the trees spread through a mapped wood, in metres.
+/// Spacing of the trees spread through a mapped wood, in meters.
 constexpr double WOODLAND_SPACING = 6.0;
 /// The most trees spread through one wood in one area.
 constexpr size_t MAX_WOODLAND_CROWNS = 40000;
@@ -119,7 +119,7 @@ std::vector<uint8_t> CanopyMask(const QImage & image)
     }
   }
 
-  auto count_neighbours = [&](const std::vector<uint8_t> & source, int row, int col) {
+  auto count_neighbors = [&](const std::vector<uint8_t> & source, int row, int col) {
       int count = 0;
       for (int dr = -1; dr <= 1; ++dr) {
         for (int dc = -1; dc <= 1; ++dc) {
@@ -138,11 +138,11 @@ std::vector<uint8_t> CanopyMask(const QImage & image)
   const std::vector<uint8_t> raw = mask;
   for (int row = 0; row < height; ++row) {
     for (int col = 0; col < width; ++col) {
-      const int neighbours = count_neighbours(raw, row, col);
+      const int neighbors = count_neighbors(raw, row, col);
       uint8_t & cell = mask[static_cast<size_t>(row) * width + col];
-      if (cell && neighbours < 2) {
+      if (cell && neighbors < 2) {
         cell = 0;
-      } else if (!cell && neighbours >= 6) {
+      } else if (!cell && neighbors >= 6) {
         cell = 1;
       }
     }
@@ -196,7 +196,7 @@ std::vector<PixelCrown> PlaceCrowns(
     }
   }
 
-  // Candidate centres, widest first.
+  // Candidate centers, widest first.
   std::vector<std::pair<double, int>> candidates;
   for (size_t i = 0; i < distance.size(); ++i) {
     const double radius = distance[i] / 3.0 * cell_size;
@@ -257,7 +257,7 @@ std::vector<Crown> CrownsInWoodland(
     return crowns;
   }
 
-  // Work in metres around the box's south-west corner.
+  // Work in meters around the box's south-west corner.
   const double cos_lat =
     std::cos(0.5 * (south + north) * static_cast<double>(swri_math_util::_deg_2_rad));
   const double meters_per_lon = METERS_PER_DEGREE * cos_lat;
@@ -284,7 +284,7 @@ std::vector<Crown> CrownsInWoodland(
     return crowns;
   }
 
-  // Grid cells are numbered from the box corner, so neighbouring areas line
+  // Grid cells are numbered from the box corner, so neighboring areas line
   // up and the same wood always gets the same trees.
   const int64_t first_col = static_cast<int64_t>(std::floor(min_x / WOODLAND_SPACING));
   const int64_t last_col = static_cast<int64_t>(std::floor(max_x / WOODLAND_SPACING));

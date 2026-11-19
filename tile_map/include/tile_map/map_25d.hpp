@@ -121,11 +121,11 @@ public:
   void SetDrawnTiles(std::vector<ImageryTile> tiles, uint64_t revision);
 
   /// Whether roofs and treetops show the imagery that was under them, rather
-  /// than plain colours.
+  /// than plain colors.
   void SetImageryTextures(bool enabled) {imagery_textures_ = enabled;}
   bool ImageryTextures() const {return imagery_textures_;}
 
-  /// How far the top of a building or tree moves up the screen per metre of
+  /// How far the top of a building or tree moves up the screen per meter of
   /// height (0 draws them flat).
   void SetLean(double lean) {lean_ = lean;}
   double Lean() const {return lean_;}
@@ -137,11 +137,22 @@ public:
   /// The transform from WGS84 into the frame being drawn.
   void SetTransform(const swri_transform_util::Transform & wgs84_to_target);
 
-  /// The area being drawn: its centre, metres per pixel and size in pixels.
+  /// The area being drawn: its center, meters per pixel and size in pixels.
   void SetView(double latitude, double longitude, double scale, int32_t width, int32_t height);
 
   /// Draws the enabled layers.  Needs the canvas's GL context.
-  void Draw();
+  void Draw()
+  {
+    DrawGround();
+    DrawRaised();
+  }
+
+  /// Draws what lies flat on the ground (the terrain shading), so that other
+  /// ground layers can go between it and DrawRaised().
+  void DrawGround();
+
+  /// Draws what stands up out of the map: buildings and trees.
+  void DrawRaised();
 
   /// Credit lines for the data the enabled layers draw.
   QString Attribution() const;

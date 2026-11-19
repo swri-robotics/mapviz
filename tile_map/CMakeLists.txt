@@ -105,6 +105,8 @@ set(TILE_SRC_FILES
   src/tree_layer.cpp
   src/scene_25d.cpp
   src/map_25d.cpp
+  src/contours.cpp
+  src/contour_layer.cpp
   src/${PROJECT_NAME}_view.cpp
 )
 set(QT_HEADERS
@@ -224,6 +226,11 @@ if(BUILD_TESTING)
   ament_add_gtest(test_${PROJECT_NAME}_buildings test/test_buildings.cpp)
   if(TARGET test_${PROJECT_NAME}_buildings)
     target_link_libraries(test_${PROJECT_NAME}_buildings ${PROJECT_NAME})
+  endif()
+
+  ament_add_gtest(test_${PROJECT_NAME}_contours test/test_contours.cpp)
+  if(TARGET test_${PROJECT_NAME}_contours)
+    target_link_libraries(test_${PROJECT_NAME}_contours ${PROJECT_NAME})
   endif()
 
   ament_add_gtest(test_${PROJECT_NAME}_trees test/test_trees.cpp)

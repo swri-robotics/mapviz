@@ -198,7 +198,7 @@ void Map25d::SetView(
   }
 }
 
-void Map25d::Draw()
+void Map25d::DrawGround()
 {
   if (terrain_enabled_) {
     if (refresh_textures_) {
@@ -207,7 +207,10 @@ void Map25d::Draw()
     }
     terrain_view_.Draw();
   }
+}
 
+void Map25d::DrawRaised()
+{
   const bool map_trees = trees_enabled_ && tree_source_ == TreeSource::Map;
   const bool imagery_trees = trees_enabled_ && tree_source_ == TreeSource::Imagery;
   if (imagery_trees) {

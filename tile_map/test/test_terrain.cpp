@@ -45,7 +45,7 @@ using tile_map::ShadingParameters;
 
 namespace
 {
-/// Heights for a width x height grid that rises `rise` metres per cell going
+/// Heights for a width x height grid that rises `rise` meters per cell going
 /// east (and nothing going north or south).
 std::vector<float> RisingEast(int width, int height, float rise)
 {
@@ -58,7 +58,7 @@ std::vector<float> RisingEast(int width, int height, float rise)
   return heights;
 }
 
-/// The same, rising `rise` metres per cell going north (row 0 is north).
+/// The same, rising `rise` meters per cell going north (row 0 is north).
 std::vector<float> RisingNorth(int width, int height, float rise)
 {
   std::vector<float> heights;

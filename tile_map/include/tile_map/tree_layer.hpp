@@ -60,7 +60,7 @@ class TileSource;  // IWYU pragma: keep
 class TreeLayer
 {
 public:
-  /// Trees are not looked for when zoomed out past this many metres per
+  /// Trees are not looked for when zoomed out past this many meters per
   /// pixel.
   static constexpr double MAX_SCALE = 1.5;
   /// The deepest level canopy is worked out at; about 1 m per pixel.
@@ -102,7 +102,7 @@ public:
   static std::vector<Crown> CrownsFromImage(
     const QImage & image, int32_t level, int64_t x, int64_t y);
 
-  /// A crown in the frame being drawn, with a slight variation in colour
+  /// A crown in the frame being drawn, with a slight variation in color
   /// fixed by where the tree is.
   static ProjectedCrown ProjectCrown(
     const Crown & crown, const swri_transform_util::Transform & wgs84_to_target);

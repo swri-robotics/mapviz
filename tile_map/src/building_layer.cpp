@@ -148,7 +148,7 @@ std::vector<BuildingLayer::TileKey> BuildingLayer::TilesInView(
   if (scale <= 0.0 || scale > MAX_SCALE) {
     return {};
   }
-  // Half the canvas diagonal around the centre, so a rotated view is covered.
+  // Half the canvas diagonal around the center, so a rotated view is covered.
   return TilesAround(
     TILE_LEVEL, latitude, longitude, 0.5 * scale * std::hypot(width, height), MAX_TILES);
 }
