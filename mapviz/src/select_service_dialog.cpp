@@ -28,21 +28,31 @@
 
 #include <mapviz/select_service_dialog.hpp>
 
-#include <QCloseEvent>
+#include <QDebug>
 #include <QHBoxLayout>
+#include <QItemSelectionModel>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QListWidgetItem>
 #include <QMessageBox>
+#include <QModelIndex>
 #include <QPushButton>
 #include <QTimerEvent>
 #include <QVBoxLayout>
+#include <Qt>
 
 #include <algorithm>
+#include <cstddef>
+#include <iterator>
 #include <map>
+#include <new>
 #include <set>
 #include <string>
 #include <vector>
+
+#include <mapviz/topic_source.hpp>
+// IWYU pragma: no_include <compare>
 
 namespace mapviz
 {

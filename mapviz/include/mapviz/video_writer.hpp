@@ -32,6 +32,8 @@
 #include <QImage>
 #include <QObject>
 #include <QRecursiveMutex>
+#include <QString>  // IWYU pragma: keep
+#include <QtGlobal>  // IWYU pragma: keep
 
 #include <memory>
 #include <string>

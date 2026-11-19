@@ -28,8 +28,6 @@
 
 #include <tile_map/map_25d.hpp>
 
-#include <cxxabi.h>
-
 #include <QList>
 #include <QStringList>
 #include <QtGlobal>
@@ -39,16 +37,17 @@
 #include <cmath>
 #include <future>
 #include <memory>
-#include <system_error>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "swri_transform_util/transform.h"
 #include <tile_map/building_layer.hpp>
+#include <tile_map/image_cache.hpp>
 #include <tile_map/scene_25d.hpp>
 #include <tile_map/terrain.hpp>
 #include <tile_map/tile_map_view.hpp>
+#include <tile_map/tile_source.hpp>
 #include <tile_map/tree_layer.hpp>
 #include <tile_map/wmts_source.hpp>
 

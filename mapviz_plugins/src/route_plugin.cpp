@@ -42,7 +42,6 @@
 #include <Qt>
 
 // C++ standard libraries
-#include <array>
 #include <functional>
 #include <memory>
 #include <string>
@@ -62,9 +61,9 @@
 #include <mapviz/color_button.hpp>
 #include <mapviz/status_label.hpp>
 #include <mapviz/widgets.hpp>
-#include <std_msgs/msg/header.hpp>
 #include <tf2/LinearMath/Transform.hpp>
 #include <tf2/LinearMath/Vector3.hpp>
+#include "swri_route_util/route_point.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

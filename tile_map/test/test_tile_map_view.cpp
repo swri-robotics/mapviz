@@ -32,15 +32,11 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <geometry_msgs/msg/quaternion.hpp>
-#include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include <std_msgs/msg/header.hpp>
 #include "swri_transform_util/local_xy_util.h"
 #include "swri_transform_util/transform.h"
 #include "swri_transform_util/wgs84_transformer.h"

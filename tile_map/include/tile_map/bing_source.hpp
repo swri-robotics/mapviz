@@ -36,7 +36,6 @@
 #include <QObject>
 #include <QString>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <random>

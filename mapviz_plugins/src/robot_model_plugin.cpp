@@ -47,7 +47,6 @@
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QString>
-#include <QVector>
 #include <QtGlobal>
 
 #include "assimp/color4.h"
@@ -55,7 +54,6 @@
 #include "assimp/material.h"
 #include "assimp/mesh.h"
 #include "assimp/types.h"
-#include "assimp/vector3.h"
 #include <mapviz/status_label.hpp>
 #include <mapviz/widgets.hpp>
 #include <mapviz_plugins/topic_select.hpp>
@@ -72,7 +70,6 @@
 #include "urdf_model/joint.h"
 #include "urdf_model/link.h"
 #include "urdf_model/pose.h"
-#include "urdf_model/types.h"
 #include "yaml-cpp/yaml.h"
 
 #ifdef MAPVIZ_HAVE_URDF_MODEL_HPP

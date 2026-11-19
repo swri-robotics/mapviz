@@ -35,8 +35,6 @@
 #include <QString>
 #include <yaml-cpp/yaml.h>
 
-#include <algorithm>
-#include <array>
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -81,6 +79,7 @@
 #include "ui_measuring_config.h"  // NOLINT(build/include_subdir)
 #include <mapviz/mapviz_plugin.hpp>
 #include <tf2/LinearMath/Vector3.hpp>
+// IWYU pragma: no_include <compare>
 
 namespace
 {

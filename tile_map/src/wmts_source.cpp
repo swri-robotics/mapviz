@@ -32,9 +32,9 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QStringList>
 #include <QUrl>
-#include <QtGlobal>
 #include <json/json.h>
 
 #include <algorithm>

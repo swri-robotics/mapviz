@@ -30,17 +30,14 @@
 #define MAPVIZ_PLUGINS__TF_FRAME_PLUGIN_HPP_
 
 // QT libraries
-#include <QOpenGLWidget>
 #include <QTimer>
 #include <QObject>
 #include <QWidget>
-#include <QString>
 
 // C++ standard libraries
 #include <string>
 
 #include <mapviz_plugins/point_drawing_plugin.hpp>
-#include "yaml-cpp/yaml.h"
 
 // ROS libraries
 

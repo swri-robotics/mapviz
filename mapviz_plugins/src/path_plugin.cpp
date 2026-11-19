@@ -36,14 +36,10 @@
 #include <QString>
 
 // C++ standard libraries
-#include <array>
 #include <functional>
 #include <memory>
 #include <string>
-#include <vector>
 
-#include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <mapviz/color_button.hpp>
 #include <mapviz/mapviz_plugin.hpp>
@@ -51,7 +47,6 @@
 #include <mapviz_plugins/default_colors.hpp>
 #include <mapviz_plugins/point_drawing_plugin.hpp>
 #include <mapviz_plugins/topic_select.hpp>
-#include <std_msgs/msg/header.hpp>
 #include <tf2/LinearMath/Vector3.hpp>
 #include "yaml-cpp/yaml.h"
 

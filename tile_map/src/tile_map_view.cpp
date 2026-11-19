@@ -36,7 +36,6 @@
 #include <cstdint>
 #include <utility>
 
-#include "ext/alloc_traits.h"
 #include "swri_math_util/constants.h"
 #include "swri_math_util/trig_util.h"
 #include "swri_transform_util/earth_constants.h"

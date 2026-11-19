@@ -68,6 +68,9 @@
 #undef MAPVIZ_RESTORE_SIGNALS_MACRO
 #endif
 
+#include <QObject>
+#include <QString>  // IWYU pragma: keep
+
 #include "mapviz.hpp"
 
 namespace mapviz

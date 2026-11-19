@@ -50,11 +50,9 @@
 #include <Qt>
 
 // C++ Libraries
-#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <limits>
-#include <memory>
 #include <string>
 #include <vector>
 

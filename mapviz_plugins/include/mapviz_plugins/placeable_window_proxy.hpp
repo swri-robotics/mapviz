@@ -31,18 +31,15 @@
 #include <QObject>
 #include <QRect>
 #include <QPoint>
-#include <QEvent>
 #include <QPointF>
 #include <QRectF>
 #include <QSize>
-#include <QString>
-#include <QTimerEvent>
 #include <QWidget>
 #include <QtGlobal>
+#include <QMouseEvent>
+#include <QResizeEvent>
 
 QT_BEGIN_NAMESPACE;
-class QMouseEvent;
-class QResizeEvent;
 QT_END_NAMESPACE;
 
 /**

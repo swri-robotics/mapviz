@@ -28,6 +28,8 @@
 #include <mapviz/color_button.hpp>
 
 #include <QColorDialog>
+#include <QString>
+#include <Qt>
 
 namespace mapviz
 {

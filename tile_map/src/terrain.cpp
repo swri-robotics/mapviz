@@ -29,6 +29,7 @@
 #include <tile_map/terrain.hpp>
 
 #include <QRegularExpression>
+#include <QRegularExpressionMatch>
 
 #include <algorithm>
 #include <cmath>

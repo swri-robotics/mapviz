@@ -41,7 +41,6 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QString>
-#include <QStringList>
 #include <Qt>
 #include <QtGlobal>
 

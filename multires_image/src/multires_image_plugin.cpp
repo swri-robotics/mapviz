@@ -30,16 +30,13 @@
 
 // QT libraries
 #include <QDialog>
+#include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QList>
-#include <QOpenGLWidget>
 #include <QPushButton>
-#include <QSpinBox>
 #include <QString>
-#include <QStringList>
-#include <QtGlobal>
 
 // C++ standard libraries
 #include <cstdio>
@@ -54,6 +51,7 @@
 #include <multires_image/tile_set_layer.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include "swri_transform_util/georeference.h"
+#include "swri_transform_util/transform.h"
 #include "swri_transform_util/transform_manager.h"
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2/LinearMath/Transform.hpp>

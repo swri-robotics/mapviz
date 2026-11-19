@@ -29,10 +29,8 @@
 #ifndef MAPVIZ_PLUGINS__CANVAS_CLICK_FILTER_HPP_
 #define MAPVIZ_PLUGINS__CANVAS_CLICK_FILTER_HPP_
 
-#include <QEvent>
 #include <QObject>
 #include <QPointF>
-#include <QString>
 #include <QtGlobal>
 
 /**

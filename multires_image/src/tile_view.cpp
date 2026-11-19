@@ -32,7 +32,6 @@
 
 // C++ standard libraries
 #include <cmath>
-#include <cstdlib>
 
 #include <multires_image/tile.hpp>
 #include <multires_image/tile_cache.hpp>

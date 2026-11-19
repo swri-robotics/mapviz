@@ -28,11 +28,16 @@
 
 #include <mapviz/video_writer.hpp>
 
+#include <QMutexLocker>
+
+#include <cstddef>
+#include <exception>
 #include <memory>
 #include <string>
 
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 namespace mapviz
 {

@@ -49,7 +49,6 @@
 #include <Qt>
 
 // C++ standard libraries
-#include <array>
 #include <chrono>
 #include <cstdio>
 #include <functional>
@@ -73,11 +72,8 @@
 #include "swri_transform_util/transform.h"
 #include "swri_transform_util/transform_manager.h"
 #include "yaml-cpp/yaml.h"
-#include <geometry_msgs/msg/point.hpp>
 #include <mapviz/color_button.hpp>
 #include <mapviz/status_label.hpp>
-#include <marti_nav_msgs/msg/route_point.hpp>
-#include <std_msgs/msg/header.hpp>
 #include <tf2/LinearMath/Vector3.hpp>
 
 // Declare plugin

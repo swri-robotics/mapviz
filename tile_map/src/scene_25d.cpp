@@ -36,13 +36,11 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "ext/alloc_traits.h"
 #include "swri_math_util/constants.h"
 #include <tile_map/tile_source.hpp>
 

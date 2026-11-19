@@ -37,7 +37,6 @@
 #include <QtGlobal>
 #include <yaml-cpp/yaml.h>
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>

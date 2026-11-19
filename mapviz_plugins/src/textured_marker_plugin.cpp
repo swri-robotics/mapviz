@@ -38,7 +38,6 @@
 
 // C++ standard libraries
 #include <algorithm>
-#include <array>
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
@@ -52,15 +51,10 @@
 #include <mapviz_plugins/topic_select.hpp>
 
 // ROS libraries
-#include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/pose.hpp>
-#include <geometry_msgs/msg/quaternion.hpp>
 #include <mapviz/status_label.hpp>
 #include <mapviz/topic_source.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/image_encodings.hpp>
-#include <sensor_msgs/msg/image.hpp>
-#include <std_msgs/msg/header.hpp>
 #include "swri_transform_util/transform.h"
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2/LinearMath/Transform.hpp>

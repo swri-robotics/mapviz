@@ -34,13 +34,11 @@
 #include <QPixmap>
 #include <Qt>
 
-#include <algorithm>
 #include <climits>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
-#include <memory>
 #include <string>
 #include <utility>
 

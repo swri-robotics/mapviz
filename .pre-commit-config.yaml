@@ -55,13 +55,14 @@ repos:
         entry: ament_uncrustify --language CPP
         language: system
         files: \.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
-      # Advice only: prints include changes for the staged C++ files but never fails the
-      # commit (add --strict to make it fail).  Needs a colcon build with
-      # -DCMAKE_EXPORT_COMPILE_COMMANDS=ON and `apt install iwyu`; skipped without them.
-      # Set IWYU_BUILD_DIR when the build isn't in <workspace>/build.
+      # Prints include changes for the staged C++ files.  Fails the commit only for builds
+      # against Lyrical; other distros' IWYU versions suggest slightly different includes,
+      # so there it is advice.  `// IWYU pragma: keep` keeps an include another distro needs.
+      # Needs a colcon build with -DCMAKE_EXPORT_COMPILE_COMMANDS=ON and `apt install iwyu`;
+      # skipped without them.  Set IWYU_BUILD_DIR when the build isn't in <workspace>/build.
       - id: include-what-you-use
-        name: include-what-you-use (advice)
-        entry: tools/iwyu_check.py
+        name: include-what-you-use
+        entry: tools/iwyu_check.py --strict-on lyrical
         language: system
         files: \.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
         verbose: true

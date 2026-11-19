@@ -34,15 +34,21 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QTimerEvent>
+#include <QAbstractItemView>
+#include <QItemSelectionModel>
+#include <QListWidgetItem>
+#include <QModelIndex>
+#include <QModelIndexList>
+#include <QString>
+#include <Qt>
 
 #include <algorithm>
+#include <cstddef>
+#include <iterator>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
-
-#include <tf2_ros/transform_listener.hpp>
-
 
 namespace mapviz
 {

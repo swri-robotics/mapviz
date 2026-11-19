@@ -49,6 +49,7 @@
 #include <QRect>
 #include <QVariant>
 #include <Qt>
+#include <QSignalBlocker>
 
 #include <algorithm>
 #include <cmath>
@@ -71,6 +72,7 @@
 #include <tile_map/map_25d.hpp>
 #include <tile_map/terrain.hpp>
 #include <tile_map/tile_map_view.hpp>
+#include "swri_transform_util/transform.h"
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>

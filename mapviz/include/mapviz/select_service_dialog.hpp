@@ -29,13 +29,22 @@
 #ifndef MAPVIZ__SELECT_SERVICE_DIALOG_HPP_
 #define MAPVIZ__SELECT_SERVICE_DIALOG_HPP_
 
+#include <QByteArray>
+#include <QCloseEvent>  // IWYU pragma: keep
 #include <QDialog>
 #include <QMetaType>
+#include <QObject>
+#include <QPushButton>
+#include <QString>
 #include <QThread>
+#include <QTimerEvent>  // IWYU pragma: keep
+#include <QWidget>
+#include <QtGlobal>
 
+#include <algorithm>  // IWYU pragma: keep
 #include <functional>
 #include <memory>
-#include <set>
+#include <set>  // IWYU pragma: keep
 #include <string>
 #include <utility>
 #include <vector>
@@ -45,7 +54,6 @@
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 class QListWidget;
-class QPushButton;
 QT_END_NAMESPACE
 
 // This is ugly, but necessary in order to be able to send a std::vector<std::string>

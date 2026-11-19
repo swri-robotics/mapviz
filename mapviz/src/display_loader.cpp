@@ -28,6 +28,7 @@
 
 #include <mapviz/display_loader.hpp>
 
+#include <cstddef>
 #include <exception>
 #include <optional>
 #include <stdexcept>
@@ -35,8 +36,6 @@
 #include <vector>
 
 #include <pluginlib/exceptions.hpp>
-#include <rclcpp/exceptions.hpp>
-#include <rclcpp/logging.hpp>
 
 namespace mapviz
 {

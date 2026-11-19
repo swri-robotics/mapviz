@@ -29,25 +29,42 @@
 #include "mapviz/theme.hpp"
 
 #include <QApplication>
+#include <QBrush>
+#include <QByteArray>
+#include <QColor>
+#include <QCoreApplication>
+#include <QDebug>
 #include <QFile>
 #include <QFontMetrics>
 #include <QGuiApplication>
+#include <QIODevice>
 #include <QIconEngine>
 #include <QLabel>
+#include <QObject>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPen>
 #include <QPixmap>
+#include <QPoint>
+#include <QPointF>
 #include <QProxyStyle>
+#include <QRect>
+#include <QRectF>
 #include <QSettings>
+#include <QStringAlgorithms>
 #include <QStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
 #include <QStyleOption>
 #include <QVariant>
+#include <QWidgetList>
+#include <Qt>
+#include <QtGlobal>
 
 #include <algorithm>
 #include <cmath>
+#include <initializer_list>
+#include <iterator>
 #include <utility>
 #include <vector>
 

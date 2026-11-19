@@ -33,19 +33,14 @@
 #include <QOpenGLWidget>
 
 // C++ Standard Libraries
-#include <algorithm>
-#include <array>
 #include <cstddef>
 #include <functional>
 #include <memory>
-#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include <geometry_msgs/msg/point.hpp>
 #include <mapviz_plugins/canvas_click_filter.hpp>
-#include <std_msgs/msg/header.hpp>
 #include "swri_transform_util/frames.h"
 #include "swri_transform_util/transform.h"
 #include "swri_transform_util/transform_manager.h"
