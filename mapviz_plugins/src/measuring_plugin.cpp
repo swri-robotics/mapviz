@@ -33,21 +33,40 @@
 #include <QMouseEvent>
 #include <QTextStream>
 #include <QPainter>
-#include <QGuiApplication>
+#include <QBrush>
+#include <QCheckBox>
+#include <QColor>
+#include <QDoubleSpinBox>
+#include <QEvent>
+#include <QFont>
+#include <QLabel>
+#include <QLineF>
+#include <QOpenGLFunctions>
+#include <QOpenGLWidget>
+#include <QPen>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QTransform>
+#include <Qt>
 
 // C++ Libraries
+#include <algorithm>
+#include <cstddef>
+#include <functional>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include <mapviz/color_button.hpp>
 #include <mapviz/mapviz_plugin.hpp>
 #include <mapviz/qt_mouse_event_compat.hpp>
+#include "yaml-cpp/yaml.h"
 
 // ROS Libraries
 #include <rclcpp/rclcpp.hpp>
 
 // Mapviz Libraries
-#include <mapviz/select_frame_dialog.hpp>
 #include <pluginlib/class_list_macros.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::MeasuringPlugin, mapviz::MapvizPlugin)

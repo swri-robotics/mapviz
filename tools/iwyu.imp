@@ -1,5 +1,5 @@
 # include-what-you-use mappings for mapviz, used by tools/iwyu_check.py.  That script also
-# generates mappings for Qt, ROS 2 interface headers, rclcpp, yaml-cpp and gtest from the
+# generates mappings for Qt, OpenCV, ROS 2 interface headers, rclcpp, yaml-cpp and gtest from the
 # headers installed on the machine; the mappings here take precedence over those.
 [
   # C++ spellings of the C headers, as cpplint asks for.  (IWYU already maps <stddef.h> and

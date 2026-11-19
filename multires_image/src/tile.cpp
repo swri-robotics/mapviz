@@ -32,14 +32,19 @@
 #include <QImage>
 #include <QFile>
 #include <QOpenGLTexture>
+#include <QOpenGLFunctions>
+#include <Qt>
+#include <QtGlobal>
 
 // C++ standard libraries
 #include <cmath>
 #include <algorithm>
 #include <exception>
 #include <iostream>
+#include <utility>
 
 #include "swri_math_util/math_util.h"
+#include "swri_transform_util/transform.h"
 
 namespace multires_image
 {

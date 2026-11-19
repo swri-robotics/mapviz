@@ -29,21 +29,32 @@
 #include <mapviz_plugins/attitude_indicator_plugin.hpp>
 
 // QT libraries
-#include <QDebug>
-#include <QDialog>
+#include <QLineEdit>
+#include <QOpenGLFunctions>
 #include <QOpenGLWidget>
+#include <QPushButton>
+#include <QRect>
+#include <QString>
 
 // C++ standard libraries
+#include <array>
 #include <cmath>
-#include <cstdio>
+#include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include <geometry_msgs/msg/pose_with_covariance.hpp>
+#include <mapviz/status_label.hpp>
+#include <mapviz_plugins/placeable_window_proxy.hpp>
 #include <mapviz_plugins/topic_select.hpp>
+#include <mapviz_plugins/topic_type_watcher.hpp>
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include "yaml-cpp/yaml.h"
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include <mapviz/select_frame_dialog.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

@@ -31,13 +31,20 @@
 
 // QT libraries
 #include <QObject>
+#include <QOpenGLWidget>
+#include <QPainter>
+#include <QRectF>
+#include <QString>
 #include <QWidget>
 
 // C++ standard libraries
+#include <memory>
 #include <string>
+#include <vector>
 
 #include <mapviz/mapviz_plugin.hpp>
 #include <mapviz_plugins/placeable_window_proxy.hpp>
+#include "yaml-cpp/yaml.h"
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>

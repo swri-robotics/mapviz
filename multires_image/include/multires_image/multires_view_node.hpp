@@ -32,8 +32,10 @@
 // QT libraries
 #include <QMainWindow>
 #include <QMouseEvent>
-#include <QLabel>
-#include <QShowEvent>
+#include <QObject>
+#include <QString>
+#include <QWidget>
+#include <Qt>
 
 // C++ standard libraries
 #include <string>
@@ -41,7 +43,6 @@
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include <multires_image/QGLMap.hpp>
 #include <multires_image/tile_set.hpp>
 
 namespace multires_image

@@ -28,9 +28,19 @@
 
 #include <mapviz_plugins/coordinate_picker_plugin.hpp>
 
+#include <QCheckBox>
 #include <QClipboard>
+#include <QEvent>
+#include <QLineEdit>
 #include <QMouseEvent>
+#include <QOpenGLWidget>
+#include <QPlainTextEdit>
+#include <QPointF>
+#include <QPushButton>
+#include <QString>
 #include <QTextStream>
+#include <Qt>
+#include <QtGlobal>
 
 #include <mapviz/mapviz_plugin.hpp>
 #include <mapviz/qt_mouse_event_compat.hpp>
@@ -41,6 +51,8 @@
 #include <QApplication>
 #endif
 
+#include <functional>
+#include <memory>
 #include <string>
 
 // ROS Libraries
@@ -53,6 +65,9 @@
 #include "swri_transform_util/transform.h"
 #include "swri_transform_util/transform_util.h"
 #include <pluginlib/class_list_macros.hpp>
+#include "swri_transform_util/transform_manager.h"
+#include "yaml-cpp/yaml.h"
+#include <tf2/LinearMath/Vector3.hpp>
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::CoordinatePickerPlugin, mapviz::MapvizPlugin)
 
@@ -171,7 +186,6 @@ bool CoordinatePickerPlugin::handleMousePress(QMouseEvent * event)
     PrintWarning(warning.toStdString());
     return false;
   }
-
 
   RCLCPP_DEBUG(
     Logger(),

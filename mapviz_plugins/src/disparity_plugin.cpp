@@ -29,15 +29,24 @@
 #include <mapviz_plugins/disparity_plugin.hpp>
 
 // QT libraries
-#include <QDialog>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QOpenGLFunctions>
 #include <QOpenGLWidget>
+#include <QPushButton>
+#include <QSpinBox>
 
 #include <mapviz_plugins/topic_select.hpp>
 
 // ROS libraries
+#include <mapviz/status_label.hpp>
+#include "opencv2/core/types_c.h"
+#include <opencv2/imgproc.hpp>
+#include "opencv2/imgproc/types_c.h"
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/image_encodings.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include "yaml-cpp/yaml.h"
 
 #ifdef USE_CVBRIDGE_H_FILES
 #include "cv_bridge/cv_bridge.h"
@@ -45,10 +54,12 @@
 #include <cv_bridge/cv_bridge.hpp>
 #endif
 
-
 // C++ standard libraries
 #include <algorithm>
+#include <array>
 #include <cstdio>
+#include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 

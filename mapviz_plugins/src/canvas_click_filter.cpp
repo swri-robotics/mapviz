@@ -31,6 +31,7 @@
 #include <QMouseEvent>
 #include <QLineF>
 #include <QDateTime>
+#include <QEvent>
 
 #include <mapviz/qt_mouse_event_compat.hpp>
 

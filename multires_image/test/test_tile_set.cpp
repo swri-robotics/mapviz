@@ -27,12 +27,15 @@
 // *****************************************************************************
 
 #include <gtest/gtest.h>
+#include <QChar>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QIODevice>
 #include <QImage>
 #include <QString>
 #include <QTemporaryDir>
+#include <Qt>
 
 #include <algorithm>
 #include <cmath>

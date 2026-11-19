@@ -30,14 +30,15 @@
 
 #include <QApplication>
 #include <QCursor>
-#include <QLine>
+#include <QEvent>
 #include <QMouseEvent>
 #include <QResizeEvent>
 #include <QTimerEvent>
 #include <QWidget>
-#include <QDebug>
+#include <Qt>
 
 #include <cmath>
+#include <cstdlib>
 
 #include <mapviz/qt_mouse_event_compat.hpp>
 
@@ -287,7 +288,6 @@ QRectF PlaceableWindowProxy::resizeHelper(
     return QRectF(0, 0, new_width, new_height);
   }
 }
-
 
 bool PlaceableWindowProxy::handleResize([[maybe_unused]] QResizeEvent * event)
 {

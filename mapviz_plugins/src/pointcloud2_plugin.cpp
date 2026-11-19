@@ -28,15 +28,33 @@
 
 #include <mapviz_plugins/pointcloud2_plugin.hpp>
 
+#include <qopenglext.h>
+
 // QT libraries
+#include <QCheckBox>
 #include <QComboBox>
-#include <QDialog>
+#include <QDoubleSpinBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QOpenGLFunctions>
 #include <QOpenGLWidget>
+#include <QPainter>
+#include <QPen>
+#include <QPixmap>
+#include <QPushButton>
 #include <QSignalBlocker>
+#include <QSpinBox>
+#include <QString>
+#include <QVariant>
+#include <Qt>
+#include <QtGlobal>
 
 // C++ standard libraries
 #include <algorithm>
+#include <array>
+#include <cstdint>
 #include <cstdio>
+#include <functional>
 #include <limits>
 #include <map>
 #include <string>
@@ -46,8 +64,14 @@
 #include <mapviz_plugins/topic_select.hpp>
 
 // ROS libraries
+#include <mapviz/color_button.hpp>
+#include <mapviz/status_label.hpp>
+#include <mapviz/widgets.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/point_field.hpp>
+#include <std_msgs/msg/header.hpp>
 #include "swri_transform_util/transform.h"
+#include "yaml-cpp/yaml.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -358,7 +382,6 @@ void PointCloud2Plugin::SelectTopic()
     connectCallback(topic, qos);
   }
 }
-
 
 void PointCloud2Plugin::TopicEdited()
 {

@@ -28,16 +28,50 @@
 
 #include <mapviz_plugins/marker_plugin.hpp>
 
+#include <QBrush>
+#include <QCheckBox>
+#include <QColor>
+#include <QFont>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QOpenGLFunctions>
+#include <QOpenGLWidget>
+#include <QPainter>
+#include <QPen>
+#include <QPointF>
+#include <QPushButton>
+#include <QRectF>
+#include <QSizeF>
+#include <QString>
+#include <QTransform>
+#include <Qt>
+#include <QtGlobal>
+
 #include <algorithm>
 
 // C++ Standard Libraries
+#include <array>
+#include <cmath>
+#include <cstdint>
+#include <exception>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <mapviz/status_label.hpp>
 #include <mapviz_plugins/topic_select.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
+#include <std_msgs/msg/header.hpp>
 #include "swri_math_util/constants.h"
+#include <tf2/LinearMath/Transform.hpp>
 #include <tf2/utils.hpp>
+#include "yaml-cpp/yaml.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -242,7 +276,6 @@ void MarkerPlugin::processMarker(const visualization_msgs::msg::Marker & marker)
       item->setCheckState(Qt::Unchecked);
       item->setCheckState(Qt::Checked);
     }
-
 
     // Since orientation was not implemented, many markers publish
     // invalid all-zero orientations, so we need to check for this
@@ -626,7 +659,6 @@ void MarkerPlugin::Draw(double /*x*/, double /*y*/, double scale)
         glColor4f(point.color.r, point.color.g, point.color.b, point.color.a);
 
         glBegin(GL_TRIANGLE_FAN);
-
 
         double marker_x = point.transformed_point.getX();
         double marker_y = point.transformed_point.getY();

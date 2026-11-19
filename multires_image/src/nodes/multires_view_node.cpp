@@ -36,15 +36,17 @@
 
 #include <multires_image/multires_view_node.hpp>
 
+#include <unistd.h>
+
 // QT libraries
-#include <QString>
 #include <QApplication>
 #include <QMessageBox>
-#include <QImage>
-#include <QFileInfo>
 
+#include <memory>
 #include <string>
-#include <filesystem>
+
+#include <multires_image/QGLMap.hpp>
+#include <multires_image/tile_set.hpp>
 
 namespace multires_image
 {

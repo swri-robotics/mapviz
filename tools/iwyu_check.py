@@ -167,6 +167,13 @@ def qt_mappings(dirs):
                 for target, visibility in targets:
                     lines.append(f'  {{ include: [{json.dumps(spelling)}, "private", '
                                  f'{json.dumps(target)}, "{visibility}"] }},')
+            # A header declaring several classes: QMouseEvent -> <QMouseEvent>, not
+            # whichever of qevent.h's forwarding headers comes first.
+            if header not in under_global:
+                for name in names:
+                    if not re.match(r'^Qt[A-Z]', name):
+                        lines.append(f'  {{ symbol: ["{name}", "private", "<{name}>", '
+                                     '"public"] },')
     return lines
 
 
@@ -187,6 +194,35 @@ def umbrella_mappings(dirs):
                         for spelling in spellings(header):
                             lines.append(f'  {{ include: [{json.dumps(spelling)}, "private", '
                                          f'"<{umbrella}>", "public"] }},')
+    return list(dict.fromkeys(lines))
+
+
+def opencv_mappings(dirs):
+    """Map OpenCV headers to their module's: <opencv2/core/mat.hpp> -> <opencv2/core.hpp>."""
+    lines = []
+    for include_dir in dirs:
+        root = os.path.join(include_dir, 'opencv2')
+        if not os.path.isdir(root):
+            continue
+        for name in sorted(os.listdir(root)):
+            module = os.path.join(root, name)
+            if not (os.path.isdir(module) and os.path.isfile(module + '.hpp')):
+                continue
+            # Only what the module header pulls in; opencv2/core/cuda.hpp isn't in core.hpp.
+            seen, todo = set(), [f'opencv2/{name}.hpp']
+            while todo:
+                header = todo.pop()
+                path = os.path.join(include_dir, header)
+                if header in seen or not os.path.isfile(path):
+                    continue
+                seen.add(header)
+                with open(path, errors='replace') as f:
+                    todo += re.findall(r'#\s*include\s*["<](opencv2/[^">]+)[">]', f.read())
+            for header in sorted(seen):
+                if header.startswith(f'opencv2/{name}/'):
+                    for spelling in spellings(header):
+                        lines.append(f'  {{ include: [{json.dumps(spelling)}, "private", '
+                                     f'"<opencv2/{name}.hpp>", "public"] }},')
     return list(dict.fromkeys(lines))
 
 
@@ -213,14 +249,19 @@ def interface_mappings(dirs):
     return list(dict.fromkeys(lines))
 
 
+# The header or symbol a mapping line is about.
+KEY = r'(?:include|symbol): \[("(?:[^"\\]|\\.)*")'
+
+
 def write_mappings(path, commands):
     dirs = include_dirs(commands)
     # Leave out headers that tools/iwyu.imp maps itself, so its mappings win.
     with open(MAPPING) as f:
-        overridden = set(re.findall(r'include: \[("(?:[^"\\]|\\.)*")', f.read()))
-    generated = qt_mappings(dirs) + umbrella_mappings(dirs) + interface_mappings(dirs)
+        overridden = set(re.findall(KEY, f.read()))
+    generated = (qt_mappings(dirs) + umbrella_mappings(dirs) + opencv_mappings(dirs) +
+                 interface_mappings(dirs))
     lines = [line for line in generated
-             if re.search(r'include: \[("(?:[^"\\]|\\.)*")', line).group(1) not in overridden]
+             if re.search(KEY, line).group(1) not in overridden]
     with open(path, 'w') as f:
         f.write('[\n')
         f.write('\n'.join(lines))
@@ -299,6 +340,9 @@ def restyle(line):
     # <....h> for a C system header.  Generated ui_*.h files keep their quotes.
     if '/' in header and not header.startswith(C_HEADER_DIRS):
         quote = '"' if header.endswith('.h') else '<'
+    if quote == '"' and re.match(r'^ui_\w+\.h$', header):
+        # uic's generated headers have no directory.
+        rest = '  // NOLINT(build/include_subdir)'
     return f'#include {quote}{header}{">" if quote == "<" else chr(34)}{rest}'
 
 

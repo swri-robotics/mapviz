@@ -29,26 +29,42 @@
 #include <mapviz_plugins/route_plugin.hpp>
 
 // QT libraries
-#include <QDialog>
+#include <QColor>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 #include <QPainter>
-#include <QPalette>
+#include <QPen>
+#include <QPixmap>
+#include <QPushButton>
+#include <QSlider>
+#include <Qt>
 
 // C++ standard libraries
-#include <cstdio>
+#include <array>
+#include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <mapviz_plugins/default_colors.hpp>
 #include <mapviz_plugins/topic_select.hpp>
-#include <opencv2/core/core.hpp>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include "swri_image_util/geometry_util.h"
 #include "swri_route_util/util.h"
-#include "swri_transform_util/transform_util.h"
 #include <marti_nav_msgs/msg/route.hpp>
+#include "swri_route_util/route.h"
+#include "swri_route_util/route_point_inline.h"
+#include "swri_transform_util/transform.h"
+#include "yaml-cpp/yaml.h"
+#include <mapviz/color_button.hpp>
+#include <mapviz/status_label.hpp>
+#include <mapviz/widgets.hpp>
+#include <std_msgs/msg/header.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

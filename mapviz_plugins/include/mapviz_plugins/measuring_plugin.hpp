@@ -30,16 +30,27 @@
 #define MAPVIZ_PLUGINS__MEASURING_PLUGIN_HPP_
 
 // QT libraries
+#include <QEvent>
+#include <QMouseEvent>
+#include <QObject>
 #include <QOpenGLFunctions_1_1>
+#include <QOpenGLWidget>
+#include <QPainter>
+#include <QPointF>
+#include <QRectF>
+#include <QString>
+#include <QWidget>
+#include <QtGlobal>
 
 // C++ libraries
 #include <string>
 #include <vector>
 
 #include <mapviz/mapviz_plugin.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include "yaml-cpp/yaml.h"
 
 // ROS Libraries
-#include <rclcpp/rclcpp.hpp>
 
 // Mapviz libraries
 #include <mapviz/map_canvas.hpp>

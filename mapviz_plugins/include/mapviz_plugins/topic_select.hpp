@@ -28,25 +28,23 @@
 #ifndef MAPVIZ_PLUGINS__TOPIC_SELECT_HPP_
 #define MAPVIZ_PLUGINS__TOPIC_SELECT_HPP_
 
+#include <QCloseEvent>
 #include <QDialog>
+#include <QObject>
+#include <QString>
+#include <QTimerEvent>
+#include <QWidget>
+#include <QtGlobal>
 
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <mapviz/topic_source.hpp>
-#include "rmw/qos_profiles.h"
+#include <rclcpp/rclcpp.hpp>
 #include "ui_topicselect.h"  // NOLINT(build/include_subdir)
-
-QT_BEGIN_NAMESPACE
-class QLineEdit;
-class QListWidget;
-class QPushButton;
-class QSpinBox;
-QT_END_NAMESPACE
 
 namespace mapviz_plugins
 {

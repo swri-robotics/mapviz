@@ -31,23 +31,22 @@
 
 // QT libraries
 #include <QOpenGLFunctions_1_1>
-#include <QOpenGLWidget>
 #include <QObject>
-#include <QWidget>
+#include <QColor>
+#include <QString>
 
 // C++ standard libraries
 #include <deque>
-#include <list>
 #include <string>
 #include <vector>
 
 #include <mapviz/mapviz_plugin.hpp>
-#include <mapviz/map_canvas.hpp>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 #include "swri_transform_util/transform.h"
-#include <tf2/transform_datatypes.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 namespace mapviz_plugins
 {

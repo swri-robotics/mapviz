@@ -29,18 +29,38 @@
 #include <mapviz_plugins/speedometer_plugin.hpp>
 
 // QT libraries
+#include <QBrush>
+#include <QColor>
+#include <QDoubleSpinBox>
+#include <QFont>
 #include <QFontMetrics>
+#include <QLineEdit>
+#include <QOpenGLWidget>
 #include <QPainter>
-#include <QPalette>
 #include <QPen>
+#include <QPointF>
+#include <QPushButton>
+#include <QRect>
+#include <QString>
+#include <Qt>
 
 // C++ standard libraries
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <functional>
+#include <memory>
 #include <string>
 
+#include <geometry_msgs/msg/twist.hpp>
+#include <geometry_msgs/msg/twist_with_covariance.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <mapviz/color_button.hpp>
+#include <mapviz/status_label.hpp>
 #include <mapviz_plugins/default_colors.hpp>
+#include <mapviz_plugins/placeable_window_proxy.hpp>
 #include <mapviz_plugins/topic_select.hpp>
+#include "yaml-cpp/yaml.h"
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>

@@ -29,23 +29,41 @@
 #include <mapviz_plugins/pose_plugin.hpp>
 
 // QT libraries
-#include <QDialog>
+#include <QCheckBox>
+#include <QColor>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
 #include <QOpenGLWidget>
-#include <QPalette>
+#include <QPushButton>
+#include <QSlider>
+#include <QSpinBox>
+#include <QString>
 
 // C++ standard libraries
-#include <cstdio>
+#include <array>
+#include <functional>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <mapviz/color_button.hpp>
+#include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/status_label.hpp>
 #include <mapviz_plugins/default_colors.hpp>
+#include <mapviz_plugins/point_drawing_plugin.hpp>
 #include <mapviz_plugins/topic_select.hpp>
-#include <opencv2/core/core.hpp>
+#include <std_msgs/msg/header.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include "yaml-cpp/yaml.h"
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include "swri_transform_util/transform_util.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

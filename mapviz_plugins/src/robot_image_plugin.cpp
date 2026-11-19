@@ -30,14 +30,27 @@
 
 // QT libraries
 #include <QOpenGLWidget>
-#include <QPalette>
 #include <QImage>
 #include <QFileDialog>
 #include <QDir>
+#include <QDialog>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
+#include <QList>
+#include <QOpenGLFunctions>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QString>
+#include <QStringList>
+#include <Qt>
+#include <QtGlobal>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
 #include "ament_index_cpp/version.h"
+#include "swri_transform_util/transform.h"
+#include "yaml-cpp/yaml.h"
+#include <mapviz/status_label.hpp>
 
 // The version is compared arithmetically rather than with
 // AMENT_INDEX_CPP_VERSION_GTE(), because cppcheck does not see this header and
@@ -50,9 +63,14 @@
 #endif
 
 // C++ standard libraries
+#include <algorithm>
+#include <cmath>
 #include <cstdio>
+#include <exception>
+#include <filesystem>
+#include <functional>
+#include <memory>
 #include <string>
-#include <vector>
 
 #include <mapviz/select_frame_dialog.hpp>
 
@@ -325,7 +343,6 @@ void RobotImagePlugin::LoadImage()
     } else {
       real_filename = filename_;
     }
-
 
     if (image_.load(real_filename.c_str())) {
       int width = image_.width();
