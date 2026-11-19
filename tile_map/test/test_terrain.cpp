@@ -28,10 +28,13 @@
 
 #include <gtest/gtest.h>
 #include <QImage>
-#include <QString>
+#include <QRgb>
+#include <QSize>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include <tile_map/map_25d.hpp>

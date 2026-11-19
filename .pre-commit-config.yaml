@@ -55,6 +55,16 @@ repos:
         entry: ament_uncrustify --language CPP
         language: system
         files: \.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
+      # Advice only: prints include changes for the staged C++ files but never fails the
+      # commit (add --strict to make it fail).  Needs a colcon build with
+      # -DCMAKE_EXPORT_COMPILE_COMMANDS=ON and `apt install iwyu`; skipped without them.
+      # Set IWYU_BUILD_DIR when the build isn't in <workspace>/build.
+      - id: include-what-you-use
+        name: include-what-you-use (advice)
+        entry: tools/iwyu_check.py
+        language: system
+        files: \.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
+        verbose: true
       - id: ament_xmllint
         name: ament_xmllint
         entry: ament_xmllint

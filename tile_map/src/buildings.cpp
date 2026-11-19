@@ -28,13 +28,18 @@
 
 #include <tile_map/buildings.hpp>
 
+#include <QChar>
 #include <QRegularExpression>
 #include <json/json.h>
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
+#include <initializer_list>
+#include <iterator>
 #include <list>
+#include <memory>
 #include <string_view>
 #include <utility>
 

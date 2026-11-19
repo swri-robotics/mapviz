@@ -33,6 +33,8 @@
 #include <QObject>
 #include <QString>
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 namespace tile_map

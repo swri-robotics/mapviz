@@ -29,8 +29,11 @@
 #ifndef TILE_MAP__STADIA_SOURCE_HPP_
 #define TILE_MAP__STADIA_SOURCE_HPP_
 
+#include <QObject>
 #include <QString>
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 #include <tile_map/tile_source.hpp>

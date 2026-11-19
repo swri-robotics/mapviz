@@ -28,15 +28,17 @@
 
 #include <tile_map/image_cache.hpp>
 
-#include <QtAlgorithms>
+#include <QAbstractNetworkCache>
 #include <QByteArray>
 #include <QList>
 #include <QNetworkAccessManager>
 #include <QNetworkDiskCache>
+#include <QNetworkRequest>
 #include <QUrl>
 
-#include <rclcpp/clock.hpp>
-#include <rclcpp/logging.hpp>
+#include <algorithm>
+#include <string>
+#include <utility>
 
 namespace tile_map
 {

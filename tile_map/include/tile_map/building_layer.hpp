@@ -32,20 +32,24 @@
 #include <QByteArray>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QObject>
 #include <QString>
+#include <QtGlobal>
 
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
-#include <rclcpp/logger.hpp>
 #include <tile_map/buildings.hpp>
 #include <tile_map/scene_25d.hpp>
 #include <tile_map/trees.hpp>
 #include "swri_transform_util/transform.h"
+#include <rclcpp/rclcpp.hpp>
 
 namespace tile_map
 {

@@ -28,13 +28,22 @@
 
 #include <tile_map/tile_map_view.hpp>
 
-#include <cmath>
+#include <QOpenGLFunctions>
+#include <QOpenGLTexture>
 
-#include <rclcpp/logging.hpp>
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <utility>
+
+#include "ext/alloc_traits.h"
 #include "swri_math_util/constants.h"
 #include "swri_math_util/trig_util.h"
 #include "swri_transform_util/earth_constants.h"
+#include "swri_transform_util/transform.h"
 #include <tile_map/image_cache.hpp>
+#include <tile_map/texture_cache.hpp>
+#include <tile_map/tile_source.hpp>
 
 namespace tile_map
 {

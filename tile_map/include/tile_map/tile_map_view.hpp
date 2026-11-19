@@ -32,6 +32,9 @@
 #include <QOpenGLFunctions_1_1>
 #include <QString>
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -39,7 +42,9 @@
 #include <tile_map/tile_source.hpp>
 #include <tile_map/texture_cache.hpp>
 #include "swri_transform_util/transform.h"
-#include <rclcpp/logger.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include <tile_map/image_cache.hpp>
 
 namespace tile_map
 {

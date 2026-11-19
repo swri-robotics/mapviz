@@ -27,19 +27,26 @@
 // *****************************************************************************
 
 #include <gtest/gtest.h>
+#include <QByteArray>
 #include <QCoreApplication>
 #include <QDeadlineTimer>
+#include <QEventLoop>
 #include <QImage>
+#include <QObject>
+#include <QSize>
 #include <QString>
 #include <QTemporaryDir>
 #include <QUrl>
+#include <Qt>
 
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <set>
 #include <string>
 
 #include <tile_map/bing_source.hpp>
+#include <tile_map/tile_source.hpp>
 #include <tile_map/wmts_source.hpp>
 
 using tile_map::BingSource;

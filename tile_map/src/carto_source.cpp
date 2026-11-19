@@ -28,6 +28,8 @@
 
 #include <tile_map/carto_source.hpp>
 
+#include <tile_map/tile_source.hpp>
+
 namespace tile_map
 {
 const QString CartoSource::CARTO_TYPE = "carto";

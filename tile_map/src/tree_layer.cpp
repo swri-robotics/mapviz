@@ -30,12 +30,19 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <utility>
 
 #include <tile_map/terrain.hpp>
 #include <tile_map/tile_source.hpp>
 #include "swri_math_util/constants.h"
 #include "swri_transform_util/earth_constants.h"
+#include "swri_transform_util/transform.h"
+#include <tf2/LinearMath/Vector3.hpp>
+#include <tile_map/buildings.hpp>
+#include <tile_map/image_cache.hpp>
+#include <tile_map/scene_25d.hpp>
+#include <tile_map/trees.hpp>
 
 namespace tile_map
 {

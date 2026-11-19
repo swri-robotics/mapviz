@@ -28,14 +28,18 @@
 
 #include <tile_map/wmts_source.hpp>
 
+#include <QList>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
 #include <QStringList>
 #include <QUrl>
+#include <QtGlobal>
 #include <json/json.h>
 
 #include <algorithm>
+
+#include <tile_map/tile_source.hpp>
 
 namespace tile_map
 {
