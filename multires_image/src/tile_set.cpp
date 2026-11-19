@@ -29,15 +29,15 @@
 #include <multires_image/tile_set.hpp>
 
 // QT libraries
-#include <QFile>
-#include <QFileInfo>
 #include <QDir>
 #include <QString>
 
 // C++ standard libraries
 #include <cmath>
-#include <cstdlib>
 #include <algorithm>
+
+#include <multires_image/tile_set_layer.hpp>
+#include "swri_transform_util/georeference.h"
 
 namespace multires_image
 {

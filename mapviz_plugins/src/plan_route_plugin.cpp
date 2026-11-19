@@ -30,16 +30,30 @@
 
 // QT libraries
 #include <QDateTime>
-#include <QDialog>
 #include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QPalette>
-#include <QStaticText>
+#include <QBrush>
+#include <QCheckBox>
+#include <QColor>
+#include <QEvent>
+#include <QFont>
+#include <QLineEdit>
+#include <QLineF>
+#include <QOpenGLFunctions>
+#include <QPen>
+#include <QPushButton>
+#include <QRectF>
+#include <QSizeF>
+#include <QString>
+#include <Qt>
 
 // C++ standard libraries
+#include <array>
 #include <chrono>
 #include <cstdio>
+#include <functional>
+#include <future>
 #include <limits>
 #include <memory>
 #include <string>
@@ -53,6 +67,18 @@
 #include "swri_route_util/util.h"
 #include "swri_transform_util/frames.h"
 #include <marti_nav_msgs/srv/plan_route.hpp>
+#include "swri_route_util/route.h"
+#include "swri_route_util/route_point.h"
+#include "swri_route_util/route_point_inline.h"
+#include "swri_transform_util/transform.h"
+#include "swri_transform_util/transform_manager.h"
+#include "yaml-cpp/yaml.h"
+#include <geometry_msgs/msg/point.hpp>
+#include <mapviz/color_button.hpp>
+#include <mapviz/status_label.hpp>
+#include <marti_nav_msgs/msg/route_point.hpp>
+#include <std_msgs/msg/header.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

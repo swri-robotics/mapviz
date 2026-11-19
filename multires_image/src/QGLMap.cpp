@@ -28,10 +28,18 @@
 
 #include <multires_image/QGLMap.hpp>
 
+#include <QActionEvent>
+#include <QOpenGLFunctions>
+#include <QPoint>
+
 // C++ standard libraries
 #include <cmath>
 
 #include <mapviz/qt_mouse_event_compat.hpp>
+#include <multires_image/tile.hpp>
+#include <multires_image/tile_cache.hpp>
+#include <multires_image/tile_view.hpp>
+#include "swri_transform_util/georeference.h"
 
 namespace multires_image
 {

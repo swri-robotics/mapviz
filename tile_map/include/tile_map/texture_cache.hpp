@@ -34,10 +34,12 @@
 #include <QOpenGLTexture>
 #include <QString>
 
+#include <cstddef>
 #include <functional>
 #include <memory>
+#include <string>
 
-#include <rclcpp/logger.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <tile_map/image_cache.hpp>
 
 namespace tile_map

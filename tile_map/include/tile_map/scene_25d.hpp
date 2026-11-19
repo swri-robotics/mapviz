@@ -31,10 +31,12 @@
 
 #include <QImage>
 #include <QOpenGLBuffer>
+#include <QOpenGLFunctions>
 #include <QOpenGLFunctions_1_1>
 #include <QOpenGLTexture>
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>

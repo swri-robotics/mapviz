@@ -29,17 +29,32 @@
 #include <mapviz_plugins/grid_plugin.hpp>
 
 // QT libraries
+#include <QColor>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
+#include <QOpenGLFunctions>
 #include <QOpenGLWidget>
-#include <QPalette>
+#include <QPainter>
+#include <QPen>
+#include <QPixmap>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QString>
+#include <Qt>
 
 // C++ standard libraries
-#include <cstdio>
+#include <functional>
 #include <list>
+#include <memory>
 #include <string>
-#include <vector>
 
+#include <mapviz/color_button.hpp>
 #include <mapviz/select_frame_dialog.hpp>
+#include <mapviz/status_label.hpp>
+#include <mapviz/widgets.hpp>
 #include <mapviz_plugins/default_colors.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include "yaml-cpp/yaml.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

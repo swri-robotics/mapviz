@@ -28,12 +28,18 @@
 
 #include <gtest/gtest.h>
 #include <QImage>
+#include <QRgb>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <initializer_list>
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -41,6 +47,7 @@
 #include <tile_map/buildings.hpp>
 #include <tile_map/scene_25d.hpp>
 #include <tile_map/terrain.hpp>
+#include <tile_map/tile_source.hpp>
 #include <tile_map/tree_layer.hpp>
 #include <tile_map/trees.hpp>
 

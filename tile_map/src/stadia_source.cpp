@@ -28,6 +28,8 @@
 
 #include <tile_map/stadia_source.hpp>
 
+#include <tile_map/tile_source.hpp>
+
 namespace tile_map
 {
 const QString StadiaSource::STADIA_TYPE = "stadia";

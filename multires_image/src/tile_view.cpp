@@ -28,9 +28,17 @@
 
 #include <multires_image/tile_view.hpp>
 
+#include <QOpenGLFunctions>
+
 // C++ standard libraries
 #include <cmath>
-#include <iostream>
+#include <cstdlib>
+
+#include <multires_image/tile.hpp>
+#include <multires_image/tile_cache.hpp>
+#include <multires_image/tile_set.hpp>
+#include <multires_image/tile_set_layer.hpp>
+#include "swri_transform_util/georeference.h"
 
 namespace multires_image
 {

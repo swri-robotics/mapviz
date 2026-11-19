@@ -30,8 +30,8 @@
 #define TILE_MAP__TREE_LAYER_HPP_
 
 #include <QImage>
-#include <QString>
 
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -42,6 +42,7 @@
 #include <tile_map/scene_25d.hpp>
 #include <tile_map/trees.hpp>
 #include "swri_transform_util/transform.h"
+#include <tile_map/tile_source.hpp>
 
 namespace tile_map
 {

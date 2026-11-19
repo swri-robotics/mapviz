@@ -1,0 +1,66 @@
+# include-what-you-use mappings for mapviz, used by tools/iwyu_check.py.  That script also
+# generates mappings for Qt, OpenCV, ROS 2 interface headers, rclcpp, yaml-cpp and gtest from the
+# headers installed on the machine; the mappings here take precedence over those.
+[
+  # C++ spellings of the C headers, as cpplint asks for.  (IWYU already maps <stddef.h> and
+  # <stdint.h> as public headers, so this is done per symbol.)
+  { symbol: ["size_t", "private", "<cstddef>", "public"] },
+  { symbol: ["ptrdiff_t", "private", "<cstddef>", "public"] },
+  { symbol: ["int8_t", "private", "<cstdint>", "public"] },
+  { symbol: ["int16_t", "private", "<cstdint>", "public"] },
+  { symbol: ["int32_t", "private", "<cstdint>", "public"] },
+  { symbol: ["int64_t", "private", "<cstdint>", "public"] },
+  { symbol: ["uint8_t", "private", "<cstdint>", "public"] },
+  { symbol: ["uint16_t", "private", "<cstdint>", "public"] },
+  { symbol: ["uint32_t", "private", "<cstdint>", "public"] },
+  { symbol: ["uint64_t", "private", "<cstdint>", "public"] },
+
+  # libstdc++ 15 declares these in several headers; IWYU 0.23 sometimes picks the wrong one.
+  { symbol: ["std::pair", "private", "<utility>", "public"] },
+  { symbol: ["std::vector", "private", "<vector>", "public"] },
+  { symbol: ["std::tuple", "private", "<tuple>", "public"] },
+
+  # libstdc++ 11 (Humble) keeps std::abs in a private header.
+  { include: ["<bits/std_abs.h>", "private", "<cmath>", "public"] },
+
+  # Qt headers with no forwarding header of their own.  These take precedence over the
+  # generated Qt mappings.  Q_OBJECT, signals, slots, SIGNAL(), SLOT():
+  { include: ["<qtmetamacros.h>", "private", "<QObject>", "public"] },
+  { include: ["\"qtmetamacros.h\"", "private", "<QObject>", "public"] },
+  { include: ["<QtCore/qtmetamacros.h>", "private", "<QObject>", "public"] },
+  { include: ["\"QtCore/qtmetamacros.h\"", "private", "<QObject>", "public"] },
+  { include: ["<qobjectdefs.h>", "private", "<QObject>", "public"] },
+  { include: ["\"qobjectdefs.h\"", "private", "<QObject>", "public"] },
+  { include: ["<QtCore/qobjectdefs.h>", "private", "<QObject>", "public"] },
+  { include: ["\"QtCore/qobjectdefs.h\"", "private", "<QObject>", "public"] },
+  # Qt::CheckState and the rest of the Qt namespace.
+  { include: ["<qnamespace.h>", "private", "<Qt>", "public"] },
+  { include: ["\"qnamespace.h\"", "private", "<Qt>", "public"] },
+  { include: ["<QtCore/qnamespace.h>", "private", "<Qt>", "public"] },
+  { include: ["\"QtCore/qnamespace.h\"", "private", "<Qt>", "public"] },
+  # qint64, qreal, QT_BEGIN_NAMESPACE and the other global names.
+  { include: ["<qglobal.h>", "private", "<QtGlobal>", "public"] },
+  { include: ["\"qglobal.h\"", "private", "<QtGlobal>", "public"] },
+  { include: ["<QtCore/qglobal.h>", "private", "<QtGlobal>", "public"] },
+  { include: ["\"QtCore/qglobal.h\"", "private", "<QtGlobal>", "public"] },
+  { include: ["<qtypes.h>", "private", "<QtGlobal>", "public"] },
+  { include: ["\"qtypes.h\"", "private", "<QtGlobal>", "public"] },
+  { include: ["<QtCore/qtypes.h>", "private", "<QtGlobal>", "public"] },
+  { include: ["\"QtCore/qtypes.h\"", "private", "<QtGlobal>", "public"] },
+  { include: ["<qtconfigmacros.h>", "private", "<QtGlobal>", "public"] },
+  { include: ["\"qtconfigmacros.h\"", "private", "<QtGlobal>", "public"] },
+  { include: ["<QtCore/qtconfigmacros.h>", "private", "<QtGlobal>", "public"] },
+  { include: ["\"QtCore/qtconfigmacros.h\"", "private", "<QtGlobal>", "public"] },
+  # Declared in qcontainerfwd.h along with the other containers.
+  { symbol: ["QStringList", "private", "<QStringList>", "public"] },
+
+  # GL_LINES and the other OpenGL names.
+  { include: ["<qopengl.h>", "private", "<QOpenGLFunctions>", "public"] },
+  { include: ["\"qopengl.h\"", "private", "<QOpenGLFunctions>", "public"] },
+  { include: ["<QtGui/qopengl.h>", "private", "<QOpenGLFunctions>", "public"] },
+  { include: ["\"QtGui/qopengl.h\"", "private", "<QOpenGLFunctions>", "public"] },
+
+  # pluginlib's template implementation.
+  { include: ["<pluginlib/class_loader_imp.hpp>", "private", "<pluginlib/class_loader.hpp>", "public"] },
+  { include: ["\"pluginlib/class_loader_imp.hpp\"", "private", "<pluginlib/class_loader.hpp>", "public"] },
+]

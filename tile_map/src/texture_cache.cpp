@@ -29,11 +29,17 @@
 #include <tile_map/texture_cache.hpp>
 
 #include <QImage>
+#include <Qt>
+#include <QtGlobal>
 
+#include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <string>
+#include <utility>
 
-#include <rclcpp/logging.hpp>
 #include "swri_math_util/math_util.h"
+#include <tile_map/image_cache.hpp>
 
 namespace tile_map
 {

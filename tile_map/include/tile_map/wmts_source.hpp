@@ -31,7 +31,11 @@
 
 #include <QByteArray>
 #include <QNetworkAccessManager>
+#include <QObject>
+#include <QString>
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 #include "tile_source.hpp"

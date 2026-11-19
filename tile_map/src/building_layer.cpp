@@ -32,20 +32,27 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QIODevice>
 #include <QNetworkRequest>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QVariant>
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
+#include <string>
 #include <unordered_set>
 #include <utility>
 
-#include <rclcpp/logging.hpp>
 #include <tile_map/terrain.hpp>
 #include <tile_map/tree_layer.hpp>
 #include <tile_map/trees.hpp>
 #include "swri_math_util/constants.h"
+#include "swri_transform_util/transform.h"
+#include <tf2/LinearMath/Vector3.hpp>
+#include <tile_map/buildings.hpp>
+#include <tile_map/scene_25d.hpp>
 
 namespace tile_map
 {

@@ -29,21 +29,42 @@
 #include <mapviz_plugins/laserscan_plugin.hpp>
 
 // QT libraries
-#include <QDialog>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QOpenGLFunctions>
 #include <QOpenGLWidget>
+#include <QPainter>
+#include <QPen>
+#include <QPixmap>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QString>
+#include <QVariant>
+#include <Qt>
 
 // C++ standard libraries
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <deque>
+#include <functional>
+#include <memory>
 #include <string>
 
 #include <mapviz_plugins/topic_select.hpp>
 
 // ROS libraries
+#include <mapviz/color_button.hpp>
+#include <mapviz/status_label.hpp>
+#include <mapviz/widgets.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/header.hpp>
 #include "swri_transform_util/transform.h"
+#include "yaml-cpp/yaml.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -365,7 +386,6 @@ bool LaserScanPlugin::GetScanTransform(
   this->use_latest_transforms_ = was_using_latest_transforms;
   return has_tranform;
 }
-
 
 void LaserScanPlugin::handleLaserScan(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg)
 {

@@ -29,17 +29,22 @@
 #include <tile_map/scene_25d.hpp>
 
 #include <QPainter>
+#include <QRect>
+#include <Qt>
 #include <QtGlobal>
 
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "ext/alloc_traits.h"
 #include "swri_math_util/constants.h"
+#include <tile_map/tile_source.hpp>
 
 namespace tile_map
 {

@@ -30,13 +30,16 @@
 #include <QApplication>
 #include <QFont>
 #include <QOpenGLWidget>
+#include <QString>
 #include <yaml-cpp/yaml.h>
 
 #include <cmath>
+#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <ostream>
 #include <string>
+#include <utility>
 
 #include <rclcpp/rclcpp.hpp>
 #include <mapviz_plugins/attitude_indicator_plugin.hpp>
@@ -64,6 +67,7 @@
 #include <mapviz_plugins/string_plugin.hpp>
 #include <mapviz_plugins/textured_marker_plugin.hpp>
 #include <mapviz_plugins/tf_frame_plugin.hpp>
+#include <mapviz/mapviz_plugin.hpp>
 
 namespace
 {

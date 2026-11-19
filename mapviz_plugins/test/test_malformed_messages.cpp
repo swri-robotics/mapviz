@@ -28,7 +28,9 @@
 #include <gtest/gtest.h>
 #include <QApplication>
 
+#include <cstdint>
 #include <cstring>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -42,6 +44,9 @@
 #include <tf2_ros/buffer.hpp>
 #include <mapviz_plugins/occupancy_grid_plugin.hpp>
 #include <mapviz_plugins/pointcloud2_plugin.hpp>
+#include <nav_msgs/msg/map_meta_data.hpp>
+#include <std_msgs/msg/header.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 using map_msgs::msg::OccupancyGridUpdate;
 using nav_msgs::msg::OccupancyGrid;

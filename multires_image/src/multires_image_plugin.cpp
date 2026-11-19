@@ -29,16 +29,36 @@
 #include <multires_image/multires_image_plugin.hpp>
 
 // QT libraries
+#include <QDialog>
 #include <QFileDialog>
+#include <QLabel>
+#include <QLineEdit>
+#include <QList>
 #include <QOpenGLWidget>
-#include <QPalette>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QString>
+#include <QStringList>
+#include <QtGlobal>
 
 // C++ standard libraries
 #include <cstdio>
+#include <functional>
+#include <memory>
 
 // ROS libraries
+#include <mapviz/status_label.hpp>
+#include <multires_image/multires_view.hpp>
+#include <multires_image/tile.hpp>
+#include <multires_image/tile_set.hpp>
+#include <multires_image/tile_set_layer.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tf2/transform_datatypes.hpp>
+#include "swri_transform_util/georeference.h"
+#include "swri_transform_util/transform_manager.h"
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include "yaml-cpp/yaml.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -165,7 +185,6 @@ void MultiresImagePlugin::SelectFile()
     AcceptConfiguration();
   }
 }
-
 
 void MultiresImagePlugin::SetXOffset(double offset_x)
 {

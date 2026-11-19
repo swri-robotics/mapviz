@@ -34,16 +34,19 @@
 #include <QThread>
 #include <QRecursiveMutex>
 #include <QOpenGLWidget>
+#include <QString>
+#include <QtGlobal>
 
 // C++ standard libraries
 #include <vector>
 #include <stack>
 #include <queue>
 #include <map>
+#include <cstdint>
 
-#include <tf2/transform_datatypes.hpp>
 #include <multires_image/tile_set.hpp>
 #include <multires_image/tile.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 namespace multires_image
 {

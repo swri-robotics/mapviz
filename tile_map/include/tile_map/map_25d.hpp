@@ -33,19 +33,24 @@
 #include <QImage>
 #include <QString>
 
+#include <cstddef>
+#include <cstdint>
 #include <future>
 #include <memory>
 #include <optional>
-#include <utility>
+#include <string>
 #include <vector>
 
-#include <rclcpp/logger.hpp>
 #include <tile_map/building_layer.hpp>
 #include <tile_map/scene_25d.hpp>
 #include <tile_map/terrain.hpp>
 #include <tile_map/tree_layer.hpp>
 #include <tile_map/tile_map_view.hpp>
 #include "swri_transform_util/transform.h"
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include <tile_map/image_cache.hpp>
+#include <tile_map/tile_source.hpp>
 
 namespace tile_map
 {

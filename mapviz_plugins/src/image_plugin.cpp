@@ -29,20 +29,35 @@
 #include <mapviz_plugins/image_plugin.hpp>
 
 // QT libraries
-#include <QDialog>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
+#include <QOpenGLFunctions>
 #include <QOpenGLWidget>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QtGlobal>
 
 // C++ standard libraries
 #include <cmath>
-#include <cstdio>
+#include <functional>
+#include <memory>
+#include <new>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include <image_transport/image_transport.hpp>
+#include <mapviz/status_label.hpp>
 #include <mapviz_plugins/topic_select.hpp>
+#include "opencv2/core/types_c.h"
+#include <opencv2/imgproc.hpp>
+#include "opencv2/imgproc/types_c.h"
+#include "yaml-cpp/yaml.h"
 
 // ROS libraries
 #include <sensor_msgs/image_encodings.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>
@@ -455,7 +470,6 @@ void ImagePlugin::DrawIplImage(cv::Mat * image)
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glDrawPixels(image->cols, image->rows, format, GL_UNSIGNED_BYTE, image->ptr());
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
 
   PrintInfo("OK");
 }

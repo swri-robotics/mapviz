@@ -34,17 +34,21 @@
 #include <QImage>
 #include <QMap>
 #include <QMutex>
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QObject>
 #include <QSemaphore>
 #include <QSet>
+#include <QString>
 #include <QThread>
+#include <QtGlobal>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <set>
 
-#include <rclcpp/logger.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 namespace tile_map
 {
@@ -177,7 +181,6 @@ private:
 
   static const int MAXIMUM_SEQUENTIAL_REQUESTS;
 };
-
 
 typedef std::shared_ptr<ImageCache> ImageCachePtr;
 }  // namespace tile_map

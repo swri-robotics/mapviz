@@ -32,17 +32,29 @@
 #include <QOpenGLWidget>
 #include <QInputDialog>
 #include <QLabel>
-#include <QSignalBlocker>
 #include <QMessageBox>
 #include <QUrl>
 #include <QNetworkRequest>
 #include <QDateTime>
 #include <QFontInfo>
 #include <QFontMetrics>
-#include <QPalette>
+#include <QColor>
+#include <QFont>
+#include <QGridLayout>
+#include <QImage>
+#include <QLineEdit>
+#include <QPaintDevice>
+#include <QPainter>
+#include <QPushButton>
+#include <QRect>
+#include <QVariant>
+#include <Qt>
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <functional>
+#include <utility>
 
 #include <mapviz/mapviz_plugin.hpp>
 #include <tile_map/tile_source.hpp>
@@ -50,10 +62,18 @@
 #include <tile_map/carto_source.hpp>
 #include <tile_map/stadia_source.hpp>
 #include <tile_map/wmts_source.hpp>
+#include "swri_transform_util/transform_manager.h"
+#include "yaml-cpp/yaml.h"
+#include <mapviz/status_label.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include <tile_map/building_layer.hpp>
+#include <tile_map/image_cache.hpp>
+#include <tile_map/map_25d.hpp>
+#include <tile_map/terrain.hpp>
+#include <tile_map/tile_map_view.hpp>
 
 // ROS libraries
 #include <rclcpp/rclcpp.hpp>
-#include <tf2/transform_datatypes.hpp>
 #include "swri_math_util/constants.h"
 #include "swri_transform_util/earth_constants.h"
 #include "swri_transform_util/frames.h"

@@ -29,25 +29,55 @@
 #include <mapviz_plugins/odometry_plugin.hpp>
 
 // QT libraries
-#include <QDialog>
+#include <QBrush>
+#include <QCheckBox>
+#include <QColor>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QFont>
+#include <QLineEdit>
 #include <QOpenGLWidget>
 #include <QPainter>
-#include <QPalette>
+#include <QPen>
+#include <QPointF>
+#include <QPushButton>
+#include <QSlider>
+#include <QSpinBox>
+#include <QString>
+#include <QTransform>
 
 // C++ standard libraries
-#include <cstdio>
+#include <array>
+#include <cstdint>
+#include <deque>
+#include <functional>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <mapviz_plugins/default_colors.hpp>
 #include <mapviz_plugins/topic_select.hpp>
-#include <opencv2/core/core.hpp>
 
 // ROS libraries
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_with_covariance.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <mapviz/color_button.hpp>
+#include <mapviz/mapviz_plugin.hpp>
+#include <mapviz/status_label.hpp>
+#include <mapviz_plugins/point_drawing_plugin.hpp>
+#include <opencv2/core.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/header.hpp>
 #include "swri_image_util/geometry_util.h"
 #include "swri_transform_util/transform_util.h"
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Scalar.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include "yaml-cpp/yaml.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

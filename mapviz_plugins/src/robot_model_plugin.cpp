@@ -33,15 +33,47 @@
 #include <QPainter>
 #include <QPen>
 #include <QPixmap>
-#include <GL/gl.h>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QOffscreenSurface>
+#include <QBrush>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
+#include <QList>
+#include <QOpenGLWidget>
+#include <QPoint>
+#include <QPolygon>
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QString>
+#include <QVector>
+#include <QtGlobal>
 
+#include "assimp/color4.h"
+#include "assimp/config.h"
+#include "assimp/material.h"
+#include "assimp/mesh.h"
+#include "assimp/types.h"
+#include "assimp/vector3.h"
+#include <mapviz/status_label.hpp>
+#include <mapviz/widgets.hpp>
 #include <mapviz_plugins/topic_select.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include "rmw/qos_profiles.h"
+#include "swri_transform_util/transform.h"
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include "urdf_model/color.h"
+#include "urdf_model/joint.h"
+#include "urdf_model/link.h"
+#include "urdf_model/pose.h"
+#include "urdf_model/types.h"
+#include "yaml-cpp/yaml.h"
 
 #ifdef MAPVIZ_HAVE_URDF_MODEL_HPP
 #include <urdf/model.hpp>
@@ -49,8 +81,10 @@
 #include "urdf/model.h"
 #endif
 
+#include <assimp/material.inl>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <qopenglext.h>
 
 #include <assimp/Importer.hpp>
 #include "ament_index_cpp/version.h"
@@ -68,17 +102,16 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 PLUGINLIB_EXPORT_CLASS(
   mapviz_plugins::RobotModelPlugin,
@@ -879,7 +912,6 @@ void RobotModelPlugin::Draw(double x, double y, double scale)
   glPopAttrib();
   PrintInfo("OK");
 }
-
 
 void RobotModelPlugin::rebakeRaster(
   const std::vector<LinkGeometry> & geoms, double scale, int canvas_max_dim,

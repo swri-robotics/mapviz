@@ -28,11 +28,30 @@
 
 #include <mapviz_plugins/float_plugin.hpp>
 
+#include <QBrush>
+#include <QComboBox>
 #include <QFontDialog>
+#include <QLineEdit>
+#include <QOpenGLWidget>
+#include <QPen>
+#include <QPoint>
+#include <QPushButton>
+#include <QSizeF>
+#include <QSpinBox>
+#include <QTransform>
+#include <Qt>
 
+#include <array>
+#include <functional>
+#include <memory>
+
+#include <mapviz/color_button.hpp>
 #include <mapviz/qt_font_compat.hpp>
+#include <mapviz/status_label.hpp>
 #include <mapviz_plugins/topic_select.hpp>
+#include <mapviz_plugins/topic_type_watcher.hpp>
 #include <pluginlib/class_list_macros.hpp>
+#include "yaml-cpp/yaml.h"
 
 PLUGINLIB_EXPORT_CLASS(mapviz_plugins::FloatPlugin, mapviz::MapvizPlugin)
 

@@ -28,16 +28,25 @@
 
 #include <mapviz_plugins/point_drawing_plugin.hpp>
 
-#include <QOpenGLWidget>
-#include <QPalette>
+#include <QOpenGLFunctions>
 #include <QPainter>
+#include <QPen>
+#include <QPixmap>
+#include <Qt>
 
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
-#include <list>
+#include <memory>
 #include <string>
+#include <utility>
 
-#include <opencv2/core/core.hpp>
-#include "swri_transform_util/transform_util.h"
+#include <mapviz/widgets.hpp>
+#include "swri_transform_util/transform.h"
+#include <tf2/LinearMath/Transform.hpp>
 
 namespace mapviz_plugins
 {

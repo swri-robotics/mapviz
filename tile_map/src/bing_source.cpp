@@ -28,13 +28,18 @@
 
 #include <tile_map/bing_source.hpp>
 
+#include <QList>
 #include <QNetworkRequest>
 #include <QString>
 #include <QStringList>
 #include <QUrl>
+#include <QVariant>
+#include <QtGlobal>
 #include <json/json.h>
 
 #include <random>
+
+#include <tile_map/tile_source.hpp>
 
 namespace tile_map
 {
@@ -218,7 +223,6 @@ void BingSource::HandleMetadata(const QByteArray & reply)
 
     tile_url_ = QString::fromStdString(image_url);
     SetMaxZoom(19);
-
 
     if (!first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY].isArray() ||
       first_resource[BING_IMAGE_URL_SUBDOMAIN_KEY].empty())

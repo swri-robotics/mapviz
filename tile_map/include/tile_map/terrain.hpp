@@ -33,6 +33,7 @@
 #include <QRgb>
 #include <QString>
 
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 #include <vector>

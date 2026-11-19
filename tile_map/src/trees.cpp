@@ -28,12 +28,16 @@
 
 #include <tile_map/trees.hpp>
 
+#include <QRgb>
+
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <unordered_map>
 #include <utility>
 
 #include "swri_math_util/constants.h"
+#include <tile_map/buildings.hpp>
 
 namespace tile_map
 {

@@ -29,17 +29,34 @@
 #include <mapviz_plugins/tf_frame_plugin.hpp>
 
 // QT libraries
+#include <QCheckBox>
+#include <QColor>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
 #include <QOpenGLWidget>
-#include <QPalette>
+#include <QPushButton>
+#include <QSlider>
+#include <QSpinBox>
+#include <QString>
 
 // C++ standard libraries
-#include <cstdio>
+#include <functional>
+#include <memory>
 #include <string>
-#include <utility>
-#include <vector>
 
+#include <mapviz/color_button.hpp>
+#include <mapviz/mapviz_plugin.hpp>
 #include <mapviz/select_frame_dialog.hpp>
+#include <mapviz/status_label.hpp>
 #include <mapviz_plugins/default_colors.hpp>
+#include <mapviz_plugins/point_drawing_plugin.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include "swri_transform_util/transform.h"
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include <tf2_ros/buffer_interface.hpp>
+#include "yaml-cpp/yaml.h"
 
 // Declare plugin
 #include <pluginlib/class_list_macros.hpp>

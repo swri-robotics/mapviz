@@ -34,13 +34,15 @@
 #include <QMutex>
 #include <QOpenGLFunctions_1_1>
 #include <QOpenGLTexture>
+#include <QtGlobal>
 
 // C++ standard libraries
+#include <cstdint>
 #include <memory>
 #include <string>
 
-#include <tf2/transform_datatypes.hpp>
 #include "swri_transform_util/transform.h"
+#include <tf2/LinearMath/Vector3.hpp>
 
 namespace multires_image
 {

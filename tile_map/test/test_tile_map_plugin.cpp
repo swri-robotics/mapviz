@@ -30,14 +30,21 @@
 #include <QApplication>
 #include <QImage>
 #include <QPainter>
+#include <QRect>
+#include <QRgb>
+#include <QString>
+#include <Qt>
+#include <QtGlobal>
 #include <yaml-cpp/yaml.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <rclcpp/rclcpp.hpp>
+#include <tile_map/terrain.hpp>
 #include <tile_map/tile_map_plugin.hpp>
 
 namespace
