@@ -2,6 +2,24 @@
 Changelog for package mapviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.3.0 (2026-11-19)
+------------------
+* Fixing remaining IWYU findings and making the check strict on Lyrical (`#998 <https://github.com/swri-robotics/mapviz/issues/998>`_)
+  - Lyrical is the only distro with a strict check to avoid contradictory advice from different distros with different rules.
+* Clean up UI (`#991 <https://github.com/swri-robotics/mapviz/issues/991>`_)
+  * Restyled the look: a consistent modern style with light and dark themes (System, Light or Dark, chosen in a new Theme menu and remembered between runs). One shared stylesheet now replaces the hard-coded palettes, white backgrounds, and fonts that were scattered through the code and .ui files.
+  * Cleaner plugin list: each plugin is a card with a highlight for the selected one, and its checkbox matches the title's height. Header, toolbar and status-bar icons are drawn by the app (no longer image files), stay sharp at any scale and match the theme.
+  * Tidier plugin forms: spin boxes are sized to their contents, color swatches grow with the font, and empty vertical space is gone. Plugin forms now use the app font instead of a fixed 8–9 pt.
+  * Softer default colors: plugin drawing colors changed from pure green and red to `#2 <https://github.com/swri-robotics/mapviz/issues/2>`_fbf4a and #e5484d. Status messages use colors that are readable in both themes and no longer end in a period.
+  * Scaling and font size: the UI adapts to high-DPI screens, monitor changes and system font changes. That includes Qt 5 on Humble, where high-DPI scaling is now turned on. The config panel widens when its contents need more room, and rows grow when their text wraps.
+  * Map canvas: line and point widths in all plugins scale with the display. The map attribution text shrinks to fit narrow maps instead of running off the edge.
+  * Video recording: frames of a different size are rescaled, so a recording no longer drops frames when the window moves to another monitor.
+  * The path plugin's header icon is no longer drawn black.
+  * The robot_image ratio buttons no longer clip their labels.
+  * Status rows no longer get cut off when the message wraps to a second line.
+  * Tests: new tests cover the theme, status text, and video resizing.
+* Contributors: David Anthony
+
 4.2.1 (2026-11-13)
 ------------------
 
