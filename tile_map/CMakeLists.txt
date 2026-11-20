@@ -107,6 +107,8 @@ set(TILE_SRC_FILES
   src/map_25d.cpp
   src/contours.cpp
   src/contour_layer.cpp
+  src/elevation_set.cpp
+  src/local_terrain_view.cpp
   src/${PROJECT_NAME}_view.cpp
 )
 set(QT_HEADERS
@@ -159,6 +161,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tf2::tf2)
 target_link_libraries(${PROJECT_NAME} PRIVATE
   jsoncpp_lib
+  yaml-cpp
   ${swri_math_util_TARGETS})
 
 # swri_transform_util 3.10.0 added Transform::operator==, which TileMapView
@@ -201,6 +204,11 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_plugin
 
 pluginlib_export_plugin_description_file(mapviz mapviz_plugins.xml)
 
+# ros2 run tile_map make_elevation_set: builds elevation sets for offline use.
+install(PROGRAMS scripts/make_elevation_set.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME make_elevation_set)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -233,10 +241,18 @@ if(BUILD_TESTING)
     target_link_libraries(test_${PROJECT_NAME}_contours ${PROJECT_NAME})
   endif()
 
+  ament_add_gtest(test_${PROJECT_NAME}_elevation_set test/test_elevation_set.cpp)
+  if(TARGET test_${PROJECT_NAME}_elevation_set)
+    target_link_libraries(test_${PROJECT_NAME}_elevation_set ${PROJECT_NAME})
+  endif()
+
   ament_add_gtest(test_${PROJECT_NAME}_trees test/test_trees.cpp)
   if(TARGET test_${PROJECT_NAME}_trees)
     target_link_libraries(test_${PROJECT_NAME}_trees ${PROJECT_NAME})
   endif()
+
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_make_elevation_set test/test_make_elevation_set.py)
 
   # The plugin builds Qt widgets in its constructor, so the test needs a
   # platform plugin that works without a display.

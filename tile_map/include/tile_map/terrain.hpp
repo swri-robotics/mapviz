@@ -38,6 +38,8 @@
 #include <utility>
 #include <vector>
 
+#include <tile_map/tile_source.hpp>
+
 namespace tile_map
 {
 /// Where the 2.5D plugin gets elevation from: the AWS Terrain Tiles open data
@@ -48,8 +50,9 @@ namespace terrarium
 extern const char URL_TEMPLATE[];
 /// The deepest level the data set has tiles for.
 constexpr int32_t MAX_ZOOM = 15;
-/// Credit line for the data set.
-extern const char ATTRIBUTION[];
+/// The credit line for the data set: Mapzen, the global sources, and the
+/// regional sources whose areas the view overlaps.
+QString Attribution(const ViewBounds & view);
 
 /// Height in meters encoded in one Terrarium pixel.
 inline float DecodePixel(QRgb pixel)
@@ -59,6 +62,7 @@ inline float DecodePixel(QRgb pixel)
 }
 
 /// Heights in meters for a whole tile, row by row from the north edge.
+/// Transparent pixels (no data, in elevation sets) give NaN.
 std::vector<float> DecodeImage(const QImage & image);
 
 /// Reads the level and tile coordinates back out of a Terrarium tile URL.

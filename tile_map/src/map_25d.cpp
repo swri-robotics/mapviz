@@ -118,12 +118,24 @@ void Map25d::SetShading(const ShadingParameters & shading)
     shading_ = shading;
     refresh_textures_ = true;
   }
+  local_terrain_.SetShading(shading);
+}
+
+void Map25d::SetElevationSource(
+  ElevationSource source, const std::shared_ptr<const ElevationLibrary> & library)
+{
+  elevation_source_ = source;
+  library_ = library;
+  if (view_) {
+    SetView(view_->latitude, view_->longitude, view_->scale, view_->width, view_->height);
+  }
 }
 
 void Map25d::SetTransform(const swri_transform_util::Transform & wgs84_to_target)
 {
   transform_ = wgs84_to_target;
   terrain_view_.SetTransform(wgs84_to_target);
+  local_terrain_.SetTransform(wgs84_to_target);
   buildings_->SetTransform(wgs84_to_target);
   trees_.SetTransform(wgs84_to_target);
 }
@@ -187,7 +199,17 @@ void Map25d::SetView(
 {
   view_ = View{latitude, longitude, scale, width, height};
   if (terrain_enabled_) {
-    terrain_view_.SetView(latitude, longitude, scale, width, height);
+    std::shared_ptr<const ElevationSet> set;
+    if (elevation_source_ != ElevationSource::Online && library_) {
+      set = library_->SetAt(latitude, longitude);
+    }
+    no_local_terrain_ = !set && elevation_source_ == ElevationSource::LocalOnly;
+    local_terrain_.SetSet(set);
+    if (set) {
+      local_terrain_.SetView(latitude, longitude, scale, width, height);
+    } else if (!no_local_terrain_) {
+      terrain_view_.SetView(latitude, longitude, scale, width, height);
+    }
   }
   // Only fetch data that is shown.
   if (MapDataNeeded()) {
@@ -201,11 +223,15 @@ void Map25d::SetView(
 void Map25d::DrawGround()
 {
   if (terrain_enabled_) {
-    if (refresh_textures_) {
-      terrain_view_.RefreshTextures();
-      refresh_textures_ = false;
+    // Also frees the local textures once the view leaves the set.
+    local_terrain_.Draw();
+    if (!local_terrain_.Set() && !no_local_terrain_) {
+      if (refresh_textures_) {
+        terrain_view_.RefreshTextures();
+        refresh_textures_ = false;
+      }
+      terrain_view_.Draw();
     }
-    terrain_view_.Draw();
   }
 }
 
@@ -320,11 +346,17 @@ void Map25d::StartBuild(
     });
 }
 
-QString Map25d::Attribution() const
+QString Map25d::Attribution(const ViewBounds & view) const
 {
   QStringList credits;
   if (terrain_enabled_) {
-    credits << terrarium::ATTRIBUTION;
+    if (local_terrain_.Set()) {
+      if (!local_terrain_.Set()->Attribution().isEmpty()) {
+        credits << local_terrain_.Set()->Attribution();
+      }
+    } else if (!no_local_terrain_) {
+      credits << terrarium::Attribution(view);
+    }
   }
   // Trees found in the imagery come from the imagery, which tile_map
   // already credits.
@@ -340,6 +372,9 @@ QString Map25d::Attribution() const
 QString Map25d::Status(bool & is_error) const
 {
   is_error = false;
+  if (terrain_enabled_ && no_local_terrain_) {
+    return "No elevation set on disk covers this area";
+  }
   if (MapDataNeeded()) {
     const QString status = buildings_->Status(is_error);
     if (!status.isEmpty()) {

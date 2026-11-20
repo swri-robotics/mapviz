@@ -37,6 +37,9 @@
   <exec_depend>libqtopengl</exec_depend>
   <exec_depend>mapviz</exec_depend>
   <exec_depend>pluginlib</exec_depend>
+  <!-- For scripts/make_elevation_set.py -->
+  <exec_depend>python3-gdal</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>swri_math_util</exec_depend>
   <exec_depend>swri_transform_util</exec_depend>
@@ -44,8 +47,11 @@
   <exec_depend>yaml-cpp</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-yaml</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

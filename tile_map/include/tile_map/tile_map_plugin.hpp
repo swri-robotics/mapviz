@@ -32,6 +32,7 @@
 // QT libraries
 #include <QCheckBox>
 #include <QComboBox>
+#include <QLineEdit>
 #include <QDoubleSpinBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -52,6 +53,7 @@
 #include <mapviz/mapviz_plugin.hpp>
 #include "swri_transform_util/transform.h"
 #include <tile_map/contour_layer.hpp>
+#include <tile_map/elevation_set.hpp>
 #include <tile_map/map_25d.hpp>
 #include <tile_map/tile_map_view.hpp>
 #include <tile_map/tile_source.hpp>
@@ -131,6 +133,10 @@ protected Q_SLOTS:
   /// One of the topographic map settings changed; applies them all.
   void TopographicSettingsChanged();
 
+  /// The elevation source or folder changed; looks through the folder again
+  /// and applies them.
+  void ElevationSettingsChanged();
+
 private:
   void selectTileSource(const std::shared_ptr<TileSource> & tile_source);
 
@@ -139,6 +145,13 @@ private:
 
   /// Adds the "Topographic map" checkbox and its settings to the panel.
   void SetUpTopographicControls();
+
+  /// Adds the elevation source and folder rows to the panel.
+  void SetUpElevationControls();
+
+  /// Shows the elevation rows while 2.5D rendering or the topographic map is
+  /// on.
+  void UpdateElevationVisibility();
 
   /// Single place that decides which controls are usable for the selected
   /// source, replacing the enable/disable calls that used to be scattered
@@ -211,6 +224,12 @@ private:
   mapviz::ColorButton * contour_color_button_;
   /// The settings rows, shown only while the topographic map is on.
   std::vector<QWidget *> settings_topographic_widgets_;
+
+  /// Elevation sets on disk, shared by the terrain shading and the contours.
+  std::shared_ptr<ElevationLibrary> elevation_library_;
+  QComboBox * elevation_source_combo_;
+  QLineEdit * elevation_folder_edit_;
+  std::vector<QWidget *> settings_elevation_widgets_;
 
   /// The area on screen as of the last Draw(), for sources whose
   /// attribution depends on it.
