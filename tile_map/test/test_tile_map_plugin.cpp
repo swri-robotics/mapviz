@@ -314,7 +314,7 @@ TEST(TileMap25d, CreditsTheDataItDraws)
   plugin.LoadConfigPlugin(
     YAML::Load("source: OpenStreetMap\nrender_25d: {enabled: true}"), "");
   EXPECT_EQ(
-    QString("© OpenStreetMap contributors | ") + tile_map::terrarium::ATTRIBUTION +
+    "© OpenStreetMap contributors | " + tile_map::terrarium::Attribution({}) +
     " | Buildings: © OpenStreetMap contributors",
     plugin.CurrentAttribution());
 

@@ -69,6 +69,7 @@
 #include <tf2/LinearMath/Vector3.hpp>
 #include <tile_map/building_layer.hpp>
 #include <tile_map/contour_layer.hpp>
+#include <tile_map/elevation_set.hpp>
 #include <tile_map/image_cache.hpp>
 #include <tile_map/map_25d.hpp>
 #include <tile_map/terrain.hpp>
@@ -148,11 +149,25 @@ const char CONTOUR_INTERVAL_KEY[] = "contour_interval";
 const char CONTOUR_LABELS_KEY[] = "contour_labels";
 const char CONTOUR_COLOR_KEY[] = "contour_color";
 
-// The 2.5D controls go in rows 6 to 15 of the grid in tile_map_config.ui and
-// the topographic map controls in rows 16 to 19, between the Max Zoom/Test
-// rows and Status, which is on row 20.
+// Keys for where elevation comes from, at the top level of the config.
+const char ELEVATION_SOURCE_KEY[] = "elevation_source";
+const char ELEVATION_DIRECTORY_KEY[] = "elevation_directory";
+// Values of elevation_source, in the order of the Elevation menu.
+const char * const ELEVATION_SOURCES[] = {"online", "local_then_online", "local"};
+const tile_map::ElevationSource ELEVATION_SOURCE_VALUES[] = {
+  tile_map::ElevationSource::Online,
+  tile_map::ElevationSource::LocalThenOnline,
+  tile_map::ElevationSource::LocalOnly,
+};
+// Where make_elevation_set's examples, and mapviz_tile_loader, keep sets.
+const char DEFAULT_ELEVATION_DIRECTORY[] = "~/.map_tiles";
+
+// The 2.5D controls go in rows 6 to 15 of the grid in tile_map_config.ui, the
+// topographic map controls in rows 16 to 19 and the elevation source in rows
+// 20 and 21, between the Max Zoom/Test rows and Status, which is on row 22.
 constexpr int RENDER_25D_FIRST_ROW = 6;
 constexpr int TOPOGRAPHIC_FIRST_ROW = 16;
+constexpr int ELEVATION_FIRST_ROW = 20;
 
 namespace
 {
@@ -199,6 +214,7 @@ TileMapPlugin::TileMapPlugin()
   ui_.setupUi(config_widget_);
   SetUp25dControls();
   SetUpTopographicControls();
+  SetUpElevationControls();
   // Contours read the same elevation tiles as the 2.5D terrain shading.
   contours_.SetImageCache(map_25d_.GetTerrainImageCache());
 
@@ -483,12 +499,92 @@ void TileMapPlugin::SetUpTopographicControls()
     this, &TileMapPlugin::TopographicSettingsChanged);
 }
 
+void TileMapPlugin::SetUpElevationControls()
+{
+  int row = ELEVATION_FIRST_ROW;
+  auto add_row = [this, &row](const QString & label, QWidget * control) {
+      auto * label_widget = new QLabel(label, config_widget_);
+      ui_.gridLayout->addWidget(label_widget, row, 0);
+      ui_.gridLayout->addWidget(control, row, 1, 1, 3);
+      settings_elevation_widgets_.push_back(label_widget);
+      settings_elevation_widgets_.push_back(control);
+      ++row;
+    };
+
+  elevation_source_combo_ = new QComboBox(config_widget_);
+  elevation_source_combo_->addItem("Online");
+  elevation_source_combo_->addItem("Files, else online");
+  elevation_source_combo_->addItem("Files only");
+  elevation_source_combo_->setToolTip(
+    "Where the terrain shading and contour lines get heights: the AWS Terrain Tiles online, "
+    "or elevation sets on disk made with \"ros2 run tile_map make_elevation_set\", which "
+    "work without a network connection.");
+  add_row("Elevation:", elevation_source_combo_);
+
+  elevation_folder_edit_ = new QLineEdit(DEFAULT_ELEVATION_DIRECTORY, config_widget_);
+  elevation_folder_edit_->setToolTip(
+    "The folder searched, with the folders in it, for elevation sets (.geo files).  "
+    "Press Enter to look through it again.");
+  add_row("Elevation files:", elevation_folder_edit_);
+
+  elevation_library_ = std::make_shared<ElevationLibrary>();
+  for (QWidget * widget : settings_elevation_widgets_) {
+    widget->setVisible(false);
+  }
+
+  QObject::connect(
+    elevation_source_combo_, qOverload<int>(&QComboBox::currentIndexChanged),
+    this, &TileMapPlugin::ElevationSettingsChanged);
+  QObject::connect(
+    elevation_folder_edit_, &QLineEdit::editingFinished,
+    this, &TileMapPlugin::ElevationSettingsChanged);
+}
+
+void TileMapPlugin::UpdateElevationVisibility()
+{
+  for (QWidget * widget : settings_elevation_widgets_) {
+    widget->setVisible(render_25d_ || topographic_);
+  }
+  // Nothing to look through until something needs elevation.
+  if ((render_25d_ || topographic_) && elevation_library_->Directory().isEmpty()) {
+    ElevationSettingsChanged();
+  }
+}
+
+void TileMapPlugin::ElevationSettingsChanged()
+{
+  const QString directory = elevation_folder_edit_->text();
+  const QString previous = elevation_library_->Directory();
+  elevation_library_->SetDirectory(directory);
+  if (elevation_library_->Directory() == previous) {
+    elevation_library_->Rescan();
+  }
+  elevation_folder_edit_->setToolTip(
+    QString(
+      "The folder searched, with the folders in it, for elevation sets (.geo files).  "
+      "Press Enter to look through it again.\n\nFound %1 elevation set(s) in %2.")
+    .arg(elevation_library_->Sets().size()).arg(elevation_library_->Directory()));
+  for (const QString & problem : elevation_library_->Problems()) {
+    PrintWarning("Skipped elevation set " + problem.toStdString());
+  }
+
+  const int index = std::clamp(elevation_source_combo_->currentIndex(), 0, 2);
+  const ElevationSource source = ELEVATION_SOURCE_VALUES[index];
+  map_25d_.SetElevationSource(source, elevation_library_);
+  contours_.SetElevationSource(source, elevation_library_);
+  last_height_ = 0;
+  if (canvas_) {
+    canvas_->update();
+  }
+}
+
 void TileMapPlugin::TopographicToggled(bool checked)
 {
   topographic_ = checked;
   for (QWidget * widget : settings_topographic_widgets_) {
     widget->setVisible(checked);
   }
+  UpdateElevationVisibility();
   // The contours only follow the view while they are on, so make the next
   // Draw() pass the current view to them.
   last_height_ = 0;
@@ -513,6 +609,7 @@ void TileMapPlugin::Render25dToggled(bool checked)
   for (QWidget * widget : settings_25d_widgets_) {
     widget->setVisible(checked);
   }
+  UpdateElevationVisibility();
   // The 2.5D layers only follow the view while they are on, so make the next
   // Draw() pass the current view to them.
   last_height_ = 0;
@@ -989,11 +1086,14 @@ QString TileMapPlugin::CurrentAttribution() const
     return {};
   }
   QString attribution = source->GetAttribution(view_bounds_);
-  QString extra = render_25d_ ? map_25d_.Attribution() : QString();
+  QString extra = render_25d_ ? map_25d_.Attribution(view_bounds_) : QString();
   // The contours use the elevation data the terrain shading credits.
-  if (topographic_ && !(render_25d_ && map_25d_.TerrainEnabled())) {
-    extra = extra.isEmpty() ? QString(terrarium::ATTRIBUTION) :
-      QString(terrarium::ATTRIBUTION) + " | " + extra;
+  if (topographic_) {
+    // The contours' elevation, unless the terrain shading credits it already.
+    const QString contours = contours_.Attribution(view_bounds_);
+    if (!contours.isEmpty() && !extra.contains(contours)) {
+      extra = extra.isEmpty() ? contours : contours + " | " + extra;
+    }
   }
   if (!extra.isEmpty()) {
     attribution = attribution.isEmpty() ? extra : attribution + " | " + extra;
@@ -1259,6 +1359,25 @@ void TileMapPlugin::LoadConfig(const YAML::Node & node, const std::string &)
     }
   }
 
+  if (node[ELEVATION_SOURCE_KEY] || node[ELEVATION_DIRECTORY_KEY]) {
+    {
+      const QSignalBlocker block_source(elevation_source_combo_);
+      if (node[ELEVATION_SOURCE_KEY]) {
+        const std::string source = node[ELEVATION_SOURCE_KEY].as<std::string>();
+        for (int i = 0; i < 3; ++i) {
+          if (source == ELEVATION_SOURCES[i]) {
+            elevation_source_combo_->setCurrentIndex(i);
+          }
+        }
+      }
+      if (node[ELEVATION_DIRECTORY_KEY]) {
+        elevation_folder_edit_->setText(
+          QString::fromStdString(node[ELEVATION_DIRECTORY_KEY].as<std::string>()));
+      }
+    }
+    ElevationSettingsChanged();
+  }
+
   if (node[TOPOGRAPHIC_KEY]) {
     const YAML::Node & topographic = node[TOPOGRAPHIC_KEY];
     {
@@ -1348,6 +1467,11 @@ void TileMapPlugin::SaveConfig(YAML::Emitter & emitter, const std::string &)
   emitter << YAML::Key << CONTOUR_COLOR_KEY << YAML::Value <<
     contour_color_button_->color().name().toStdString();
   emitter << YAML::EndMap;
+
+  emitter << YAML::Key << ELEVATION_SOURCE_KEY << YAML::Value <<
+    ELEVATION_SOURCES[std::clamp(elevation_source_combo_->currentIndex(), 0, 2)];
+  emitter << YAML::Key << ELEVATION_DIRECTORY_KEY << YAML::Value <<
+    elevation_folder_edit_->text().toStdString();
 }
 
 void TileMapPlugin::selectTileSource(const std::shared_ptr<TileSource> & tile_source)

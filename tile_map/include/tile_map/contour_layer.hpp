@@ -44,7 +44,9 @@
 #include <vector>
 
 #include <tile_map/contours.hpp>
+#include <tile_map/elevation_set.hpp>
 #include <tile_map/image_cache.hpp>
+#include <tile_map/tile_source.hpp>
 #include "swri_transform_util/transform.h"
 
 class QPainter;
@@ -73,16 +75,16 @@ public:
   static constexpr size_t MAX_SEGMENTS = 1500000;
   /// While tiles arrive, rebuilds start at most this often.
   static constexpr double REBUILDS_PER_SECOND = 4.0;
-  /// Lines are drawn in squares of this many grid cells, each placed with
-  /// its own linear fit to the transform into the frame being drawn.
-  static constexpr int CHUNK_CELLS = 32;
-
   ContourLayer();
   /// Waits for a build in progress.
   ~ContourLayer();
 
   /// Where elevation tiles come from (see Map25d::GetTerrainImageCache()).
   void SetImageCache(const ImageCachePtr & cache);
+
+  /// Whether to use elevation sets on disk, and where they are.
+  void SetElevationSource(
+    ElevationSource source, const std::shared_ptr<const ElevationLibrary> & library);
 
   /// Height between lines in meters, or 0 to pick one from the zoom (see
   /// AutoContourInterval()).
@@ -114,11 +116,16 @@ public:
   /// A problem to show in the status line; empty when there is none.
   QString Status() const;
 
+  /// Credit for the elevation the lines being drawn come from.
+  QString Attribution(const ViewBounds & view) const;
+
   /// The interval of the lines being drawn, in meters (0 before any are).
   double DrawnInterval() const {return drawn_ ? drawn_->interval : 0.0;}
 
   /// Where in view the heights are: the tiles at `level` in a block of
-  /// `columns` x `rows` starting at (`x`, `y`).
+  /// `columns` x `rows` starting at column `x` and row `y`.  Online tiles
+  /// are web mercator tiles; with a `set`, they are the set's tiles and
+  /// `level` is the layer.
   struct Block
   {
     int32_t level = -1;
@@ -126,11 +133,14 @@ public:
     int64_t y = 0;
     int64_t columns = 0;
     int64_t rows = 0;
+    int32_t tile_size = 256;
+    std::shared_ptr<const ElevationSet> set;
 
     bool operator==(const Block & other) const
     {
       return level == other.level && x == other.x && y == other.y &&
-             columns == other.columns && rows == other.rows;
+             columns == other.columns && rows == other.rows &&
+             tile_size == other.tile_size && set == other.set;
     }
     bool operator!=(const Block & other) const {return !(*this == other);}
   };
@@ -140,6 +150,14 @@ public:
   /// no smaller than the screen's (capped at what the data set has), or a
   /// coarser one if that would need more than MAX_TILES.
   static Block BlockFor(
+    double latitude, double longitude, double scale, int32_t width, int32_t height);
+
+  /// The same for an elevation set: its tiles within half the canvas
+  /// diagonal of the center, from the finest layer whose pixels are no
+  /// smaller than the screen's that needs no more than MAX_TILES (counted in
+  /// 256 pixel tiles).  Empty if the view misses the set.
+  static Block LocalBlockFor(
+    const std::shared_ptr<const ElevationSet> & set,
     double latitude, double longitude, double scale, int32_t width, int32_t height);
 
   /// Latitude and longitude of a point on a block's grid.
@@ -204,6 +222,21 @@ private:
   using TileKey = std::tuple<int32_t, int64_t, int64_t>;
 
   ImageCachePtr cache_;
+  ElevationSource source_ = ElevationSource::Online;
+  std::shared_ptr<const ElevationLibrary> library_;
+  /// Set when only local elevation is wanted and none covers the view.
+  bool no_local_data_ = false;
+  /// The last view passed to SetView(), to choose again when the source
+  /// changes.
+  struct View
+  {
+    double latitude;
+    double longitude;
+    double scale;
+    int32_t width;
+    int32_t height;
+  };
+  std::optional<View> view_;
   double interval_ = 0.0;
   QColor color_ = QColor(160, 82, 45);
   bool labels_ = true;

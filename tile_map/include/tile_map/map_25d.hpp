@@ -42,6 +42,8 @@
 #include <vector>
 
 #include <tile_map/building_layer.hpp>
+#include <tile_map/elevation_set.hpp>
+#include <tile_map/local_terrain_view.hpp>
 #include <tile_map/scene_25d.hpp>
 #include <tile_map/terrain.hpp>
 #include <tile_map/tree_layer.hpp>
@@ -95,6 +97,10 @@ public:
 
   void SetShading(const ShadingParameters & shading);
   const ShadingParameters & Shading() const {return shading_;}
+
+  /// Whether to shade from elevation sets on disk, and where they are.
+  void SetElevationSource(
+    ElevationSource source, const std::shared_ptr<const ElevationLibrary> & library);
 
   /// Buildings standing up out of the map.
   void SetBuildingsEnabled(bool enabled);
@@ -155,7 +161,7 @@ public:
   void DrawRaised();
 
   /// Credit lines for the data the enabled layers draw.
-  QString Attribution() const;
+  QString Attribution(const ViewBounds & view) const;
 
   /// Progress or a problem to show in the status line; empty when there is
   /// nothing to say.
@@ -173,6 +179,13 @@ private:
   std::shared_ptr<WmtsSource> terrain_source_;
   TileMapView terrain_view_;
   bool terrain_enabled_ = true;
+  /// Shading from an elevation set on disk, used instead of terrain_view_
+  /// when one covers the view (see SetElevationSource()).
+  LocalTerrainView local_terrain_;
+  ElevationSource elevation_source_ = ElevationSource::Online;
+  std::shared_ptr<const ElevationLibrary> library_;
+  /// Set when only local elevation is wanted and none covers the view.
+  bool no_local_terrain_ = false;
   ShadingParameters shading_;
   /// Set when the shading changes; the textures are rebuilt in Draw(), where
   /// the GL context is current.

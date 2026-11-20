@@ -120,6 +120,10 @@ class MapvizTileLoader(Node):
         max_lon = -180.0
         with open(geofile) as f:
             geodata = yaml.safe_load(f)
+        if 'encoding' in geodata:
+            # An elevation set for tile_map (see make_elevation_set), not imagery.
+            self.get_logger().info(f'  skipped: {geodata["encoding"]} elevation, not imagery')
+            return None
         if str(geodata['projection']).lower() == 'utm':
             self.get_logger().info('  projection: utm')
             zone = 1

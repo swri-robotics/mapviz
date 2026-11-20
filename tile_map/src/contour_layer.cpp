@@ -55,8 +55,6 @@ namespace tile_map
 {
 namespace
 {
-/// Pixels on a side of an elevation tile.
-constexpr int TILE_PIXELS = 256;
 /// Priority of elevation requests: the same as the tiles on screen.
 constexpr int32_t CONTOUR_TILE_PRIORITY = 10000;
 /// Roughly how far apart labels on one line are, and how much straight line
@@ -70,10 +68,11 @@ constexpr double LINE_WIDTH = 1.0;
 constexpr double INDEX_LINE_WIDTH = 2.0;
 
 /// Squares of the grid placed with one linear fit each.  Coarse levels cover
-/// so much ground per cell that the transform bends within a large square.
-int ChunkCells(int32_t level)
+/// so much ground per cell that the transform bends within a large square;
+/// elevation sets cover small areas.
+int ChunkCells(const ContourLayer::Block & block)
 {
-  return level >= 6 ? 64 : 16;
+  return block.set || block.level >= 6 ? 64 : 16;
 }
 
 /// The same tiles, under the same URLs, as Map25d's terrain shading, so the
@@ -157,12 +156,66 @@ ContourLayer::Block ContourLayer::BlockFor(
   return block;
 }
 
+ContourLayer::Block ContourLayer::LocalBlockFor(
+  const std::shared_ptr<const ElevationSet> & set,
+  double latitude, double longitude, double scale, int32_t width, int32_t height)
+{
+  Block block;
+  if (!set || !(scale > 0.0)) {
+    return block;
+  }
+  double px;
+  double py;
+  set->LatLonToPixel(latitude, longitude, px, py);
+  const double radius = 0.5 * scale * std::hypot(width, height);
+  const double rx = radius / set->PixelWidthMeters();
+  const double ry = radius / set->PixelHeightMeters();
+  const double finest = std::min(set->PixelWidthMeters(), set->PixelHeightMeters());
+  const int32_t first = std::clamp(
+    static_cast<int32_t>(std::ceil(std::log2(scale / finest))), 0, set->LayerCount() - 1);
+  const double weight = std::pow(set->TileSize() / 256.0, 2.0);
+  for (int32_t layer = first; layer < set->LayerCount(); ++layer) {
+    // Layer 0 pixels across one tile of this layer.
+    const double span = static_cast<double>(set->TileSize()) * std::pow(2.0, layer);
+    const int64_t last_column = set->Columns(layer) - 1;
+    const int64_t last_row = set->Rows(layer) - 1;
+    const int64_t c0 = std::max<int64_t>(0, static_cast<int64_t>(std::floor((px - rx) / span)));
+    const int64_t c1 =
+      std::min(last_column, static_cast<int64_t>(std::floor((px + rx) / span)));
+    const int64_t r0 = std::max<int64_t>(0, static_cast<int64_t>(std::floor((py - ry) / span)));
+    const int64_t r1 = std::min(last_row, static_cast<int64_t>(std::floor((py + ry) / span)));
+    if (c0 > c1 || r0 > r1) {
+      return block;
+    }
+    if (static_cast<double>((c1 - c0 + 1) * (r1 - r0 + 1)) * weight <= MAX_TILES) {
+      block.set = set;
+      block.level = layer;
+      block.tile_size = set->TileSize();
+      block.x = c0;
+      block.y = r0;
+      block.columns = c1 - c0 + 1;
+      block.rows = r1 - r0 + 1;
+      return block;
+    }
+  }
+  return block;
+}
+
 void ContourLayer::GridToLatLon(
   const Block & block, double x, double y, double & latitude, double & longitude)
 {
+  if (block.set) {
+    // Grid cells are pixels of the layer; the middle of one is half a pixel
+    // in from its corner.
+    const double size = std::pow(2.0, block.level);
+    block.set->PixelToLatLon(
+      (static_cast<double>(block.x * block.tile_size) + x + 0.5) * size,
+      (static_cast<double>(block.y * block.tile_size) + y + 0.5) * size, latitude, longitude);
+    return;
+  }
   // The middle of the grid cell is the middle of the tile pixel.
-  const double tile_x = static_cast<double>(block.x) + (x + 0.5) / TILE_PIXELS;
-  const double tile_y = static_cast<double>(block.y) + (y + 0.5) / TILE_PIXELS;
+  const double tile_x = static_cast<double>(block.x) + (x + 0.5) / block.tile_size;
+  const double tile_y = static_cast<double>(block.y) + (y + 0.5) / block.tile_size;
   longitude = tile_x / std::pow(2.0, block.level) * 360.0 - 180.0;
   latitude = TileRowLatitude(block.level, tile_y);
 }
@@ -170,10 +223,11 @@ void ContourLayer::GridToLatLon(
 std::vector<float> ContourLayer::JoinTiles(
   const Block & block, const std::vector<std::shared_ptr<const std::vector<float>>> & tiles)
 {
-  const size_t width = static_cast<size_t>(block.columns) * TILE_PIXELS;
-  const size_t height = static_cast<size_t>(block.rows) * TILE_PIXELS;
+  const size_t pixels = static_cast<size_t>(block.tile_size);
+  const size_t width = static_cast<size_t>(block.columns) * pixels;
+  const size_t height = static_cast<size_t>(block.rows) * pixels;
   std::vector<float> grid(width * height, std::numeric_limits<float>::quiet_NaN());
-  constexpr size_t tile_cells = static_cast<size_t>(TILE_PIXELS) * TILE_PIXELS;
+  const size_t tile_cells = pixels * pixels;
   for (int64_t row = 0; row < block.rows; ++row) {
     for (int64_t col = 0; col < block.columns; ++col) {
       const size_t i = static_cast<size_t>(row * block.columns + col);
@@ -181,21 +235,42 @@ std::vector<float> ContourLayer::JoinTiles(
         continue;
       }
       const std::vector<float> & tile = *tiles[i];
-      for (int r = 0; r < TILE_PIXELS; ++r) {
+      for (size_t r = 0; r < pixels; ++r) {
         std::copy_n(
-          tile.begin() + static_cast<size_t>(r) * TILE_PIXELS, TILE_PIXELS,
-          grid.begin() + (static_cast<size_t>(row) * TILE_PIXELS + r) * width +
-          static_cast<size_t>(col) * TILE_PIXELS);
+          tile.begin() + r * pixels, pixels,
+          grid.begin() + (static_cast<size_t>(row) * pixels + r) * width +
+          static_cast<size_t>(col) * pixels);
       }
     }
   }
   return grid;
 }
 
+void ContourLayer::SetElevationSource(
+  ElevationSource source, const std::shared_ptr<const ElevationLibrary> & library)
+{
+  source_ = source;
+  library_ = library;
+  if (view_) {
+    SetView(view_->latitude, view_->longitude, view_->scale, view_->width, view_->height);
+  }
+}
+
 void ContourLayer::SetView(
   double latitude, double longitude, double scale, int32_t width, int32_t height)
 {
-  const Block block = BlockFor(latitude, longitude, scale, width, height);
+  view_ = View{latitude, longitude, scale, width, height};
+  std::shared_ptr<const ElevationSet> set;
+  if (source_ != ElevationSource::Online && library_) {
+    set = library_->SetAt(latitude, longitude);
+  }
+  no_local_data_ = !set && source_ == ElevationSource::LocalOnly;
+  Block block;
+  if (set) {
+    block = LocalBlockFor(set, latitude, longitude, scale, width, height);
+  } else if (!no_local_data_) {
+    block = BlockFor(latitude, longitude, scale, width, height);
+  }
   if (block != block_ || scale != scale_) {
     block_ = block;
     scale_ = scale;
@@ -205,7 +280,7 @@ void ContourLayer::SetView(
   if (heights_.size() > 4 * MAX_TILES) {
     for (auto it = heights_.begin(); it != heights_.end(); ) {
       const auto [level, x, y] = it->first;
-      const bool in_view = level == block_.level && x >= block_.x &&
+      const bool in_view = !block_.set && level == block_.level && x >= block_.x &&
         x < block_.x + block_.columns && y >= block_.y && y < block_.y + block_.rows;
       it = in_view ? std::next(it) : heights_.erase(it);
     }
@@ -219,7 +294,8 @@ double ContourLayer::CurrentInterval() const
 
 bool ContourLayer::Update()
 {
-  if (!cache_ || block_.columns == 0) {
+  // Elevation sets are read on the worker thread.
+  if (!cache_ || block_.columns == 0 || block_.set) {
     return false;
   }
   const std::shared_ptr<WmtsSource> source = TerrainSource();
@@ -255,31 +331,48 @@ bool ContourLayer::Update()
 
 void ContourLayer::StartBuild(double interval)
 {
+  // Online tiles that have arrived; an elevation set's are read by the
+  // worker.
   std::vector<std::shared_ptr<const std::vector<float>>> tiles;
-  tiles.reserve(static_cast<size_t>(block_.columns * block_.rows));
-  for (int64_t y = block_.y; y < block_.y + block_.rows; ++y) {
-    for (int64_t x = block_.x; x < block_.x + block_.columns; ++x) {
-      const auto it = heights_.find(TileKey{block_.level, x, y});
-      tiles.push_back(it == heights_.end() ? nullptr : it->second);
+  if (!block_.set) {
+    tiles.reserve(static_cast<size_t>(block_.columns * block_.rows));
+    for (int64_t y = block_.y; y < block_.y + block_.rows; ++y) {
+      for (int64_t x = block_.x; x < block_.x + block_.columns; ++x) {
+        const auto it = heights_.find(TileKey{block_.level, x, y});
+        tiles.push_back(it == heights_.end() ? nullptr : it->second);
+      }
     }
   }
 
   // Grid cells per screen pixel, for spacing the labels.
-  double latitude;
-  double longitude;
-  GridToLatLon(
-    block_, 0.5 * block_.columns * TILE_PIXELS, 0.5 * block_.rows * TILE_PIXELS,
-    latitude, longitude);
-  const double cells_per_pixel = scale_ / MetersPerPixel(block_.level, latitude);
+  double cells_per_pixel;
+  if (block_.set) {
+    cells_per_pixel = scale_ / (block_.set->PixelWidthMeters() * std::pow(2.0, block_.level));
+  } else {
+    double latitude;
+    double longitude;
+    GridToLatLon(
+      block_, 0.5 * block_.columns * block_.tile_size, 0.5 * block_.rows * block_.tile_size,
+      latitude, longitude);
+    cells_per_pixel = scale_ / MetersPerPixel(block_.level, latitude);
+  }
 
   build_ = std::async(
     std::launch::async,
-    [block = block_, tiles = std::move(tiles), interval, cells_per_pixel]() {
+    [block = block_, tiles = std::move(tiles), interval, cells_per_pixel]() mutable {
+      if (block.set) {
+        tiles.reserve(static_cast<size_t>(block.columns * block.rows));
+        for (int64_t y = block.y; y < block.y + block.rows; ++y) {
+          for (int64_t x = block.x; x < block.x + block.columns; ++x) {
+            tiles.push_back(block.set->ReadTile(block.level, y, x));
+          }
+        }
+      }
       Built built;
       built.block = block;
       built.interval = interval;
-      const int width = static_cast<int>(block.columns * TILE_PIXELS);
-      const int height = static_cast<int>(block.rows * TILE_PIXELS);
+      const int width = static_cast<int>(block.columns * block.tile_size);
+      const int height = static_cast<int>(block.rows * block.tile_size);
       std::vector<ContourLine> lines;
       if (!TraceContours(JoinTiles(block, tiles), width, height, interval, MAX_SEGMENTS, lines)) {
         built.too_many = true;
@@ -288,7 +381,7 @@ void ContourLayer::StartBuild(double interval)
 
       // Sort the segments into squares, ordinary lines and index contours
       // apart, relative to the middle of each square.
-      const int size = ChunkCells(block.level);
+      const int size = ChunkCells(block);
       const int across = (width + size - 1) / size;
       const int down = (height + size - 1) / size;
       std::vector<std::vector<float>> ordinary(static_cast<size_t>(across) * down);
@@ -341,7 +434,7 @@ void ContourLayer::StartBuild(double interval)
 
 void ContourLayer::Place(Built & built) const
 {
-  const double size = ChunkCells(built.block.level);
+  const double size = ChunkCells(built.block);
   auto to_target = [&](double x, double y) {
       double latitude;
       double longitude;
@@ -503,9 +596,20 @@ void ContourLayer::Paint(QPainter * painter)
 
 QString ContourLayer::Status() const
 {
+  if (no_local_data_) {
+    return "No elevation set on disk covers this area";
+  }
   if (drawn_ && drawn_->too_many) {
     return "Too many contour lines to draw; zoom in or use a larger interval";
   }
   return {};
+}
+
+QString ContourLayer::Attribution(const ViewBounds & view) const
+{
+  if (block_.set) {
+    return block_.set->Attribution();
+  }
+  return no_local_data_ ? QString() : terrarium::Attribution(view);
 }
 }  // namespace tile_map
